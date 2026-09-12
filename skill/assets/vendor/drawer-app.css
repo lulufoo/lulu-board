@@ -1931,6 +1931,10 @@ html[data-drawer-mode="mermaid"] .top-float {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.board-render .board-item[data-board-cap="off"] .board-item-text {
+  white-space: pre;
+  overflow-wrap: normal;
+}
 .board-render .board-item-md h1,
 .board-render .board-item-md h2,
 .board-render .board-item-md h3 {
