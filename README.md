@@ -62,7 +62,7 @@ Stacked full-width previews (one per row).
 
 ### Mermaid
 
-正在完善中。渲染依赖开源项目 [mermaid](https://github.com/mermaid-js/mermaid) 与 [elkjs](https://github.com/kieler/elkjs)（经 `@mermaid-js/layout-elk`）。
+Work in progress. Rendering depends on [mermaid](https://github.com/mermaid-js/mermaid) and [elkjs](https://github.com/kieler/elkjs) (via `@mermaid-js/layout-elk`).
 
 Two per row.
 
