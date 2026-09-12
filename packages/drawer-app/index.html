@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-Hans" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lulu Drawer</title>
+<link rel="icon" href="./favicon.ico" sizes="32x32">
+<link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml" sizes="any">
+
+  <link rel="stylesheet" href="./vendor/drawer-app.css" />
+<script src="./vendor/drawer-app-early-head.js"></script>
+</head>
+<body>
+<div class="app sheet-collapsed" id="app">
+  <aside class="sheet" id="sheet">
+    <div class="sheet-top">
+      <div>
+        <h1>Lulu Drawer</h1>
+        <p>Board + Mermaid</p>
+      </div>
+    </div>
+    <div class="mode-panel active" id="panelMermaid" data-mode="mermaid">
+      <div class="sheet-actions">
+        <button class="btn primary" id="btnRender">Render</button>
+        <button class="btn ghost" id="btnClear">Clear</button>
+        <div class="menu sheet-menu" id="exportMenu">
+          <button class="btn btn-more" id="btnExportMenu" type="button" aria-haspopup="menu" aria-expanded="false" title="More">⋯</button>
+          <div class="menu-panel" role="menu">
+            <button class="menu-item" id="btnCopySrc" role="menuitem" type="button">Copy Source <span>⌘C</span></button>
+            <button class="menu-item" id="btnDlPng" role="menuitem" type="button" hidden>Export PNG</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="resize" id="resize" title="Drag"></div>
+  </aside>
+
+  <main class="canvas-shell" id="canvasShell">
+    <div class="collapse-hint float" hidden></div>
+
+        <div class="float top-float" role="toolbar">
+      <div class="mode-switch" role="tablist" aria-label="Drawer mode">
+        <button type="button" role="tab" id="tabBoard" aria-selected="false" data-mode="board">Board</button>
+        <button type="button" role="tab" id="tabMermaid" aria-selected="true" data-mode="mermaid">Mermaid</button>
+      </div>
+      <div class="board-edit-tools" aria-label="Board editing">
+        <button class="btn board-edit-tool" id="btnBoardAddBox" type="button" title="Add box"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Box</span></button>
+        <button class="btn board-edit-tool" id="btnBoardAddItem" type="button" title="Add item"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Item</span></button>
+        <button class="btn board-edit-tool" id="btnBoardLink" type="button" title="Link mode: click source box or item, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
+        <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
+      <div class="mermaid-edit-tools" aria-label="Mermaid flowchart editing">
+        <button class="btn mermaid-edit-tool" id="btnMermaidAddSubgraph" type="button" title="Add subgraph"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Subgraph</span></button>
+        <button class="btn mermaid-edit-tool" id="btnMermaidAddNode" type="button" title="Add node"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Node</span></button>
+        <button class="btn mermaid-edit-tool" id="btnMermaidLink" type="button" title="Link mode: click source node, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
+        <button class="btn mermaid-edit-tool" id="btnMermaidDelete" type="button" title="Delete selected node, link, or subgraph" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
+      <div class="mindmap-edit-tools" aria-label="Mermaid mindmap editing">
+        <button class="btn mermaid-edit-tool" id="btnMindmapDelete" type="button" title="Delete selected node" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
+      <div class="state-edit-tools" aria-label="Mermaid state editing">
+        <button class="btn mermaid-edit-tool" id="btnStateAdd" type="button" title="Add state"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>State</span></button>
+        <button class="btn mermaid-edit-tool" id="btnStateAddGroup" type="button" title="Add group (composite)"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Group</span></button>
+        <button class="btn mermaid-edit-tool" id="btnStateAddStart" type="button" title="Select a state, then add start [*] → it"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Start</span></button>
+        <button class="btn mermaid-edit-tool" id="btnStateLink" type="button" title="Link mode: click source state, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
+        <button class="btn mermaid-edit-tool" id="btnStateDelete" type="button" title="Delete selected state, composite, or transition" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
+    </div>
+
+    <script src="./vendor/drawer-app-early-hydrate.js"></script>
+
+    <div id="preview-stage">
+      <div id="preview"></div>
+    </div>
+
+    <div class="float zoom-float">
+      <button class="btn" id="btnZoomOut">−</button>
+      <button class="btn" id="btnZoomReset">90%</button>
+      <button class="btn" id="btnZoomIn">+</button>
+      <span class="sep"></span>
+      <button class="btn" id="btnFit">Fit</button>
+    </div>
+  </main>
+
+  <aside class="board-dock" id="boardDock" data-open="" aria-label="Drawer panels">
+    <div class="board-dock-resize" id="boardDockResize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
+    <div class="board-dock-rail" role="tablist" aria-label="Drawer panels">
+      <button type="button" class="board-dock-tab" id="btnDockLayout" data-dock="layout" role="tab" aria-selected="false" title="Layout">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span class="board-dock-tab-label">Layout</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockProps" data-dock="props" data-dock-icon="inspector" role="tab" aria-selected="false" title="Properties">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="board-dock-tab-label">Properties</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockSource" data-dock="source" data-dock-icon="code" role="tab" aria-selected="false" title="Source">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4.25 2.75 8 6 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 4.25 13.25 8 10 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="board-dock-tab-label" id="sourceDockTabLabel">Source</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockExport" data-dock="export" data-dock-icon="export" role="tab" aria-selected="false" title="Export">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.25 2.75h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.25 2.75 7.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7.15 3.85H4.75A1.75 1.75 0 0 0 3 5.6v5.65A1.75 1.75 0 0 0 4.75 13h5.65A1.75 1.75 0 0 0 12.15 11.25V8.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="board-dock-tab-label">Export</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockStyle" data-dock="style" data-dock-icon="palette" role="tab" aria-selected="false" title="Style">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r="0.95" fill="currentColor"/><circle cx="8.35" cy="5.55" r="0.95" fill="currentColor"/><circle cx="10.85" cy="7.4" r="0.95" fill="currentColor"/></svg>
+        <span class="board-dock-tab-label">Style</span>
+      </button>
+    </div>
+    <div class="board-dock-panel" id="propsPanel" data-dock-panel="props" data-collapsed="true">
+      <div class="props-head">
+        <strong>Properties</strong>
+        <span class="props-kind" id="propsKindLabel">—</span>
+      </div>
+      <div class="props-empty" id="propsEmpty">Select a title, box, or item</div>
+      <div class="props-fields" id="propsFields" hidden>
+        <div class="props-field" id="boardIdWrap">
+          <label class="props-label" for="boardIdEditor" id="boardIdLabel" hidden>ID</label>
+          <div class="props-id-row" id="boardIdField" hidden>
+            <input id="boardIdEditor" type="text" spellcheck="false" autocomplete="off" autocapitalize="characters" aria-label="ID">
+            <button type="button" class="props-id-copy" id="boardIdCopy" title="Copy node ID" aria-label="Copy node ID" disabled>
+              <svg class="props-id-copy-icon props-id-copy-a" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8.25" y="8.25" width="10.5" height="12.5" rx="2" stroke="currentColor" stroke-width="1.75"/><path d="M6 16.25H5.25A2.25 2.25 0 0 1 3 14V5.25A2.25 2.25 0 0 1 5.25 3H14A2.25 2.25 0 0 1 16.25 5.25V6" stroke="currentColor" stroke-width="1.75"/></svg>
+              <svg class="props-id-copy-icon props-id-copy-b" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.6 4.5L19 7.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <p class="props-id-dup" id="boardIdDup" hidden>ID already used</p>
+        </div>
+        <div class="props-field" id="boardTypeField">
+          <label class="props-label" for="boardTypeEditor" id="boardTypeLabel">Type</label>
+          <select id="boardTypeEditor" aria-label="Type"></select>
+        </div>
+        <div class="props-field" id="boardShapeWrap">
+          <label class="props-label" id="boardShapeLabel" hidden>Shape</label>
+          <div class="props-seg props-shape-seg" id="boardShapeField" hidden role="group" aria-labelledby="boardShapeLabel">
+            <button type="button" class="props-seg-btn props-shape-btn" data-shape="rect" aria-pressed="true" title="rect" aria-label="rect">
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="17" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+            </button>
+            <button type="button" class="props-seg-btn props-shape-btn" data-shape="diamond" aria-pressed="false" title="diamond" aria-label="diamond">
+              <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><path d="M11 1.5L20 8L11 14.5L2 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="props-field" id="boardCapField" hidden>
+          <label class="props-label" for="boardCapEditor" id="boardCapLabel">Width Cap</label>
+          <div class="props-control">
+            <select id="boardCapEditor" aria-label="Width Cap">
+              <option value="on">on</option>
+              <option value="off">off</option>
+            </select>
+            <p class="props-hint props-hint-end" id="boardCapTip" hidden></p>
+          </div>
+        </div>
+        <div class="props-field" id="boardArrowWrap">
+          <label class="props-label" for="boardArrowEditor" id="boardArrowLabel" hidden>Arrow</label>
+          <div class="props-arrow-row" id="boardArrowField" hidden>
+            <select id="boardArrowEditor" aria-label="Arrow">
+              <option value="forward">-&gt;</option>
+              <option value="both">&lt;-&gt;</option>
+            </select>
+            <button type="button" class="props-arrow-reverse" id="boardArrowReverse" title="Reverse" aria-label="Reverse link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M8 7h11M8 7l-3 3M8 7l-3-3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 17H5M16 17l3-3M16 17l3 3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="boardIconField" hidden>
+          <label class="props-label" id="boardIconLabel">Icon</label>
+          <div class="props-seg" id="boardIconSec" role="group" aria-labelledby="boardIconLabel"></div>
+          <div class="props-icon-list" id="boardIconList" role="listbox" aria-labelledby="boardIconLabel"></div>
+        </div>
+        <div class="props-field" id="boardTitleField">
+          <label class="props-label" for="boardTitleEditor" id="boardTitleLabel">Title</label>
+          <textarea id="boardTitleEditor" rows="1" autocomplete="off" aria-label="Title or text"></textarea>
+        </div>
+        <div class="props-field" id="boardDirField">
+          <label class="props-label" for="boardDirEditor" id="boardDirLabel">Direction</label>
+          <div class="props-control">
+            <select id="boardDirEditor" aria-label="Direction">
+              <option value="row">row</option>
+              <option value="column">column</option>
+            </select>
+            <p class="props-hint props-hint-end" id="boardDirTip" hidden></p>
+          </div>
+        </div>
+        <div class="props-field" id="boardAlignField">
+          <label class="props-label" for="boardAlignEditor" id="boardAlignLabel" hidden>Align</label>
+          <div class="props-control">
+            <select id="boardAlignEditor" aria-label="Align" hidden>
+              <option value="start">start</option>
+              <option value="center">center</option>
+              <option value="stretch">stretch</option>
+            </select>
+            <p class="props-hint props-hint-end" id="boardAlignTip" hidden></p>
+          </div>
+        </div>
+        <div class="props-field" id="boardJustifyField">
+          <label class="props-label" for="boardJustifyEditor" id="boardJustifyLabel" hidden>Justify</label>
+          <div class="props-control">
+            <select id="boardJustifyEditor" aria-label="Justify" hidden>
+              <option value="start">start</option>
+              <option value="center">center</option>
+              <option value="stretch">stretch</option>
+            </select>
+            <p class="props-hint props-hint-end" id="boardJustifyTip" hidden></p>
+          </div>
+        </div>
+        <p class="props-hint" id="propsHint"></p>
+      </div>
+    </div>
+    <div class="board-dock-panel" id="layoutPanel" data-dock-panel="layout">
+      <div class="props-layout" id="propsLayout" aria-label="Layout settings">
+        <div class="props-layout-head"><span>Layout</span></div>
+        <p class="export-type-hint">Layout moved to the Style sidebar.</p>
+      </div>
+    </div>
+    <div class="board-dock-panel" id="panelBoard" data-dock-panel="source">
+      <div class="dock-source-head">
+        <div class="dock-source-identity">
+          <strong id="sourceDockTitle">Source</strong>
+          <span class="doc-ver" id="sourceDockVersion" hidden></span>
+        </div>
+        <div class="dock-source-actions">
+          <button type="button" class="btn" id="btnSourceCopyId" title="Copy ID" disabled>ID</button>
+          <button type="button" class="btn" id="btnSourceCopy" title="Copy Source">Source</button>
+        </div>
+      </div>
+      <div class="dock-source-body" data-source-mode="mermaid">
+        <div class="board-editor-wrap">
+          <textarea id="source" spellcheck="false" placeholder="Mermaid / C4 source…"></textarea>
+          <span class="source-chars" id="charsPill">0 chars</span>
+          <pre id="errorBox"></pre>
+        </div>
+        <section class="history-block" id="mermaidHistory" aria-label="Mermaid history">
+          <div class="history-head">
+            <strong>History</strong>
+            <button type="button" class="btn history-refresh" id="btnHistoryRefresh" title="Refresh history">Refresh</button>
+          </div>
+          <div class="history-combo" id="mermaidHistoryCombo">
+            <button type="button" class="history-combo-btn" id="mermaidHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="historyList" disabled>
+              <span class="history-combo-face" id="mermaidHistoryComboFace">No snapshots yet</span>
+              <span class="history-combo-chevron" aria-hidden="true"></span>
+            </button>
+            <ul class="history-list" id="historyList" role="listbox" hidden></ul>
+          </div>
+          <p class="history-empty" id="historyEmpty" hidden>No snapshots yet</p>
+        </section>
+      </div>
+      <div class="dock-source-body" data-source-mode="board">
+        <div class="board-editor-wrap">
+          <textarea id="boardSource" spellcheck="false" placeholder="board title / style / box / item / link / layout…"></textarea>
+          <span class="source-chars" id="boardCharsPill">0 chars</span>
+          <pre id="boardError"></pre>
+        </div>
+        <section class="history-block" id="boardHistory" aria-label="Board history">
+          <div class="history-head">
+            <strong>History</strong>
+            <button type="button" class="btn history-refresh" id="btnBoardHistoryRefresh" title="Refresh history">Refresh</button>
+          </div>
+          <div class="history-combo" id="boardHistoryCombo">
+            <button type="button" class="history-combo-btn" id="boardHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" disabled>
+              <span class="history-combo-face" id="boardHistoryComboFace">No snapshots yet</span>
+              <span class="history-combo-chevron" aria-hidden="true"></span>
+            </button>
+            <ul class="history-list" id="boardHistoryList" role="listbox" hidden></ul>
+          </div>
+          <p class="history-empty" id="boardHistoryEmpty" hidden>No snapshots yet</p>
+        </section>
+      </div>
+    </div>
+    <div class="board-dock-panel" id="exportPanel" data-dock-panel="export">
+      <div class="props-head">
+        <strong>Export</strong>
+      </div>
+      <div class="export-type-row" aria-label="Diagram type">
+        <span class="export-type-label">Type</span>
+        <span class="export-type-value" id="typePill"><b>—</b></span>
+      </div>
+      <p class="export-type-hint" id="exportTypeHint">Current diagram kind (read-only).</p>
+      <div class="export-actions" role="group" aria-label="Export actions">
+        <button type="button" class="btn" id="btnCanvasCopySrc" title="Copy absolute path of the current source file">Copy Path</button>
+        <button type="button" class="btn" id="btnCanvasDlPng" hidden>Export PNG</button>
+      </div>
+    </div>
+    <div class="board-dock-panel" id="stylePanel" data-dock-panel="style">
+      <div class="props-head">
+        <strong>Style</strong>
+      </div>
+      <section class="style-block" aria-label="Theme">
+        <p class="style-section-label">Theme</p>
+        <div class="style-theme-list" id="diagramThemeMenu" role="listbox" aria-label="Diagram theme">
+          <button type="button" class="btn style-theme-btn theme-item" data-theme="default" role="option">Default</button>
+          <button type="button" class="btn style-theme-btn theme-item" data-theme="classic" role="option">Classic</button>
+          <button type="button" class="btn style-theme-btn theme-item" data-theme="pastel" role="option">Pastel</button>
+          <button type="button" class="btn style-theme-btn theme-item" data-theme="kami" role="option">Kami</button>
+        </div>
+      </section>
+      <section class="style-block" id="boardFontSizeSection" hidden aria-label="Font size">
+        <p class="style-section-label">Font Size</p>
+        <div class="style-cap-row">
+          <input type="range" id="boardFontSizeSlider" min="-3" max="3" step="1" value="0" aria-label="Font size">
+        </div>
+        <p class="style-hint">Middle is default · non-default saves in source</p>
+      </section>
+      <section class="style-block" id="mindmapLayoutSection" hidden aria-label="Mindmap layout">
+        <p class="style-section-label">Layout</p>
+        <div class="props-seg" id="mindmapLayoutSeg" role="group" aria-label="Mindmap layout">
+          <button type="button" class="props-seg-btn" id="btnMindmapLayoutRadial" data-mindmap-layout="radial" aria-pressed="true" title="Center-radiating balanced map">Radial</button>
+          <button type="button" class="props-seg-btn" id="btnMindmapLayoutLogic" data-mindmap-layout="logic" aria-pressed="false" title="Left-to-right logic tree">Logic</button>
+        </div>
+        <p class="style-hint">Same source · choice is saved</p>
+      </section>
+      <section class="style-block" id="boardItemCapSection" hidden aria-label="Item cap">
+        <p class="style-section-label">Item cap</p>
+        <div class="style-cap-row">
+          <input type="range" id="boardItemCapSlider" min="8" max="24" step="1" value="16" aria-label="Item cap">
+        </div>
+        <p class="style-hint">Max width when cap is on · non-default saves in source</p>
+      </section>
+      <section class="style-block" id="boardLayoutSection" hidden aria-label="Board link">
+        <p class="style-section-label">Link</p>
+        <div class="props-seg props-route-seg" role="group" aria-label="Link route">
+          <button type="button" class="props-seg-btn" id="btnRouteStraight" data-route="straight" aria-pressed="false" title="Direct straight links">Straight</button>
+          <button type="button" class="props-seg-btn" id="btnRouteStagger" data-route="stagger" aria-pressed="true" title="Spread stagger routing">Stagger</button>
+          <button type="button" class="props-seg-btn" id="btnRouteTrunk" data-route="trunk" aria-pressed="false" title="Bundled trunk routing">Trunk</button>
+        </div>
+        <p class="style-hint">Saved with the board</p>
+      </section>
+    </div>
+  </aside>
+
+</div>
+
+<script src="./vendor/mermaid.min.js"></script>
+<script src="./vendor/layout-elk.min.js"></script>
+<script src="./vendor/board.min.js"></script>
+<script src="./vendor/mermaid-themes.min.js"></script>
+<script src="./vendor/flowchart.min.js"></script>
+<script src="./vendor/mindmap.min.js"></script>
+<script src="./vendor/state.min.js"></script>
+<script src="./vendor/drawer-app-mermaid-alias.js"></script>
+<script type="module" src="./vendor/drawer-app.js"></script>
+
+<div class="copy-tip" id="copyTip" hidden>Copied successfully</div>
+</body>
+</html>

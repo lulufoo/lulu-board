@@ -1,0 +1,36 @@
+meta eyJpZCI6ImJfMGZjMTAwMDIiLCJ2ZXJzaW9uIjoxfQ==
+# Built-in Demo. icon <n> and box-face <n> come from board/common/icons.json.
+
+board "Demo"
+
+box IN 501 "Inbox"
+  item type text "from source"
+  item Raw
+  item type note "# Check\n- Quote **must** match.\n- Use `version` from meta."
+  item Flag type icon 502 "rejected"
+
+box WORK type container "Work"
+  box STEP "Process"
+    item Run
+  box ROW type layout
+    item HOLD "Hold"
+
+item GATE shape diamond "Ready?"
+
+box OUT "Outbox"
+  item Result
+
+IN -> GATE title "ask"
+GATE -> STEP title "go"
+IN <-> OUT title "sync"
+GATE -> OUT type dashed title "skip"
+
+layout
+  direction ROW row
+  align IN start
+  arrange WORK after IN
+  arrange GATE after WORK
+  arrange OUT after GATE
+  flush IN, OUT top
+  pin OUT.start to GATE.end 32
+  pin IN.start to parent.start 24

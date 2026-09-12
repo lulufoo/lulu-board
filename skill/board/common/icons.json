@@ -1,0 +1,266 @@
+{
+  "sections": [
+    {
+      "id": "shapes",
+      "label": "Shapes",
+      "digit": 0,
+      "icons": [
+        {
+          "n": 1,
+          "gloss": "Circle"
+        },
+        {
+          "n": 2,
+          "gloss": "Square"
+        },
+        {
+          "n": 3,
+          "gloss": "Triangle"
+        },
+        {
+          "n": 4,
+          "gloss": "Hexagon"
+        },
+        {
+          "n": 5,
+          "gloss": "Arrow"
+        },
+        {
+          "n": 6,
+          "gloss": "Plus"
+        },
+        {
+          "n": 7,
+          "gloss": "Minus"
+        },
+        {
+          "n": 8,
+          "gloss": "Dot"
+        },
+        {
+          "n": 9,
+          "gloss": "Cloud"
+        }
+      ]
+    },
+    {
+      "id": "process",
+      "label": "Process",
+      "digit": 1,
+      "icons": [
+        {
+          "n": 101,
+          "gloss": "Steps"
+        },
+        {
+          "n": 102,
+          "gloss": "Pause"
+        },
+        {
+          "n": 103,
+          "gloss": "Play"
+        },
+        {
+          "n": 104,
+          "gloss": "Enter"
+        },
+        {
+          "n": 105,
+          "gloss": "Exit"
+        },
+        {
+          "n": 106,
+          "gloss": "Upload"
+        },
+        {
+          "n": 107,
+          "gloss": "Download"
+        },
+        {
+          "n": 108,
+          "gloss": "Edit"
+        },
+        {
+          "n": 109,
+          "gloss": "Delete"
+        }
+      ]
+    },
+    {
+      "id": "people",
+      "label": "People",
+      "digit": 2,
+      "icons": [
+        {
+          "n": 201,
+          "gloss": "Person"
+        },
+        {
+          "n": 202,
+          "gloss": "Team"
+        },
+        {
+          "n": 203,
+          "gloss": "Crowd"
+        },
+        {
+          "n": 204,
+          "gloss": "Invite"
+        },
+        {
+          "n": 205,
+          "gloss": "Home"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "label": "Content",
+      "digit": 3,
+      "icons": [
+        {
+          "n": 301,
+          "gloss": "Document"
+        },
+        {
+          "n": 302,
+          "gloss": "Note"
+        },
+        {
+          "n": 303,
+          "gloss": "File"
+        },
+        {
+          "n": 304,
+          "gloss": "Folder"
+        },
+        {
+          "n": 305,
+          "gloss": "List"
+        },
+        {
+          "n": 306,
+          "gloss": "Book"
+        },
+        {
+          "n": 307,
+          "gloss": "Image"
+        },
+        {
+          "n": 308,
+          "gloss": "Table"
+        },
+        {
+          "n": 309,
+          "gloss": "Box"
+        }
+      ]
+    },
+    {
+      "id": "tech",
+      "label": "Tech",
+      "digit": 4,
+      "icons": [
+        {
+          "n": 401,
+          "gloss": "Loop"
+        },
+        {
+          "n": 402,
+          "gloss": "Git"
+        },
+        {
+          "n": 403,
+          "gloss": "Server"
+        },
+        {
+          "n": 404,
+          "gloss": "Database"
+        },
+        {
+          "n": 405,
+          "gloss": "Code"
+        },
+        {
+          "n": 406,
+          "gloss": "Terminal"
+        }
+      ]
+    },
+    {
+      "id": "marks",
+      "label": "Marks",
+      "digit": 5,
+      "icons": [
+        {
+          "n": 501,
+          "gloss": "Correct"
+        },
+        {
+          "n": 502,
+          "gloss": "Wrong"
+        },
+        {
+          "n": 503,
+          "gloss": "Warn"
+        },
+        {
+          "n": 504,
+          "gloss": "Info"
+        },
+        {
+          "n": 505,
+          "gloss": "Question"
+        },
+        {
+          "n": 506,
+          "gloss": "Star"
+        },
+        {
+          "n": 507,
+          "gloss": "Flag"
+        },
+        {
+          "n": 508,
+          "gloss": "Clock"
+        },
+        {
+          "n": 509,
+          "gloss": "Search"
+        },
+        {
+          "n": 510,
+          "gloss": "Bell"
+        },
+        {
+          "n": 511,
+          "gloss": "Link"
+        },
+        {
+          "n": 512,
+          "gloss": "Lock"
+        },
+        {
+          "n": 513,
+          "gloss": "Key"
+        },
+        {
+          "n": 514,
+          "gloss": "Funnel"
+        },
+        {
+          "n": 515,
+          "gloss": "Tag"
+        },
+        {
+          "n": 516,
+          "gloss": "Refresh"
+        },
+        {
+          "n": 517,
+          "gloss": "Sliders"
+        }
+      ]
+    }
+  ]
+}

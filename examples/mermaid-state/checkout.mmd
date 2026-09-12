@@ -1,0 +1,12 @@
+%% meta eyJpZCI6Im1fNzcxYWI5ZjYiLCJ2ZXJzaW9uIjoyOH0=
+%% style eyJ0aGVtZSI6InBhc3RlbCJ9
+%% Example: compact checkout UI state
+stateDiagram-v2
+  direction LR
+
+  [*] --> Idle
+  Idle --> Cart : open
+  Cart --> Paying : pay
+  Paying --> Done : ok
+  Paying --> Cart : fail
+  Done --> [*]

@@ -1,0 +1,52 @@
+meta eyJpZCI6ImJfMGZjMTAwMDEiLCJ2ZXJzaW9uIjo0NH0=
+board "Lulu Board"
+style eyJ0aGVtZSI6ImNsYXNzaWMiLCJsaW5rX3JvdXRlIjoic3RhZ2dlciJ9
+box HERO type layout
+  item type icon 515
+  box COPY type layout
+    item type text "# Welcome to Lulu Board！\n## One text. One canvas. You and AI."
+box C1 type container "① Write"
+  item type note "`box LOGIN 512 \"Login\"`\n`box HOME 205 \"Home\"`\n`LOGIN -> HOME title \"success\"`"
+  item type text "One text describes structure, relations and layout. It reads plainly, to you and to AI."
+box C2 type container "② See"
+  box C2ROW type layout
+    box LOGIN 512 "Login"
+    box HOME 205 "Home"
+  item type text "The canvas is that text, drawn. Change either side and the other follows; every version stays in History."
+box C3 type container "③ Edit"
+  box C3COL type layout
+    box LOGIN2 512 "Login"
+    box HOME2 205 "Home"
+  item type note "`align C3COL stretch`"
+  item type text "Align is a layout line in the source. Change it and the children shift; layout lives in the text."
+box C4 type container "④ Ask"
+  box C4YOU type layout
+    item type icon 201 "You"
+    item "drag, edit, link"
+  box C4AI type layout
+    item type icon 406 "AI"
+    item "/board login flow"
+  item type note "`box LOGIN 512 \"Login\"`\n`box HOME 205 \"Home\"`\n`LOGIN -> HOME title \"success\"`"
+  item type text "You and AI write the same text. Ask for a flow, then edit the result by hand; nobody overwrites anybody."
+LOGIN -> HOME title "success"
+LOGIN2 -> HOME2
+layout
+  direction HERO, C2ROW, C4YOU, C4AI row
+  align C2ROW, COPY start
+  align HERO, C4YOU, C4AI, C2 center
+  align C3COL stretch
+  justify C2ROW, C2, C3COL stretch
+  arrange C1 below HERO
+  arrange C3 below C1, C2
+  arrange C4 after C3
+  flush C1, C2 top
+  flush C1, C2 bottom
+  flush C3, C4 top
+  flush C3, C4 bottom
+  flush C4 top
+  flush C2, C4 left
+  flush HERO, C1, C3 left
+  pin HERO.start to parent.start 39
+  pin HERO.top to parent.top 36
+  pin C2.start to parent.start 421
+  pin C2.top to parent.top 126

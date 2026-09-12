@@ -1,0 +1,48 @@
+'use strict';
+const assert = require('assert');
+const View = require('../../../packages/board/view/board-view.js');
+global.BoardView = View;
+const Layout = require('../../../packages/board/engine/board-layout.js');
+global.BoardLayout = Layout;
+const Render = require('../../../packages/board/engine/board-render.js');
+
+{
+  const board = Render.parse(
+    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n'
+  );
+  assert.strictEqual(board.layout.aligns[0].edge, 'top');
+  assert.deepStrictEqual(board.layout.aligns[0].ids, ['A', 'B']);
+  const out = Render.serialize(board);
+  assert.ok(out.includes('flush A, B top'), out);
+}
+
+{
+  let threw = false;
+  try {
+    Render.parse('board Demo\nbox A "A"\nbox B "B"\nlayout\n  align A, B bottom\n');
+  } catch (err) {
+    threw = /align value must be start/.test(String(err.message));
+  }
+  assert.ok(threw, 'align rejects board edges');
+}
+
+{
+  const board = Render.parse(
+    'board Demo\nbox A "A"\nlayout\n  align A start\n'
+  );
+  assert.strictEqual(board.layout.boxes.A.align, 'start');
+  const out = Render.serialize(board);
+  assert.ok(out.includes('align A start'), out);
+}
+
+{
+  let threw = false;
+  try {
+    Render.parse('board Demo\nbox A "A"\nlayout\n  flush A start\n');
+  } catch (err) {
+    threw = /flush edge must be top/.test(String(err.message));
+  }
+  assert.ok(threw, 'flush rejects box-align values');
+}
+
+console.log('ok flush-keyword');

@@ -1,0 +1,50 @@
+meta eyJpZCI6ImJfN2JhY2M2NjYiLCJ2ZXJzaW9uIjoxMH0=
+board "Android MVI"
+style eyJ0aGVtZSI6InBhc3RlbCIsImxpbmtfcm91dGUiOiJzdGFnZ2VyIiwidHlwZV9zdGVwIjozfQ==
+box VIEW 205 "View"
+  item type text "Compose UI / Activity / Fragment"
+  item Render "Collect `State` and render"
+  item Handle "Consume `SideEffect` once"
+box PRES type container "Presentation"
+  box INTENT 104 "MVI Intent"
+    item type text "user action as data"
+    item type note "Not `android.content.Intent`"
+    item Actions "click · type · refresh"
+  box STORE 405 "ViewModel"
+    item type text "one store per screen"
+    item Process "Handle `Intent`"
+    item Reduce "Reduce → new `State`"
+  box STATE 309 "State"
+    item type text "immutable UI snapshot"
+    item Fields "loading · data · error"
+  box EFFECT 510 "SideEffect"
+    item type text "one-shot event"
+    item Once "navigate · toast · snackbar"
+box MODEL 403 "Model"
+  box USECASE 101 "UseCase"
+    item Domain "domain action"
+  box REPO 304 "Repository"
+    item Gate "data policy"
+  box APIC type container "API"
+    item API type icon 403
+  box DBC type container "DB"
+    item DB type icon 404
+VIEW -> INTENT title "emit"
+INTENT -> STORE title "handle"
+STORE -> STATE title "reduce"
+STATE -> VIEW title "render"
+STORE -> EFFECT title "emit"
+EFFECT -> VIEW type dashed title "one-shot"
+STORE -> USECASE title "invoke"
+USECASE -> REPO title "ask"
+REPO -> API title "remote"
+REPO -> DB title "local"
+USECASE -> STORE type dashed title "result → Intent"
+layout
+  direction PRES, MODEL row
+  pin VIEW.start to parent.start 495
+  pin VIEW.top to parent.top -2
+  pin PRES.start to parent.start 112
+  pin PRES.top to VIEW.bottom 32
+  pin MODEL.start to parent.start 344
+  pin MODEL.top to parent.top 701
