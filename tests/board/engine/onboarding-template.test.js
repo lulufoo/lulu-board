@@ -39,7 +39,7 @@ assert.ok(src.includes('A compact protocol'), src);
 assert.ok(!src.includes('Same text'), src);
 // The loop is drawn as relations, not as prose.
 const out = Render.serialize(board);
-assert.ok(out.includes('AI <-> CANVAS title "writes"'), out);
+assert.ok(out.includes('AI <-> PROTO title "writes"'), out);
 assert.ok(out.includes('CANVAS <-> YOU title "on canvas"'), out);
 assert.ok(out.includes('CANVAS <-> PROTO title "in sync"'), out);
 assert.ok(out.includes('LOGIN -> HOME title "success"'), out);

@@ -23,7 +23,7 @@ box PROTO type container "A compact protocol"
       item type text cap off "`item`  leaf"
       item type text cap off "`->`  link"
 LOGIN -> HOME title "success"
-AI <-> CANVAS title "writes"
+AI <-> PROTO title "writes"
 CANVAS <-> YOU title "on canvas"
 CANVAS <-> PROTO title "in sync"
 layout
