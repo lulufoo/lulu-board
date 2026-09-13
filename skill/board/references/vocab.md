@@ -8,7 +8,7 @@ A Board document has an envelope plus these layers:
 | Structure | `board`, `box`, `item` | Define nodes and containment |
 | Style | `style <base64>` | Stash; omit when minting; leave unchanged |
 | Relation | `A -> B`, `A <-> B` | Connect nodes semantically |
-| Layout | `layout` | Position nodes relative to one another |
+| Layout | `layout` | Position nodes (`arrange`, `flush`, `pin`) |
 
 ## Common syntax
 
@@ -100,8 +100,9 @@ nodes.
 
 ## Layout
 
-Put layout statements under one `layout` section. Layout expresses relative
-intent, never absolute coordinates.
+Put layout statements under one `layout` section. Layout is constraints:
+`arrange` / `flush` among nodes; `pin` binds two edges (a node or the `parent`
+frame). `N` on a pin is the gap.
 
 Every layout statement starts with a keyword. Keywords are lowercase; IDs are
 uppercase. Several ids that share a value may be listed in one statement.
@@ -143,13 +144,13 @@ up top-level nodes on a shared edge. Pair `top` with `bottom` on the same ids
 to stretch those nodes to the tallest.
 
 `edge` is `start`, `end`, `top`, or `bottom`. `parent` is the board frame.
-`N` is the gap; omit it when the edges should meet. Use a pin when arrange
-cannot express the required edge binding.
+`N` is the gap; omit it when the edges should meet. `arrange` is a coarse side;
+`flush` shares an edge; `pin` binds two edges.
 
 ## Protocol boundary
 
-Author structure, relations, and relative layout. A `meta <base64>` or
+Author structure, relations, and layout. A `meta <base64>` or
 `style <base64>` line is stash: omit when minting; leave it unchanged if
-present; do not add, decode, or edit it.
+present; do not add, decode, or edit it. `pin` is layout, not stash.
 
-Absolute coordinates and freehand drawing stay out of this protocol.
+Node `x` / `y` / size fields and freehand drawing stay out of this protocol.

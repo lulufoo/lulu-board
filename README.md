@@ -12,7 +12,7 @@
 
 ---
 
-One text protocol for diagrams — AI writes it, Lulu Drawer draws it, you work on the canvas; both stay in sync. A local loop for Cursor (and other Agent Skills hosts), with Board and Mermaid in the same Drawer.
+One text protocol for diagrams — the agent writes it, Lulu Drawer draws it, you work on the canvas; both stay in sync. A local loop — Board and Mermaid in the same Drawer.
 
 | Mode | Product | Source ID |
 |---|---|---|
@@ -65,7 +65,7 @@ The agent authors the source and opens the Drawer. From there you can drag and e
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
-    <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI in Cursor" width="720" />
+    <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI" width="720" />
   </a>
 </p>
 
