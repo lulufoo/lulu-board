@@ -145,7 +145,7 @@ Places one node on a coarse side of the union of its targets.
 #### flush
 
 ```text
-flush <id>, <id>[, <id>…] top|bottom|left|right
+flush <id>, <id>[, <id>…] start|end|top|bottom
 ```
 
 Lines up nodes on a shared edge. Pair `top` with `bottom` on the same ids to

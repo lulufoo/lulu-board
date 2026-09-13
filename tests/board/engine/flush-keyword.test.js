@@ -36,11 +36,33 @@ const Render = require('../../../packages/board/engine/board-render.js');
 }
 
 {
+  const board = Render.parse(
+    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B start\n'
+  );
+  assert.strictEqual(board.layout.aligns[0].edge, 'start');
+  const out = Render.serialize(board);
+  assert.ok(out.includes('flush A, B start'), out);
+}
+
+{
+  // Legacy left / right still parse and serialize as start / end.
+  const board = Render.parse(
+    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B left\n  flush A, B right\n'
+  );
+  assert.strictEqual(board.layout.aligns[0].edge, 'start');
+  assert.strictEqual(board.layout.aligns[1].edge, 'end');
+  const out = Render.serialize(board);
+  assert.ok(out.includes('flush A, B start'), out);
+  assert.ok(out.includes('flush A, B end'), out);
+  assert.ok(!/flush .* (left|right)/.test(out), out);
+}
+
+{
   let threw = false;
   try {
-    Render.parse('board Demo\nbox A "A"\nlayout\n  flush A start\n');
+    Render.parse('board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B center\n');
   } catch (err) {
-    threw = /flush edge must be top/.test(String(err.message));
+    threw = /flush edge must be start, end, top, or bottom/.test(String(err.message));
   }
   assert.ok(threw, 'flush rejects box-align values');
 }

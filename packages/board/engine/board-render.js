@@ -564,9 +564,11 @@
     }
     if (first === 'flush') {
       if (tokens.length < 2) fail('flush needs a value', lineNo);
-      const edge = tokens[tokens.length - 1].toLowerCase();
+      const rawEdge = tokens[tokens.length - 1].toLowerCase();
+      // `left` / `right` are legacy spellings; the protocol edge vocabulary is start / end / top / bottom.
+      const edge = rawEdge === 'left' ? 'start' : rawEdge === 'right' ? 'end' : rawEdge;
       const ids = commaIds(tokens.slice(1, -1), lineNo, 'flush id');
-      if (!['top', 'bottom', 'left', 'right'].includes(edge)) fail('flush edge must be top, bottom, left, or right', lineNo);
+      if (!['start', 'end', 'top', 'bottom'].includes(edge)) fail('flush edge must be start, end, top, or bottom', lineNo);
       if (!ids.length) fail('flush needs ids and an edge', lineNo);
       board.layout.aligns.push({ ids, edge, line: lineNo });
       return;

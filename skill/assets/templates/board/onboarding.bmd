@@ -38,7 +38,7 @@ layout
   arrange YOU after CANVAS
   flush AI, CANVAS, YOU top
   flush AI, CANVAS, YOU bottom
-  flush HERO, AI left
+  flush HERO, AI start
   pin HERO.start to parent.start 40
   pin HERO.top to parent.top 36
   pin CANVAS.start to AI.end 56
