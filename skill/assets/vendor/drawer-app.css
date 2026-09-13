@@ -921,7 +921,6 @@ html[data-drawer-mode="mermaid"] g.node.mermaid-link-source { filter: drop-shado
   color: var(--muted, #64748b);
   font-weight: 650;
   letter-spacing: .04em;
-  text-transform: uppercase;
 }
 .style-theme-list {
   display: grid;
