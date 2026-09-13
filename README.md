@@ -50,7 +50,7 @@ Describe what you want after `/board` or `/mermaid`:
 ```
 
 ```text
-/mermaid Checkout flow as a state diagram: Idle → Cart → Checkout → Paying.
+/mermaid Draw a checkout state diagram for me.
 ```
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
