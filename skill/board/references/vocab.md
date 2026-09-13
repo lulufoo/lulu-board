@@ -101,8 +101,8 @@ nodes.
 ## Layout
 
 Put layout statements under one `layout` section. Layout is constraints:
-`arrange` / `flush` among nodes; `pin` binds two edges (a node or the `parent`
-frame). `N` on a pin is the gap.
+`arrange` / `flush` relate nodes; `pin` binds two edges of nodes or of the
+`parent` frame.
 
 Every layout statement starts with a keyword. Keywords are lowercase; IDs are
 uppercase. Several ids that share a value may be listed in one statement.
@@ -131,26 +131,45 @@ Omit a statement when it only restates the default.
 ### On the board
 
 These statements place top-level nodes relative to one another or to the board
-frame.
+frame. Draft with `arrange` and `flush`; pin only where an exact distance
+carries meaning.
+
+#### arrange
 
 ```text
 arrange <id> after|before|left-of|right-of|above|below <id>[, <id>…]
+```
+
+Places one node on a coarse side of the union of its targets.
+
+#### flush
+
+```text
 flush <id>, <id>[, <id>…] top|bottom|left|right
+```
+
+Lines up nodes on a shared edge. Pair `top` with `bottom` on the same ids to
+stretch them to the tallest.
+
+#### pin
+
+```text
 pin <id>.<edge> to <id|parent>.<edge> [N]
 ```
 
-`arrange` places one node relative to the union of its targets. `flush` lines
-up top-level nodes on a shared edge. Pair `top` with `bottom` on the same ids
-to stretch those nodes to the tallest.
+Binds two edges. `edge` is `start`, `end`, `top`, or `bottom`; `parent` is the
+board frame. `N` is the distance between the edges, negative allowed; omit it
+when they meet.
 
-`edge` is `start`, `end`, `top`, or `bottom`. `parent` is the board frame.
-`N` is the gap; omit it when the edges should meet. `arrange` is a coarse side;
-`flush` shares an edge; `pin` binds two edges.
+Pin `start` and `top` to `parent` to place a node; add `end` or `bottom` to fix
+its size. A pin wins over `arrange` on its axis. Dragging a node on the canvas
+rewrites it as `parent` pins and drops its `arrange` lines.
 
 ## Protocol boundary
 
 Author structure, relations, and layout. A `meta <base64>` or
 `style <base64>` line is stash: omit when minting; leave it unchanged if
-present; do not add, decode, or edit it. `pin` is layout, not stash.
+present; do not add, decode, or edit it.
 
-Node `x` / `y` / size fields and freehand drawing stay out of this protocol.
+Position and size live only in `layout`. Node-line `x` / `y` / size fields
+and freehand drawing stay out of this protocol.
