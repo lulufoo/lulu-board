@@ -295,13 +295,38 @@ function appendHistoryMetaLine(meta, item) {
     meta.appendChild(document.createTextNode(when));
   }
 }
+function historyPop(combo) {
+  return combo && combo.querySelector(".history-pop");
+}
+function filterHistoryCombo(combo) {
+  if (!combo) return;
+  var input = combo.querySelector(".history-search");
+  var q = String(input && input.value || "").trim().toLowerCase();
+  var list = combo.querySelector(".history-list");
+  if (!list) return;
+  list.querySelectorAll(".history-item").forEach(function(li) {
+    if (!q) { li.hidden = false; return; }
+    var hay = [
+      li.dataset.historyTitle,
+      li.dataset.historyId,
+      li.dataset.historyKind,
+      li.dataset.historyName,
+      li.textContent
+    ].join(" ").toLowerCase();
+    li.hidden = hay.indexOf(q) < 0;
+  });
+  list.scrollTop = 0;
+}
 function closeHistoryCombo(combo) {
   if (!combo) return;
   combo.classList.remove("is-open");
   var btn = combo.querySelector(".history-combo-btn");
-  var list = combo.querySelector(".history-list");
+  var pop = historyPop(combo);
+  var input = combo.querySelector(".history-search");
   if (btn) btn.setAttribute("aria-expanded", "false");
-  if (list) list.hidden = true;
+  if (pop) pop.hidden = true;
+  if (input) input.value = "";
+  filterHistoryCombo(combo);
 }
 function closeAllHistoryCombos() {
   document.querySelectorAll(".history-combo.is-open").forEach(closeHistoryCombo);
@@ -313,10 +338,14 @@ function openHistoryCombo(combo) {
   });
   combo.classList.add("is-open");
   var btn = combo.querySelector(".history-combo-btn");
+  var pop = historyPop(combo);
   var list = combo.querySelector(".history-list");
+  var input = combo.querySelector(".history-search");
   if (btn) btn.setAttribute("aria-expanded", "true");
-  if (list) list.hidden = false;
-  var active = list && list.querySelector(".history-item.is-active");
+  if (pop) pop.hidden = false;
+  filterHistoryCombo(combo);
+  if (input) requestAnimationFrame(function() { input.focus(); input.select(); });
+  var active = list && list.querySelector(".history-item.is-active:not([hidden])");
   if (active && active.scrollIntoView) {
     void list.offsetHeight;
     active.scrollIntoView({ block: "center" });
@@ -367,6 +396,12 @@ function wireHistoryCombos() {
       if (combo.classList.contains("is-open")) closeHistoryCombo(combo);
       else openHistoryCombo(combo);
     });
+    var search = combo.querySelector(".history-search");
+    if (search) {
+      search.addEventListener("input", function() { filterHistoryCombo(combo); });
+      search.addEventListener("search", function() { filterHistoryCombo(combo); });
+      search.addEventListener("click", function(ev) { ev.stopPropagation(); });
+    }
   });
   document.addEventListener("click", function(ev) {
     var hit = ev.target && ev.target.closest && ev.target.closest(".history-combo");
@@ -467,6 +502,7 @@ async function refreshMermaidHistory() {
     });
     list.innerHTML = "";
     list.appendChild(frag);
+    filterHistoryCombo(combo);
     setHistoryComboFace(combo, activeItem || items[0], "diagram");
     if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
       requestAnimationFrame(function() {
@@ -640,6 +676,7 @@ async function refreshBoardHistory() {
     });
     list.innerHTML = "";
     list.appendChild(frag);
+    filterHistoryCombo(combo);
     setHistoryComboFace(combo, activeItem || items[0], "board");
     if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
       requestAnimationFrame(function() {

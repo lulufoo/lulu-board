@@ -4849,13 +4849,38 @@ function appendHistoryMetaLine(meta, item) {
     meta.appendChild(document.createTextNode(when));
   }
 }
+function historyPop(combo) {
+  return combo && combo.querySelector(".history-pop");
+}
+function filterHistoryCombo(combo) {
+  if (!combo) return;
+  var input = combo.querySelector(".history-search");
+  var q = String(input && input.value || "").trim().toLowerCase();
+  var list = combo.querySelector(".history-list");
+  if (!list) return;
+  list.querySelectorAll(".history-item").forEach(function(li) {
+    if (!q) { li.hidden = false; return; }
+    var hay = [
+      li.dataset.historyTitle,
+      li.dataset.historyId,
+      li.dataset.historyKind,
+      li.dataset.historyName,
+      li.textContent
+    ].join(" ").toLowerCase();
+    li.hidden = hay.indexOf(q) < 0;
+  });
+  list.scrollTop = 0;
+}
 function closeHistoryCombo(combo) {
   if (!combo) return;
   combo.classList.remove("is-open");
   var btn = combo.querySelector(".history-combo-btn");
-  var list = combo.querySelector(".history-list");
+  var pop = historyPop(combo);
+  var input = combo.querySelector(".history-search");
   if (btn) btn.setAttribute("aria-expanded", "false");
-  if (list) list.hidden = true;
+  if (pop) pop.hidden = true;
+  if (input) input.value = "";
+  filterHistoryCombo(combo);
 }
 function closeAllHistoryCombos() {
   document.querySelectorAll(".history-combo.is-open").forEach(closeHistoryCombo);
@@ -4867,10 +4892,14 @@ function openHistoryCombo(combo) {
   });
   combo.classList.add("is-open");
   var btn = combo.querySelector(".history-combo-btn");
+  var pop = historyPop(combo);
   var list = combo.querySelector(".history-list");
+  var input = combo.querySelector(".history-search");
   if (btn) btn.setAttribute("aria-expanded", "true");
-  if (list) list.hidden = false;
-  var active = list && list.querySelector(".history-item.is-active");
+  if (pop) pop.hidden = false;
+  filterHistoryCombo(combo);
+  if (input) requestAnimationFrame(function() { input.focus(); input.select(); });
+  var active = list && list.querySelector(".history-item.is-active:not([hidden])");
   if (active && active.scrollIntoView) {
     void list.offsetHeight;
     active.scrollIntoView({ block: "center" });
@@ -4921,6 +4950,12 @@ function wireHistoryCombos() {
       if (combo.classList.contains("is-open")) closeHistoryCombo(combo);
       else openHistoryCombo(combo);
     });
+    var search = combo.querySelector(".history-search");
+    if (search) {
+      search.addEventListener("input", function() { filterHistoryCombo(combo); });
+      search.addEventListener("search", function() { filterHistoryCombo(combo); });
+      search.addEventListener("click", function(ev) { ev.stopPropagation(); });
+    }
   });
   document.addEventListener("click", function(ev) {
     var hit = ev.target && ev.target.closest && ev.target.closest(".history-combo");
@@ -5021,6 +5056,7 @@ async function refreshMermaidHistory() {
     });
     list.innerHTML = "";
     list.appendChild(frag);
+    filterHistoryCombo(combo);
     setHistoryComboFace(combo, activeItem || items[0], "diagram");
     if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
       requestAnimationFrame(function() {
@@ -5194,6 +5230,7 @@ async function refreshBoardHistory() {
     });
     list.innerHTML = "";
     list.appendChild(frag);
+    filterHistoryCombo(combo);
     setHistoryComboFace(combo, activeItem || items[0], "board");
     if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
       requestAnimationFrame(function() {
@@ -6931,3 +6968,100 @@ setInterval(() => { void loadPolled(); void loadBoardPolled(); }, 1500);
   void refreshBoardHistory();
 })();
 
+
+/* === 08-source-lines.js === */
+/* Logical line numbers beside #source and #boardSource. Wrapped display still one number. */
+function sourceLineTwin() {
+  var el = document.querySelector(".source-line-twin");
+  if (el) return el;
+  el = document.createElement("textarea");
+  el.className = "source-line-twin";
+  el.tabIndex = -1;
+  el.setAttribute("aria-hidden", "true");
+  document.body.appendChild(el);
+  return el;
+}
+function sourceLineHeights(textarea) {
+  var cs = getComputedStyle(textarea);
+  var padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  var min = parseFloat(cs.lineHeight);
+  if (!Number.isFinite(min) || min < 8) min = 19;
+  var twin = sourceLineTwin();
+  twin.style.boxSizing = cs.boxSizing;
+  twin.style.width = textarea.clientWidth + "px";
+  twin.style.font = cs.font;
+  twin.style.lineHeight = cs.lineHeight;
+  twin.style.letterSpacing = cs.letterSpacing;
+  twin.style.wordSpacing = cs.wordSpacing;
+  twin.style.tabSize = cs.tabSize;
+  twin.style.padding = cs.padding;
+  twin.style.border = "0";
+  twin.style.whiteSpace = cs.whiteSpace;
+  twin.style.overflowWrap = cs.overflowWrap;
+  twin.style.wordBreak = cs.wordBreak;
+  var lines = String(textarea.value).split("\n");
+  var heights = [];
+  var i;
+  for (i = 0; i < lines.length; i++) {
+    twin.value = lines[i].length ? lines[i] : " ";
+    heights.push(Math.max(min, twin.scrollHeight - padY));
+  }
+  return heights;
+}
+function renderSourceGutter(gutter, heights) {
+  var inner = gutter.querySelector(".source-gutter-inner");
+  if (!inner) {
+    inner = document.createElement("div");
+    inner.className = "source-gutter-inner";
+    gutter.appendChild(inner);
+  }
+  var n = heights.length;
+  var digits = String(Math.max(1, n)).length;
+  gutter.style.minWidth = (Math.max(2, digits) + 1.6) + "ch";
+  var html = "";
+  var i;
+  for (i = 0; i < n; i++) {
+    html += "<div class=\"source-gutter-line\" style=\"height:" + heights[i] + "px\">" + (i + 1) + "</div>";
+  }
+  inner.innerHTML = html;
+}
+function refreshSourceLineEditor(textarea, gutter) {
+  if (!textarea || !gutter || textarea.clientWidth < 8) return;
+  renderSourceGutter(gutter, sourceLineHeights(textarea));
+  gutter.scrollTop = textarea.scrollTop;
+}
+function wireSourceLineEditor(textarea) {
+  if (!textarea || textarea.dataset.sourceLinesWired === "1") return;
+  var wrap = textarea.closest(".source-line-editor");
+  var gutter = wrap && wrap.querySelector(".source-gutter");
+  if (!wrap || !gutter) return;
+  textarea.dataset.sourceLinesWired = "1";
+  var ticking = false;
+  var refresh = function() {
+    ticking = false;
+    refreshSourceLineEditor(textarea, gutter);
+  };
+  var schedule = function() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(refresh);
+  };
+  textarea.addEventListener("input", schedule);
+  textarea.addEventListener("scroll", function() { gutter.scrollTop = textarea.scrollTop; });
+  if (typeof ResizeObserver === "function") {
+    var ro = new ResizeObserver(schedule);
+    ro.observe(textarea);
+    ro.observe(wrap);
+  }
+  var desc = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value");
+  if (desc && desc.set && desc.get) {
+    Object.defineProperty(textarea, "value", {
+      configurable: true,
+      get: function() { return desc.get.call(this); },
+      set: function(next) { desc.set.call(this, next); schedule(); }
+    });
+  }
+  schedule();
+}
+wireSourceLineEditor(typeof sourceEl !== "undefined" ? sourceEl : document.getElementById("source"));
+wireSourceLineEditor(typeof boardSourceEl !== "undefined" ? boardSourceEl : document.getElementById("boardSource"));

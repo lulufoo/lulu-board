@@ -68,6 +68,7 @@ const domain = [
   '05-export-png.js',
   '06-view-sequence.js',
   '07-chrome-boot.js',
+  '08-source-lines.js',
 ];
 const parts = domain.map((f) => {
   const p = path.join(jsDir, f);

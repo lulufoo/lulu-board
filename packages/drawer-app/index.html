@@ -236,7 +236,10 @@
       </div>
       <div class="dock-source-body" data-source-mode="mermaid">
         <div class="board-editor-wrap">
-          <textarea id="source" spellcheck="false" placeholder="Mermaid / C4 source…"></textarea>
+          <div class="source-line-editor">
+            <div class="source-gutter" aria-hidden="true"></div>
+            <textarea id="source" spellcheck="false" placeholder="Mermaid / C4 source…"></textarea>
+          </div>
           <span class="source-chars" id="charsPill">0 chars</span>
           <pre id="errorBox"></pre>
         </div>
@@ -250,14 +253,20 @@
               <span class="history-combo-face" id="mermaidHistoryComboFace">No snapshots yet</span>
               <span class="history-combo-chevron" aria-hidden="true"></span>
             </button>
-            <ul class="history-list" id="historyList" role="listbox" hidden></ul>
+            <div class="history-pop" hidden>
+              <input type="search" class="history-search" id="mermaid-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
+              <ul class="history-list" id="historyList" role="listbox"></ul>
+            </div>
           </div>
           <p class="history-empty" id="historyEmpty" hidden>No snapshots yet</p>
         </section>
       </div>
       <div class="dock-source-body" data-source-mode="board">
         <div class="board-editor-wrap">
-          <textarea id="boardSource" spellcheck="false" placeholder="board title / style / box / item / link / layout…"></textarea>
+          <div class="source-line-editor">
+            <div class="source-gutter" aria-hidden="true"></div>
+            <textarea id="boardSource" spellcheck="false" placeholder="board title / style / box / item / link / layout…"></textarea>
+          </div>
           <span class="source-chars" id="boardCharsPill">0 chars</span>
           <pre id="boardError"></pre>
         </div>
@@ -271,7 +280,10 @@
               <span class="history-combo-face" id="boardHistoryComboFace">No snapshots yet</span>
               <span class="history-combo-chevron" aria-hidden="true"></span>
             </button>
-            <ul class="history-list" id="boardHistoryList" role="listbox" hidden></ul>
+            <div class="history-pop" hidden>
+              <input type="search" class="history-search" id="board-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
+              <ul class="history-list" id="boardHistoryList" role="listbox"></ul>
+            </div>
           </div>
           <p class="history-empty" id="boardHistoryEmpty" hidden>No snapshots yet</p>
         </section>
