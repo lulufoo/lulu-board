@@ -113,6 +113,6 @@ only retargets `current`. Source dock uses `/board-history.json` and `DELETE /ap
 | Select | titles; nested siblings (arrows); types (`solid` / `dashed` on links) |
 | Add / delete | box, item |
 | Link | source, then target |
-| Drag | top-level move; nested reorder |
+| Drag | top-level move (drag / arrows); nested reorder |
 | Layout | Trunk / Stagger |
 | Props | Board-only |

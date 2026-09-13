@@ -1421,6 +1421,60 @@ function boardNudgeSelection(delta) {
   selectBoardElement(kids[next], root, BoardRender.parse(boardSourceEl.value));
   return true;
 }
+var BOARD_NUDGE_STEPS = [1, 2, 4, 8, 16, 32];
+var BOARD_NUDGE_HOLD = 2;
+var boardNudgeSlide = { key: "", n: 0 };
+function boardNudgeResetSlide() {
+  boardNudgeSlide = { key: "", n: 0 };
+}
+function boardNudgeStepPx(key, isRepeat) {
+  if (!isRepeat || boardNudgeSlide.key !== key) {
+    boardNudgeSlide = { key: key, n: 0 };
+    return BOARD_NUDGE_STEPS[0];
+  }
+  boardNudgeSlide.n += 1;
+  var tier = Math.min(BOARD_NUDGE_STEPS.length - 1, Math.floor(boardNudgeSlide.n / BOARD_NUDGE_HOLD));
+  return BOARD_NUDGE_STEPS[tier];
+}
+function boardWriteLivePosition(el, x, y) {
+  var keep = Object.assign({}, selectedBoardNode);
+  boardSourceEl.value = BoardRender.updatePosition(boardSourceEl.value, keep, x, y);
+  selectedBoardNode = keep;
+  boardSourceEl.dataset.boardSelectionKey = keep.key || boardSourceEl.dataset.boardSelectionKey || "";
+  updateBoardChars();
+  scheduleBoardSave();
+  var liveRoot = previewEl.querySelector(".board-render");
+  if (liveRoot && typeof BoardRender.refreshEdges === "function") {
+    BoardRender.refreshEdges(liveRoot, BoardRender.parse(boardSourceEl.value));
+    applyBoardSelection(liveRoot, BoardRender.parse(boardSourceEl.value));
+    el.classList.add("board-selection");
+  }
+}
+function boardNudgeTopLevel(dx, dy) {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return false;
+  if (selectedBoardNode.kind === "item" && selectedBoardNode.boxId) return false;
+  var root = previewEl && previewEl.querySelector(".board-render");
+  if (!root) return false;
+  var el = root.querySelector("[data-board-key=\"" + selectedBoardNode.key + "\"]");
+  if (!el || boardParentContent(el)) return false;
+  var canvas = previewEl.querySelector(".board-canvas");
+  var x = Number.parseFloat(el.style.left);
+  var y = Number.parseFloat(el.style.top);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+  var next = clampBoardDragPosition(canvas, Math.round(x + dx), Math.round(y + dy));
+  var prevX = x, prevY = y;
+  el.style.left = next.x + "px";
+  el.style.top = next.y + "px";
+  try {
+    boardWriteLivePosition(el, next.x, next.y);
+    setStatus("Moved · saved layout");
+  } catch (err) {
+    el.style.left = prevX + "px";
+    el.style.top = prevY + "px";
+    showBoardError(err instanceof Error ? err.message : String(err));
+  }
+  return true;
+}
 document.addEventListener("keydown", function(event) {
   if (document.documentElement.dataset.drawerMode !== "board" || event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
@@ -1431,9 +1485,24 @@ document.addEventListener("keydown", function(event) {
   var target = event.target;
   if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   if (target && target.closest && target.closest("#boardIconField")) return;
-  if (!boardNudgeSelection(delta)) return;
+  if (boardNudgeSelection(delta)) {
+    event.preventDefault();
+    return;
+  }
+  var step = boardNudgeStepPx(event.key, event.repeat);
+  var dx = 0, dy = 0;
+  if (event.key === "ArrowLeft") dx = -step;
+  else if (event.key === "ArrowRight") dx = step;
+  else if (event.key === "ArrowUp") dy = -step;
+  else dy = step;
+  if (!boardNudgeTopLevel(dx, dy)) return;
   event.preventDefault();
 });
+document.addEventListener("keyup", function(event) {
+  if (event.key !== "ArrowUp" && event.key !== "ArrowDown" && event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  boardNudgeResetSlide();
+});
+window.addEventListener("blur", boardNudgeResetSlide);
 document.addEventListener("keydown", function(event) {
   if (document.documentElement.dataset.drawerMode !== "board" || !event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
