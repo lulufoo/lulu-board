@@ -800,6 +800,7 @@ $('#btnSourceCopy') && ($('#btnSourceCopy').onclick = () => {
   void copyText(activeSourceText(), "Source");
 });
 $('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void copyActiveSourcePath(); closeCanvasExport(); });
+$('#btnCanvasDlPng') && ($('#btnCanvasDlPng').onclick = () => { void exportPng(); closeCanvasExport(); });
 /* UI light/dark toggle removed for now */
 
 function syncSheetCssVar() {

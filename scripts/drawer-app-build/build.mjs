@@ -46,6 +46,13 @@ for (const [name, outName] of Object.entries(earlyMap)) {
   console.log(`ok ${outName}`);
 }
 
+for (const name of ['snapdom.mjs']) {
+  const src = path.join(srcDir, 'vendor', name);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(vendorOut, name));
+  console.log(`ok ${name}`);
+}
+
 // Main module: concat domain files in order (still one ES module when loaded)
 const domain = [
   '00-style-line.js',
@@ -57,6 +64,7 @@ const domain = [
   '04-mindmap.js',
   '04-state.js',
   '05-render-io.js',
+  '05-export-png.js',
   '06-view-sequence.js',
   '07-chrome-boot.js',
 ];

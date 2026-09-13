@@ -29,6 +29,12 @@ Keep the upstream `LICENSE` files and this notice when redistributing.
 - Vendored tree: `packages/mermaid-vendor/mermaid-layout-elk/`
 - License: MIT — see `packages/mermaid-vendor/mermaid-layout-elk/LICENSE`
 
+## @zumer/snapdom
+
+- ✅ Verified (`npm` registry): Package: `@zumer/snapdom`; version: `2.24.18`.
+- ✅ Verified (`npm` registry): Upstream: https://github.com/zumerlab/snapdom
+- ✅ Verified (`packages/drawer-app/vendor/snapdom.LICENSE`): License: MIT.
+
 ## Own editing layers (not upstream Mermaid)
 
 - `packages/mermaid-ext/` — Drawer flowchart / state / mindmap editing extensions
