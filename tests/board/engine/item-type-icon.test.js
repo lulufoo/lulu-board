@@ -40,7 +40,7 @@ function read(rel) {
 }
 
 const vocab = read('skill/board/references/vocab.md');
-assert.ok(/### icon `<n>`/.test(vocab), 'vocab heading is icon');
+assert.ok(/^## Icons$/m.test(vocab), 'vocab heading is Icons');
 assert.ok(/\| `icon` \|/.test(vocab), 'vocab table has icon');
 assert.ok(!/### img/.test(vocab), 'vocab has no img heading');
 assert.ok(!/\| `img` \|/.test(vocab), 'vocab table has no img');
