@@ -144,9 +144,8 @@ def status():
 
 
 def viewer_page_url(base: str, kind: str) -> str:
-    if kind != "board":
-        return base
-    return f"{base}{'&' if '?' in base else '?'}mode=board"
+    mode = "board" if kind == "board" else "mermaid"
+    return f"{base}{'&' if '?' in base else '?'}mode={mode}"
 
 
 def resolve_preview_body(path: str | None, stdin=None, kind: str = "mermaid") -> str | None:

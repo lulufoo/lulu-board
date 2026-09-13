@@ -104,6 +104,7 @@ class MermaidSourceIdTest(unittest.TestCase):
         src.write_text("flowchart LR\nN-->X\n", encoding="utf-8")
         data = self._preview(path=str(src))
         self.assertEqual(data["open"], "created")
+        self.assertIn("mode=mermaid", data["url"])
         self.assertTrue(str(data["id"]).startswith("m_"))
         self.assertNotEqual(data["id"], aid)
         self.assertNotEqual(Path(data["current"]).name, rec.name)

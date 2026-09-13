@@ -44,7 +44,7 @@ $DRAWER_CTL stop
 
 | `--kind` | Live store | Preview |
 |---|---|---|
-| `mermaid` (default) | `diagram.mmd` | `/drawer.html` |
+| `mermaid` (default) | `diagram.mmd` | `?mode=mermaid` |
 | `board` | `board.bmd` | `?mode=board` |
 
 | Concern | Value |
