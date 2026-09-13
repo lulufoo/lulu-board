@@ -93,7 +93,7 @@ Click a preview to open the source.
 
 ### Mermaid
 
-Mermaid rendering is still evolving. It depends on [mermaid](https://github.com/mermaid-js/mermaid) and [elkjs](https://github.com/kieler/elkjs) (via `@mermaid-js/layout-elk`).
+Mermaid preview works for many diagram kinds; direct canvas editing is still being completed for some of them. Rendering depends on [mermaid](https://github.com/mermaid-js/mermaid) and [elkjs](https://github.com/kieler/elkjs) (via `@mermaid-js/layout-elk`).
 
 <table>
   <tr>
