@@ -105,11 +105,17 @@ Put layout statements under one `layout` section. Layout is constraints:
 `parent` frame.
 
 Every layout statement starts with a keyword. Keywords are lowercase; IDs are
-uppercase. Several ids that share a value may be listed in one statement.
+uppercase by convention. Several ids that share a value may be listed in one
+statement.
+
+Without ids, `direction` / `align` / `justify` set the board itself. The board
+defaults to `direction row` with gap 32 and padding 24: top-level boxes flow
+left to right. A horizontal `arrange` or any `pin` turns that flow off; only
+the stated constraints place nodes from then on.
 
 ### Inside a box
 
-These properties arrange a box’s children. Only boxes take `direction`.
+These properties arrange a box’s children.
 
 ```text
 direction <box-id>, <box-id>… row|column
@@ -140,7 +146,10 @@ carries meaning.
 arrange <id> after|before|left-of|right-of|above|below <id>[, <id>…]
 ```
 
-Places one node on a coarse side of the union of its targets.
+Places one node beside the union of its targets, one board gap away.
+`right-of` / `left-of` also align `top` with the target; `below` / `above`
+with a single target also align `start`. `after` / `before` only order along
+the axis.
 
 #### flush
 
