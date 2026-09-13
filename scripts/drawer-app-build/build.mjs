@@ -57,6 +57,7 @@ for (const name of ['snapdom.mjs']) {
 const domain = [
   '00-style-line.js',
   '00-document-meta.js',
+  '00-canvas-view.js',
   '01-shell-state.js',
   '02-board.js',
   '03-mermaid-inspect.js',

@@ -123,6 +123,60 @@ item HERO type text "Hi"
 }
 
 {
+  assert.deepStrictEqual(Render.authoredViewport({ scale: 1.25, x: 40.4, y: -12.2 }), {
+    scale: 1.25,
+    x: 40,
+    y: -12,
+  });
+  assert.deepStrictEqual(Render.authoredViewport({ scale: 9, x: 1, y: 2 }), { scale: 3, x: 1, y: 2 });
+  assert.strictEqual(Render.authoredViewport({ scale: 1, x: 1 }), null);
+  assert.strictEqual(Render.authoredViewport([1, 2, 3]), null);
+}
+
+{
+  const payload = b64({ theme: 'kami', viewport: { scale: 1.2, x: 40.6, y: 80 } });
+  const board = Render.parse(src(`
+board Demo
+style ${payload}
+item HERO type text "Hi"
+`));
+  assert.deepStrictEqual(Render.resolveStyle(board), {
+    theme: 'kami',
+    item_cap: 16,
+    link_route: 'stagger',
+    type_step: 0,
+  });
+  const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    theme: 'kami',
+    viewport: { scale: 1.2, x: 41, y: 80 },
+  });
+}
+
+{
+  const legacy = b64({ view: { scale: 0.8, x: 12, y: 24 } });
+  const board = Render.parse(`board Demo\nstyle ${legacy}\nitem HERO type text "Hi"\n`);
+  const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    viewport: { scale: 0.8, x: 12, y: 24 },
+  });
+}
+
+{
+  const source = src(`
+board Demo
+item HERO type text "Hi"
+`);
+  const next = Render.updateStyle(source, { viewport: { scale: 0.9, x: 10, y: 20 } });
+  const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    viewport: { scale: 0.9, x: 10, y: 20 },
+  });
+  const back = Render.updateStyle(next, { viewport: null, view: null });
+  assert.ok(!/^style /m.test(back), back);
+}
+
+{
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../../skill/board/references/vocab.md'), 'utf8');
   assert.ok(/id="boardCapEditor"/.test(html), 'props have Width Cap select');

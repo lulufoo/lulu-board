@@ -14,6 +14,7 @@ stageEl.addEventListener('wheel', (e) => {
   scale = Math.min(3, Math.max(0.2, scale * factor));
   applyTransform();
   flushDrawerUiSave();
+  if (typeof noteUserCanvasView === "function") noteUserCanvasView();
   flashChrome();
 }, { passive: false });
 
@@ -98,8 +99,12 @@ stageEl.addEventListener('pointerup', () => {
   stageEl.classList.remove('panning');
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
   if (blankMm && !moved) clearMermaidSelection();
-  if (wasPanning && moved) flushDrawerUiSave();
-  else if (wasPanning && !blankMm) flushDrawerUiSave();
+  if (wasPanning && moved) {
+    flushDrawerUiSave();
+    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
+  } else if (wasPanning && !blankMm) {
+    flushDrawerUiSave();
+  }
 });
 stageEl.addEventListener('selectstart', (e) => {
   if (panning) e.preventDefault();
@@ -214,9 +219,9 @@ document.addEventListener('keydown', (e) => {
 });
 $('#btnCopySrc').onclick = () => { copyText(sourceEl.value, 'Source'); showCopyTip('Copied successfully'); closeExportMenu(); };
 
-$('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); };
-$('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); };
-$('#btnZoomReset').onclick = () => { centerView(); };
+$('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;
 /* $('#btnTheme') removed */
@@ -864,23 +869,18 @@ function setMode(mode, opts) {
   if (mermaid) {
     pinBoardTitle();
     if (!opts.restore) openDock("");
-    // User switch → fit once; refresh restore → keep saved zoom/pan (Board parity)
+    // User switch and refresh → document style.viewport, else Fit.
     if (opts.restore) _drawerUiRestoreLock = true;
     var skipRender = !!(opts.restore && previewEl && previewEl.querySelector("svg"));
     var renderP = skipRender
       ? Promise.resolve()
       : Promise.resolve(renderDiagram({
-          fit: opts.restore ? false : (opts.fit !== false),
-          restoreView: !!opts.restore,
+          fit: false,
+          restoreView: true,
         }));
     void renderP.then(function() {
-      if (opts.restore) {
-        try {
-          var ui = loadDrawerUi();
-          scale = ui.scale; panX = ui.panX; panY = ui.panY;
-        } catch (_e) {}
-      }
-      applyTransform();
+      if (skipRender && typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
+      else if (skipRender) applyTransform();
       // Reveal canvas only after transform is applied (kills left-flash on refresh).
       requestAnimationFrame(function () {
         clearDrawerBoot();
@@ -894,12 +894,12 @@ function setMode(mode, opts) {
     });
     setStatus('Mermaid mode');
   } else {
-    // User switch → fit once; refresh restore → same boardViewId and on-stage, else fit
+    // User switch and refresh → document style.viewport, else Fit.
     if (opts.restore) _drawerUiRestoreLock = true;
     var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
     var skipBoard = !!(opts.restore && hasBoard);
     if (!skipBoard) {
-      renderBoard({ fit: opts.restore ? false : (opts.fit !== false), restoreView: !!opts.restore });
+      renderBoard({ fit: false, restoreView: true });
       if (typeof refreshBoardHistory === 'function') void refreshBoardHistory();
     } else {
       applyRestoredBoardView();

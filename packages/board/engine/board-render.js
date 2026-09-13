@@ -76,6 +76,18 @@
     if (!Number.isFinite(n)) return STYLE_DEFAULTS.type_step;
     return Math.min(STYLE_TYPE_MAX, Math.max(STYLE_TYPE_MIN, n));
   }
+  function authoredViewport(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const scale = Number(raw.scale);
+    const x = Number(raw.x);
+    const y = Number(raw.y);
+    if (!Number.isFinite(scale) || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return {
+      scale: Math.min(3, Math.max(0.2, scale)),
+      x: Math.round(x),
+      y: Math.round(y),
+    };
+  }
   function authoredStyle(raw) {
     const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const out = {};
@@ -89,8 +101,10 @@
       const n = clampTypeStep(src.type_step);
       if (n !== STYLE_DEFAULTS.type_step) out.type_step = n;
     }
+    const viewport = authoredViewport(src.viewport || src.view);
+    if (viewport) out.viewport = viewport;
     Object.keys(src).forEach((key) => {
-      if (key === 'theme' || key === 'item_cap' || key === 'link_route' || key === 'type_step') return;
+      if (key === 'theme' || key === 'item_cap' || key === 'link_route' || key === 'type_step' || key === 'view' || key === 'viewport') return;
       if (src[key] == null) return;
       out[key] = src[key];
     });
@@ -2025,5 +2039,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, BoardParseError };
 });

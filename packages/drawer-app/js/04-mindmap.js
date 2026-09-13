@@ -256,6 +256,7 @@ function mindmapPointerEnd(event) {
     panOrigin = null;
     stageEl.classList.remove("panning");
     flushDrawerUiSave();
+    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
     return;
   }
   // Click without drag: re-press opens Props.

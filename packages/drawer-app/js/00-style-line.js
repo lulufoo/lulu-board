@@ -56,10 +56,25 @@
     return line + "\n" + rest;
   }
 
+  function authoredViewport(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    var scale = Number(raw.scale);
+    var x = Number(raw.x);
+    var y = Number(raw.y);
+    if (!isFinite(scale) || !isFinite(x) || !isFinite(y)) return null;
+    return {
+      scale: Math.min(3, Math.max(0.2, scale)),
+      x: Math.round(x),
+      y: Math.round(y),
+    };
+  }
+
   function authoredMermaidStyle(raw) {
     var src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     var out = {};
     if (STYLE_THEMES[src.theme] && src.theme !== "default") out.theme = src.theme;
+    var viewport = authoredViewport(src.viewport || src.view);
+    if (viewport) out.viewport = viewport;
     return out;
   }
 
@@ -82,6 +97,7 @@
     bodyIsBoard: bodyIsBoard,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
+    authoredViewport: authoredViewport,
     authoredMermaidStyle: authoredMermaidStyle,
     applyMermaidStylePatch: applyMermaidStylePatch,
   };

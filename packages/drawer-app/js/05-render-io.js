@@ -69,17 +69,13 @@ async function renderDiagram(opts) {
     errorBox.textContent = '';
     if (opts.fit) {
       centerView();
+    } else if (opts.restoreView) {
+      if (typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
+      else applyTransform();
+    } else if (kept) {
+      scale = kept.scale; panX = kept.panX; panY = kept.panY;
+      applyTransform();
     } else {
-      if (opts.restoreView) {
-        try {
-          var ui = loadDrawerUi();
-          scale = ui.scale; panX = ui.panX; panY = ui.panY;
-        } catch (_e) {
-          if (kept) { scale = kept.scale; panX = kept.panX; panY = kept.panY; }
-        }
-      } else if (kept) {
-        scale = kept.scale; panX = kept.panX; panY = kept.panY;
-      }
       applyTransform();
     }
     cacheRenderedSvg(svg);
@@ -520,7 +516,7 @@ async function restoreMermaidHistory(name, diagramId, diagramTitle) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     sourceEl.value = await res.text();
     if (typeof setTypeUI === "function") setTypeUI(sourceEl.value);
-    await renderDiagram({ fit: false });
+    await renderDiagram({ fit: false, restoreView: true });
     try {
       var metaRes = await fetch("./diagram.meta.json?ts=" + Date.now(), { cache: "no-store" });
       if (metaRes.ok) applyLiveMeta(await metaRes.json());
@@ -694,7 +690,7 @@ async function restoreBoardHistory(name, boardId, boardTitle) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     boardSourceEl.value = await res.text();
     if (typeof updateBoardChars === "function") updateBoardChars();
-    if (typeof renderBoard === "function") renderBoard({ fit: true });
+    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     try {
       var metaRes = await fetch("./board.meta.json?ts=" + Date.now(), { cache: "no-store" });
       if (metaRes.ok && typeof applyBoardLiveMeta === "function") applyBoardLiveMeta(await metaRes.json());

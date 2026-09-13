@@ -954,7 +954,16 @@ function persistBoardStyle(patch) {
   if (document.documentElement.dataset.drawerMode !== "board") return;
   if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
   try {
-    var next = BoardRender.updateStyle(boardSourceEl.value, patch || {});
+    var raw = boardSourceEl.value;
+    var meta = null;
+    var body = raw;
+    try {
+      var doc = splitDocument(raw);
+      meta = doc.meta;
+      body = doc.body;
+    } catch (_e) {}
+    var nextBody = BoardRender.updateStyle(body, patch || {});
+    var next = meta ? joinDocument(meta, nextBody) : nextBody;
     if (next !== boardSourceEl.value) {
       boardSourceEl.value = next;
       updateBoardChars();

@@ -57,10 +57,25 @@
     return line + "\n" + rest;
   }
 
+  function authoredViewport(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    var scale = Number(raw.scale);
+    var x = Number(raw.x);
+    var y = Number(raw.y);
+    if (!isFinite(scale) || !isFinite(x) || !isFinite(y)) return null;
+    return {
+      scale: Math.min(3, Math.max(0.2, scale)),
+      x: Math.round(x),
+      y: Math.round(y),
+    };
+  }
+
   function authoredMermaidStyle(raw) {
     var src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     var out = {};
     if (STYLE_THEMES[src.theme] && src.theme !== "default") out.theme = src.theme;
+    var viewport = authoredViewport(src.viewport || src.view);
+    if (viewport) out.viewport = viewport;
     return out;
   }
 
@@ -83,6 +98,7 @@
     bodyIsBoard: bodyIsBoard,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
+    authoredViewport: authoredViewport,
     authoredMermaidStyle: authoredMermaidStyle,
     applyMermaidStylePatch: applyMermaidStylePatch,
   };
@@ -184,6 +200,150 @@
 var splitDocument = globalThis.splitDocument;
 var joinDocument = globalThis.joinDocument;
 var sourceBody = globalThis.sourceBody;
+
+/* === 00-canvas-view.js === */
+/* Document canvas viewport: one style.viewport { scale, x, y }. x/y = diagram top-left vs stage 0,0. */
+var _documentViewTimer = 0;
+var _skipDocumentViewPersist = false;
+
+function normalizeDocumentView(raw) {
+  if (typeof BoardRender !== "undefined" && typeof BoardRender.authoredViewport === "function") {
+    return BoardRender.authoredViewport(raw);
+  }
+  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.authoredViewport === "function") {
+    return DrawerStyleLine.authoredViewport(raw);
+  }
+  return null;
+}
+
+function measureDiagramOnCanvas() {
+  if (!previewEl || !stageEl) return null;
+  var mode = document.documentElement.dataset.drawerMode;
+  var content = mode === "board"
+    ? previewEl.querySelector(".board-render")
+    : previewEl.querySelector("svg");
+  if (!content) return null;
+  var wrap = stageEl.getBoundingClientRect();
+  var box = content.getBoundingClientRect();
+  if (!wrap.width || !wrap.height || !box.width || !box.height) return null;
+  return { x: box.left - wrap.left, y: box.top - wrap.top };
+}
+
+function readDocumentView() {
+  try {
+    if (document.documentElement.dataset.drawerMode === "board") {
+      if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;
+      var boardText = boardSourceEl.value;
+      try { boardText = splitDocument(boardText).body; } catch (_e) {}
+      var board = BoardRender.parse(boardText);
+      return normalizeDocumentView(board.style && (board.style.viewport || board.style.view));
+    }
+    if (!sourceEl || typeof DrawerStyleLine === "undefined" || typeof BoardRender === "undefined") return null;
+    var body = sourceEl.value;
+    try { body = splitDocument(body).body; } catch (_e) {}
+    var styled = DrawerStyleLine.splitRendererStyle(body);
+    if (!styled.token) return null;
+    var raw = BoardRender.decodeStylePayload(styled.token);
+    return normalizeDocumentView(raw && (raw.viewport || raw.view));
+  } catch (_err) {
+    return null;
+  }
+}
+
+function persistDocumentView(view) {
+  var next = view ? normalizeDocumentView(view) : null;
+  if (next && _skipDocumentViewPersist) return;
+  if (next && typeof _drawerUiRestoreLock !== "undefined" && _drawerUiRestoreLock) return;
+  var patch = { viewport: next, view: null };
+  if (document.documentElement.dataset.drawerMode === "board") {
+    if (typeof persistBoardStyle === "function") persistBoardStyle(patch);
+    return;
+  }
+  if (typeof persistMermaidStyle === "function") persistMermaidStyle(patch);
+}
+
+function snapshotDocumentView() {
+  var hit = measureDiagramOnCanvas();
+  if (!hit) return null;
+  return normalizeDocumentView({
+    scale: scale,
+    x: hit.x,
+    y: hit.y,
+  });
+}
+
+function scheduleDocumentViewSave() {
+  if (_skipDocumentViewPersist) return;
+  if (typeof _drawerUiRestoreLock !== "undefined" && _drawerUiRestoreLock) return;
+  clearTimeout(_documentViewTimer);
+  _documentViewTimer = setTimeout(function () {
+    _documentViewTimer = 0;
+    var next = snapshotDocumentView();
+    if (next) persistDocumentView(next);
+  }, 280);
+}
+
+function flushDocumentViewSave() {
+  clearTimeout(_documentViewTimer);
+  _documentViewTimer = 0;
+  if (_skipDocumentViewPersist) return;
+  if (typeof _drawerUiRestoreLock !== "undefined" && _drawerUiRestoreLock) return;
+  var next = snapshotDocumentView();
+  if (next) persistDocumentView(next);
+}
+
+function noteUserCanvasView() {
+  _skipDocumentViewPersist = false;
+  scheduleDocumentViewSave();
+}
+
+function forgetDocumentView() {
+  _skipDocumentViewPersist = true;
+  clearTimeout(_documentViewTimer);
+  _documentViewTimer = 0;
+  persistDocumentView(null);
+}
+
+function applyDocumentView(view, done) {
+  var next = normalizeDocumentView(view);
+  if (!next) {
+    if (typeof done === "function") done(false);
+    return false;
+  }
+  var prevSkip = _skipDocumentViewPersist;
+  _skipDocumentViewPersist = true;
+  scale = next.scale;
+  applyTransform();
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      var hit = measureDiagramOnCanvas();
+      if (hit) {
+        panX += next.x - hit.x;
+        panY += next.y - hit.y;
+        applyTransform();
+      }
+      _skipDocumentViewPersist = prevSkip;
+      if (typeof done === "function") done(!!hit);
+    });
+  });
+  return true;
+}
+
+function restoreOrFitDocumentView() {
+  var view = readDocumentView();
+  if (applyDocumentView(view)) return true;
+  if (document.documentElement.dataset.drawerMode === "board") {
+    if (typeof fitBoardView === "function") fitBoardView({ persist: true });
+  } else if (typeof centerView === "function") {
+    centerView();
+  }
+  return false;
+}
+
+window.addEventListener("pagehide", flushDocumentViewSave);
+document.addEventListener("visibilitychange", function () {
+  if (document.visibilityState === "hidden") flushDocumentViewSave();
+});
 
 /* === 01-shell-state.js === */
 
@@ -397,12 +557,7 @@ function restoreCachedSvg() {
     const svg = previewEl.querySelector('svg');
     if (!svg) return false;
     fixSvgIntrinsic(svg);
-    // Keep saved zoom/pan (drawer.ui) — do NOT centerView (that flashes left then jumps).
-    try {
-      var ui = loadDrawerUi();
-      scale = ui.scale; panX = ui.panX; panY = ui.panY;
-    } catch (_e) {}
-    applyTransform();
+    // Document style.viewport is applied after boot; do not use the global drawer.ui zoom here.
     setStatus(Number.isFinite(data.rev) ? `Restoring r${data.rev}…` : 'Restoring…');
     return true;
   } catch (_) {
@@ -1155,14 +1310,14 @@ function boardContentOnStage() {
   return box.right > wrap.left && box.left < wrap.right && box.bottom > wrap.top && box.top < wrap.bottom;
 }
 function applyRestoredBoardView() {
-  var ui = loadDrawerUi();
-  var same = !!(ui.boardViewId && liveBoardId && ui.boardViewId === String(liveBoardId));
-  if (same) {
-    scale = ui.scale;
-    panX = ui.panX;
-    panY = ui.panY;
-    applyTransform();
-    if (boardContentOnStage()) return;
+  var view = typeof readDocumentView === "function" ? readDocumentView() : null;
+  if (view && typeof applyDocumentView === "function") {
+    applyDocumentView(view, function (ok) {
+      if (!ok || (typeof boardContentOnStage === "function" && !boardContentOnStage())) {
+        fitBoardView({ persist: true });
+      }
+    });
+    return;
   }
   fitBoardView({ persist: true });
 }
@@ -2166,7 +2321,16 @@ function persistBoardStyle(patch) {
   if (document.documentElement.dataset.drawerMode !== "board") return;
   if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
   try {
-    var next = BoardRender.updateStyle(boardSourceEl.value, patch || {});
+    var raw = boardSourceEl.value;
+    var meta = null;
+    var body = raw;
+    try {
+      var doc = splitDocument(raw);
+      meta = doc.meta;
+      body = doc.body;
+    } catch (_e) {}
+    var nextBody = BoardRender.updateStyle(body, patch || {});
+    var next = meta ? joinDocument(meta, nextBody) : nextBody;
     if (next !== boardSourceEl.value) {
       boardSourceEl.value = next;
       updateBoardChars();
@@ -3557,6 +3721,7 @@ function mindmapPointerEnd(event) {
     panOrigin = null;
     stageEl.classList.remove("panning");
     flushDrawerUiSave();
+    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
     return;
   }
   // Click without drag: re-press opens Props.
@@ -4172,17 +4337,13 @@ async function renderDiagram(opts) {
     errorBox.textContent = '';
     if (opts.fit) {
       centerView();
+    } else if (opts.restoreView) {
+      if (typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
+      else applyTransform();
+    } else if (kept) {
+      scale = kept.scale; panX = kept.panX; panY = kept.panY;
+      applyTransform();
     } else {
-      if (opts.restoreView) {
-        try {
-          var ui = loadDrawerUi();
-          scale = ui.scale; panX = ui.panX; panY = ui.panY;
-        } catch (_e) {
-          if (kept) { scale = kept.scale; panX = kept.panX; panY = kept.panY; }
-        }
-      } else if (kept) {
-        scale = kept.scale; panX = kept.panX; panY = kept.panY;
-      }
       applyTransform();
     }
     cacheRenderedSvg(svg);
@@ -4623,7 +4784,7 @@ async function restoreMermaidHistory(name, diagramId, diagramTitle) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     sourceEl.value = await res.text();
     if (typeof setTypeUI === "function") setTypeUI(sourceEl.value);
-    await renderDiagram({ fit: false });
+    await renderDiagram({ fit: false, restoreView: true });
     try {
       var metaRes = await fetch("./diagram.meta.json?ts=" + Date.now(), { cache: "no-store" });
       if (metaRes.ok) applyLiveMeta(await metaRes.json());
@@ -4797,7 +4958,7 @@ async function restoreBoardHistory(name, boardId, boardTitle) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     boardSourceEl.value = await res.text();
     if (typeof updateBoardChars === "function") updateBoardChars();
-    if (typeof renderBoard === "function") renderBoard({ fit: true });
+    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     try {
       var metaRes = await fetch("./board.meta.json?ts=" + Date.now(), { cache: "no-store" });
       if (metaRes.ok && typeof applyBoardLiveMeta === "function") applyBoardLiveMeta(await metaRes.json());
@@ -5533,6 +5694,7 @@ stageEl.addEventListener('wheel', (e) => {
   scale = Math.min(3, Math.max(0.2, scale * factor));
   applyTransform();
   flushDrawerUiSave();
+  if (typeof noteUserCanvasView === "function") noteUserCanvasView();
   flashChrome();
 }, { passive: false });
 
@@ -5617,8 +5779,12 @@ stageEl.addEventListener('pointerup', () => {
   stageEl.classList.remove('panning');
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
   if (blankMm && !moved) clearMermaidSelection();
-  if (wasPanning && moved) flushDrawerUiSave();
-  else if (wasPanning && !blankMm) flushDrawerUiSave();
+  if (wasPanning && moved) {
+    flushDrawerUiSave();
+    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
+  } else if (wasPanning && !blankMm) {
+    flushDrawerUiSave();
+  }
 });
 stageEl.addEventListener('selectstart', (e) => {
   if (panning) e.preventDefault();
@@ -5733,9 +5899,9 @@ document.addEventListener('keydown', (e) => {
 });
 $('#btnCopySrc').onclick = () => { copyText(sourceEl.value, 'Source'); showCopyTip('Copied successfully'); closeExportMenu(); };
 
-$('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); };
-$('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); };
-$('#btnZoomReset').onclick = () => { centerView(); };
+$('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;
 /* $('#btnTheme') removed */
@@ -6383,23 +6549,18 @@ function setMode(mode, opts) {
   if (mermaid) {
     pinBoardTitle();
     if (!opts.restore) openDock("");
-    // User switch → fit once; refresh restore → keep saved zoom/pan (Board parity)
+    // User switch and refresh → document style.viewport, else Fit.
     if (opts.restore) _drawerUiRestoreLock = true;
     var skipRender = !!(opts.restore && previewEl && previewEl.querySelector("svg"));
     var renderP = skipRender
       ? Promise.resolve()
       : Promise.resolve(renderDiagram({
-          fit: opts.restore ? false : (opts.fit !== false),
-          restoreView: !!opts.restore,
+          fit: false,
+          restoreView: true,
         }));
     void renderP.then(function() {
-      if (opts.restore) {
-        try {
-          var ui = loadDrawerUi();
-          scale = ui.scale; panX = ui.panX; panY = ui.panY;
-        } catch (_e) {}
-      }
-      applyTransform();
+      if (skipRender && typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
+      else if (skipRender) applyTransform();
       // Reveal canvas only after transform is applied (kills left-flash on refresh).
       requestAnimationFrame(function () {
         clearDrawerBoot();
@@ -6413,12 +6574,12 @@ function setMode(mode, opts) {
     });
     setStatus('Mermaid mode');
   } else {
-    // User switch → fit once; refresh restore → same boardViewId and on-stage, else fit
+    // User switch and refresh → document style.viewport, else Fit.
     if (opts.restore) _drawerUiRestoreLock = true;
     var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
     var skipBoard = !!(opts.restore && hasBoard);
     if (!skipBoard) {
-      renderBoard({ fit: opts.restore ? false : (opts.fit !== false), restoreView: !!opts.restore });
+      renderBoard({ fit: false, restoreView: true });
       if (typeof refreshBoardHistory === 'function') void refreshBoardHistory();
     } else {
       applyRestoredBoardView();

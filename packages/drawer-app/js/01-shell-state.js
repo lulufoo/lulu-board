@@ -209,12 +209,7 @@ function restoreCachedSvg() {
     const svg = previewEl.querySelector('svg');
     if (!svg) return false;
     fixSvgIntrinsic(svg);
-    // Keep saved zoom/pan (drawer.ui) — do NOT centerView (that flashes left then jumps).
-    try {
-      var ui = loadDrawerUi();
-      scale = ui.scale; panX = ui.panX; panY = ui.panY;
-    } catch (_e) {}
-    applyTransform();
+    // Document style.viewport is applied after boot; do not use the global drawer.ui zoom here.
     setStatus(Number.isFinite(data.rev) ? `Restoring r${data.rev}…` : 'Restoring…');
     return true;
   } catch (_) {
@@ -967,14 +962,14 @@ function boardContentOnStage() {
   return box.right > wrap.left && box.left < wrap.right && box.bottom > wrap.top && box.top < wrap.bottom;
 }
 function applyRestoredBoardView() {
-  var ui = loadDrawerUi();
-  var same = !!(ui.boardViewId && liveBoardId && ui.boardViewId === String(liveBoardId));
-  if (same) {
-    scale = ui.scale;
-    panX = ui.panX;
-    panY = ui.panY;
-    applyTransform();
-    if (boardContentOnStage()) return;
+  var view = typeof readDocumentView === "function" ? readDocumentView() : null;
+  if (view && typeof applyDocumentView === "function") {
+    applyDocumentView(view, function (ok) {
+      if (!ok || (typeof boardContentOnStage === "function" && !boardContentOnStage())) {
+        fitBoardView({ persist: true });
+      }
+    });
+    return;
   }
   fitBoardView({ persist: true });
 }

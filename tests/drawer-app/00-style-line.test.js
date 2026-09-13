@@ -58,6 +58,18 @@ function b64(obj) {
   assert.deepStrictEqual(Style.authoredMermaidStyle({ theme: 'pastel', item_cap: 20, link_route: 'stagger' }), {
     theme: 'pastel',
   });
+  assert.deepStrictEqual(
+    Style.authoredMermaidStyle({ theme: 'pastel', viewport: { scale: 1.1, x: 8.2, y: 16 } }),
+    { theme: 'pastel', viewport: { scale: 1.1, x: 8, y: 16 } },
+  );
+  assert.deepStrictEqual(
+    Style.authoredMermaidStyle({ theme: 'kami', view: { scale: 0.7, x: 3, y: 4 } }),
+    { theme: 'kami', viewport: { scale: 0.7, x: 3, y: 4 } },
+  );
+  const viewOnly = Style.applyMermaidStylePatch('', { viewport: { scale: 0.8, x: 12, y: 24 } }, encode, decode);
+  assert.deepStrictEqual(JSON.parse(Buffer.from(viewOnly, 'base64').toString('utf8')), {
+    viewport: { scale: 0.8, x: 12, y: 24 },
+  });
 }
 
 {
