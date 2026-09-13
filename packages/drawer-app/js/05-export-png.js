@@ -28,7 +28,7 @@ function stripExportInteractions(root) {
   const interactive = [
     root,
     ...root.querySelectorAll(
-      '.board-selection, .mermaid-selection, .mermaid-link-selected, .board-reparent-target, .board-reparent-dragging'
+      '.board-selection, .mermaid-selection, .mermaid-link-selected, .board-reorder-dragging, .board-reorder-caret'
     ),
   ];
   interactive.forEach((el) => {
@@ -36,12 +36,11 @@ function stripExportInteractions(root) {
       'board-selection',
       'mermaid-selection',
       'mermaid-link-selected',
-      'board-reparent-target',
-      'board-reparent-dragging'
+      'board-reorder-dragging'
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .mermaid-edge-hit, .mindmap-node-hit, .mindmap-add-zone-hit, .mindmap-add-hit, .mindmap-add'
+    '.board-edge-hit, .mermaid-edge-hit, .mindmap-node-hit, .mindmap-add-zone-hit, .mindmap-add-hit, .mindmap-add, .board-reorder-caret'
   ).forEach((el) => el.remove());
 }
 

@@ -1,7 +1,13 @@
 /* board + mermaid diagram surfaces */
 .board-selection { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
-.board-reparent-target { outline: 3px solid #22c55e !important; outline-offset: 4px; box-shadow: 0 0 0 5px rgba(34,197,94,.18) !important; }
-.board-reparent-dragging { cursor: grabbing !important; }
+.board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
+.board-reorder-caret {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  background: var(--accent, #0071e3);
+  border-radius: 1px;
+}
 
 /* Container = grouping shell: transparent fill + dashed border (theme color). */
 .board-render .box.board-type-container,
@@ -957,7 +963,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: 520; }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
 .board-icon svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.board-zone .box-content { display: flex; min-width: 0; }
+.board-zone .box-content { position: relative; display: flex; min-width: 0; }
 .board-card { position: relative; min-width: 0; padding: 9px 11px; border: 1px solid #dbe4ef; border-left: 3px solid #94a3b8; border-radius: 10px; background: #fff; color: #334155; box-shadow: 0 1px 2px rgba(15,23,42,.025); font-size: 11.5px; line-height: 1.32; overflow-wrap: anywhere; }
 .board-item { display: flex; align-items: flex-start; gap: 9px; }
 .board-item .board-icon { flex: 0 0 auto; }

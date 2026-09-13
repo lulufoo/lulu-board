@@ -211,6 +211,27 @@ function setBoardAlignJustifyFields(show, align, justify) {
   if (boardJustifyLabel) boardJustifyLabel.hidden = !show;
   setAuthoredTip(boardJustifyTip, show, authoredJ);
 }
+function setBoardOrderField(show, info) {
+  if (boardOrderField) boardOrderField.hidden = !show;
+  if (boardOrderLabel) boardOrderLabel.hidden = !show;
+  var row = !!(show && info && info.direction === "row");
+  var atStart = !info || info.index <= 0;
+  var atEnd = !info || info.index >= info.count - 1 || info.count < 2;
+  if (boardOrderPrev) {
+    boardOrderPrev.hidden = !show;
+    boardOrderPrev.disabled = !show || atStart;
+    boardOrderPrev.textContent = row ? "Left" : "Up";
+    boardOrderPrev.title = row ? "Option+Left" : "Option+Up";
+    boardOrderPrev.setAttribute("aria-label", row ? "Move left" : "Move up");
+  }
+  if (boardOrderNext) {
+    boardOrderNext.hidden = !show;
+    boardOrderNext.disabled = !show || atEnd;
+    boardOrderNext.textContent = row ? "Right" : "Down";
+    boardOrderNext.title = row ? "Option+Right" : "Option+Down";
+    boardOrderNext.setAttribute("aria-label", row ? "Move right" : "Move down");
+  }
+}
 function hidePropsLinkOnlyChrome() {
   if (boardTypeEditor) { boardTypeEditor.hidden = false; boardTypeEditor.disabled = false; }
   if (boardTypeLabel) boardTypeLabel.hidden = false;
@@ -219,6 +240,7 @@ function hidePropsLinkOnlyChrome() {
   if (boardDirEditor) boardDirEditor.hidden = false;
   if (boardDirLabel) boardDirLabel.hidden = false;
   setBoardAlignJustifyFields(false);
+  setBoardOrderField(false);
   setBoardArrowField(false);
   setBoardShapeField(false);
   setBoardCapField(false);
@@ -681,6 +703,11 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     } else {
       setBoardAlignJustifyFields(false);
     }
+    var orderInfo = null;
+    if (!isTitle && typeof BoardRender !== "undefined" && typeof BoardRender.reorderInfo === "function") {
+      try { orderInfo = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
+    }
+    setBoardOrderField(!!orderInfo, orderInfo);
     if (propsHint) propsHint.textContent = isTitle
       ? "Board document · edit text; Direction = top-level box flow (default row)"
       : (isItem
@@ -688,7 +715,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
           ? "Icon · pick a category, then an icon number; Text is optional"
           : (isMd
           ? "Markdown · headings / lists / bold / italic / code; Enter = new line, ⌘/Ctrl+Enter saves"
-          : (selectedBoardNode.boxId ? "Leaf inside a box · chip is framed (Shape = rect / diamond), text is unframed" : "Top-level item · Shape on chip; drag to place; Alt-drag onto a box to nest")))
+          : (selectedBoardNode.boxId ? "Leaf inside a box · arrows select siblings · drag to reorder" : "Top-level item · Shape on chip; drag to place")))
         : (isLayoutBox
           ? "Layout · Direction / Align / Justify for children; no title/icon; +Box nests a child"
           : (boxType === "container"
@@ -711,7 +738,7 @@ function pickBoardElement(el, root, board) {
   beginInspectGesture(selectionKeyFromEl(el));
   selectBoardElement(el, root, board);
 }
-// P1 drag keeps top-level view position-only behavior; Alt/Option enables P3 structural reparenting.
+// Top-level drag moves pins. Nested drag reorders kids in the parent box.
 function boardBoxIsTopLevel(board, id) {
   if (!id) return false;
   if (typeof BoardView !== "undefined" && BoardView.topLevel) {
@@ -775,24 +802,137 @@ function clampBoardDragPosition(canvas, x, y) {
   return { x: x, y: y };
 }
 
-function boardReparentDropTarget(canvas, drag, event) {
-  var element = document.elementFromPoint(event.clientX, event.clientY);
-  if (!element || !canvas.contains(element)) return false;
-  var target = element.closest ? element.closest(".board-zone") : null;
-  if (!target || !canvas.contains(target)) return element === canvas ? null : false;
-  var source = drag.hit.dataset.boardKind === "item" ? drag.hit.closest(".board-zone") : drag.hit;
-  if (!source || target === source || (drag.hit.dataset.boardKind !== "item" && source.contains(target))) return false;
-  if (drag.hit.dataset.boardKind === "item" && target.dataset.boardId === drag.hit.dataset.boardBoxId) return false;
-  return target;
+function boardParentContent(el) {
+  if (!el) return null;
+  if (el.parentElement && el.parentElement.classList.contains("box-content")) return el.parentElement;
+  return el.closest ? el.closest(".box-content") : null;
 }
-function clearBoardReparentTarget(drag) {
-  if (drag && drag.dropTarget && drag.dropTarget !== false) drag.dropTarget.classList.remove("board-reparent-target");
-  if (drag) drag.dropTarget = null;
+function boardReorderKids(content) {
+  return Array.from((content && content.children) || []).filter(function(el) {
+    return el.classList && (el.classList.contains("board-zone") || el.classList.contains("board-item"));
+  });
 }
-function updateBoardReparentTarget(canvas, drag, event) {
-  clearBoardReparentTarget(drag);
-  drag.dropTarget = boardReparentDropTarget(canvas, drag, event);
-  if (drag.dropTarget && drag.dropTarget !== false) drag.dropTarget.classList.add("board-reparent-target");
+function boardPointInRect(el, event) {
+  if (!el) return false;
+  var r = el.getBoundingClientRect();
+  return event.clientX >= r.left && event.clientX <= r.right && event.clientY >= r.top && event.clientY <= r.bottom;
+}
+function boardContentScale(el) {
+  var r = el.getBoundingClientRect();
+  return {
+    x: r.width ? el.offsetWidth / r.width : 1,
+    y: r.height ? el.offsetHeight / r.height : 1
+  };
+}
+function boardReorderInsertBefore(content, event) {
+  var kids = boardReorderKids(content);
+  var row = content.classList.contains("board-dir-row");
+  var p = row ? event.clientX : event.clientY;
+  for (var i = 0; i < kids.length; i += 1) {
+    var r = kids[i].getBoundingClientRect();
+    var mid = row ? (r.left + r.right) / 2 : (r.top + r.bottom) / 2;
+    if (p < mid) return i;
+  }
+  return kids.length;
+}
+function clearBoardReorderCaret(content) {
+  if (!content) return;
+  var caret = content.querySelector(":scope > .board-reorder-caret");
+  if (caret) caret.remove();
+}
+function boardReorderGapRect(prevEl, nextEl, row, prev, next) {
+  var node = prevEl && prevEl.nextElementSibling;
+  while (node && node !== nextEl) {
+    if (node.classList && node.classList.contains("board-slot")) return node.getBoundingClientRect();
+    node = node.nextElementSibling;
+  }
+  if (row) {
+    return {
+      left: prev.right,
+      right: next.left,
+      top: Math.min(prev.top, next.top),
+      bottom: Math.max(prev.bottom, next.bottom),
+      width: next.left - prev.right,
+      height: Math.max(prev.bottom, next.bottom) - Math.min(prev.top, next.top)
+    };
+  }
+  return {
+    left: Math.min(prev.left, next.left),
+    right: Math.max(prev.right, next.right),
+    top: prev.bottom,
+    bottom: next.top,
+    width: Math.max(prev.right, next.right) - Math.min(prev.left, next.left),
+    height: next.top - prev.bottom
+  };
+}
+function placeBoardReorderCaret(content, insertBefore) {
+  var kids = boardReorderKids(content);
+  if (!content || !kids.length) return;
+  var caret = content.querySelector(":scope > .board-reorder-caret");
+  if (!caret) {
+    caret = document.createElement("span");
+    caret.className = "board-reorder-caret";
+    caret.setAttribute("aria-hidden", "true");
+    content.appendChild(caret);
+  }
+  var row = content.classList.contains("board-dir-row");
+  var origin = content.getBoundingClientRect();
+  var scale = boardContentScale(content);
+  var cs = getComputedStyle(content);
+  var innerLeft = origin.left + (content.clientLeft + (parseFloat(cs.paddingLeft) || 0)) / scale.x;
+  var innerTop = origin.top + (content.clientTop + (parseFloat(cs.paddingTop) || 0)) / scale.y;
+  var innerRight = origin.right - ((parseFloat(cs.borderRightWidth) || 0) + (parseFloat(cs.paddingRight) || 0)) / scale.x;
+  var innerBottom = origin.bottom - ((parseFloat(cs.borderBottomWidth) || 0) + (parseFloat(cs.paddingBottom) || 0)) / scale.y;
+  var seam;
+  var crossStart;
+  var crossSize;
+  if (insertBefore > 0 && insertBefore < kids.length) {
+    var prevEl = kids[insertBefore - 1];
+    var nextEl = kids[insertBefore];
+    var prev = prevEl.getBoundingClientRect();
+    var next = nextEl.getBoundingClientRect();
+    var gap = boardReorderGapRect(prevEl, nextEl, row, prev, next);
+    seam = row ? (gap.left + gap.right) / 2 : (gap.top + gap.bottom) / 2;
+    crossStart = row ? gap.top : gap.left;
+    crossSize = row ? gap.height : gap.width;
+  } else if (insertBefore <= 0) {
+    var first = kids[0].getBoundingClientRect();
+    seam = row ? (innerLeft + first.left) / 2 : (innerTop + first.top) / 2;
+    crossStart = row ? first.top : first.left;
+    crossSize = row ? first.height : first.width;
+  } else {
+    var last = kids[kids.length - 1].getBoundingClientRect();
+    seam = row ? (last.right + innerRight) / 2 : (last.bottom + innerBottom) / 2;
+    crossStart = row ? last.top : last.left;
+    crossSize = row ? last.height : last.width;
+  }
+  var bar = row ? Math.max(2, 2 * scale.x) : Math.max(2, 2 * scale.y);
+  if (row) {
+    caret.style.left = ((seam - origin.left) * scale.x - bar / 2) + "px";
+    caret.style.top = ((crossStart - origin.top) * scale.y) + "px";
+    caret.style.width = bar + "px";
+    caret.style.height = Math.max(crossSize * scale.y, 16) + "px";
+  } else {
+    caret.style.left = ((crossStart - origin.left) * scale.x) + "px";
+    caret.style.top = ((seam - origin.top) * scale.y - bar / 2) + "px";
+    caret.style.width = Math.max(crossSize * scale.x, 16) + "px";
+    caret.style.height = bar + "px";
+  }
+}
+function startBoardReorderDrag(dragEl, event) {
+  var content = boardParentContent(dragEl);
+  if (!content) return null;
+  return {
+    hit: dragEl,
+    content: content,
+    parentZone: content.closest(".board-zone"),
+    pointerId: event.pointerId,
+    moved: false,
+    mode: "reorder",
+    insertBefore: null,
+    startClientX: event.clientX,
+    startClientY: event.clientY
+  };
 }
 function wireBoardDrag(root, board) {
   var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardDragWired === "1") return; canvas.dataset.boardDragWired = "1"; var drag = null;
@@ -817,46 +957,59 @@ function wireBoardDrag(root, board) {
       event.stopPropagation();
       return;
     }
-    var reparent = !!event.altKey;
     var itemHit = event.target.closest ? event.target.closest(".board-item") : null;
     var zoneHit = event.target.closest ? event.target.closest(".board-zone") : null;
     if (itemHit && !canvas.contains(itemHit)) itemHit = null;
     if (zoneHit && !canvas.contains(zoneHit)) zoneHit = null;
     var titleHit = event.target.closest ? event.target.closest(".board-title-node") : null;
-    if (titleHit && canvas.contains(titleHit) && !reparent) {
+    if (titleHit && canvas.contains(titleHit)) {
       pickBoardElement(titleHit, root, board);
       event.stopPropagation();
       return;
     }
-    // Nested item: select only. Root item: position-drag like a top-level box.
-    if (itemHit && !reparent && !itemHit.classList.contains("board-root-item")) {
-      pickBoardElement(itemHit, root, board);
+    var nestedItem = itemHit && !itemHit.classList.contains("board-root-item");
+    var nestedBox = zoneHit && !boardBoxIsTopLevel(board, zoneHit.dataset.boardId);
+    if (nestedItem || (nestedBox && !itemHit)) {
+      var reorderEl = nestedItem ? itemHit : zoneHit;
+      pickBoardElement(reorderEl, root, board);
+      drag = startBoardReorderDrag(reorderEl, event);
+      if (!drag) { event.stopPropagation(); return; }
+      reorderEl.setPointerCapture(event.pointerId);
+      event.preventDefault();
       event.stopPropagation();
       return;
     }
-    var hit = reparent ? (itemHit || zoneHit) : ((itemHit && itemHit.classList.contains("board-root-item")) ? itemHit : zoneHit);
+    var hit = (itemHit && itemHit.classList.contains("board-root-item")) ? itemHit : zoneHit;
     if (!hit) return;
     var zone = hit.classList.contains("board-zone") ? hit : hit.closest(".board-zone");
     var rootItem = hit.classList.contains("board-root-item");
-    if (!reparent && !rootItem && (!zone || !boardBoxIsTopLevel(board, zone.dataset.boardId))) {
-      // nested box: still allow select without drag
+    if (!rootItem && (!zone || !boardBoxIsTopLevel(board, zone.dataset.boardId))) {
       pickBoardElement(hit, root, board);
       event.stopPropagation();
       return;
     }
     pickBoardElement(hit, root, board);
-    var dragEl = reparent ? hit : (rootItem ? hit : zone);
+    var dragEl = rootItem ? hit : zone;
     var point = boardCanvasPoint(canvas, event), x = Number.parseFloat(dragEl.style.left), y = Number.parseFloat(dragEl.style.top);
-    drag = { hit: dragEl, pointerId: event.pointerId, start: point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0, moved: false, mode: reparent ? "reparent" : "position", dropTarget: null, startClientX: event.clientX, startClientY: event.clientY };
-    dragEl.classList.toggle("board-reparent-dragging", reparent);
+    drag = { hit: dragEl, pointerId: event.pointerId, start: point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0, moved: false, mode: "position", dropTarget: null, startClientX: event.clientX, startClientY: event.clientY };
     dragEl.setPointerCapture(event.pointerId); event.preventDefault(); event.stopPropagation();
   });
   canvas.addEventListener("pointermove", function(event) {
     if (!drag || event.pointerId !== drag.pointerId) return;
-    if (drag.mode === "reparent") {
-      drag.moved = drag.moved || Math.abs(event.clientX - drag.startClientX) > 1 || Math.abs(event.clientY - drag.startClientY) > 1;
+    if (drag.mode === "reorder") {
+      drag.moved = drag.moved || Math.abs(event.clientX - drag.startClientX) > 3 || Math.abs(event.clientY - drag.startClientY) > 3;
       if (drag.moved) markInspectGestureMoved();
-      updateBoardReparentTarget(canvas, drag, event); event.preventDefault(); return;
+      if (!drag.moved) { event.preventDefault(); return; }
+      drag.hit.classList.add("board-reorder-dragging");
+      if (drag.parentZone && boardPointInRect(drag.parentZone, event)) {
+        drag.insertBefore = boardReorderInsertBefore(drag.content, event);
+        placeBoardReorderCaret(drag.content, drag.insertBefore);
+      } else {
+        drag.insertBefore = null;
+        clearBoardReorderCaret(drag.content);
+      }
+      event.preventDefault();
+      return;
     }
     var point = boardCanvasPoint(canvas, event), rawX = Math.round(drag.x + point.x - drag.start.x), rawY = Math.round(drag.y + point.y - drag.start.y);
     var clamped = clampBoardDragPosition(canvas, rawX, rawY), x = clamped.x, y = clamped.y;
@@ -866,16 +1019,19 @@ function wireBoardDrag(root, board) {
   });
   var finish = function(event, cancelled) {
     if (!drag || event.pointerId !== drag.pointerId) return; var done = drag; drag = null; try { done.hit.releasePointerCapture(event.pointerId); } catch (_) {}
-    done.hit.classList.remove("board-reparent-dragging");
+    done.hit.classList.remove("board-reorder-dragging");
+    if (done.content) clearBoardReorderCaret(done.content);
     if (cancelled || !done.moved) {
       if (!cancelled && boardInspectGesture && boardInspectGesture.already && !boardInspectGesture.moved) inspectBoardSelection();
       boardInspectGesture = null;
     }
-    if (done.mode === "reparent") {
-      var target = done.dropTarget; clearBoardReparentTarget(done);
-      if (cancelled || !done.moved || target === false) return;
-      var keep = Object.assign({}, selectedBoardNode);
-      try { var result = BoardRender.reparentNode(boardSourceEl.value, keep, target ? target.dataset.boardId : null); applyBoardEditResult(result); } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+    if (done.mode === "reorder") {
+      if (cancelled || !done.moved || done.insertBefore == null) return;
+      var fromIndex = boardReorderKids(done.content).indexOf(done.hit);
+      var toIndex = BoardRender.reorderFinalIndex(fromIndex, done.insertBefore);
+      if (fromIndex < 0 || toIndex === fromIndex) return;
+      var reorderKeep = Object.assign({}, selectedBoardNode);
+      try { var reordered = BoardRender.reorderNode(boardSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
       event.preventDefault(); event.stopPropagation(); return;
     }
     if (cancelled || !done.moved) return;
@@ -1240,6 +1396,63 @@ document.addEventListener("keydown", function(event) {
   if (target === boardSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(boardSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(boardSourceEl.value, selectedBoardNode); });
+});
+function boardNudgeOrder(delta) {
+  if (!selectedBoardNode || typeof BoardRender.reorderInfo !== "function") return;
+  var info;
+  try { info = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  if (!info || info.count < 2) return;
+  var next = info.index + delta;
+  if (next < 0 || next >= info.count) return;
+  boardEditAction(function() { return BoardRender.reorderNode(boardSourceEl.value, selectedBoardNode, next); });
+}
+if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
+if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
+function boardNudgeSelection(delta) {
+  var root = previewEl && previewEl.querySelector(".board-render");
+  if (!root || !selectedBoardNode || selectedBoardNode.kind === "title") return false;
+  var el = root.querySelector("[data-board-key=\"" + selectedBoardNode.key + "\"]");
+  var content = boardParentContent(el);
+  if (!content) return false;
+  var kids = boardReorderKids(content);
+  var from = kids.indexOf(el);
+  var next = from + delta;
+  if (from < 0 || next < 0 || next >= kids.length) return false;
+  selectBoardElement(kids[next], root, BoardRender.parse(boardSourceEl.value));
+  return true;
+}
+document.addEventListener("keydown", function(event) {
+  if (document.documentElement.dataset.drawerMode !== "board" || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
+  var delta = 0;
+  if (event.key === "ArrowUp" || event.key === "ArrowLeft") delta = -1;
+  else if (event.key === "ArrowDown" || event.key === "ArrowRight") delta = 1;
+  if (!delta) return;
+  var target = event.target;
+  if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target && target.closest && target.closest("#boardIconField")) return;
+  if (!boardNudgeSelection(delta)) return;
+  event.preventDefault();
+});
+document.addEventListener("keydown", function(event) {
+  if (document.documentElement.dataset.drawerMode !== "board" || !event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
+  var target = event.target;
+  if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (typeof BoardRender.reorderInfo !== "function") return;
+  var info;
+  try { info = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  if (!info || info.count < 2) return;
+  var row = info.direction === "row";
+  var delta = 0;
+  if (row) {
+    if (event.key === "ArrowLeft") delta = -1;
+    else if (event.key === "ArrowRight") delta = 1;
+  } else if (event.key === "ArrowUp") delta = -1;
+  else if (event.key === "ArrowDown") delta = 1;
+  if (!delta) return;
+  event.preventDefault();
+  boardNudgeOrder(delta);
 });
 
 function boardClickIsOnNode(event) {

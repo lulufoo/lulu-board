@@ -768,6 +768,74 @@
   }
   function containsBox(box, targetId) { return (box.boxes || []).some(function(child) { return child.id === targetId || containsBox(child, targetId); }); }
   function unchangedEdit(source, selection) { return { source: String(source == null ? "" : source), selection: selection || null }; }
+  function boxDirection(board, boxId) {
+    var props = ((board.layout && board.layout.boxes) || {})[boxId] || {};
+    return props.direction === "row" ? "row" : "column";
+  }
+  function itemSelectionIn(parent, item) {
+    var index = (parent.items || []).indexOf(item);
+    return { kind: "item", key: "item:" + parent.id + ":" + index, id: item.id || null, boxId: parent.id, index: index };
+  }
+  function nodeSelectionIn(parent, node) {
+    if (isItemNode(node)) return itemSelectionIn(parent, node);
+    return { kind: "box", key: "box:" + node.id, id: node.id };
+  }
+  function findNestedMove(board, selection) {
+    if (!selection) return null;
+    if (selection.kind === "box") {
+      var found = findBoxWithParent(board, selection.id);
+      if (!found || !found.parent) return null;
+      return { node: found.node, parent: found.parent };
+    }
+    if (selection.kind === "item") {
+      if (!selection.boxId) return null;
+      var parentHit = findBoxWithParent(board, selection.boxId);
+      if (!parentHit) return null;
+      var item = findNode(board, selection);
+      if (!item || (View && !View.isItem(item))) return null;
+      return { node: item, parent: parentHit.node };
+    }
+    return null;
+  }
+  function reorderInfo(source, selection) {
+    var board = parse(source);
+    var moving = findNestedMove(board, selection);
+    if (!moving) return null;
+    var kids = ensureKids(moving.parent);
+    return {
+      parentId: moving.parent.id,
+      index: kids.indexOf(moving.node),
+      count: kids.length,
+      direction: boxDirection(board, moving.parent.id)
+    };
+  }
+  function reorderFinalIndex(from, insertBefore) {
+    var src = Number(from);
+    var at = Number(insertBefore);
+    if (!Number.isInteger(src) || !Number.isInteger(at)) return src;
+    if (at === src || at === src + 1) return src;
+    return at > src ? at - 1 : at;
+  }
+  function reorderNode(source, selection, toIndex) {
+    if (!selection) fail("select a Board node before reordering");
+    var board = parse(source);
+    var moving = findNestedMove(board, selection);
+    if (!moving) fail("only a nested Board node can be reordered");
+    var kids = ensureKids(moving.parent);
+    var from = kids.indexOf(moving.node);
+    if (from < 0) fail("selected Board node was not found in its parent");
+    var nextSel = nodeSelectionIn(moving.parent, moving.node);
+    if (kids.length < 2) return unchangedEdit(source, nextSel);
+    var to = Number(toIndex);
+    if (!Number.isInteger(to)) fail("reorder index must be an integer");
+    to = Math.max(0, Math.min(to, kids.length - 1));
+    if (from === to) return unchangedEdit(source, nextSel);
+    kids.splice(from, 1);
+    kids.splice(to, 0, moving.node);
+    syncKids(moving.parent);
+    if (View) View.adopt(board);
+    return editResult(board, nodeSelectionIn(moving.parent, moving.node));
+  }
   function reparentNode(source, selection, targetId) {
     if (!selection) fail("select a Board node before reparenting");
     var board = parse(source), target = targetId == null || targetId === "" ? null : findBoxWithParent(board, targetId);
@@ -2039,5 +2107,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, BoardParseError };
 });

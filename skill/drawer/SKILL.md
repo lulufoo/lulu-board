@@ -110,9 +110,9 @@ only retargets `current`. Source dock uses `/board-history.json` and `DELETE /ap
 
 | Board edit | Does |
 |---|---|
-| Select | titles; types (`solid` / `dashed` on links) |
+| Select | titles; nested siblings (arrows); types (`solid` / `dashed` on links) |
 | Add / delete | box, item |
 | Link | source, then target |
-| Drag | top-level move; Alt-drag reparent |
+| Drag | top-level move; nested reorder |
 | Layout | Trunk / Stagger |
 | Props | Board-only |
