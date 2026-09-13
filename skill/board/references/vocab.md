@@ -32,7 +32,7 @@ A Board document has these layers:
 - Indent box children by two spaces.
 - A box always has an ID. A board-level item needs an ID to be linked, laid
   out, or dragged.
-- `<n>` is an optional box-face icon; see icon `<n>`.
+- `<n>` is an optional box-face icon; see Icons.
 - `layout` boxes have no title or icon.
 
 ### Box types
@@ -52,7 +52,7 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 | `chip` | `"<markdown>"` | Framed leaf | yes; omit `type chip` |
 | `text` | `"<markdown>"` | Unframed text | |
 | `note` | `"<markdown>"` | Dog-eared note | |
-| `icon` | `<n> ["<caption>"]` | Icon leaf; see icon `<n>` | |
+| `icon` | `<n> ["<caption>"]` | Icon leaf; see Icons | |
 
 `shape` is chip-only and chooses the frame.
 
@@ -68,9 +68,9 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 
 - headings (`#`–`###`), ordered and unordered lists, bold, italic, inline code, and `\n`
 
-### icon `<n>`
+## Icons
 
-`icon` takes `<n>` from [icons.json](../common/icons.json).
+Box faces and `icon` items take `<n>` from [icons.json](../common/icons.json).
 
 - pick `n` from `sections[].icons[]`
 - `gloss` is the meaning; the section is the category
@@ -105,6 +105,8 @@ A line reading `layout` opens the section; every statement under it starts
 with a keyword. Layout is constraints: `arrange` / `flush` relate nodes; `pin`
 binds two edges of nodes or of the `parent` frame.
 
+### Board
+
 Without ids, `direction` / `align` / `justify` set the board itself. The board
 defaults to `direction row` with gap 32 and padding 24: top-level boxes flow
 left to right. A horizontal `arrange` or any `pin` turns that flow off; only
@@ -135,6 +137,7 @@ Omit a statement when it only restates the default.
 ### On the board
 
 These statements place top-level nodes relative to one another or to the board
+frame. `edge` is `start`, `end`, `top`, or `bottom`; `parent` is the board
 frame. Draft with `arrange` and `flush`; pin only where an exact distance
 carries meaning.
 
@@ -152,7 +155,7 @@ the axis.
 #### flush
 
 ```text
-flush <id>, <id>[, <id>…] start|end|top|bottom
+flush <id>, <id>[, <id>…] <edge>
 ```
 
 Lines up nodes on a shared edge. Pair `top` with `bottom` on the same ids to
@@ -164,8 +167,7 @@ stretch them to the tallest.
 pin <id>.<edge> to <id|parent>.<edge> [N]
 ```
 
-Binds two edges. `edge` is `start`, `end`, `top`, or `bottom`; `parent` is the
-board frame. `N` is the distance between the edges, negative allowed; omit it
+Binds two edges. `N` is the distance between them, negative allowed; omit it
 when they meet.
 
 Pin `start` and `top` to `parent` to place a node; add `end` or `bottom` to fix
