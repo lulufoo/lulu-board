@@ -37,7 +37,15 @@ or:
 /mermaid
 ```
 
-The Drawer opens on a built-in template so you can try the loop right away.
+The Drawer opens on a built-in template — the onboarding board — so you can see the loop right away:
+
+<p align="center">
+  <a href="./examples/board-onboarding/onboarding.bmd">
+    <img src="./examples/board-onboarding/onboarding.png" alt="Board · Onboarding" width="720" />
+  </a>
+</p>
+
+<p align="center"><strong>Onboarding</strong> — AI writes. Lulu-Drawer draws. You work on the canvas.</p>
 
 **Source** (`<>`) → **History** to browse the built-in templates. New files are stored there too.
 
@@ -70,17 +78,6 @@ Click a preview to open the source.
 ### Board
 
 <table>
-  <tr>
-    <td valign="top" align="center">
-      <a href="./examples/board-onboarding/onboarding.bmd">
-        <img src="./examples/board-onboarding/onboarding.png" alt="Board · Onboarding" />
-      </a>
-      <p>
-        <strong>Onboarding</strong><br />
-        AI writes. Lulu-Drawer draws. You work on the canvas.
-      </p>
-    </td>
-  </tr>
   <tr>
     <td valign="top" align="center">
       <a href="./examples/board-llm-architecture/llm-architecture.bmd">
