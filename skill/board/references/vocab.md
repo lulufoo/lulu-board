@@ -1,12 +1,11 @@
 # Board protocol beta — vocabulary
 
-A Board document has an envelope plus these layers:
+A Board document has these layers:
 
 | Layer | Syntax | Purpose |
 |---|---|---|
-| Envelope | `meta <base64>` | Stash; omit when minting; leave unchanged |
+| Stash | `meta <base64>`, `style <base64>` | Drawer-owned; see Protocol boundary |
 | Structure | `board`, `box`, `item` | Define nodes and containment |
-| Style | `style <base64>` | Stash; omit when minting; leave unchanged |
 | Relation | `A -> B`, `A <-> B` | Connect nodes semantically |
 | Layout | `layout` | Position nodes (`arrange`, `flush`, `pin`) |
 
@@ -15,7 +14,8 @@ A Board document has an envelope plus these layers:
 - The first drawing statement is `board "<title>"`; one document contains one board.
 - IDs match `[A-Za-z_][A-Za-z0-9_.-]*` and are unique across boxes and id’d items.
   These are node IDs inside BMD Source. They are not the Drawer BMD ID (`b_…`).
-- Canonical output uses double-quoted strings. Write `\n` inside a string for a line break.
+- Canonical output: lowercase keywords, double-quoted strings, `\n` for a line
+  break; IDs are uppercase by convention.
 - Keywords and IDs are ASCII; labels may use any language.
 - Blank lines and lines beginning with `#` or `//` are ignored.
 
@@ -31,7 +31,7 @@ A Board document has an envelope plus these layers:
 
 - Indent box children by two spaces.
 - A box always has an ID. Give a board-level item an ID.
-- `<n>` is an optional box-face icon from [icons.json](../common/icons.json).
+- `<n>` is an optional box-face icon; see icon `<n>`.
 - `layout` boxes have no title or icon.
 
 ### Box types
@@ -48,10 +48,10 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 
 | Type | Body | Meaning | Default |
 |---|---|---|---|
-| `chip` | `[shape …] [cap off] "<markdown>"` | Framed leaf | yes; omit `type chip` |
-| `text` | `[cap off] "<markdown>"` | Unframed text | |
-| `note` | `[cap off] "<markdown>"` | Dog-eared note | |
-| `icon` | `<n> ["<caption>"]` | Icon leaf from [icons.json](../common/icons.json) | |
+| `chip` | `"<markdown>"` | Framed leaf | yes; omit `type chip` |
+| `text` | `"<markdown>"` | Unframed text | |
+| `note` | `"<markdown>"` | Dog-eared note | |
+| `icon` | `<n> ["<caption>"]` | Icon leaf; see icon `<n>` | |
 
 `shape` is chip-only and chooses the frame.
 
@@ -104,9 +104,7 @@ Put layout statements under one `layout` section. Layout is constraints:
 `arrange` / `flush` relate nodes; `pin` binds two edges of nodes or of the
 `parent` frame.
 
-Every layout statement starts with a keyword. Keywords are lowercase; IDs are
-uppercase by convention. Several ids that share a value may be listed in one
-statement.
+Every layout statement starts with a keyword.
 
 Without ids, `direction` / `align` / `justify` set the board itself. The board
 defaults to `direction row` with gap 32 and padding 24: top-level boxes flow
@@ -115,7 +113,8 @@ the stated constraints place nodes from then on.
 
 ### Inside a box
 
-These properties arrange a box’s children.
+These properties arrange a box’s children. Several ids that share a value may
+be listed in one statement.
 
 ```text
 direction <box-id>, <box-id>… row|column
