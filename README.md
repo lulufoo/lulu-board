@@ -1,39 +1,73 @@
-# Lulu Drawer
+<p align="center">
+  <img src="docs/readme/logo.png" width="160" alt="Lulu Drawer" />
+</p>
 
-**Lulu Board** and **Lulu Mermaid** in a local Drawer loop — write a diagram, see it live, edit or ask, export.
+<h1 align="center">Lulu Drawer</h1>
 
-| Mode | Product | ID | Skill |
-|---|---|---|---|
-| Board | Lulu Board | BMD ID (`b_…`) | `skill/board/` |
-| Mermaid | Lulu Mermaid | MMD ID (`m_…`) | `skill/mermaid/` |
+<p align="center"><b>One text. One canvas. You and the agent.</b></p>
 
-## How to use
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
+</p>
 
-In Cursor (or your agent), start with:
+---
+
+Lulu Drawer is a local loop for diagrams in Cursor (and other Agent Skills hosts): write Board or Mermaid source, see it live, edit either side.
+
+| Mode | Product | Source ID |
+|---|---|---|
+| Board | **Lulu Board** — structured whiteboard text | BMD (`b_…`) |
+| Mermaid | **Lulu Mermaid** — Mermaid in the same Drawer | MMD (`m_…`) |
+
+## Why
+
+Diagrams go stale when only one side can edit them. Lulu Drawer keeps a single source of truth: the agent writes it, you refine it on the canvas or in Source, and both stay in sync.
+
+## Quick start
+
+Install **only** the [`skill/`](./skill/) folder (not this whole repo) into your agent skills path, then in chat:
 
 ```text
 /board
 ```
 
-The Drawer opens with built-in samples in **History**. Open History and pick **Android MVI** — that board is the walkthrough: edit boxes on the canvas, ask the agent to revise, keep iterating.
+or:
+
+```text
+/mermaid
+```
+
+The Drawer opens on a built-in template so you can try the loop right away.
+
+**Source** (`<>`) → **History** to browse the built-in templates. New files are stored there too.
+
+## Draw from a prompt
+
+Describe what you want after `/board` or `/mermaid`:
+
+```text
+/board Draw an Android MVI architecture diagram for me.
+```
+
+```text
+/mermaid Checkout flow as a state diagram: Idle → Cart → Checkout → Paying.
+```
+
+The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
-    <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI" width="720" />
+    <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI in Cursor" width="720" />
   </a>
 </p>
 
-<p align="center"><strong>Board · Android MVI</strong> — Intent · State · SideEffect</p>
+<p align="center"><strong>Board · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
 
-Mermaid works the same way with `/mermaid`, then History.
+## Examples
 
-## Showcase
-
-More samples under [`examples/`](./examples/). Click a preview to open the source.
+Click a preview to open the source.
 
 ### Board
-
-Stacked full-width previews (one per row).
 
 <table>
   <tr>
@@ -42,8 +76,8 @@ Stacked full-width previews (one per row).
         <img src="./examples/board-onboarding/onboarding.png" alt="Board · Onboarding" />
       </a>
       <p>
-        <strong>Board · Onboarding</strong><br />
-        Welcome · Write · See · Edit · Ask — product story
+        <strong>Onboarding</strong><br />
+        Write · See · Edit · Ask
       </p>
     </td>
   </tr>
@@ -53,7 +87,7 @@ Stacked full-width previews (one per row).
         <img src="./examples/board-llm-architecture/llm-architecture.png" alt="Board · LLM Architecture" />
       </a>
       <p>
-        <strong>Board · LLM Architecture</strong><br />
+        <strong>LLM Architecture</strong><br />
         Agent stack from data through training
       </p>
     </td>
@@ -62,9 +96,7 @@ Stacked full-width previews (one per row).
 
 ### Mermaid
 
-Work in progress. Rendering depends on [mermaid](https://github.com/mermaid-js/mermaid) and [elkjs](https://github.com/kieler/elkjs) (via `@mermaid-js/layout-elk`).
-
-Two per row.
+Mermaid rendering is still evolving. It depends on [mermaid](https://github.com/mermaid-js/mermaid) and [elkjs](https://github.com/kieler/elkjs) (via `@mermaid-js/layout-elk`).
 
 <table>
   <tr>
@@ -73,8 +105,8 @@ Two per row.
         <img src="./examples/mermaid-state/checkout.png" alt="Mermaid · State" />
       </a>
       <p>
-        <strong>Mermaid · State</strong><br />
-        Compact checkout UI state machine
+        <strong>State</strong><br />
+        Checkout UI state machine
       </p>
     </td>
     <td width="50%" valign="top" align="center">
@@ -82,46 +114,44 @@ Two per row.
         <img src="./examples/mermaid-mindmap/ship-a-feature.png" alt="Mermaid · Mindmap" />
       </a>
       <p>
-        <strong>Mermaid · Mindmap</strong><br />
-        Ship a feature — Build / Launch (Logic layout)
+        <strong>Mindmap</strong><br />
+        Ship a feature — Build / Launch
       </p>
     </td>
   </tr>
 </table>
 
-## Install the skill (not this whole repo)
+## Install
 
-Install / publish **only** [`skill/`](./skill/).
+Ship **`skill/`** only:
 
 ```text
 skill/
-  SKILL.md
-  board/ mermaid/ drawer/
-  board/templates/demo.bmd   # AI-facing sample (not seeded into History)
-  assets/                    # viewer + assets/templates/{board,mermaid} for History
-  scripts/                   # runtime CLI
+  SKILL.md                 # agent entry
+  board/ mermaid/ drawer/  # mode skills
+  assets/                  # viewer + History templates
+  scripts/                 # drawer_control CLI
 ```
 
-Do **not** install the monorepo root as a skill (`packages/`, `scripts/*-build/`, and `tests/` are for development).
+Do not install the monorepo root. `packages/`, `scripts/*-build/`, and `tests/` are for development.
 
-## Develop in this monorepo
+## Develop
 
 ```text
-examples/           # README showcase (source + PNG); pack into skill/assets/templates
-packages/           # sources (board, drawer-app, mermaid-*)
-scripts/*-build/    # build tooling (not shipped in skill/)
-skill/assets/       # build output (tracked for skill install)
+examples/    # README previews (source + PNG) → packed into skill/assets/templates
+packages/    # board, drawer-app, mermaid-*
+scripts/     # build tooling
+skill/       # install root
 tests/
 ```
 
-Build (from repo root):
+From the repo root:
 
 ```bash
 node scripts/drawer-app-build/build.mjs
 node scripts/board-build/build.mjs
 node scripts/mermaid-ext-build/build.mjs
-# board-build / mermaid-ext-build also pack examples → skill/assets/templates/{board,mermaid}
-# or pack alone:
+# or pack examples alone:
 node scripts/examples-templates-build/build.mjs
 ```
 
