@@ -4,7 +4,7 @@
 
 <h1 align="center">Lulu Drawer</h1>
 
-<p align="center"><b>One text protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas.</b></p>
+<p align="center"><b>One text protocol. AI agent writes it. Lulu-Drawer draws it. You work on the canvas.</b></p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
@@ -12,7 +12,7 @@
 
 ---
 
-One text protocol for diagrams — the agent writes it, Lulu Drawer draws it, you work on the canvas; both stay in sync. A local loop — Board and Mermaid in the same Drawer.
+One text protocol for diagrams — the AI agent writes it, Lulu Drawer draws it, you work on the canvas; both stay in sync. A local loop — Board and Mermaid in the same Drawer.
 
 | Mode | Product | Source ID |
 |---|---|---|
