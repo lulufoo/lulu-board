@@ -18,7 +18,7 @@ assert.ok(
   /el\.style\.minWidth = nested \? 'min-content' : '0'/.test(boxJs),
   'nested box keeps min-content'
 );
-assert.ok(!/direction HERO, C2ROW, C3COL/.test(template), 'C3COL stays column');
-assert.ok(/direction HERO, C2ROW, C4YOU, C4AI row/.test(template), 'other rows stay row');
+assert.ok(/direction HERO, MINI, PROTOROW row/.test(template), 'hero, mini flow and protocol row stay row');
+assert.ok(!/direction HERO, C2ROW, C3COL/.test(template), 'old tutorial rows stay gone');
 
 console.log('ok title-no-letter-wrap');

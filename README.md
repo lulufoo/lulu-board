@@ -4,7 +4,7 @@
 
 <h1 align="center">Lulu Drawer</h1>
 
-<p align="center"><b>One text. One canvas. You and the agent.</b></p>
+<p align="center"><b>One protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas.</b></p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
@@ -77,7 +77,7 @@ Click a preview to open the source.
       </a>
       <p>
         <strong>Onboarding</strong><br />
-        Write · See · Edit · Ask
+        AI writes. Lulu-Drawer draws. You work on the canvas.
       </p>
     </td>
   </tr>
