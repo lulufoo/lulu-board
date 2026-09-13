@@ -30,7 +30,8 @@ A Board document has these layers:
 | Item | `item [<id>] [type <item-type>] [shape …] [cap off] <body>` | Leaf inside a box or at board level |
 
 - Indent box children by two spaces.
-- A box always has an ID. Give a board-level item an ID.
+- A box always has an ID. A board-level item needs an ID to be linked, laid
+  out, or dragged.
 - `<n>` is an optional box-face icon; see icon `<n>`.
 - `layout` boxes have no title or icon.
 
@@ -78,7 +79,7 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 
 ## Relation
 
-Use IDs as endpoints:
+Endpoints are node IDs at any depth:
 
 ```text
 <from> -> <to> [type solid|dashed] [title "<label>"]
@@ -100,11 +101,9 @@ nodes.
 
 ## Layout
 
-Put layout statements under one `layout` section. Layout is constraints:
-`arrange` / `flush` relate nodes; `pin` binds two edges of nodes or of the
-`parent` frame.
-
-Every layout statement starts with a keyword.
+A line reading `layout` opens the section; every statement under it starts
+with a keyword. Layout is constraints: `arrange` / `flush` relate nodes; `pin`
+binds two edges of nodes or of the `parent` frame.
 
 Without ids, `direction` / `align` / `justify` set the board itself. The board
 defaults to `direction row` with gap 32 and padding 24: top-level boxes flow
@@ -113,7 +112,7 @@ the stated constraints place nodes from then on.
 
 ### Inside a box
 
-These properties arrange a box’s children. Several ids that share a value may
+These statements arrange a box’s children. Several ids that share a value may
 be listed in one statement.
 
 ```text
@@ -122,7 +121,7 @@ align <box-id>, <box-id>… start|center|stretch
 justify <box-id>, <box-id>… start|center|stretch
 ```
 
-| Property | Meaning | Default |
+| Statement | Meaning | Default |
 |---|---|---|
 | `direction` | Children’s main axis | `column` |
 | `align` | Children on the cross axis | `stretch` |
