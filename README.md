@@ -4,7 +4,7 @@
 
 <h1 align="center">Lulu Drawer</h1>
 
-<p align="center"><b>One protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas.</b></p>
+<p align="center"><b>One text protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas.</b></p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
@@ -12,7 +12,7 @@
 
 ---
 
-Lulu Drawer is a local loop for diagrams in Cursor (and other Agent Skills hosts): write Board or Mermaid source, see it live, edit either side.
+One text protocol for diagrams — AI writes it, Lulu Drawer draws it, you work on the canvas; both stay in sync. A local loop for Cursor (and other Agent Skills hosts), with Board and Mermaid in the same Drawer.
 
 | Mode | Product | Source ID |
 |---|---|---|
@@ -21,7 +21,7 @@ Lulu Drawer is a local loop for diagrams in Cursor (and other Agent Skills hosts
 
 ## Why
 
-Diagrams go stale when only one side can edit them. Lulu Drawer keeps a single source of truth: the agent writes it, you refine it on the canvas or in Source, and both stay in sync.
+Diagrams go stale when only one side can edit them. Lulu Drawer keeps one text protocol as the source of truth: the agent writes it, you refine it on the canvas (or in Source), and both stay in sync.
 
 ## Quick start
 
