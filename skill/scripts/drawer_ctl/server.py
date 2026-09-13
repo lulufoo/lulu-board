@@ -23,6 +23,14 @@ from drawer_ctl import board
 from drawer_ctl import document
 from drawer_ctl.migrate import migrate_document_envelopes
 
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MAX_EXPORT_PNG_BYTES = 64_000_000
+
+
+def is_valid_png_export(data: bytes) -> bool:
+    return len(data) > len(PNG_SIGNATURE) and data.startswith(PNG_SIGNATURE)
+
+
 def read_server():
     try:
         data = json.loads(paths.server_path().read_text(encoding="utf-8"))
@@ -213,7 +221,7 @@ def sync_assets() -> None:
     vendor_dir = paths.asset_path().parent / "vendor"
     vendor_dest = paths.STATE_DIR / "vendor"
     vendor_dest.mkdir(parents=True, exist_ok=True)
-    for name in ("mermaid.min.js", "layout-elk.min.js", "board.min.js", "mermaid-themes.min.js", "flowchart.min.js", "mindmap.min.js", "state.min.js", "drawer-app.css", "drawer-app.js", "drawer-app-early-head.js", "drawer-app-early-hydrate.js", "drawer-app-mermaid-alias.js"):
+    for name in ("mermaid.min.js", "layout-elk.min.js", "board.min.js", "mermaid-themes.min.js", "flowchart.min.js", "mindmap.min.js", "state.min.js", "snapdom.mjs", "drawer-app.css", "drawer-app.js", "drawer-app-early-head.js", "drawer-app-early-hydrate.js", "drawer-app-mermaid-alias.js"):
         src = vendor_dir / name
         if not src.is_file():
             raise RuntimeError(f"viewer vendor missing: {src}")
@@ -355,6 +363,18 @@ def run_serve(port: int) -> int:
                     self.send_error(400, "body must be svg")
                     return
                 dest = mermaid.write_export_svg(text, self.headers.get("X-Export-Stem"))
+                self._send_json(200, {"ok": True, "path": str(dest)})
+                return
+            if path in ("/export.png", "/api/export-png"):
+                length = int(self.headers.get("Content-Length", "0") or 0)
+                if length <= len(PNG_SIGNATURE) or length > MAX_EXPORT_PNG_BYTES:
+                    self.send_error(400, "invalid body length")
+                    return
+                body = self.rfile.read(length)
+                if not is_valid_png_export(body):
+                    self.send_error(400, "body must be png")
+                    return
+                dest = mermaid.write_export_png(body, self.headers.get("X-Export-Stem"))
                 self._send_json(200, {"ok": True, "path": str(dest)})
                 return
             if path in ("/board.bmd", "/board.dsl", "/api/board"):

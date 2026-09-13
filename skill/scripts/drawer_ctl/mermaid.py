@@ -34,6 +34,10 @@ def write_export_svg(text: str, stem: str | None = None) -> Path:
     return write_export_file(text.encode("utf-8"), stem, ".svg")
 
 
+def write_export_png(data: bytes, stem: str | None = None) -> Path:
+    return write_export_file(data, stem, ".png")
+
+
 def create_mermaid_record(
     text: str,
     rev: int,
