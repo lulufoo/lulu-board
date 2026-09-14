@@ -478,7 +478,7 @@ const boardIconLabel = $("#boardIconLabel");
 const boardIconList = $("#boardIconList");
 const boardIconSec = $("#boardIconSec");
 var boardIconPick = 1;
-var boardIconSecId = "shapes";
+var boardIconSecId = ""; // first section comes from BoardIcons / icons.json
 function currentDockTab() {
   return (boardDock && boardDock.getAttribute("data-open")) || "";
 }
@@ -1629,10 +1629,16 @@ function fillBoardIconList() {
   if (!boardIconList || !Icons || !Icons.glyph || !Icons.sections) return;
   var spec = boardIconSecId ? Icons.sections.filter(function(sec) { return sec.id === boardIconSecId; })[0] : null;
   if (!spec) {
-    boardIconSecId = "";
-    boardIconList.innerHTML = "";
-    fillBoardIconSec();
-    return;
+    var first = Icons.sections[0];
+    if (first && first.id) {
+      boardIconSecId = first.id;
+      spec = first;
+    } else {
+      boardIconSecId = "";
+      boardIconList.innerHTML = "";
+      fillBoardIconSec();
+      return;
+    }
   }
   var html = "";
   (spec.icons || []).forEach(function(n) {

@@ -40,6 +40,42 @@
         {
           "n": 9,
           "gloss": "Cloud"
+        },
+        {
+          "n": 10,
+          "gloss": "Diamond"
+        },
+        {
+          "n": 11,
+          "gloss": "Circle Plus"
+        },
+        {
+          "n": 12,
+          "gloss": "Circle Minus"
+        },
+        {
+          "n": 13,
+          "gloss": "Circle X"
+        },
+        {
+          "n": 14,
+          "gloss": "Circle Check"
+        },
+        {
+          "n": 15,
+          "gloss": "Square Plus"
+        },
+        {
+          "n": 16,
+          "gloss": "Square Minus"
+        },
+        {
+          "n": 17,
+          "gloss": "Square X"
+        },
+        {
+          "n": 18,
+          "gloss": "Square Check"
         }
       ]
     },
@@ -83,6 +119,66 @@
         {
           "n": 109,
           "gloss": "Delete"
+        },
+        {
+          "n": 110,
+          "gloss": "Circle Play"
+        },
+        {
+          "n": 111,
+          "gloss": "Circle Pause"
+        },
+        {
+          "n": 112,
+          "gloss": "Skip Back"
+        },
+        {
+          "n": 113,
+          "gloss": "Skip Forward"
+        },
+        {
+          "n": 114,
+          "gloss": "Save"
+        },
+        {
+          "n": 115,
+          "gloss": "Copy"
+        },
+        {
+          "n": 116,
+          "gloss": "Clipboard"
+        },
+        {
+          "n": 117,
+          "gloss": "Send"
+        },
+        {
+          "n": 118,
+          "gloss": "External Link"
+        },
+        {
+          "n": 119,
+          "gloss": "Maximize"
+        },
+        {
+          "n": 120,
+          "gloss": "Scan"
+        },
+        {
+          "n": 121,
+          "gloss": "Target"
+        },
+        {
+          "n": 122,
+          "gloss": "Route"
+        },
+        {
+          "n": 123,
+          "gloss": "Sitemap"
+        },
+        {
+          "n": 124,
+          "gloss": "Layers"
         }
       ]
     },
@@ -100,16 +196,40 @@
           "gloss": "Team"
         },
         {
-          "n": 203,
-          "gloss": "Crowd"
-        },
-        {
           "n": 204,
           "gloss": "Invite"
         },
         {
           "n": 205,
           "gloss": "Home"
+        },
+        {
+          "n": 206,
+          "gloss": "Message"
+        },
+        {
+          "n": 207,
+          "gloss": "Message Plus"
+        },
+        {
+          "n": 208,
+          "gloss": "Mail"
+        },
+        {
+          "n": 209,
+          "gloss": "Inbox"
+        },
+        {
+          "n": 210,
+          "gloss": "Share"
+        },
+        {
+          "n": 211,
+          "gloss": "At Sign"
+        },
+        {
+          "n": 212,
+          "gloss": "Globe"
         }
       ]
     },
@@ -121,14 +241,6 @@
         {
           "n": 301,
           "gloss": "Document"
-        },
-        {
-          "n": 302,
-          "gloss": "Note"
-        },
-        {
-          "n": 303,
-          "gloss": "File"
         },
         {
           "n": 304,
@@ -184,6 +296,30 @@
         {
           "n": 406,
           "gloss": "Terminal"
+        },
+        {
+          "n": 407,
+          "gloss": "Agent"
+        },
+        {
+          "n": 408,
+          "gloss": "Tool Call"
+        },
+        {
+          "n": 409,
+          "gloss": "Token"
+        },
+        {
+          "n": 410,
+          "gloss": "Sparkle"
+        },
+        {
+          "n": 411,
+          "gloss": "Tool"
+        },
+        {
+          "n": 412,
+          "gloss": "Zap"
         }
       ]
     },
@@ -259,6 +395,73 @@
         {
           "n": 517,
           "gloss": "Sliders"
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "label": "Directions",
+      "digit": 6,
+      "icons": [
+        {
+          "n": 601,
+          "gloss": "Arrow Up"
+        },
+        {
+          "n": 602,
+          "gloss": "Arrow Down"
+        },
+        {
+          "n": 603,
+          "gloss": "Arrow Left"
+        },
+        {
+          "n": 604,
+          "gloss": "Arrow Up Left"
+        },
+        {
+          "n": 605,
+          "gloss": "Arrow Up Right"
+        },
+        {
+          "n": 606,
+          "gloss": "Arrow Down Left"
+        },
+        {
+          "n": 607,
+          "gloss": "Arrow Down Right"
+        },
+        {
+          "n": 608,
+          "gloss": "Chevron Up"
+        },
+        {
+          "n": 609,
+          "gloss": "Chevron Down"
+        },
+        {
+          "n": 610,
+          "gloss": "Chevron Left"
+        },
+        {
+          "n": 611,
+          "gloss": "Chevron Right"
+        },
+        {
+          "n": 612,
+          "gloss": "Corner Down Left"
+        },
+        {
+          "n": 613,
+          "gloss": "Swap"
+        },
+        {
+          "n": 614,
+          "gloss": "Undo"
+        },
+        {
+          "n": 615,
+          "gloss": "Redo"
         }
       ]
     }
