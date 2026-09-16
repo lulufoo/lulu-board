@@ -29,10 +29,10 @@ function b64(obj) {
 }
 
 {
-  const drawerSkill = fs.readFileSync(path.join(__dirname, '../../skill/drawer/SKILL.md'), 'utf8');
+  const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
-  assert.ok(/Omit on mint; do not change on update/.test(drawerSkill), 'drawer SKILL names stash rule');
+  assert.ok(/Mint without meta or style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');

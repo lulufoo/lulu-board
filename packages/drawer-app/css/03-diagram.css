@@ -603,7 +603,6 @@ html[data-drawer-mode="board"][data-diagram-theme="kami"] .canvas-shell {
 .board-render[data-board-theme="classic"],
 .board-render[data-board-theme="pastel"],
 .board-render[data-board-theme="kami"],
-.board-render[data-board-theme="mermaid"],
 .board-render[data-board-theme="minimal"],
 .board-render[data-board-theme="slate"] {
   border: 0 !important;

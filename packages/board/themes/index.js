@@ -88,7 +88,7 @@
   const FALLBACK_SWATCHES = THEMES.default.swatches;
 
   const ORDER = ['default', 'classic', 'pastel', 'kami'];
-  const LEGACY_IDS = { mermaid: 'default', minimal: 'classic', slate: 'pastel' };
+  const LEGACY_IDS = { minimal: 'classic', slate: 'pastel' };
 
   function resolveId(id) {
     const raw = String(id == null || id === '' ? 'default' : id);

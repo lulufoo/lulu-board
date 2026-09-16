@@ -7,7 +7,9 @@ const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 const io = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/05-render-io.js'), 'utf8');
 
-assert.ok(/id="mermaidHistoryComboBtn"/.test(html) && /id="boardHistoryComboBtn"/.test(html), 'both Source histories are combos');
+assert.ok(/id="boardHistoryComboBtn"/.test(html), 'Board Source history is a combo');
+assert.ok(!/id="mermaidHistoryComboBtn"/.test(html), 'no Mermaid history combo');
+assert.ok(!/data-board-theme="mermaid"/.test(css), 'CSS drops mermaid theme alias');
 assert.ok(/aria-haspopup="listbox"/.test(html), 'History combo exposes a listbox');
 assert.ok(!/\.history-list\s*\{[^}]*height:\s*240px/.test(css), 'History list is not a reserved 240px slot');
 assert.ok(/max-height:\s*min\(360px,\s*68vh\)/.test(css), 'open History list is 1.5× the first overlay height');

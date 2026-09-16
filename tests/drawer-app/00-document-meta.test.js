@@ -39,11 +39,9 @@ function token(id, version) {
 
 {
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
-  const drawer = fs.readFileSync(path.join(__dirname, '../../skill/drawer/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../skill/board/references/vocab.md'), 'utf8');
   assert.ok(/Mint without meta or style/.test(board), 'board SKILL mints without stash');
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');
-  assert.ok(/Omit on mint; do not change on update/.test(drawer), 'drawer SKILL names stash rule');
   assert.ok(/meta <base64>/.test(vocab), 'vocab names meta as base64');
   assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
 }
