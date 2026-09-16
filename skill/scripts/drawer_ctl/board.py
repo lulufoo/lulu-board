@@ -486,8 +486,6 @@ def delete_board_history(name: str) -> bool:
     raw = Path(str(name or "")).name
     if not raw or "/" in str(name) or "\\" in str(name) or ".." in raw:
         return False
-    if raw.endswith(".mmd"):
-        return False
     target = None
     for cand in paths.board_history_candidates(raw):
         if cand.is_file():

@@ -1,4 +1,4 @@
-/* Board protocol beta HTML/CSS renderer. Source for board.min.js. No Mermaid. */
+/* Board protocol beta HTML/CSS renderer. Source for board.min.js. */
 (function (root, factory) {
   const api = factory(root);
   if (typeof module === 'object' && module.exports) module.exports = api;

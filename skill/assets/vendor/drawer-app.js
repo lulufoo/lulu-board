@@ -1225,7 +1225,7 @@ function formatCssColor(c) {
   if (c.a != null && c.a < 1) return "rgba(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ", " + c.a + ")";
   return "rgb(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ")";
 }
-/** Darken toward black; hue stays from live theme stroke (Mermaid link select parity). */
+/** Darken toward black; hue stays from live theme stroke. */
 function darkenCssColor(raw, amount) {
   var c = parseCssColor(raw);
   if (!c) return raw;

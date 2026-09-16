@@ -64,14 +64,6 @@ function packOne({ prefix, ext, outRoot }) {
   return keep.size;
 }
 
-for (const legacy of ['mermaid']) {
-  const p = path.join(templatesRoot, legacy);
-  if (fs.existsSync(p)) {
-    fs.rmSync(p, { recursive: true, force: true });
-    console.log(`rm stale ${path.relative(repo, p)}`);
-  }
-}
-
 let total = 0;
 for (const spec of KINDS) {
   total += packOne(spec);
