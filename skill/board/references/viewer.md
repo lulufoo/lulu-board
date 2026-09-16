@@ -1,20 +1,37 @@
 # Viewer
 
-Local loopback viewer for Board. Loaded from `/board` only. Not a slash skill.
+Local loopback preview for Board. Loaded from `/board` only.
 
-Use `$DRAWER_CTL` from the board entry. Extra verbs: `mount`, `status`, `stop`.
-Subcommand contract: `$DRAWER_CTL --help`.
+## CLI
 
-Write-back is `preview`, not `set-source`. `--id` is BMD ID. Required on
-`get-source`. Omit on `preview` / `set-source` only to mint.
+1. Use `$DRAWER_CTL` from the board entry.
+2. Extra verbs: `mount`, `status`, `stop`.
+3. Subcommand contract: `$DRAWER_CTL --help`.
 
-`history/*.bmd` (+ `.json` sidecar) are the record list. `current` is the viewed
-pointer, not identity. History click retargets `current`. UI Source writes
-through `current` and does not create records.
+## Write-back
 
-On start, if `history` has no `*.bmd`, the viewer seeds packed templates under
-`../assets/templates/board/*.bmd` and points `current` at onboarding.
-`board/templates/demo.bmd` is not seeded.
+| Concern | Rule |
+|---|---|
+| Write | `preview`, not `set-source` |
+| `--id` | `--id` is BMD ID. Required on `get-source`. |
+| Mint | Omit `--id` on `preview` / `set-source` only to mint |
 
-`preview --kind board` with no file and no stdin does not create a record.
+## Pointers
+
+| Term | Meaning |
+|---|---|
+| `history/*.bmd` | Record list (+ `.json` sidecar) |
+| `current` | Viewed pointer, not identity |
+
+1. History click retargets `current`.
+2. UI Source writes through `current` and does not create records.
+
+## Seed
+
+1. If `history` has no `*.bmd`, seed `../assets/templates/board/*.bmd` and point `current` at onboarding.
+2. `board/templates/demo.bmd` is not seeded.
+3. `preview --kind board` with no file and no stdin does not create a record.
+
+## Open
+
 stdout `open` is `seeded` | `created` | `current`.
