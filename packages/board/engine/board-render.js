@@ -1286,17 +1286,88 @@
     return editResult(board, { kind: 'item', key: `item:${itemId}`, id: itemId, boxId: null, index: -1 });
   }
 
-  function removeBoxFrom(list, targetId, removed) {
-    for (let index = 0; index < list.length; index += 1) {
-      const box = list[index];
-      if (box.id === targetId) {
-        nodeIds(box, removed);
-        list.splice(index, 1);
-        return true;
+  function scrubRemovedIds(board, removed) {
+    board.links = (board.links || []).filter((link) => !removed.has(link.from) && !removed.has(link.to));
+    const layout = board.layout || {};
+    layout.constraints = (layout.constraints || []).filter((constraint) => !removed.has(constraint.source) && !removed.has(constraint.target));
+    layout.places = (layout.places || []).map((place) => ({ ...place, targets: (place.targets || []).filter((target) => !removed.has(target)) })).filter((place) => !removed.has(place.source) && place.targets.length);
+    layout.aligns = (layout.aligns || []).map((align) => ({ ...align, ids: (align.ids || []).filter((idValue) => !removed.has(idValue)) })).filter((align) => align.ids.length);
+    Object.keys(layout.boxes || {}).forEach((idValue) => { if (removed.has(idValue)) delete layout.boxes[idValue]; });
+  }
+
+  function parentPinGap(board, id, edge) {
+    let gap = 32;
+    ((board.layout && board.layout.constraints) || []).forEach((constraint) => {
+      if (constraint.source === id && constraint.target === 'parent' && constraint.sourceEdge === edge && constraint.targetEdge === edge) {
+        const next = Number(constraint.gap);
+        gap = Number.isFinite(next) ? next : 32;
       }
-      if (removeBoxFrom(box.boxes || [], targetId, removed)) return true;
+    });
+    return gap;
+  }
+
+  function pinTopLevel(board, id, start, top) {
+    if (!id) return;
+    const constraints = board.layout.constraints || (board.layout.constraints = []);
+    const next = constraints.filter((constraint) => !(constraint.source === id && constraint.target === 'parent' && (constraint.sourceEdge === 'start' || constraint.sourceEdge === 'top')));
+    next.push({ source: id, sourceEdge: 'start', target: 'parent', targetEdge: 'start', gap: Math.round(start * 100) / 100, mode: 'exact' });
+    next.push({ source: id, sourceEdge: 'top', target: 'parent', targetEdge: 'top', gap: Math.round(top * 100) / 100, mode: 'exact' });
+    board.layout.constraints = next;
+    board.layout.places = (board.layout.places || []).filter((place) => place.source !== id);
+  }
+
+  function ensureKidId(board, node) {
+    if (node.id) return node.id;
+    if (isItemNode(node)) {
+      node.id = nextItemId(board);
+      if (View) View.mark(node, 'item');
     }
-    return false;
+    return node.id;
+  }
+
+  function removeBoxNode(board, boxId, removed) {
+    const found = findBoxWithParent(board, boxId);
+    if (!found) return false;
+    nodeIds(found.node, removed);
+    if (found.parent) removeKid(found.parent, found.node);
+    else {
+      const index = found.list.indexOf(found.node);
+      if (index < 0) return false;
+      found.list.splice(index, 1);
+    }
+    if (View) View.adopt(board);
+    return true;
+  }
+
+  function dissolveBoxNode(board, boxId) {
+    const found = findBoxWithParent(board, boxId);
+    if (!found) return false;
+    const kids = ensureKids(found.node).slice();
+    const parent = found.parent;
+    const start = parentPinGap(board, boxId, 'start');
+    const top = parentPinGap(board, boxId, 'top');
+    const dir = boxDirection(board, boxId);
+    if (parent) {
+      const host = ensureKids(parent);
+      const index = host.indexOf(found.node);
+      if (index < 0) return false;
+      host.splice(index, 1);
+      kids.forEach((kid, i) => { host.splice(index + i, 0, kid); });
+      syncKids(parent);
+    } else {
+      const roots = found.list;
+      const at = roots.indexOf(found.node);
+      if (at < 0) return false;
+      roots.splice(at, 1);
+      kids.forEach((kid, i) => { roots.splice(at + i, 0, kid); });
+      kids.forEach((kid, i) => {
+        const id = ensureKidId(board, kid);
+        if (!id) return;
+        pinTopLevel(board, id, start + (dir === 'row' ? i * 32 : 0), top + (dir === 'row' ? 0 : i * 32));
+      });
+    }
+    if (View) View.adopt(board);
+    return true;
   }
 
   function deleteNode(source, selection) {
@@ -1305,8 +1376,11 @@
     const removed = new Set();
     let deleted = false;
     if (selection.kind === 'box') {
-      deleted = removeBoxFrom(board.views || board.boxes || [], selection.id, removed);
-      if (View) View.adopt(board);
+      if (selection.scope === 'tree') deleted = removeBoxNode(board, selection.id, removed);
+      else {
+        deleted = dissolveBoxNode(board, selection.id);
+        if (deleted) removed.add(selection.id);
+      }
     } else if (selection.kind === 'item' && (selection.boxId == null || selection.boxId === '')) {
       const roots = board.views || [];
       const index = roots.findIndex((node) => View && View.isItem(node) && node.id === selection.id);
@@ -1334,13 +1408,7 @@
       (board.boxes || []).forEach(visit);
     }
     if (!deleted) fail('selected Board node was not found');
-
-    board.links = (board.links || []).filter((link) => !removed.has(link.from) && !removed.has(link.to));
-    const layout = board.layout || {};
-    layout.constraints = (layout.constraints || []).filter((constraint) => !removed.has(constraint.source) && !removed.has(constraint.target));
-    layout.places = (layout.places || []).map((place) => ({ ...place, targets: (place.targets || []).filter((target) => !removed.has(target)) })).filter((place) => !removed.has(place.source) && place.targets.length);
-    layout.aligns = (layout.aligns || []).map((align) => ({ ...align, ids: (align.ids || []).filter((idValue) => !removed.has(idValue)) })).filter((align) => align.ids.length);
-    Object.keys(layout.boxes || {}).forEach((idValue) => { if (removed.has(idValue)) delete layout.boxes[idValue]; });
+    scrubRemovedIds(board, removed);
     return editResult(board, null);
   }
 

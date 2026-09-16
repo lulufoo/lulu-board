@@ -294,10 +294,34 @@ function markBoardIconPick(icon) {
 function normalizeBoardIdInput(raw) {
   return String(raw == null ? "" : raw).replace(/[^A-Za-z]/g, "").toUpperCase();
 }
+function boardBoxScope(selection) {
+  return selection && selection.scope === "tree" ? "tree" : "shell";
+}
+function boardBoxKey(id, scope) {
+  return scope === "tree" ? "tree:" + id : "box:" + id;
+}
+function boardDomSelectionKey(key) {
+  if (key && key.indexOf("tree:") === 0) return "box:" + key.slice(5);
+  return key || "";
+}
+function boardWantsTreeSelect(event) {
+  return !!(event && (event.metaKey || event.ctrlKey));
+}
+function boardTreeTargetEl(el) {
+  if (!el) return null;
+  if (el.classList.contains("board-item") && !el.classList.contains("board-root-item")) return el.closest(".board-zone");
+  if (el.classList.contains("board-zone")) return el;
+  return null;
+}
+function boardSelectionFromBoxEl(el, scope) {
+  var id = el && el.dataset ? el.dataset.boardId : "";
+  var nextScope = scope === "tree" ? "tree" : "shell";
+  return { kind: "box", key: boardBoxKey(id, nextScope), id: id, scope: nextScope };
+}
 function boardSelectionWithId(selection, nextId) {
   var id = nextId ? String(nextId) : null;
   if (!selection) return selection;
-  if (selection.kind === "box") return { kind: "box", key: "box:" + id, id: id };
+  if (selection.kind === "box") return { kind: "box", key: boardBoxKey(id, boardBoxScope(selection)), id: id, scope: boardBoxScope(selection) };
   if (selection.kind !== "item") return selection;
   if (selection.boxId == null || selection.boxId === "") {
     return { kind: "item", key: id ? "item:" + id : selection.key, id: id, boxId: null, index: -1 };
@@ -599,7 +623,7 @@ function clearBoardSelection() {
   selectedBoardEdge = null;
   delete boardSourceEl.dataset.boardSelectionKey;
   delete boardSourceEl.dataset.boardEdgeSelectionKey;
-  document.querySelectorAll(".board-selection").forEach(function(el) { el.classList.remove("board-selection"); });
+  document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); });
   document.querySelectorAll(".board-edge-selected").forEach(function(el) {
     el.classList.remove("board-edge-selected");
     restoreBoardEdgeMarker(el);
@@ -628,7 +652,7 @@ function boardItemSelectionFromEl(el) {
     index: Number(el.dataset.boardItemIndex)
   };
 }
-function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection").forEach(function(el) { el.classList.remove("board-selection"); }); if (restoreFromDataset && !selectedBoardNode && boardSourceEl.dataset.boardSelectionKey) { var parts = boardSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "box" ? { kind: "box", key: boardSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":") } : boardItemSelectionFromKey(boardSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === selectedBoardNode.key; });
+function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); }); if (restoreFromDataset && !selectedBoardNode && boardSourceEl.dataset.boardSelectionKey) { var parts = boardSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: boardSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: boardSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(boardSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
   if (!match && selectedBoardNode.kind === "title") {
     match = (typeof boardPinnedTitleNode === "function" && boardPinnedTitleNode())
       || document.querySelector("#boardTitlePin [data-board-key=\"title:board\"]")
@@ -636,6 +660,10 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
   }
   if (!match) { clearBoardSelection(); return; }
   match.classList.add("board-selection");
+  if (selectedBoardNode.kind === "box" && selectedBoardNode.scope === "tree") {
+    match.classList.add("board-selection-tree");
+    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection"); });
+  }
   if (boardTitleEditor && selectedBoardNode) {
     var isTitle = selectedBoardNode.kind === "title";
     var isItem = selectedBoardNode.kind === "item";
@@ -645,7 +673,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     hidePropsLinkOnlyChrome();
     if (propsEmpty) propsEmpty.hidden = true;
     if (propsFields) propsFields.hidden = false;
-    if (propsKindLabel) propsKindLabel.textContent = isTitle ? "board" : (isItem ? "item" : "box");
+    if (propsKindLabel) propsKindLabel.textContent = isTitle ? "board" : (isItem ? "item" : (selectedBoardNode.scope === "tree" ? "box tree" : "box"));
     var itemType = isItem ? String((node && node.type) || "chip") : "";
     var isNote = itemType === "note";
     var isChipItem = itemType === "chip";
@@ -723,16 +751,23 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
           ? "Markdown · headings / lists / bold / italic / code; Enter = new line, ⌘/Ctrl+Enter saves"
           : (selectedBoardNode.boxId ? "Leaf inside a box · arrows select siblings · drag to reorder" : "Top-level item · Shape on chip; drag to place")))
         : (isLayoutBox
-          ? "Layout · Direction / Align / Justify for children; no title/icon; +Box nests a child"
+          ? "Layout · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected"
           : (boxType === "container"
-            ? "Container · Direction / Align / Justify for children; Icon on title row; +Box nests a child"
-            : "Box · Direction / Align / Justify for children; +Box nests a child")));
+            ? "Container · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected"
+            : "Box · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected")));
   } syncBoardEditControls(); }
-function selectBoardElement(el, root, board) {
+function selectBoardElement(el, root, board, event) {
   if (!el) return clearBoardSelection();
   var isTitle = el.classList.contains("board-title-node") || el.classList.contains("board-html-header") || el.dataset.boardKind === "title" || (el.dataset.boardKey || "") === "title:board";
   var isItem = !isTitle && (el.classList.contains("board-item") || el.dataset.boardKind === "item" || (el.dataset.boardKey || "").indexOf("item:") === 0);
-  var next = isTitle ? { kind: "title", key: "title:board" } : (isItem ? boardItemSelectionFromEl(el) : { kind: "box", key: el.dataset.boardKey, id: el.dataset.boardId });
+  var next;
+  if (isTitle) next = { kind: "title", key: "title:board" };
+  else if (boardWantsTreeSelect(event)) {
+    var treeEl = boardTreeTargetEl(el);
+    next = (treeEl && treeEl.dataset.boardId) ? boardSelectionFromBoxEl(treeEl, "tree") : (isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell"));
+  } else {
+    next = isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell");
+  }
   if (next.key !== currentBoardSelectionKey() && !boardLinkMode) closePropsPanel();
   selectedBoardEdge = null;
   selectedBoardNode = next;
@@ -740,9 +775,9 @@ function selectBoardElement(el, root, board) {
   boardSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
   applyBoardSelection(root, board);
 }
-function pickBoardElement(el, root, board) {
+function pickBoardElement(el, root, board, event) {
   beginInspectGesture(selectionKeyFromEl(el));
-  selectBoardElement(el, root, board);
+  selectBoardElement(el, root, board, event);
 }
 // Top-level drag moves pins. Nested drag reorders kids in the parent box.
 function boardBoxIsTopLevel(board, id) {
@@ -969,15 +1004,24 @@ function wireBoardDrag(root, board) {
     if (zoneHit && !canvas.contains(zoneHit)) zoneHit = null;
     var titleHit = event.target.closest ? event.target.closest(".board-title-node") : null;
     if (titleHit && canvas.contains(titleHit)) {
-      pickBoardElement(titleHit, root, board);
+      pickBoardElement(titleHit, root, board, event);
       event.stopPropagation();
       return;
+    }
+    if (boardWantsTreeSelect(event)) {
+      var treeHit = itemHit || zoneHit;
+      if (treeHit) {
+        pickBoardElement(treeHit, root, board, event);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
     }
     var nestedItem = itemHit && !itemHit.classList.contains("board-root-item");
     var nestedBox = zoneHit && !boardBoxIsTopLevel(board, zoneHit.dataset.boardId);
     if (nestedItem || (nestedBox && !itemHit)) {
       var reorderEl = nestedItem ? itemHit : zoneHit;
-      pickBoardElement(reorderEl, root, board);
+      pickBoardElement(reorderEl, root, board, event);
       drag = startBoardReorderDrag(reorderEl, event);
       if (!drag) { event.stopPropagation(); return; }
       reorderEl.setPointerCapture(event.pointerId);
@@ -990,11 +1034,11 @@ function wireBoardDrag(root, board) {
     var zone = hit.classList.contains("board-zone") ? hit : hit.closest(".board-zone");
     var rootItem = hit.classList.contains("board-root-item");
     if (!rootItem && (!zone || !boardBoxIsTopLevel(board, zone.dataset.boardId))) {
-      pickBoardElement(hit, root, board);
+      pickBoardElement(hit, root, board, event);
       event.stopPropagation();
       return;
     }
-    pickBoardElement(hit, root, board);
+    pickBoardElement(hit, root, board, event);
     var dragEl = rootItem ? hit : zone;
     var point = boardCanvasPoint(canvas, event), x = Number.parseFloat(dragEl.style.left), y = Number.parseFloat(dragEl.style.top);
     drag = { hit: dragEl, pointerId: event.pointerId, start: point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0, moved: false, mode: "position", dropTarget: null, startClientX: event.clientX, startClientY: event.clientY };
@@ -1065,7 +1109,7 @@ function wireBoardDrag(root, board) {
   canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
 }
 function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardClickWired === "1") return; canvas.dataset.boardClickWired = "1"; canvas.addEventListener("click", function(event) { var edge = event.target.closest ? event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link") : null; var hit = event.target.closest ? event.target.closest(".board-title-node, .board-item, .board-zone") : null; if (boardLinkMode) { event.preventDefault(); event.stopPropagation(); return; } /* pick happens on pointerdown */
-      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) { clearBoardSelection(); return; } var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
+      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) { clearBoardSelection(); return; } var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
 
 function commitBoardArrow() {
   if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
@@ -1569,7 +1613,7 @@ function renderBoard(opts) {
   if (!text) { previewEl.innerHTML = ''; if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
   BoardRender.render(text, previewEl).then((rendered) => {
     try {
-      syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardSourceEl.dataset.boardSelectionKey; }); if (retained) retained.classList.add("board-selection");
+      syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardDomSelectionKey(boardSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection");
       // Repaint the live root after any mode/bootstrap render race.
       if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
       showBoardError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);

@@ -187,7 +187,7 @@ const stageEl = $('#preview-stage');
 const errorBox = $('#errorBox');
 const emptyHtml = `<div class="empty" id="emptyState"><h2>Canvas is ready</h2><p>Use <kbd>set-source</kbd> from the skill, or open Source and paste.</p></div>`;
 const SVG_CACHE_KEY = 'lulu-drawer:last-svg';
-const boardSelectionObserver = new MutationObserver(() => { const key = boardSourceEl.dataset.boardSelectionKey; if (!key) return; const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
+const boardSelectionObserver = new MutationObserver(() => { var key = boardSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
 
@@ -996,6 +996,7 @@ function fitBoardView(opts) {
     applyTransform();
     if (opts.persist) snapshotDrawerUi();
     var key = boardSourceEl.dataset.boardSelectionKey;
+    if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
     if (retained) retained.classList.add("board-selection");
   });

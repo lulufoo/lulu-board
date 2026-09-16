@@ -110,8 +110,8 @@ only retargets `current`. Source dock uses `/board-history.json` and `DELETE /ap
 
 | Board edit | Does |
 |---|---|
-| Select | titles; nested siblings (arrows); types (`solid` / `dashed` on links) |
-| Add / delete | box, item |
+| Select | titles; box shell; ⌘/Ctrl-click box tree; nested siblings (arrows); types (`solid` / `dashed` on links) |
+| Add / delete | Delete follows selection: shell dissolves; tree removes descendants; item removes itself |
 | Link | source, then target |
 | Drag | top-level move (drag / arrows); nested reorder |
 | Layout | Trunk / Stagger |

@@ -608,6 +608,7 @@ html[data-drawer-mode="mermaid"] .top-float {
 /* --- 03-diagram.css --- */
 /* board + mermaid diagram surfaces */
 .board-selection { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
+.board-selection-tree { outline: 3px dashed #f59e0b !important; outline-offset: 3px; }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
 .board-reorder-caret {
   position: absolute;
