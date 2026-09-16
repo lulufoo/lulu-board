@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Empty history/board is seeded from skill/assets/templates/board packed examples."""
+"""Empty history/ is seeded from skill/assets/templates/board packed examples."""
 from __future__ import annotations
 
 import shutil

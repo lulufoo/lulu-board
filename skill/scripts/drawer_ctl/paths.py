@@ -11,7 +11,6 @@ LEGACY_BOARD_SOURCE_FILE = "board.dsl"
 BOARD_META_FILE = "board.meta.json"
 VIEWER_FILE = "drawer.html"
 HISTORY_DIR_NAME = "history"
-BOARD_HISTORY_NAME = "board"
 EXPORT_DIR_NAME = "export"
 HISTORY_SOURCE_READ_CAP = 256_000
 
@@ -80,9 +79,7 @@ def history_root() -> Path:
 
 
 def board_history_dir() -> Path:
-    d = history_root() / BOARD_HISTORY_NAME
-    d.mkdir(parents=True, exist_ok=True)
-    return d
+    return history_root()
 
 
 def export_dir() -> Path:

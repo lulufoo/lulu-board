@@ -54,7 +54,7 @@ $DRAWER_CTL stop
 
 Board DSL: write `A -> B`, `arrange A below B`, `pin A.top to parent.top N`.
 
-`history/board/*.bmd` (+ `.json` sidecar) are the **record list** (each is an editable SSOT).
+`history/*.bmd` (+ `.json` sidecar) are the **record list** (each is an editable SSOT).
 **BMD ID** (`b_…`) is which board. **BMD Source** is the body. `board.meta.json` holds:
 
 | Term | Meaning |
@@ -65,7 +65,7 @@ Board DSL: write `A -> B`, `arrange A below B`, `pin A.top to parent.top N`.
 | `title` | Human label |
 | `version` | Document version in the stash `meta` line |
 
-On start, if `history/board` has no `*.bmd`, Drawer seeds every packed
+On start, if `history` has no `*.bmd`, Drawer seeds every packed
 flat file under `../assets/templates/board/*.bmd` (from repo `examples/board-*`, no PNGs)
 and points `current` at onboarding.
 AI-only `board/templates/demo.bmd` is not seeded.

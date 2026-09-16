@@ -60,7 +60,7 @@ def read_board_meta() -> dict:
 
 
 def _board_history_resolved(path: Path) -> Path | None:
-    """Return path if it resolves to a *.bmd file under history/board/."""
+    """Return path if it resolves to a *.bmd file under history/."""
     try:
         real = path.expanduser().resolve()
         real.relative_to(paths.board_history_dir().resolve())
@@ -127,7 +127,7 @@ def create_board_record(
     board_id: str | None = None,
     title: str | None = None,
 ) -> Path:
-    """Create a new history/board record (+ sidecar). This is the editable SSOT entry."""
+    """Create a new history record (+ sidecar). This is the editable SSOT entry."""
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     dtitle = (title or "").strip() or titles.derive_board_title(text, label)
     stem = util.sanitize_stem(label or dtitle or "board")
@@ -182,11 +182,12 @@ def _point_board_current(dest: Path, label: str, body: str) -> None:
 
 
 def seed_default_board_if_empty() -> Path | None:
-    """If history/board is empty, seed every packed example under assets/templates/board.
+    """If history/ is empty, seed every packed example under assets/templates/board.
 
     Points current at onboarding.bmd when present. AI-only demo.bmd under
     board/templates/ is not seeded.
     """
+    __import__("drawer_ctl.migrate", fromlist=["lift_nested_board_history"]).lift_nested_board_history()
     if board_history_has_records():
         return None
     live = paths.board_source_path()
@@ -280,7 +281,7 @@ def ensure_board_history_entry_meta(dsl: Path, meta: dict | None = None) -> dict
 def ensure_board_pointer_model(meta: dict | None = None) -> dict:
     """Migrate legacy live board.dsl copy → pointer to a history record.
 
-    Protocol: meta.current names the editable record under history/board/.
+    Protocol: meta.current names the editable record under history/.
     board.dsl is only an optional symlink alias.
 
     If board.dsl is still a regular file with content, that content is the SSOT
@@ -383,7 +384,7 @@ def read_board_source_text() -> str:
 
 
 def find_board_record_by_id(board_id: str) -> Path | None:
-    """Newest matching history/board record for a stable b_… id, or None."""
+    """Newest matching history record for a stable b_… id, or None."""
     want = str(board_id or "").strip()
     if not want:
         return None
@@ -562,7 +563,7 @@ def commit_board_source(
 ) -> tuple[dict, str | None]:
     """Board SSOT protocol:
 
-    - history/board/*.bmd are editable records (the list).
+    - history/*.bmd are editable records (the list).
     - meta.current points at the active record; UI writes through it (no new record).
     - CLI without board_id mints a new record and retargets.
     - CLI with board_id writes that record in place and retargets.

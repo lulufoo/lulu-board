@@ -61,6 +61,53 @@ class BoardArchiveTest(unittest.TestCase):
         self.assertTrue(live.lstrip().startswith("meta "))
         self.assertTrue(self._history())
 
+    def test_lifts_nested_history_board(self) -> None:
+        nested = self.tmp / "history" / "board"
+        nested.mkdir(parents=True)
+        rec = nested / "20260101-000000-x.bmd"
+        rec.write_text('board "X"\n', encoding="utf-8")
+        (nested / "20260101-000000-x.json").write_text("{}\n", encoding="utf-8")
+        dc.write_board_meta(
+            {
+                "rev": 1,
+                "updated_at": 1,
+                "via": "test",
+                "kind": "board",
+                "current": "history/board/20260101-000000-x.bmd",
+            }
+        )
+        from drawer_ctl.migrate import migrate_document_envelopes
+
+        migrate_document_envelopes()
+        self.assertTrue((self.tmp / "history" / "20260101-000000-x.bmd").is_file())
+        self.assertFalse((self.tmp / "history" / "board").exists())
+        self.assertEqual(
+            dc.read_board_meta()["current"],
+            "history/20260101-000000-x.bmd",
+        )
+
+    def test_seed_lifts_nested_before_treating_empty(self) -> None:
+        nested = self.tmp / "history" / "board"
+        nested.mkdir(parents=True)
+        rec = nested / "20260101-000000-x.bmd"
+        rec.write_text('board "X"\n', encoding="utf-8")
+        dc.write_board_meta(
+            {
+                "rev": 1,
+                "updated_at": 1,
+                "via": "test",
+                "kind": "board",
+                "current": "history/board/20260101-000000-x.bmd",
+            }
+        )
+        self.assertIsNone(dc.seed_default_board_if_empty())
+        names = [p.name for p in dc.board_history_dir().glob("*.bmd")]
+        self.assertEqual(names, ["20260101-000000-x.bmd"])
+        self.assertEqual(
+            dc.read_board_meta()["current"],
+            "history/20260101-000000-x.bmd",
+        )
+
     def test_stale_base_rev_returns_conflict(self) -> None:
         seed, _ = dc.commit_board_source("board Live\n", via="cli", label="live")
         board_id = seed["id"]
