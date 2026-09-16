@@ -89,7 +89,7 @@ def mount(port: int, should_open: bool = False, open_mode: str | None = None) ->
             [
                 sys.executable,
                 str(Path(__file__).resolve().parent.parent / "drawer_control.py"),
-                "_serve",
+                server.SERVE_COMMAND,
                 "--port",
                 str(target),
             ],

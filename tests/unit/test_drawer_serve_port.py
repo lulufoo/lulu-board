@@ -39,6 +39,28 @@ class StopOtherServesTest(unittest.TestCase):
         self.assertEqual(killed, [11, 33])
 
 
+class IsDrawerServePidTest(unittest.TestCase):
+    def test_accepts_board_command_only(self) -> None:
+        with (
+            patch.object(server, "pid_alive", return_value=True),
+            patch.object(
+                server,
+                "_cmdline",
+                return_value="python3 drawer_control.py _board_serve --port 49867",
+            ),
+        ):
+            self.assertTrue(server.is_drawer_serve_pid(1))
+        with (
+            patch.object(server, "pid_alive", return_value=True),
+            patch.object(
+                server,
+                "_cmdline",
+                return_value="python3 drawer_control.py _mermaid_serve --port 49868",
+            ),
+        ):
+            self.assertFalse(server.is_drawer_serve_pid(1))
+
+
 class ServePidOnPortTest(unittest.TestCase):
     def test_returns_our_listener(self) -> None:
         with (

@@ -24,6 +24,7 @@ VENDOR_FILES = (
     "drawer-app-early-head.js",
     "drawer-app-early-hydrate.js",
 )
+SERVE_COMMAND = "_board_serve"
 
 
 def is_valid_png_export(data: bytes) -> bool:
@@ -73,18 +74,18 @@ def _cmdline(pid: int) -> str:
 
 
 def is_drawer_serve_pid(pid: int) -> bool:
-    """True if pid looks like this skill's `drawer_control.py _serve`."""
+    """True if pid looks like this skill's `drawer_control.py _board_serve`."""
     if not pid_alive(pid):
         return False
     cmd = _cmdline(pid)
-    return "drawer_control.py" in cmd and "_serve" in cmd
+    return "drawer_control.py" in cmd and SERVE_COMMAND in cmd
 
 
 def list_drawer_serve_pids() -> list[int]:
-    """All live drawer `_serve` PIDs on this machine (not only server.json)."""
+    """All live Board `_board_serve` PIDs on this machine (not only server.json)."""
     try:
         out = subprocess.check_output(
-            ["pgrep", "-f", "drawer_control.py _serve"],
+            ["pgrep", "-f", f"drawer_control.py {SERVE_COMMAND}"],
             text=True,
             stderr=subprocess.DEVNULL,
         )
@@ -126,7 +127,7 @@ def _pids_listening_on_port(port: int) -> list[int]:
 
 
 def serve_pid_on_port(port: int) -> int | None:
-    """Our `_serve` listening on port, if any."""
+    """Our `_board_serve` listening on port, if any."""
     for pid in _pids_listening_on_port(port):
         if is_drawer_serve_pid(pid):
             return pid
@@ -159,7 +160,7 @@ def _kill_pid(pid: int) -> None:
 
 
 def stop_other_serves(keep_pid: int | None = None) -> None:
-    """Kill every drawer `_serve` except keep_pid (orphan sweep)."""
+    """Kill every Board `_board_serve` except keep_pid (orphan sweep)."""
     for pid in list_drawer_serve_pids():
         if keep_pid is not None and pid == keep_pid:
             continue
@@ -167,7 +168,7 @@ def stop_other_serves(keep_pid: int | None = None) -> None:
 
 
 def stop_server() -> None:
-    """Stop all drawer `_serve` processes and clear server.json."""
+    """Stop all Board `_board_serve` processes and clear server.json."""
     stop_other_serves(keep_pid=None)
     info = read_server()
     if info and pid_alive(info.get("pid")):
