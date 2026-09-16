@@ -89,6 +89,10 @@
       if (!el || !frame || !el.classList.contains('board-root-item')) return;
       el.style.minHeight = `${frame.h}px`;
       el.style.height = 'auto';
+      if (el.dataset.boardCap === 'off') {
+        el.style.width = 'max-content';
+        el.style.maxWidth = 'none';
+      }
     }
 
     intrinsicMinWidth() {

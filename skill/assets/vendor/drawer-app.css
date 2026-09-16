@@ -1844,6 +1844,14 @@ html[data-drawer-mode="mermaid"] .top-float {
 }
 .board-render .board-item[data-board-cap="off"] {
   max-width: none;
+  width: max-content;
+}
+.board-render .board-item[data-board-cap="off"] .board-item-copy,
+.board-render .board-item[data-board-cap="off"] .board-item-text {
+  width: max-content;
+  max-width: none;
+  white-space: pre;
+  overflow-wrap: normal;
 }
 .board-render .board-item.board-item-type-chip,
 .board-render .board-item.board-card.board-item-type-chip {
@@ -1935,10 +1943,6 @@ html[data-drawer-mode="mermaid"] .top-float {
   width: 100%;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-}
-.board-render .board-item[data-board-cap="off"] .board-item-text {
-  white-space: pre;
-  overflow-wrap: normal;
 }
 .board-render .board-item-md h1,
 .board-render .board-item-md h2,

@@ -81,11 +81,18 @@ item HERO type text "Welcome"
   const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
   const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/item/board-item.js'), 'utf8');
+  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
   assert.ok(/max-width:\s*var\(--board-item-cap/.test(css), 'items use --board-item-cap');
-  assert.ok(/data-board-cap="off"/.test(css), 'off selector present');
+  assert.ok(/\[data-board-cap="off"\] \{\s*max-width:\s*none;\s*width:\s*max-content/.test(css), 'off stretches to content');
+  assert.ok(/\[data-board-cap="off"\][\s\S]{0,180}white-space:\s*pre/.test(css), 'off does not wrap');
+  assert.ok(/dataset\.boardCap === ['"]off['"]/.test(itemJs) && /max-content/.test(itemJs), 'off frame keeps max-content');
   assert.ok(/id="boardCapEditor"/.test(html) && /Width Cap/.test(html), 'props have Width Cap select');
   assert.ok(/id="boardItemCapSlider"[^>]*min="8"[^>]*max="24"[^>]*value="16"/.test(html), 'cap slider centers 16');
   assert.ok(/dataset\.boardCap = 'off'/.test(itemJs), 'mount marks cap off');
+  assert.ok(
+    /eachRootItem\(\(item\) => \{[\s\S]*?measureLive[\s\S]*?eachRootItem\(\(item\) => \{[\s\S]*?measureLive/.test(renderJs),
+    'root items measure overflow twice'
+  );
   const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   assert.ok(/raw == null \|\| raw === ''/.test(boot), 'empty localStorage uses default cap');
 }

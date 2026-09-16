@@ -1758,8 +1758,9 @@
         const el = elements.get(item.id);
         const base = measured.get(item.id) || { w: 80, h: 30 };
         if (!el) return;
-        const w = Math.max(base.w, el.offsetWidth || el.clientWidth || 80);
-        const h = Math.max(base.h, el.offsetHeight || el.clientHeight || 30);
+        const sized = View.Types.wrap(item).measureLive(el, base);
+        const w = sized.w;
+        const h = sized.h;
         if (w > base.w + 0.25 || h > base.h + 0.25) changed = true;
         adjusted.set(item.id, { w, h });
       });
@@ -1777,12 +1778,9 @@
       });
       eachRootItem((item) => {
         const el = elements.get(item.id);
-        const rect = el && el.getBoundingClientRect();
         const minW = View.Types.wrap(item).intrinsicMinWidth();
-        measured.set(item.id, {
-          w: (el && (el.offsetWidth || el.clientWidth)) || (rect && rect.width) || minW,
-          h: (el && (el.offsetHeight || el.clientHeight)) || (rect && rect.height) || 30,
-        });
+        const sized = View.Types.wrap(item).measureLive(el, { w: minW, h: 30 });
+        measured.set(item.id, { w: sized.w, h: sized.h });
       });
       return measured;
     };
