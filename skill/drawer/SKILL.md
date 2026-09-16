@@ -1,21 +1,20 @@
 ---
 name: drawer
 description: >-
-  Start or control the local Mermaid + Board beta viewer (content-addressed SSOT with
-  document meta id and version). Board does not use Mermaid.
-argument-hint: "[Mermaid source path or intent]"
+  Start or control the local Board viewer (content-addressed SSOT with
+  document meta id and version).
+argument-hint: "[Board source path or intent]"
 ---
 
 # drawer
 
-Drawer is a local loopback viewer with two **independent** modes:
+Drawer is a local loopback viewer for Board.
 
 | Mode | ID | Source | Renderer |
 |---|---|---|---|
-| Mermaid | MMD ID (`m_…`) | MMD Source | Mermaid |
 | Board | BMD ID (`b_…`) | BMD Source | Board |
 
-Board mode never calls Mermaid. Diagram themes are `default` / `classic` / `pastel` / `kami`.
+Diagram themes are `default` / `classic` / `pastel` / `kami`.
 
 ## Script Macros
 
@@ -23,19 +22,15 @@ Board mode never calls Mermaid. Diagram themes are `default` / `classic` / `past
 |---|---|
 | `$DRAWER_CTL` | `python3 scripts/drawer_control.py` |
 
-Build / fetch tooling lives in the **dev monorepo** (`scripts/*-build`, `fetch_*.py`), not in this installable skill.
+Build / fetch tooling lives in the **dev monorepo** (`scripts/*-build`), not in this installable skill.
 
 ## Commands
 
 ```bash
-$DRAWER_CTL preview --file path/to/diagram.mmd
-$DRAWER_CTL preview --id m_…
 $DRAWER_CTL preview --kind board --file path/to/board.bmd
 $DRAWER_CTL preview --kind board
 $DRAWER_CTL preview --kind board --id b_…
-$DRAWER_CTL get-source --kind mermaid --id m_…
 $DRAWER_CTL get-source --kind board --id b_…
-$DRAWER_CTL set-source --id m_…
 $DRAWER_CTL set-source --kind board --id b_…
 $DRAWER_CTL mount
 $DRAWER_CTL status
@@ -44,46 +39,20 @@ $DRAWER_CTL stop
 
 | `--kind` | Live store | Preview |
 |---|---|---|
-| `mermaid` (default) | `diagram.mmd` | `?mode=mermaid` |
 | `board` | `board.bmd` | `?mode=board` |
 
 | Concern | Value |
 |---|---|
 | Write-back | `preview`, not `set-source` |
-| Mermaid source | MMD Source (`diagram.mmd`). |
 | Board source | BMD Source (`board.bmd`). |
 | Stash | Omit on mint; do not change on update. |
 | Board directives | `board`, `box`, `item`, `->` (relations), `layout` (`direction` / `align` / `justify` / `arrange` / `flush` / `pin`) |
 | Board vocab | `../board/references/vocab.md` |
-| Records | First identity is MMD ID / BMD ID. Source is the body. `current` is the viewed pointer only. CLI: `--id` is that ID (required on `get-source`; omit on `preview` / `set-source` only to mint). History click retargets `current`. |
-
-## Mermaid identity + current pointer
-
-Same pointer protocol as Board: `history/mermaid/*.mmd` (+ `.json` sidecar) are
-editable records. **MMD ID** (`m_…`) is which diagram. **MMD Source** is the
-body. `diagram.meta.json` `current` points at the viewed record. UI edits write
-through `current` (no new record). Only `preview` / `set-source` creates a
-record and retargets. History click only switches `current`.
-
-| Term | Meaning |
-|---|---|
-| MMD ID | Which diagram (`m_…`). First identity. |
-| MMD Source | The `.mmd` body. |
-| `current` | Viewed pointer, not identity |
-| `title` | Human label (`%% title`, else diagram kind, else stem) |
-| `version` | Document version in the stash `meta` line |
-
-**Constraint:** before any Mermaid operation in Drawer, run `$DRAWER_CTL status`
-and read MMD ID first (then `get-source --id` if you need the MMD Source).
-
-```bash
-$DRAWER_CTL status
-$DRAWER_CTL get-source --kind mermaid --id m_…
-```
+| Records | First identity is BMD ID. Source is the body. `current` is the viewed pointer only. CLI: `--id` is that ID (required on `get-source`; omit on `preview` / `set-source` only to mint). History click retargets `current`. |
 
 ## Board identity + current pointer
 
-Board DSL beta: write `A -> B`, `arrange A below B`, `pin A.top to parent.top N`.
+Board DSL: write `A -> B`, `arrange A below B`, `pin A.top to parent.top N`.
 
 `history/board/*.bmd` (+ `.json` sidecar) are the **record list** (each is an editable SSOT).
 **BMD ID** (`b_…`) is which board. **BMD Source** is the body. `board.meta.json` holds:
@@ -98,8 +67,8 @@ Board DSL beta: write `A -> B`, `arrange A below B`, `pin A.top to parent.top N`
 
 On start, if `history/board` has no `*.bmd`, Drawer seeds every packed
 flat file under `../assets/templates/board/*.bmd` (from repo `examples/board-*`, no PNGs)
-and points `current` at onboarding. Same for Mermaid: empty `history/mermaid`
-seeds `../assets/templates/mermaid/*.mmd`. AI-only `board/templates/demo.bmd` is not seeded.
+and points `current` at onboarding.
+AI-only `board/templates/demo.bmd` is not seeded.
 `preview --kind board` with no file and no stdin body does not create a
 record. With a body, omit `--id` to mint; pass `--id` (BMD ID) to update that
 record. stdout `open` is `seeded` | `created` | `current`. JSON `id` is BMD ID.

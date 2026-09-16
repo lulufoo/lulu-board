@@ -1,26 +1,27 @@
 # drawer-app
 
-Drawer shell source. Domain libs stay in `packages/board`, `packages/mermaid-ext/*`, `packages/mermaid-themes`.
+Board-only Drawer shell. Domain lib stays in `packages/board`.
 
 ```
 packages/drawer-app/
-  index.html          # DOM skeleton only
+  index.html
   css/
     01-base.css
     02-chrome.css
     03-diagram.css
+    04-source-lines.css
   js/
     00-early-head.js
     00-early-hydrate.js
-    00-mermaid-alias.js
     00-style-line.js
+    00-document-meta.js
+    00-canvas-view.js
     01-shell-state.js
     02-board.js
-    03-mermaid.js
-    04-mindmap.js
     05-render-io.js
-    06-view-sequence.js
+    05-export-png.js
     07-chrome-boot.js
+    08-source-lines.js
 ```
 
 Build:
@@ -29,4 +30,4 @@ Build:
 node scripts/drawer-app-build/build.mjs
 ```
 
-Writes `skill/assets/drawer.html` plus `skill/assets/vendor/drawer-app.{css,js}` and early/alias scripts. `drawer_control.py sync_assets` copies them into `~/.cache/drawer`.
+Writes `skill/assets/drawer.html` plus `skill/assets/vendor/drawer-app.{css,js}` and early scripts. `drawer_control.py sync_assets` copies them into `~/.cache/board`.

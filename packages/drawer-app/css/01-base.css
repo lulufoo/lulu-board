@@ -41,14 +41,6 @@
   --shadow-soft: 0 4px 14px rgba(0,0,0,.08);
   --dot: rgba(0,0,0,.06);
 }
-/* Light theme: alt/loop frame + else divider — Mermaid neutral is too faint */
-[data-theme="light"] #preview svg line.loopLine {
-  stroke: #6e6e73 !important;
-}
-[data-theme="light"] #preview svg line.loopLine[style*="stroke-dasharray"] {
-  stroke: #3a3a3c !important;
-}
-
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {

@@ -380,10 +380,6 @@ function filterBoardIdEditor() {
   return next;
 }
 function commitBoardId() {
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromId();
-    return;
-  }
   if (!boardIdEditor || !selectedBoardNode) return;
   if (selectedBoardNode.kind !== "box" && selectedBoardNode.kind !== "item") return;
   if (typeof BoardRender === "undefined" || typeof BoardRender.updateId !== "function") return;
@@ -799,7 +795,7 @@ function pinBoardTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
   if (document.documentElement.dataset.drawerMode !== "board") {
-    if (document.title !== "Lulu Drawer") document.title = "Lulu Drawer";
+    if (document.title !== "Lulu Board") document.title = "Lulu Board";
     return;
   }
   var title = "";
@@ -810,7 +806,7 @@ function pinBoardTitle() {
     var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
     title = heading ? String(heading.textContent || "").trim() : "";
   }
-  var next = title || "Lulu Drawer";
+  var next = title || "Lulu Board";
   if (document.title !== next) document.title = next;
 }
 function boardPinnedTitleNode() {
@@ -1210,10 +1206,6 @@ function commitBoardCap() {
 }
 function commitBoardType() {
   if (!boardTypeEditor) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromType();
-    return;
-  }
   if (selectedBoardEdge && typeof BoardRender.updateLinkType === "function") {
     try {
       var nextLink = BoardRender.updateLinkType(boardSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
@@ -1283,73 +1275,8 @@ function commitBoardAlign() {
 function commitBoardJustify() {
   commitBoardBoxFlex("Justify", boardJustifyEditor, BoardRender.updateJustify);
 }
-function commitMermaidPropsFromTitle() {
-  if (!selectedMermaid) return false;
-  var value = boardTitleEditor ? boardTitleEditor.value : "";
-  try {
-    var result;
-    if (selectedMermaid.kind === "topic") {
-      if (typeof MindmapEdit === "undefined") return false;
-      result = MindmapEdit.updateTopicLabel(sourceEl.value, selectedMermaid.id, value);
-    } else if (selectedMermaid.kind === "state" || selectedMermaid.kind === "composite") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateStateLabel(sourceEl.value, selectedMermaid, value);
-    } else if (selectedMermaid.kind === "transition") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateTransitionLabel(sourceEl.value, selectedMermaid, value);
-    } else if (typeof FlowchartEdit === "undefined") return false;
-    else if (selectedMermaid.kind === "node") result = FlowchartEdit.updateNodeLabel(sourceEl.value, selectedMermaid, value);
-    else if (selectedMermaid.kind === "link") result = FlowchartEdit.updateLinkLabel(sourceEl.value, selectedMermaid, value);
-    else if (selectedMermaid.kind === "subgraph") result = FlowchartEdit.updateSubgraphTitle(sourceEl.value, selectedMermaid, value);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved " + selectedMermaid.kind + " label");
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
-function commitMermaidPropsFromType() {
-  if (!selectedMermaid || !boardTypeEditor) return false;
-  if (selectedMermaid.kind !== "topic" && typeof FlowchartEdit === "undefined") return false;
-  var value = boardTypeEditor.value;
-  try {
-    var result;
-    if (selectedMermaid.kind === "topic") {
-      // Mindmap shape UI removed.
-      return false;
-    } else if (selectedMermaid.kind === "node") {
-      // UI kind → Mermaid shape. Do not invent protocol keywords.
-      if (typeof FlowchartEdit.updateNodeKind === "function") result = FlowchartEdit.updateNodeKind(sourceEl.value, selectedMermaid, value);
-      else result = FlowchartEdit.updateNodeShape(sourceEl.value, selectedMermaid, value);
-    } else if (selectedMermaid.kind === "link") result = FlowchartEdit.updateLinkStroke(sourceEl.value, selectedMermaid, value);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved " + selectedMermaid.kind + " type · " + value);
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
-function commitMermaidPropsFromId() {
-  if (!selectedMermaid || !boardIdEditor) return false;
-  var next = String(boardIdEditor.value || "").trim();
-  try {
-    var result;
-    if (selectedMermaid.kind === "state" || selectedMermaid.kind === "composite") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateStateId(sourceEl.value, selectedMermaid, next);
-    } else if (typeof FlowchartEdit === "undefined") return false;
-    else if (selectedMermaid.kind === "node") result = FlowchartEdit.updateNodeId(sourceEl.value, selectedMermaid, next);
-    else if (selectedMermaid.kind === "subgraph") result = FlowchartEdit.updateSubgraphId(sourceEl.value, selectedMermaid, next);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved id · " + next);
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
 function commitBoardTitle() {
   if (!boardTitleEditor) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromTitle();
-    return;
-  }
   if (selectedBoardEdge && typeof BoardRender.updateLinkTitle === "function") {
     try {
       var nextLink = BoardRender.updateLinkTitle(boardSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
@@ -1578,7 +1505,6 @@ function boardClickIsOnNode(event) {
   return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .top-float, .menu, .sheet, button, input, select, textarea, label"));
 }
 // Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
-// Board-only — Mermaid has its own clear on miss / stage blank (must not steal mermaid clicks).
 previewEl.addEventListener("pointerdown", function(event) {
   if (document.documentElement.dataset.drawerMode !== "board") return;
   if (event.button !== 0) return;
@@ -1684,8 +1610,6 @@ async function loadBoardPolled() {
     const meta = await metaRes.json(), remoteRev = Number(meta.version != null ? meta.version : meta.rev) || 0;
     if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
     if (remoteRev <= boardLocalRev) { setBoardSyncUI('ok'); return; }
-    // Mermaid (or other) must not replace in-memory Board source; switch-back remounts from the textarea.
-    if (document.documentElement.dataset.drawerMode !== 'board') return;
     const res = await fetch(`./board.bmd?ts=${Date.now()}`, { cache: 'no-store' }); if (!res.ok) return;
     const text = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || remoteRev; boardDirty = false;
     if (boardSourceEl.value !== text) { boardSourceEl.value = text; renderBoard({ fit: false }); setStatus(`Board loaded r${boardLocalRev}`); }
@@ -1700,8 +1624,7 @@ async function bootstrapBoard() {
     if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
   } catch (_e) {}
   boardDirty = false; updateBoardChars(); setBoardSyncUI('ok');
-  // If we boot into Board mode, paint once here with saved view so setMode(restore) can skip a second render (item flash).
-  if (document.documentElement.dataset.drawerMode === "board" && boardSourceEl.value.trim()) {
+  if (boardSourceEl.value.trim()) {
     await new Promise(function (resolve) {
       var done = false;
       var finish = function () { if (done) return; done = true; resolve(); };
@@ -1718,15 +1641,4 @@ async function bootstrapBoard() {
     });
   }
 }
-
-
-/* ---- Mermaid flowchart edit (source SSOT → mermaid.render) ---- */
-const mermaidAddNodeButton = $("#btnMermaidAddNode");
-const mermaidAddSubgraphButton = $("#btnMermaidAddSubgraph");
-const mermaidLinkButton = $("#btnMermaidLink");
-const mermaidDeleteButton = $("#btnMermaidDelete");
-let mermaidLinkMode = false;
-let mermaidLinkStart = null;
-let selectedMermaid = null;
-/* mermaidInspectGesture / mermaidPropsShownKey → 03-mermaid-inspect.js */
 

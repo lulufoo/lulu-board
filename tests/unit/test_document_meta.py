@@ -14,7 +14,6 @@ from document_meta import (
     DocumentMetaError,
     bump_document,
     correct_envelope,
-    correct_missing,
     encode_meta_payload,
     has_envelope,
     join_document,
@@ -62,48 +61,6 @@ class DocumentMetaTest(unittest.TestCase):
         self.assertIn('board "A"', text)
         self.assertEqual(text.splitlines()[0], "meta " + _token("b_0fc10001", 1))
 
-    def test_mint_keeps_existing(self) -> None:
-        src = join_document({"id": "m_51c67540", "version": 2}, "sequenceDiagram\n")
-        self.assertTrue(src.startswith("%% meta "))
-        self.assertNotIn("{", src.splitlines()[0])
-        text, meta = mint_envelope(src, "mermaid", "m_deadbeef")
-        self.assertEqual(meta["id"], "m_51c67540")
-        self.assertEqual(meta["version"], 2)
-        self.assertEqual(text, src)
-
-    def test_mermaid_join_rewrites_legacy_style(self) -> None:
-        token = "eyJ0aGVtZSI6InBhc3RlbCJ9"
-        out = join_document(
-            {"id": "m_51c67540", "version": 1},
-            f"style {token}\nsequenceDiagram\n",
-            "mermaid",
-        )
-        self.assertTrue(out.startswith("%% meta "))
-        self.assertIn(f"%% style {token}\n", out)
-        self.assertIn("sequenceDiagram\n", out)
-        self.assertNotIn(f"\nstyle {token}\n", out)
-
-    def test_mermaid_split_legacy_meta(self) -> None:
-        raw = 'meta {"id":"m_51c67540","version":2}\nsequenceDiagram\n'
-        meta, body = split_document(raw, "mermaid")
-        self.assertEqual(meta, {"id": "m_51c67540", "version": 2})
-        self.assertEqual(body, "sequenceDiagram\n")
-        rewritten, _ = mint_envelope(raw, "mermaid", "m_deadbeef")
-        self.assertTrue(rewritten.startswith("%% meta "))
-        self.assertEqual(rewritten.splitlines()[0], "%% meta " + _token("m_51c67540", 2))
-        self.assertIn("sequenceDiagram", rewritten)
-
-    def test_correct_once(self) -> None:
-        out, changed = correct_missing("sequenceDiagram\nA->>B: hi\n", "mermaid", "m_51c67540")
-        self.assertTrue(changed)
-        self.assertTrue(out.startswith("%% meta "))
-        meta, body = split_document(out, "mermaid")
-        self.assertEqual(meta["version"], 1)
-        self.assertTrue(body.startswith("sequenceDiagram"))
-        again, changed2 = correct_missing(out, "mermaid", "m_ffffffff")
-        self.assertFalse(changed2)
-        self.assertEqual(again, out)
-
     def test_bump(self) -> None:
         src = join_document({"id": "b_0fc10001", "version": 1}, 'board "A"\n')
         out, meta = bump_document(src, "board", "b_0fc10001")
@@ -140,18 +97,6 @@ class DocumentMetaTest(unittest.TestCase):
         self.assertTrue(changed)
         self.assertEqual(out.splitlines()[0], "meta " + _token("b_22bc0e55", 152))
         self.assertEqual(len([ln for ln in out.splitlines() if ln.startswith("meta ")]), 1)
-
-    def test_rewrite_strips_extra_meta(self) -> None:
-        raw = (
-            'meta {"id":"m_771ab9f6","version":1}\n'
-            '%% meta {"id":"m_e9258d66","version":4}\n'
-            "stateDiagram-v2\n"
-        )
-        out, changed = rewrite_envelope(raw, "mermaid")
-        self.assertTrue(changed)
-        self.assertEqual(out.splitlines()[0], "%% meta " + _token("m_e9258d66", 4))
-        self.assertTrue(split_document(out, "mermaid")[1].startswith("stateDiagram-v2"))
-        self.assertNotIn("m_771ab9f6", out)
 
     def test_correct_invalid_id_line(self) -> None:
         raw = 'meta {"id":"b_ex_commerce","version":1}\nboard "A"\n'

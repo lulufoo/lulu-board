@@ -1,4 +1,5 @@
-/* drawer-app/07-chrome-boot.js — lines 3337-3886 of former inline module */
+/* drawer-app/07-chrome-boot.js — Board chrome + boot */
+let chromeTimer = null;
 function flashChrome(ms = 900) {
   const shell = $('#canvasShell') || document.querySelector('.canvas-shell');
   if (!shell) return;
@@ -49,29 +50,10 @@ stageEl.addEventListener('wheel', (e) => {
 
 stageEl.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
-  // Pan only on blank stage/canvas — not boxes, items, title, edges, mermaid hits, or chrome.
-  // Mindmap nodes are handled separately (press = select, drag = pan while keeping selection).
-  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label, g.node, g.cluster, g.cluster-label, g.edgePath, g.edgeLabel, g.flowchart-link, path.flowchart-link, path.mermaid-edge-hit, g.mindmap-node, g.statediagram-state, g.statediagram-cluster, g.stateGroup, path.transition")) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && document.documentElement.dataset.mermaidMindmap === "1" && typeof MindmapEdit !== "undefined" && MindmapEdit.selectionFromDom && MindmapEdit.selectionFromDom(e.target)) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && typeof FlowchartEdit !== "undefined" && FlowchartEdit.selectionFromDom && FlowchartEdit.selectionFromDom(e.target, sourceEl && sourceEl.value)) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && document.documentElement.dataset.mermaidState === "1" && typeof StateEdit !== "undefined" && StateEdit.selectionFromDom && StateEdit.selectionFromDom(e.target, sourceEl && sourceEl.value)) return;
-  // Clicks outside the content bbox land on the stage (preview is max-content) — whole stage is canvas.
-  panBlankMindmap = false;
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (boardLinkMode) setBoardLinkMode(false);
-    else clearBoardSelection();
-  } else if (document.documentElement.dataset.drawerMode === "mermaid") {
-    if (mermaidLinkMode) setMermaidLinkMode(false);
-    else if (document.documentElement.dataset.mermaidMindmap === "1") {
-      // Mindmap: defer blank deselect until pointerup — drag pan keeps selection.
-      panBlankMindmap = true;
-    } else {
-      clearMermaidSelection();
-    }
-  } else if (currentDockTab()) {
-    openDock("");
-    try { MermaidInspect.clearPropsShown(); } catch (_e) {}
-  }
+  // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
+  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label")) return;
+  if (boardLinkMode) setBoardLinkMode(false);
+  else clearBoardSelection();
   e.preventDefault();
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
   panning = true;
@@ -93,16 +75,14 @@ stageEl.addEventListener('pointermove', (e) => {
 });
 stageEl.addEventListener('pointerup', () => {
   var wasPanning = panning;
-  var blankMm = panBlankMindmap;
   var moved = panMoved;
-  panning = false; panOrigin = null; panBlankMindmap = false; panMoved = false;
+  panning = false; panOrigin = null; panMoved = false;
   stageEl.classList.remove('panning');
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
-  if (blankMm && !moved) clearMermaidSelection();
   if (wasPanning && moved) {
     flushDrawerUiSave();
     if (typeof noteUserCanvasView === "function") noteUserCanvasView();
-  } else if (wasPanning && !blankMm) {
+  } else if (wasPanning) {
     flushDrawerUiSave();
   }
 });
@@ -110,25 +90,11 @@ stageEl.addEventListener('selectstart', (e) => {
   if (panning) e.preventDefault();
 });
 
-sourceEl.addEventListener('input', () => {
-  setTypeUI(sourceEl.value);
-  scheduleRender();
-  scheduleSave();
-});
 boardSourceEl.addEventListener('input', () => {
   if (typeof updateBoardChars === "function") updateBoardChars();
   scheduleBoardRender();
   scheduleBoardSave();
 });
-
-$('#btnRender').onclick = () => void renderDiagram({ fit: false });
-
-$('#btnClear').onclick = () => {
-  sourceEl.value = '';
-  try { sessionStorage.removeItem(SVG_CACHE_KEY); } catch (_) {}
-  showEmpty(); setTypeUI('', { clearTools: true }); setStatus('Cleared');
-  scheduleSave();
-};
 
 if (boardIdEditor) {
   boardIdEditor.addEventListener("input", filterBoardIdEditor);
@@ -199,25 +165,7 @@ boardTitleEditor.addEventListener("change", commitBoardTitle); boardTitleEditor.
   event.preventDefault();
   commitBoardTitle();
 });
-const exportMenu = $('#exportMenu');
-const exportBtn = $('#btnExportMenu');
-function closeExportMenu() {
-  exportMenu.classList.remove('open');
-  exportBtn.setAttribute('aria-expanded', 'false');
-}
-exportBtn.onclick = (e) => {
-  e.stopPropagation();
-  const open = !exportMenu.classList.contains('open');
-  exportMenu.classList.toggle('open', open);
-  exportBtn.setAttribute('aria-expanded', String(open));
-};
-document.addEventListener('click', (e) => {
-  if (!exportMenu.contains(e.target)) closeExportMenu();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeExportMenu();
-});
-$('#btnCopySrc').onclick = () => { copyText(sourceEl.value, 'Source'); showCopyTip('Copied successfully'); closeExportMenu(); };
+function closeExportMenu() {}
 
 $('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
@@ -226,15 +174,9 @@ window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;
 /* $('#btnTheme') removed */
 
-function syncModeBtn() {
-  const board = document.documentElement.dataset.drawerMode === 'board';
-  const tabM = $('#tabMermaid');
-  const tabB = $('#tabBoard');
-  if (tabM) tabM.setAttribute('aria-selected', String(!board));
-  if (tabB) tabB.setAttribute('aria-selected', String(board));
-}
+// —— Canvas toolbar: diagram theme + export + UI theme ——
 
-// —— Canvas toolbar: diagram theme + export + UI theme (visible in Board & Mermaid) ——
+// —— Canvas toolbar: diagram theme + export + UI theme ——
 
 const DIAGRAM_THEME_KEY = 'drawer.diagramTheme';
 function currentDiagramTheme() {
@@ -244,317 +186,6 @@ function currentDiagramTheme() {
   const allowed = ['default', 'classic', 'pastel', 'kami'];
   return allowed.includes(v) ? v : 'default';
 }
-function mermaidThemeForDiagram(theme) {
-  // Unified diagram themes → Mermaid.js theme ids (keep original neutral as default)
-  const id = (window.BoardThemes && typeof BoardThemes.resolveId === 'function') ? BoardThemes.resolveId(theme) : theme;
-  if (id === 'pastel') return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'neutral';
-  if (id === 'classic') return 'base';
-  return 'neutral';
-}
-function isFlowchartSource(text) {
-  const t = String(diagramType(text) || '').toLowerCase();
-  return t === 'flowchart' || t === 'graph';
-}
-
-/** State diagram: convert curved transition paths to orthogonal polylines (折线). */
-function polishStateTransitions(svg) {
-  if (!svg) return;
-  var paths = svg.querySelectorAll('path.transition');
-  if (!paths.length) return;
-  function parseEnd(d) {
-    // last explicit point: Lx,y or endpoint of final C (last two nums are end)
-    var m = String(d || '').trim();
-    if (!m) return null;
-    var nums = m.match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi);
-    if (!nums || nums.length < 2) return null;
-    return { x: Number(nums[nums.length - 2]), y: Number(nums[nums.length - 1]) };
-  }
-  function parseStart(d) {
-    var m = /^M\s*(-?\d*\.?\d+(?:e[-+]?\d+)?)\s*,\s*(-?\d*\.?\d+(?:e[-+]?\d+)?)/i.exec(String(d || '').trim());
-    if (!m) return null;
-    return { x: Number(m[1]), y: Number(m[2]) };
-  }
-  function orthoPath(a, b) {
-    var dx = b.x - a.x;
-    var dy = b.y - a.y;
-    if (Math.abs(dx) < 1.5) {
-      return 'M' + a.x + ',' + a.y + 'L' + b.x + ',' + b.y;
-    }
-    if (Math.abs(dy) < 1.5) {
-      return 'M' + a.x + ',' + a.y + 'L' + b.x + ',' + b.y;
-    }
-    // Prefer mid-Y elbow (H then V then H) when mostly horizontal travel; else mid-X.
-    var r = 8; // corner radius
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      var midY = a.y + dy * 0.5;
-      var x1 = a.x;
-      var y1 = a.y;
-      var x2 = b.x;
-      var y2 = b.y;
-      var sx = dx > 0 ? 1 : -1;
-      var sy = (midY >= y1) ? 1 : -1;
-      var sy2 = (y2 >= midY) ? 1 : -1;
-      // M → vertical toward midY (leave r) → arc → horizontal → arc → vertical to end
-      var v1 = midY - sy * r;
-      var h2 = x2 - sx * r;
-      // keep simple sharp 折线 first (clearer than rounded for review)
-      return 'M' + x1 + ',' + y1 + 'L' + x1 + ',' + midY + 'L' + x2 + ',' + midY + 'L' + x2 + ',' + y2;
-    }
-    var midX = a.x + dx * 0.5;
-    return 'M' + a.x + ',' + a.y + 'L' + midX + ',' + a.y + 'L' + midX + ',' + b.y + 'L' + b.x + ',' + b.y;
-  }
-  Array.prototype.forEach.call(paths, function(p) {
-    var d = p.getAttribute('d') || '';
-    if (!d || d.indexOf('C') < 0) return; // already line-ish or empty
-    var a = parseStart(d);
-    var b = parseEnd(d);
-    if (!a || !b) return;
-    if (Math.hypot(b.x - a.x, b.y - a.y) < 4) return; // degenerate
-    p.setAttribute('d', orthoPath(a, b));
-  });
-}
-
-
-/** State diagram UI polish — outer shell + title divider; no inner nested box. */
-function polishStateDiagram(svg) {
-  if (!svg) return;
-  var NS = 'http://www.w3.org/2000/svg';
-
-  // Leaf state nodes: round label-container only (skip empty label rects).
-  svg.querySelectorAll('g.node.statediagram-state > rect.basic.label-container, g.node.statediagram-state > rect.label-container').forEach(function(r) {
-    try {
-      r.setAttribute('rx', '8');
-      r.setAttribute('ry', '8');
-      r.style.strokeWidth = r.style.strokeWidth || '1.25px';
-    } catch (_e) {}
-  });
-
-  // Composite clusters: keep outer rounded shell; drop inner box; title divider only.
-  svg.querySelectorAll('g.statediagram-cluster, g.cluster').forEach(function(cluster) {
-    try {
-      var outer = cluster.querySelector('rect.outer') || cluster.querySelector('g > rect');
-      var inner = cluster.querySelector('rect.inner');
-      if (outer) {
-        outer.setAttribute('rx', '10');
-        outer.setAttribute('ry', '10');
-        outer.style.strokeWidth = outer.style.strokeWidth || '1.25px';
-      }
-      if (inner) {
-        // Hide nested content frame (was overlapping outer rounded box).
-        inner.setAttribute('visibility', 'hidden');
-        inner.style.display = 'none';
-        // Divider under title row (inner.y is the title/content split).
-        var x = parseFloat(inner.getAttribute('x') || (outer && outer.getAttribute('x')) || '0');
-        var y = parseFloat(inner.getAttribute('y') || '0');
-        var w = parseFloat(inner.getAttribute('width') || (outer && outer.getAttribute('width')) || '0');
-        if (isFinite(x) && isFinite(y) && isFinite(w) && w > 0) {
-          var old = cluster.querySelector('line.state-title-divider');
-          if (old) old.remove();
-          var line = document.createElementNS(NS, 'line');
-          line.setAttribute('class', 'state-title-divider');
-          line.setAttribute('x1', String(x));
-          line.setAttribute('x2', String(x + w));
-          line.setAttribute('y1', String(y));
-          line.setAttribute('y2', String(y));
-          // Insert after outer / before label if possible
-          if (inner.parentNode) inner.parentNode.insertBefore(line, inner);
-          else cluster.appendChild(line);
-        }
-      }
-    } catch (_e) {}
-  });
-
-  // Leaf labels: no clip + vertical center inside the rounded box.
-  svg.querySelectorAll('g.node.statediagram-state').forEach(function(node) {
-    try {
-      var box = node.querySelector('rect.basic.label-container, rect.label-container');
-      var label = node.querySelector('g.label');
-      var fo = node.querySelector('foreignObject');
-      if (!box || !fo) return;
-      fo.style.overflow = 'visible';
-      var div = fo.querySelector('div');
-      if (div) {
-        div.style.overflow = 'visible';
-        div.style.maxWidth = 'none';
-        div.style.lineHeight = '1.25';
-        div.style.verticalAlign = 'middle';
-      }
-      var p = fo.querySelector('p');
-      if (p) {
-        p.style.margin = '0';
-        p.style.overflow = 'visible';
-        p.style.lineHeight = '1.25';
-      }
-      var span = fo.querySelector('.nodeLabel, span, p');
-      var needW = 0;
-      var needH = 0;
-      if (span && span.getBoundingClientRect) {
-        var br = span.getBoundingClientRect();
-        needW = Math.ceil(br.width) + 4;
-        needH = Math.ceil(br.height) + 2;
-      }
-      var curW = parseFloat(fo.getAttribute('width') || '0');
-      var curH = parseFloat(fo.getAttribute('height') || '0');
-      if (isFinite(needW) && needW > curW + 1) {
-        fo.setAttribute('width', String(needW));
-        curW = needW;
-      }
-      if (isFinite(needH) && needH > curH + 1) {
-        fo.setAttribute('height', String(needH));
-        curH = needH;
-      }
-      var bw = parseFloat(box.getAttribute('width') || '0');
-      var bh = parseFloat(box.getAttribute('height') || '0');
-      var bx = parseFloat(box.getAttribute('x') || '0');
-      var by = parseFloat(box.getAttribute('y') || '0');
-      var padX = 16;
-      var padY = 14;
-      var nbw = Math.max(bw, curW + padX);
-      var nbh = Math.max(bh, curH + padY);
-      if (isFinite(nbw) && isFinite(nbh)) {
-        box.setAttribute('width', String(nbw));
-        box.setAttribute('height', String(nbh));
-        box.setAttribute('x', String(-nbw / 2));
-        box.setAttribute('y', String(-nbh / 2));
-        if (label) {
-          label.setAttribute('transform', 'translate(' + (-curW / 2) + ', ' + (-curH / 2) + ')');
-        }
-      }
-    } catch (_e) {}
-  });
-  // Cluster title labels: overflow visible only
-  svg.querySelectorAll('g.statediagram-cluster foreignObject, g.cluster-label foreignObject').forEach(function(fo) {
-    try {
-      fo.style.overflow = 'visible';
-      var p = fo.querySelector('p');
-      if (p) p.style.margin = '0';
-    } catch (_e) {}
-  });
-
-  // Edge labels: transparent plate + light paint halo (no white box)
-  svg.querySelectorAll('g.edgeLabel .labelBkg, g.edgeLabel rect').forEach(function(el) {
-    try {
-      el.setAttribute('fill', 'transparent');
-      el.style.fill = 'transparent';
-      el.style.fillOpacity = '0';
-      el.style.background = 'transparent';
-    } catch (_e) {}
-  });
-  svg.querySelectorAll('g.edgeLabel foreignObject div, g.edgeLabel foreignObject .labelBkg').forEach(function(el) {
-    try {
-      el.style.background = 'transparent';
-      el.style.backgroundColor = 'transparent';
-    } catch (_e) {}
-  });
-  svg.querySelectorAll('g.edgeLabel text, g.edgeLabel span, .edgeLabel foreignObject div').forEach(function(el) {
-    try {
-      el.style.paintOrder = 'stroke fill';
-      el.style.stroke = 'rgba(255,255,255,0.85)';
-      el.style.strokeWidth = '3px';
-      el.style.strokeLinejoin = 'round';
-    } catch (_e) {}
-  });
-  // Transition stroke weight
-  svg.querySelectorAll('path.transition').forEach(function(p) {
-    try {
-      var sw = parseFloat(p.style.strokeWidth || p.getAttribute('stroke-width') || '1');
-      if (!isFinite(sw) || sw < 1.15) p.style.strokeWidth = '1.35px';
-    } catch (_e) {}
-  });
-  // Start / end markers stay crisp
-  svg.querySelectorAll('g.state-start circle, .state-start circle').forEach(function(c) {
-    try { c.style.strokeWidth = '0'; } catch (_e) {}
-  });
-}
-
-function isMindmapSource(text) {
-  return String(diagramType(text) || '').toLowerCase() === 'mindmap';
-}
-function isSequenceSource(text) {
-  return String(diagramType(text) || '').toLowerCase() === 'sequencediagram';
-}
-function isStateSource(text) {
-  var t = String(diagramType(text) || '').toLowerCase();
-  return t === 'statediagram' || t === 'statediagram-v2';
-}
-function mermaidSiteOptions(theme, text) {
-  const id = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
-    ? BoardThemes.resolveId(theme)
-    : theme;
-  const options = {
-    startOnLoad: false,
-    securityLevel: 'loose',
-    flowchart: { useMaxWidth: false },
-    sequence: {
-      useMaxWidth: false,
-      diagramMarginX: 48,
-      diagramMarginY: 24,
-      actorMargin: 64,
-      boxMargin: 12,
-      boxTextMargin: 6,
-      noteMargin: 12,
-      messageMargin: 40,
-      mirrorActors: true,
-      bottomMarginAdj: 8,
-      rightAngles: false,
-    },
-    class: { useMaxWidth: false },
-    state: { useMaxWidth: false, padding: 16 },
-    er: { useMaxWidth: false },
-    mindmap: { useMaxWidth: false, padding: 18 },
-  };
-  // Flowchart / state: ELK orthogonal edges (Cursor Mermaid Preview parity).
-  if (typeof isFlowchartSource === 'function' && isFlowchartSource(text)) {
-    options.layout = 'elk';
-  }
-  if (typeof isStateSource === 'function' && isStateSource(text) && window.MermaidStateThemes) {
-    const vars = Object.assign({}, MermaidStateThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily || 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = vars;
-    options.layout = 'elk';
-    return options;
-  }
-  if (typeof isStateSource === 'function' && isStateSource(text)) {
-    options.layout = 'elk';
-  }
-  if (isFlowchartSource(text) && window.MermaidFlowchartThemes) {
-    const vars = Object.assign({}, MermaidFlowchartThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily;
-    options.themeVariables = vars;
-    return options;
-  }
-  if (isSequenceSource(text) && window.MermaidSequenceThemes) {
-    const vars = Object.assign({}, MermaidSequenceThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily || 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = vars;
-    return options;
-  }
-  // Mindmap: avoid Mermaid "neutral" washed edges on the grid — use default (colored sections).
-  if (isMindmapSource(text)) {
-    options.theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
-    options.fontFamily = 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = { background: 'transparent' };
-    return options;
-  }
-  options.theme = mermaidThemeForDiagram(id);
-  options.fontFamily = 'Inter, SF Pro Text, system-ui, sans-serif';
-  // All Mermaid diagram types: no solid diagram plate — sit on the shared grid canvas.
-  options.themeVariables = Object.assign({}, options.themeVariables || {}, { background: 'transparent' });
-  return options;
-}
-function applyMermaidSiteConfig(theme) {
-  const t = theme || currentDiagramTheme();
-  const text = sourceEl ? sourceEl.value : '';
-  if (!window.mermaid || !window.mermaid.initialize) return;
-  window.mermaid.initialize(mermaidSiteOptions(t, text));
-}
-function reinitMermaidForDiagramTheme(theme) {
-  try { applyMermaidSiteConfig(theme); } catch (_) {}
-}
-
 const ITEM_CAP_KEY = 'drawer.boardItemCap';
 const ITEM_CAP_MIN = 8;
 const ITEM_CAP_MAX = 24;
@@ -597,42 +228,6 @@ function applyBoardThemeToPreview() {
     else el.dataset.boardTheme = t;
   });
 }
-function persistMermaidStyle(patch) {
-  if (!sourceEl || !sourceEl.value.trim()) return;
-  if (document.documentElement.dataset.drawerMode === 'board') return;
-  if (typeof DrawerStyleLine === 'undefined' || typeof BoardRender === 'undefined') return;
-  if (typeof BoardRender.encodeStylePayload !== 'function' || typeof BoardRender.decodeStylePayload !== 'function') return;
-  try {
-    var doc = splitDocument(sourceEl.value);
-    var styled = DrawerStyleLine.splitRendererStyle(doc.body);
-    var token = DrawerStyleLine.applyMermaidStylePatch(
-      styled.token,
-      patch || {},
-      BoardRender.encodeStylePayload,
-      BoardRender.decodeStylePayload
-    );
-    var next = joinDocument(doc.meta, DrawerStyleLine.joinRendererStyle(token, styled.body));
-    if (next !== sourceEl.value) {
-      sourceEl.value = next;
-      if (typeof setTypeUI === 'function') setTypeUI(next);
-      if (typeof scheduleSave === 'function') scheduleSave();
-    }
-  } catch (_e) {}
-}
-function applyMermaidDocumentStyle(body) {
-  var styled = (typeof DrawerStyleLine !== 'undefined')
-    ? DrawerStyleLine.splitRendererStyle(body)
-    : { token: '', body: body };
-  var theme = 'default';
-  if (styled.token && typeof BoardRender !== 'undefined' && typeof BoardRender.decodeStylePayload === 'function') {
-    var raw = BoardRender.decodeStylePayload(styled.token);
-    if (window.BoardThemes && typeof BoardThemes.resolveId === 'function') theme = BoardThemes.resolveId(raw && raw.theme);
-    else if (raw && ['default', 'classic', 'pastel', 'kami'].includes(raw.theme)) theme = raw.theme;
-  }
-  if (typeof applyDiagramTheme === 'function') applyDiagramTheme(theme, { persist: false, skipRender: true });
-  else if (typeof applyMermaidSiteConfig === 'function') applyMermaidSiteConfig(theme);
-  return styled.body;
-}
 function applyDiagramTheme(theme, opts) {
   const t = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
     ? BoardThemes.resolveId(theme)
@@ -647,23 +242,11 @@ function applyDiagramTheme(theme, opts) {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
-  reinitMermaidForDiagramTheme(t);
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (opts && opts.persist && mode === 'board' && typeof persistBoardStyle === 'function') {
+  if (opts && opts.persist && typeof persistBoardStyle === 'function') {
     persistBoardStyle({ theme: t });
   }
-  if (opts && opts.persist && mode !== 'board' && typeof persistMermaidStyle === 'function') {
-    persistMermaidStyle({ theme: t });
-  }
   if (opts && opts.skipRender) return;
-  if (mode === 'board') {
-    // Keep current zoom/pan when switching theme.
-    // Skip while source is empty (init runs before bootstrapBoard).
-    if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
-  } else if (typeof renderDiagram === 'function' && sourceEl && sourceEl.value.trim()) {
-    // Never render empty source on init — that called setTypeUI('') and hid Mermaid edit tools (toolbar flash).
-    void renderDiagram({ fit: false });
-  }
+  if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
 const diagramThemeMenu = $('#diagramThemeMenu');
@@ -699,12 +282,7 @@ function closeDiagramThemeMenu() {
   /* Theme lives in Style dock — no popup. */
 }
 
-document.querySelectorAll("#mindmapLayoutSeg [data-mindmap-layout]").forEach(function(btn) {
-  btn.addEventListener("click", function() {
-    setMindmapLayout(btn.getAttribute("data-mindmap-layout"));
-  });
-});
-try { syncMindmapLayoutSeg(); syncStyleLayoutSections(); } catch (_e) {}
+try { syncStyleLayoutSections(); } catch (_e) {}
 
 document.querySelectorAll('#diagramThemeMenu .theme-item').forEach((btn) => {
   btn.addEventListener('click', () => { applyDiagramTheme(btn.dataset.theme, { persist: true }); });
@@ -767,28 +345,19 @@ if (canvasExportBtn && canvasExportMenu) {
   });
 }
 function activeSourceText() {
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (mode === 'board') return boardSourceEl ? boardSourceEl.value : '';
-  return sourceEl ? sourceEl.value : '';
+  return boardSourceEl ? boardSourceEl.value : '';
 }
 function activeSourcePath() {
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (mode === 'board') return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
-  if (typeof liveDiagramPath === 'string' && liveDiagramPath) return liveDiagramPath;
-  if (typeof liveArchive === 'string' && liveArchive.startsWith('/')) return liveArchive;
-  return '';
+  return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
 }
 async function copyActiveSourcePath() {
   let path = activeSourcePath();
   if (!path) {
     try {
-      const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-      const url = mode === 'board' ? './board.meta.json?ts=' + Date.now() : './diagram.meta.json?ts=' + Date.now();
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch('./board.meta.json?ts=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const meta = await res.json();
-        if (mode === 'board' && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
-        else if (typeof applyLiveMeta === 'function') applyLiveMeta(meta);
+        if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
         path = activeSourcePath();
       }
     } catch (_e) {}
@@ -830,15 +399,10 @@ function toggleSheetCollapsed() {
 function toggleSourceEntry() {
   toggleDock('source');
 }
-syncModeBtn();
-if ($('#tabMermaid')) $('#tabMermaid').onclick = () => setMode('mermaid');
-if ($('#tabBoard')) $('#tabBoard').onclick = () => setMode('board');
-
 window.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
-    if (document.documentElement.dataset.drawerMode === 'board') renderBoard();
-    else void renderDiagram();
+    renderBoard();
   }
   if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
     e.preventDefault();
@@ -846,123 +410,66 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+function centerView() {
+  fitBoardView();
+  flushDrawerUiSave();
+}
+function fitView() {
+  fitBoardView();
+}
 
 function setMode(mode, opts) {
   opts = opts || {};
-  const mermaid = mode === 'mermaid';
-  const next = mermaid ? 'mermaid' : 'board';
-  if (!opts.restore && document.documentElement.dataset.drawerMode === next) return;
-  var prevMode = document.documentElement.dataset.drawerMode || "";
-  if (mermaid && prevMode === "board" && typeof flushBoardSave === "function") void flushBoardSave();
-  var panelM = $('#panelMermaid');
-  if (panelM) panelM.classList.toggle('active', mermaid);
-  var panelBoard = $('#panelBoard');
-  if (panelBoard) panelBoard.classList.toggle('active', !mermaid);
-  document.documentElement.dataset.drawerMode = mermaid ? 'mermaid' : 'board';
-  if (opts.persist !== false) saveDrawerUi({ mode: mermaid ? 'mermaid' : 'board' });
-  syncModeBtn();
-  try {
-    if (mermaid) setTypeUI(sourceEl && sourceEl.value);
-    else setTypeUI(boardSourceEl && boardSourceEl.value);
-  } catch (_e) {}
-  if (!mermaid) closeExportMenu();
-  if (mermaid) {
-    pinBoardTitle();
-    if (!opts.restore) openDock("");
-    // User switch and refresh → document style.viewport, else Fit.
-    if (opts.restore) _drawerUiRestoreLock = true;
-    var skipRender = !!(opts.restore && previewEl && previewEl.querySelector("svg"));
-    var renderP = skipRender
-      ? Promise.resolve()
-      : Promise.resolve(renderDiagram({
-          fit: false,
-          restoreView: true,
-        }));
-    void renderP.then(function() {
-      if (skipRender && typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
-      else if (skipRender) applyTransform();
-      // Reveal canvas only after transform is applied (kills left-flash on refresh).
-      requestAnimationFrame(function () {
-        clearDrawerBoot();
-        if (opts.restore) {
-          requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
-        }
-      });
-    }).catch(function() {
-      clearDrawerBoot();
-      if (opts.restore) _drawerUiRestoreLock = false;
-    });
-    setStatus('Mermaid mode');
+  document.documentElement.dataset.drawerMode = "board";
+  if (opts.persist !== false) saveDrawerUi({ mode: "board" });
+  try { setTypeUI(boardSourceEl && boardSourceEl.value); } catch (_e) {}
+  closeExportMenu();
+  if (opts.restore) _drawerUiRestoreLock = true;
+  var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
+  var skipBoard = !!(opts.restore && hasBoard);
+  if (!skipBoard) {
+    renderBoard({ fit: false, restoreView: true });
+    if (typeof refreshBoardHistory === "function") void refreshBoardHistory();
   } else {
-    // User switch and refresh → document style.viewport, else Fit.
-    if (opts.restore) _drawerUiRestoreLock = true;
-    var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
-    var skipBoard = !!(opts.restore && hasBoard);
-    if (!skipBoard) {
-      renderBoard({ fit: false, restoreView: true });
-      if (typeof refreshBoardHistory === 'function') void refreshBoardHistory();
-    } else {
-      applyRestoredBoardView();
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { clearDrawerBoot(); });
-      });
-    }
-    if (!opts.restore) openDock("");
-    if (opts.restore) {
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
-      });
-    }
-    syncBoardLinkRouteButton();
-    setStatus('Board mode');
+    applyRestoredBoardView();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { clearDrawerBoot(); });
+    });
   }
+  if (!opts.restore) openDock("");
+  if (opts.restore) {
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
+    });
+  }
+  syncBoardLinkRouteButton();
+  setStatus("Board mode");
 }
 
-setSyncUI('ok');
 (function applyDrawerUiChrome() {
   var ui = loadDrawerUi();
   setSheetCollapsed(!!ui.sheetCollapsed, false);
 })();
 applyTransform();
-restoreCachedSvg(); // mermaid-only; board skips so refresh does not flash Mermaid SVG
 function restoreDrawerMode() {
   var ui = loadDrawerUi();
-  var urlMode = new URLSearchParams(location.search).get("mode");
-  var mode = (urlMode === "board" || urlMode === "mermaid") ? urlMode : (ui.mode || "mermaid");
-  if (urlMode === "board" || urlMode === "mermaid") saveDrawerUi({ mode: urlMode });
-  document.documentElement.dataset.drawerMode = mode;
-  setMode(mode, { restore: true, persist: false });
-  // Restore dock after mode chrome is applied (avoid open→close flash on refresh).
+  document.documentElement.dataset.drawerMode = "board";
+  saveDrawerUi({ mode: "board" });
+  setMode("board", { restore: true, persist: false });
   try {
     var tab = ui.dockTab || "";
-    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || (tab === "layout" && mode === "board")) {
+    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || tab === "layout") {
       openDock(tab);
     }
   } catch (_e) {}
 }
-if (document.documentElement.dataset.drawerMode === "board") {
-  await bootstrapBoard();
-  restoreDrawerMode();
-  void bootstrap();
-} else {
-  await bootstrap();
-  await bootstrapBoard();
-  restoreDrawerMode();
-}
-setInterval(() => { void loadPolled(); void loadBoardPolled(); }, 1500);
+await bootstrapBoard();
+restoreDrawerMode();
+setInterval(() => { void loadBoardPolled(); }, 1500);
 
-/* Mermaid history list */
-(function wireMermaidHistory() {
-  var btn = document.getElementById('btnHistoryRefresh');
-  if (btn) btn.addEventListener('click', function() { void refreshMermaidHistory(); });
-  // Fill as soon as possible (no 400ms empty→full height jump).
-  void refreshMermaidHistory();
-})();
-
-/* Board history list */
 (function wireBoardHistory() {
-  var btn = document.getElementById('btnBoardHistoryRefresh');
-  if (btn) btn.addEventListener('click', function() { void refreshBoardHistory(); });
+  var btn = document.getElementById("btnBoardHistoryRefresh");
+  if (btn) btn.addEventListener("click", function() { void refreshBoardHistory(); });
   void refreshBoardHistory();
 })();
 

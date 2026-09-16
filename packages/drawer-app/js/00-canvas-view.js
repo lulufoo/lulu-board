@@ -14,10 +14,7 @@ function normalizeDocumentView(raw) {
 
 function measureDiagramOnCanvas() {
   if (!previewEl || !stageEl) return null;
-  var mode = document.documentElement.dataset.drawerMode;
-  var content = mode === "board"
-    ? previewEl.querySelector(".board-render")
-    : previewEl.querySelector("svg");
+  var content = previewEl.querySelector(".board-render");
   if (!content) return null;
   var wrap = stageEl.getBoundingClientRect();
   var box = content.getBoundingClientRect();
@@ -27,20 +24,11 @@ function measureDiagramOnCanvas() {
 
 function readDocumentView() {
   try {
-    if (document.documentElement.dataset.drawerMode === "board") {
-      if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;
-      var boardText = boardSourceEl.value;
-      try { boardText = splitDocument(boardText).body; } catch (_e) {}
-      var board = BoardRender.parse(boardText);
-      return normalizeDocumentView(board.style && (board.style.viewport || board.style.view));
-    }
-    if (!sourceEl || typeof DrawerStyleLine === "undefined" || typeof BoardRender === "undefined") return null;
-    var body = sourceEl.value;
-    try { body = splitDocument(body).body; } catch (_e) {}
-    var styled = DrawerStyleLine.splitRendererStyle(body);
-    if (!styled.token) return null;
-    var raw = BoardRender.decodeStylePayload(styled.token);
-    return normalizeDocumentView(raw && (raw.viewport || raw.view));
+    if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;
+    var boardText = boardSourceEl.value;
+    try { boardText = splitDocument(boardText).body; } catch (_e) {}
+    var board = BoardRender.parse(boardText);
+    return normalizeDocumentView(board.style && (board.style.viewport || board.style.view));
   } catch (_err) {
     return null;
   }
@@ -51,11 +39,7 @@ function persistDocumentView(view) {
   if (next && _skipDocumentViewPersist) return;
   if (next && typeof _drawerUiRestoreLock !== "undefined" && _drawerUiRestoreLock) return;
   var patch = { viewport: next, view: null };
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (typeof persistBoardStyle === "function") persistBoardStyle(patch);
-    return;
-  }
-  if (typeof persistMermaidStyle === "function") persistMermaidStyle(patch);
+  if (typeof persistBoardStyle === "function") persistBoardStyle(patch);
 }
 
 function snapshotDocumentView() {
@@ -128,11 +112,7 @@ function applyDocumentView(view, done) {
 function restoreOrFitDocumentView() {
   var view = readDocumentView();
   if (applyDocumentView(view)) return true;
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (typeof fitBoardView === "function") fitBoardView({ persist: true });
-  } else if (typeof centerView === "function") {
-    centerView();
-  }
+  if (typeof fitBoardView === "function") fitBoardView({ persist: true });
   return false;
 }
 

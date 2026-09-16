@@ -1,6 +1,0 @@
-tag=mermaid@11.6.0
-repo=https://github.com/mermaid-js/mermaid
-tarball=https://codeload.github.com/mermaid-js/mermaid/tar.gz/refs/tags/mermaid@11.6.0
-sha256=c4dd4753534ead7f7d495b728e5a191e9c178edfad4a91366c01c91e5c879181
-prune=prod-src
-layout=lifted

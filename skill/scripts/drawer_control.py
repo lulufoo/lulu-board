@@ -18,7 +18,7 @@ from drawer_ctl.paths import *  # noqa: F403
 from drawer_ctl.util import *  # noqa: F403
 from drawer_ctl.titles import *  # noqa: F403
 from drawer_ctl.document import *  # noqa: F403
-from drawer_ctl.mermaid import *  # noqa: F403
+from drawer_ctl.export import *  # noqa: F403
 from drawer_ctl.board import *  # noqa: F403
 from drawer_ctl.migrate import migrate_document_envelopes  # noqa: F401
 from drawer_ctl.server import *  # noqa: F403
@@ -39,7 +39,7 @@ def __dir__():
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Mount and control the Lulu Drawer (Mermaid + Board beta).")
+    p = argparse.ArgumentParser(description="Mount and control the Lulu Board viewer.")
     commands = p.add_subparsers(dest="command", required=True)
     mount_p = commands.add_parser("mount", help="start or reuse the local viewer")
     mount_p.add_argument("--port", type=int, default=0, help="loopback port; 0 = fixed default (paths.DEFAULT_PORT)")
@@ -49,18 +49,18 @@ def parser():
     commands.add_parser("stop", help="stop viewer and clear server state")
     prev_p = commands.add_parser("preview", help="mount, set-source, and open browser")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
-    prev_p.add_argument("--kind", choices=["mermaid", "board"], default="mermaid", help="which live source to write")
-    prev_p.add_argument("--id", dest="source_id", help="BMD ID (b_…) or MMD ID (m_…); omit to mint")
+    prev_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
+    prev_p.add_argument("--id", dest="source_id", help="BMD ID (b_…); omit to mint")
     prev_p.add_argument("--port", type=int, default=0, help="loopback port; 0 = fixed default (paths.DEFAULT_PORT)")
     prev_p.add_argument("--no-open", action="store_true", help="do not open any browser")
     prev_p.add_argument("--open-system", action="store_true", help="open in the macOS/default browser instead")
-    source_p = commands.add_parser("set-source", help="write Mermaid or Board source")
+    source_p = commands.add_parser("set-source", help="write Board source")
     source_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
-    source_p.add_argument("--kind", choices=["mermaid", "board"], default="mermaid", help="which live source to write")
-    source_p.add_argument("--id", dest="source_id", help="BMD ID (b_…) or MMD ID (m_…); omit to mint")
-    get_p = commands.add_parser("get-source", help="print BMD Source or MMD Source for --id")
-    get_p.add_argument("--kind", choices=["mermaid", "board"], default="mermaid", help="which live source to print")
-    get_p.add_argument("--id", dest="source_id", help="BMD ID (b_…) or MMD ID (m_…); required")
+    source_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
+    source_p.add_argument("--id", dest="source_id", help="BMD ID (b_…); omit to mint")
+    get_p = commands.add_parser("get-source", help="print BMD Source for --id")
+    get_p.add_argument("--kind", choices=["board"], default="board", help="which live source to print")
+    get_p.add_argument("--id", dest="source_id", help="BMD ID (b_…); required")
     serve_p = commands.add_parser("_serve", help=argparse.SUPPRESS)
     serve_p.add_argument("--port", type=int, default=0)
     return p
@@ -92,18 +92,18 @@ def main(argv=None) -> int:
                 args.port,
                 should_open=mode != "none",
                 open_mode=mode,
-                kind=getattr(args, "kind", "mermaid"),
+                kind=getattr(args, "kind", "board"),
                 source_id=getattr(args, "source_id", None),
             )
         elif args.command == "set-source":
             set_source(
                 args.file,
-                kind=getattr(args, "kind", "mermaid"),
+                kind=getattr(args, "kind", "board"),
                 source_id=getattr(args, "source_id", None),
             )
         elif args.command == "get-source":
             get_source(
-                kind=getattr(args, "kind", "mermaid"),
+                kind=getattr(args, "kind", "board"),
                 source_id=getattr(args, "source_id", None),
             )
         elif args.command == "_serve":
@@ -116,4 +116,3 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

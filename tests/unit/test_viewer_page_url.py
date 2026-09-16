@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""preview viewer URLs always carry mode=mermaid or mode=board."""
+"""preview viewer URLs always carry mode=board."""
 from __future__ import annotations
 
 import sys
@@ -12,12 +12,6 @@ import drawer_control as dc
 
 
 class ViewerPageUrlTest(TestCase):
-    def test_mermaid_appends_mode(self) -> None:
-        self.assertEqual(
-            dc.viewer_page_url("http://127.0.0.1:9/drawer.html", "mermaid"),
-            "http://127.0.0.1:9/drawer.html?mode=mermaid",
-        )
-
     def test_board_appends_mode(self) -> None:
         self.assertEqual(
             dc.viewer_page_url("http://127.0.0.1:9/drawer.html", "board"),

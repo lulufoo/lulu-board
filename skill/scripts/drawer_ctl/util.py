@@ -58,12 +58,6 @@ def sanitize_stem(label: str | None) -> str:
     return (stem[:48] or "diagram")
 
 
-def new_diagram_id() -> str:
-    """Short stable Mermaid diagram id (history + live meta)."""
-    import secrets
-    return "m_" + secrets.token_hex(4)
-
-
 def new_board_id() -> str:
     """Short stable Board diagram id (history + live meta)."""
     import secrets

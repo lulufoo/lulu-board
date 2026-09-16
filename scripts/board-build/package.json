@@ -1,0 +1,8 @@
+{
+  "name": "drawer-board-build",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

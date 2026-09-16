@@ -7,10 +7,7 @@ const PNG_EXPORT_MAX_EDGE = 16384;
 const PNG_EXPORT_MAX_PIXELS = 64_000_000;
 
 function getExportContentTarget() {
-  if (document.documentElement.dataset.drawerMode === 'board') {
-    return previewEl && previewEl.querySelector('.board-render');
-  }
-  return previewEl && previewEl.querySelector(':scope > svg');
+  return previewEl && previewEl.querySelector('.board-render');
 }
 
 function getExportContentSize(target) {
@@ -28,19 +25,17 @@ function stripExportInteractions(root) {
   const interactive = [
     root,
     ...root.querySelectorAll(
-      '.board-selection, .mermaid-selection, .mermaid-link-selected, .board-reorder-dragging, .board-reorder-caret'
+      '.board-selection, .board-reorder-dragging, .board-reorder-caret'
     ),
   ];
   interactive.forEach((el) => {
     el.classList.remove(
       'board-selection',
-      'mermaid-selection',
-      'mermaid-link-selected',
       'board-reorder-dragging'
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .mermaid-edge-hit, .mindmap-node-hit, .mindmap-add-zone-hit, .mindmap-add-hit, .mindmap-add, .board-reorder-caret'
+    '.board-edge-hit, .board-reorder-caret'
   ).forEach((el) => el.remove());
 }
 

@@ -42,14 +42,6 @@
   --shadow-soft: 0 4px 14px rgba(0,0,0,.08);
   --dot: rgba(0,0,0,.06);
 }
-/* Light theme: alt/loop frame + else divider — Mermaid neutral is too faint */
-[data-theme="light"] #preview svg line.loopLine {
-  stroke: #6e6e73 !important;
-}
-[data-theme="light"] #preview svg line.loopLine[style*="stroke-dasharray"] {
-  stroke: #3a3a3c !important;
-}
-
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
@@ -132,30 +124,6 @@ button { font: inherit; color: inherit; }
   display: flex;
   flex-direction: column;
 }
-#source {
-  flex: 1;
-  width: 100%;
-  border: 0;
-  resize: none;
-  outline: none;
-  padding: 14px;
-  background: transparent;
-  color: var(--text);
-  font: 12.5px/1.55 var(--mono);
-  tab-size: 2;
-}
-#errorBox {
-  display: none;
-  margin: 0;
-  padding: 10px 12px;
-  border-top: 1px solid color-mix(in srgb, var(--danger) 35%, var(--stroke));
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
-  color: var(--danger);
-  font: 11.5px/1.45 var(--mono);
-  white-space: pre-wrap;
-}
-#errorBox.show { display: block; }
-
 .sheet-actions {
   display: flex; flex-wrap: wrap; gap: 8px;
   padding: 0 18px 18px;
@@ -209,7 +177,7 @@ button { font: inherit; color: inherit; }
   cursor: grab;
 }
 /* Board title is the browser document.title. Do not paint it on the canvas. */
-/* Refresh: hide the canvas until layout + transform finish (Board + Mermaid).
+/* Refresh: hide the canvas until layout + transform finish.
    Do not hide .top-float — that makes the whole toolbar pop in. */
 html[data-drawer-boot="1"] #preview-stage {
   opacity: 0 !important;
@@ -373,19 +341,7 @@ kbd {
 .top-float .btn-source .icon-source {
   display: block;
 }
-.top-float .mode-switch {
-  margin: 0;
-  height: 36px;
-  align-items: center;
-  background: var(--panel-solid);
-  border-color: var(--stroke);
-}
-.top-float .mode-switch button {
-  height: 30px;
-  padding: 0 10px;
-}
-html[data-drawer-mode="board"] .top-float,
-html[data-drawer-mode="mermaid"] .top-float {
+html[data-drawer-mode="board"] .top-float {
   /* Vertically align with the adjacent toolbar */
   top: 16px;
   left: 12px;
@@ -531,38 +487,6 @@ html[data-drawer-mode="mermaid"] .top-float {
 .menu-item[hidden] { display: none !important; }
 
 
-.mode-switch {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  margin: 0 18px 10px;
-  border-radius: 12px;
-  border: 1px solid var(--stroke);
-  background: color-mix(in srgb, var(--canvas) 55%, transparent);
-  width: fit-content;
-}
-.mode-switch button {
-  height: 28px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
-}
-.mode-switch button[aria-selected="true"] {
-  background: var(--panel-solid);
-  color: var(--text);
-  box-shadow: var(--shadow-soft);
-  cursor: default;
-}
-.mode-switch button[aria-selected="true"]:active {
-  background: var(--panel-solid);
-  color: var(--text);
-}
-.mode-panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
-.mode-panel.active { display: flex; }
-
 .board-editor-wrap {
   position: relative;
   flex: 1;
@@ -606,7 +530,7 @@ html[data-drawer-mode="mermaid"] .top-float {
 #boardTitleEditor:focus { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent); }
 
 /* --- 03-diagram.css --- */
-/* board + mermaid diagram surfaces */
+/* board diagram surfaces */
 .board-selection { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
 .board-selection-tree { outline: 3px dashed #f59e0b !important; outline-offset: 3px; }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
@@ -719,146 +643,7 @@ html[data-drawer-mode="mermaid"] .top-float {
 .board-render .box.board-nested { position: relative !important; left: auto !important; top: auto !important; }
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
 html[data-drawer-mode="board"] .board-edit-tools { display: inline-flex; }
-.board-edit-tool, .mermaid-edit-tool { transition: none !important; }
-.mermaid-edit-tools { display: none; align-items: center; gap: 8px; }
-/* Default ON in Mermaid mode so refresh does not wait for setTypeUI; hide only when explicitly not flowchart. */
-html[data-drawer-mode="mermaid"] .mermaid-edit-tools { display: inline-flex; }
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="0"] .mermaid-edit-tools { display: none; }
-.mindmap-edit-tools { display: none; align-items: center; gap: 8px; }
-html[data-drawer-mode="mermaid"][data-mermaid-mindmap="1"] .mindmap-edit-tools { display: inline-flex; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-node-hit { fill: transparent; stroke: none; pointer-events: all; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-zone-hit { fill: transparent; stroke: none; pointer-events: all; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-add {
-  opacity: 0;
-  pointer-events: none;
-  cursor: pointer;
-  transition: opacity 0ms linear 0ms;
-}
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-zone:hover .mindmap-add {
-  opacity: 1;
-  pointer-events: auto;
-  transition: opacity 0ms linear 100ms;
-}
-/* After clicking +, keep hidden until pointer leaves the right-side zone. */
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-zone.is-suppressed .mindmap-add,
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-zone.is-suppressed:hover .mindmap-add {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  transition: opacity 0ms linear 0ms !important;
-}
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-hit { fill: transparent; stroke: none; pointer-events: all; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-bg { fill: var(--accent, #2563eb); stroke: none; pointer-events: none; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-bar { fill: #fff; pointer-events: none; }
-#preview svg[aria-roledescription="mindmap"] .mindmap-add-zone:hover .mindmap-add:hover .mindmap-add-bg { fill: #1d4ed8; }
-html[data-drawer-mode="mermaid"][data-mermaid-mindmap="1"] .mermaid-edit-tools { display: none !important; }
-
-.state-edit-tools { display: none; align-items: center; gap: 8px; }
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] .state-edit-tools { display: inline-flex; }
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] .mermaid-edit-tools { display: none !important; }
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.node,
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.statediagram-cluster,
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.stateGroup,
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview path.transition,
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.edgeLabel {
-  cursor: pointer;
-}
-
-html[data-drawer-mode="mermaid"] g.mindmap-node.mermaid-selection .node-bkg {
-  stroke: #2563eb !important;
-  stroke-width: 2.25px !important;
-}
-html[data-drawer-mode="mermaid"].mermaid-link-mode { cursor: crosshair; }
-html[data-drawer-mode="mermaid"].mermaid-link-mode .mermaid-edit-tool#btnMermaidLink.is-active {
-  background: color-mix(in srgb, var(--accent, #2563eb) 18%, var(--panel-solid)) !important;
-  border-color: var(--accent, #2563eb) !important;
-  color: var(--accent, #2563eb) !important;
-}
-/* Mermaid nodes/edges are hit targets — cursor + selection chrome */
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.node,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.cluster,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.cluster-label,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.edgePath,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview path.flowchart-link,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.edgeLabel,
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview path.mermaid-edge-hit {
-  cursor: pointer;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview g.cluster > rect {
-  pointer-events: all;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview path.flowchart-link {
-  pointer-events: stroke;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-flowchart="1"] #preview path.mermaid-edge-hit {
-  fill: none;
-  stroke: transparent;
-  stroke-width: 14px;
-  pointer-events: stroke;
-}
-
-/* State diagram selection */
-html[data-drawer-mode="mermaid"] g.statediagram-state.mermaid-selection > rect,
-html[data-drawer-mode="mermaid"] g.stateGroup.mermaid-selection > rect {
-  stroke: var(--accent, #3b82f6) !important;
-  stroke-width: 2.5px !important;
-}
-/* Composite shell: rect.outer is nested under an anonymous g, not a direct child;
-   rect.inner is display:none — so > rect never painted a visible selection. */
-html[data-drawer-mode="mermaid"] g.statediagram-cluster.mermaid-selection rect.outer,
-html[data-drawer-mode="mermaid"] g.statediagram-cluster.mermaid-selection > rect:not(.inner) {
-  stroke: var(--accent, #3b82f6) !important;
-  stroke-width: 2.5px !important;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.statediagram-cluster rect.outer {
-  pointer-events: all;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview g.statediagram-cluster g.cluster-label {
-  pointer-events: all;
-  cursor: pointer;
-}
-html[data-drawer-mode="mermaid"] path.transition.mermaid-selection {
-  stroke: var(--accent, #3b82f6) !important;
-  stroke-width: 2.5px !important;
-}
-
-html[data-drawer-mode="mermaid"] g.node.mermaid-selection,
-html[data-drawer-mode="mermaid"] g.cluster.mermaid-selection {
-  outline: 2px solid #f59e0b;
-  outline-offset: 2px;
-}
-/* Link select: only visible path darken+thicken (Board parity). Hit path stays invisible — never a glow/shadow. */
-html[data-drawer-mode="mermaid"] path.mermaid-edge-hit,
-html[data-drawer-mode="mermaid"] path.mermaid-edge-hit.mermaid-selection,
-html[data-drawer-mode="mermaid"] path.mermaid-edge-hit.mermaid-link-selected {
-  fill: none !important;
-  stroke: transparent !important;
-  stroke-width: 14px !important;
-  filter: none !important;
-  pointer-events: stroke;
-}
-html[data-drawer-mode="mermaid"] path.flowchart-link.mermaid-link-selected {
-  filter: none !important;
-}
-html[data-drawer-mode="mermaid"] g.edgeLabel.mermaid-link-selected {
-  font-weight: 700;
-  filter: none !important;
-}
-html[data-drawer-mode="mermaid"] g.node.mermaid-link-source { filter: drop-shadow(0 0 2px #38bdf8); }
-.mermaid-type-pill {
-  /* unused toolbar remnant; Type is #typePill in Export dock */
-  display: none;
-  background: var(--panel-solid);
-  color: var(--muted);
-  font-size: 12px;
-  display: none;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 5px;
-  min-width: 0;
-  box-sizing: border-box;
-}
-.mermaid-type-pill b { color: var(--text); font-weight: 650; }
-/* Type lives in Export dock (Board + Mermaid) */
+.board-edit-tool { transition: none !important; }
 .export-type-row {
   display: flex;
   align-items: baseline;
@@ -1088,14 +873,10 @@ html[data-drawer-mode="mermaid"] g.node.mermaid-link-source { filter: drop-shado
 
 .board-edit-tool-icon { padding: 0 !important; width: 32px !important; justify-content: center; }
 .board-edit-tool-icon .board-edit-glyph { margin: 0; }
-.board-edit-tool,
-.mermaid-edit-tool { height: 32px !important; min-width: 32px !important; padding: 0 10px !important; gap: 5px; border: 1px solid var(--stroke) !important; border-radius: 10px !important; background: var(--panel-solid) !important; color: var(--text); font-size: 12px; }
-.board-edit-tool:hover,
-.mermaid-edit-tool:hover { background: var(--accent-soft) !important; }
-.board-edit-tool:disabled,
-.mermaid-edit-tool:disabled { opacity: .42; cursor: not-allowed; }
-.board-edit-tool .board-edit-glyph,
-.mermaid-edit-tool .board-edit-glyph { font-size: 15px; line-height: 1; }
+.board-edit-tool { height: 32px !important; min-width: 32px !important; padding: 0 10px !important; gap: 5px; border: 1px solid var(--stroke) !important; border-radius: 10px !important; background: var(--panel-solid) !important; color: var(--text); font-size: 12px; }
+.board-edit-tool:hover { background: var(--accent-soft) !important; }
+.board-edit-tool:disabled { opacity: .42; cursor: not-allowed; }
+.board-edit-tool .board-edit-glyph { font-size: 15px; line-height: 1; }
 
 .board-placeholder {
   flex: 1;
@@ -1120,7 +901,7 @@ html[data-drawer-mode="mermaid"] g.node.mermaid-link-source { filter: drop-shado
 .board-placeholder p { margin: 0; font-size: 12.5px; line-height: 1.5; max-width: 280px; }
 
 /* Board design system — restrained editorial architecture diagram. */
-/* canvas grid is set below for both Board and Mermaid */
+/* canvas grid is set below */
 /* Diagram themes (Board) — CSS vars from vendor/board/themes; per box type via --board-<type>-* */
 .board-render {
   color: var(--board-color, #333);
@@ -1279,8 +1060,7 @@ html[data-drawer-mode="mermaid"] g.node.mermaid-link-source { filter: drop-shado
 
 
 /* SOURCE_LEFT_12: dock source 12px from sheet/viewport; theme+more on right */
-html[data-drawer-mode="board"] .top-float,
-html[data-drawer-mode="mermaid"] .top-float {
+html[data-drawer-mode="board"] .top-float {
   position: absolute !important;
   inset: 12px 12px auto 12px !important;
   left: 12px !important;
@@ -1304,7 +1084,8 @@ html[data-drawer-mode="mermaid"] .top-float {
   pointer-events: none !important;
   z-index: 20 !important;
 }
-.top-float-left, .top-float-right {
+.top-float-left,
+.top-float-right {
   display: flex; align-items: center; gap: 8px; pointer-events: auto;
 }
 .top-float-left { justify-content: flex-start; }
@@ -1335,16 +1116,14 @@ html[data-drawer-mode="mermaid"] .top-float {
 .top-float .btn-theme:hover { background: var(--accent-soft); }
 .top-float-theme .menu-panel { right: 0; left: auto; }
 .top-float-theme .theme-item.is-active { font-weight: 650; color: var(--accent, #2563eb); }
-/* Shared grid canvas (Board + Mermaid) — no diagram chrome frame / white plate */
-html[data-drawer-mode="board"] .canvas-shell,
-html[data-drawer-mode="mermaid"] .canvas-shell {
+/* Shared grid canvas — no diagram chrome frame / white plate */
+html[data-drawer-mode="board"] .canvas-shell {
   background-color: #f8fafc !important;
   background-image: linear-gradient(rgba(100,116,139,.12) 1px, transparent 1px),
     linear-gradient(90deg, rgba(100,116,139,.12) 1px, transparent 1px) !important;
   background-size: 20px 20px !important;
 }
-html[data-drawer-mode="board"][data-diagram-theme="kami"] .canvas-shell,
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] .canvas-shell {
+html[data-drawer-mode="board"][data-diagram-theme="kami"] .canvas-shell {
   background-color: #f5f4ed !important;
   background-image: linear-gradient(rgba(80,78,73,.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(80,78,73,.08) 1px, transparent 1px) !important;
@@ -1364,8 +1143,7 @@ html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] .canvas-shell {
   background: transparent !important;
   border-radius: 0 !important;
 }
-html[data-drawer-mode="board"] #preview svg,
-html[data-drawer-mode="mermaid"] #preview svg {
+html[data-drawer-mode="board"] #preview svg {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -1373,98 +1151,8 @@ html[data-drawer-mode="mermaid"] #preview svg {
   padding: 0 !important;
   border-radius: 0 !important;
 }
-/* Mermaid injects a full-size background rect from themeVariables.background */
-html[data-drawer-mode="mermaid"] #preview svg > rect:first-child[fill],
-html[data-drawer-mode="mermaid"] #preview svg > style + rect[width][height] {
-  fill: transparent !important;
-}
-
-/* Mindmap on grid canvas: Mermaid "neutral" uses near-white edges (#F4F4F4) that vanish;
-   also edge-depth-* strokes are 14–17px and look blotchy. Tone for Drawer. */
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-/* Cap Mermaid's huge depth strokes (17/14/11…) so branches stay mindmap-like but not muddy */
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth--1 { stroke-width: 7px !important; }
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-0 { stroke-width: 5.5px !important; }
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-1 { stroke-width: 4px !important; }
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-2 { stroke-width: 3px !important; }
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-3,
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-4,
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="mindmap"] .edge-depth-5 { stroke-width: 2.25px !important; }
-/* Default mindmap shape draws a bottom "node-line"; keep it but soften on grid */
-html[data-theme="light"] #preview svg[aria-roledescription="mindmap"] line[class^="node-line"] {
-  stroke-width: 2px !important;
-  opacity: 0.55;
-}
-html[data-theme="dark"] #preview svg[aria-roledescription="mindmap"] line[class^="node-line"] {
-  stroke-width: 2px !important;
-  opacity: 0.7;
-}
-/* Sequence UI — theme colors from MermaidSequenceThemes; chrome polish here. */
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] rect.actor,
-html[data-drawer-mode="mermaid"] #preview svg .actor {
-  rx: 8px;
-  ry: 8px;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] text.actor,
-html[data-drawer-mode="mermaid"] #preview svg text.actor {
-  font-weight: 650;
-  letter-spacing: 0.01em;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] line[class*="messageLine"],
-html[data-drawer-mode="mermaid"] #preview svg path[class*="messageLine"] {
-  stroke-width: 1.7px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] text.messageText,
-html[data-drawer-mode="mermaid"] #preview svg text.messageText {
-  font-size: 13px;
-  font-weight: 500;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] rect.activation0,
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] rect.activation1,
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] rect.activation2,
-html[data-drawer-mode="mermaid"] #preview svg rect.activation0,
-html[data-drawer-mode="mermaid"] #preview svg rect.activation1,
-html[data-drawer-mode="mermaid"] #preview svg rect.activation2 {
-  rx: 3px;
-  ry: 3px;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] text.labelText,
-html[data-drawer-mode="mermaid"] #preview svg text.labelText {
-  font-weight: 650;
-  font-size: 12px;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] line.loopLine,
-html[data-drawer-mode="mermaid"] #preview svg line.loopLine {
-  stroke-width: 1.35px;
-}
-html[data-drawer-mode="mermaid"] #preview svg[aria-roledescription="sequence"] text.noteText,
-html[data-drawer-mode="mermaid"] #preview svg text.noteText {
-  font-size: 12.5px;
-  font-weight: 500;
-}
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg[aria-roledescription="sequence"] rect.actor,
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg .actor {
-  rx: 3px;
-  ry: 3px;
-}
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg text.actor,
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg text.messageText,
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg text.labelText,
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg text.noteText {
-  font-family: "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif CJK SC", Palatino, Georgia, serif;
-}
-
-/* Mindmap node/edge colors come from mermaid-themes/mindmap (MermaidMindmapThemes). */
-
 /* Top toolbar layout — Source hugs Lulu Drawer sheet; ⋯ far right */
-html[data-drawer-mode="board"] .top-float,
-html[data-drawer-mode="mermaid"] .top-float {
+html[data-drawer-mode="board"] .top-float {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -1484,8 +1172,7 @@ html[data-drawer-mode="mermaid"] .top-float {
   pointer-events: none;
   z-index: 5;
 }
-html[data-drawer-mode="board"] .top-float > *,
-html[data-drawer-mode="mermaid"] .top-float > * { pointer-events: auto; }
+html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
 .top-float-spacer { flex: 1 1 auto; min-width: 12px; pointer-events: none !important; }
 .diagram-theme-wrap {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1507,10 +1194,9 @@ html[data-drawer-mode="mermaid"] .top-float > * { pointer-events: auto; }
   background: var(--panel-solid); color: var(--text);
   display: inline-flex; align-items: center; justify-content: center;
 }
-/* Diagram theme applies to both Mermaid and Board */
+/* Diagram theme */
 
-html[data-drawer-mode="board"] #preview svg,
-html[data-drawer-mode="mermaid"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+html[data-drawer-mode="board"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
 html[data-drawer-mode="board"] #preview .board-diamond-shape,
 html[data-drawer-mode="board"] #preview .board-item-diamond-shape,
 html[data-drawer-mode="board"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; width: 100% !important; height: 100% !important; }
@@ -1567,7 +1253,8 @@ html[data-drawer-mode="board"] #preview.board-preview {
 }
 .board-zone-title { display: flex; align-items: flex-start; gap: 9px; min-width: 0; min-height: 20px; margin: 0 0 12px; color: #1e293b; font-size: 13px; line-height: 1.22; font-weight: 680; }
 .board-title-copy { display: inline-flex; flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 0; overflow: hidden; }
-.board-title-name, .board-item-text { min-width: 0; overflow-wrap: anywhere; }
+.board-title-name,
+.board-item-text { min-width: 0; overflow-wrap: anywhere; }
 .board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; }
 .board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: 520; }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
@@ -1585,13 +1272,16 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-kind-env-sbx { border-left-color: #3f7faf; background: #f7fbfe; }
 .board-kind-artifact { border-left-color: #7764aa; background: #fbfaff; }
 .board-kind-suite { border-left-color: #8a6684; background: #fdfafd; }
-.board-kind-document .board-icon, .board-kind-kit .board-icon { color: #64748b; }
+.board-kind-document .board-icon,
+.board-kind-kit .board-icon { color: #64748b; }
 .board-kind-env-local .board-icon { color: #5b8c78; }
 .board-kind-env-sbx .board-icon { color: #4f80a8; }
-.board-kind-artifact .board-icon, .board-kind-suite .board-icon { color: #7a6aa8; }
+.board-kind-artifact .board-icon,
+.board-kind-suite .board-icon { color: #7a6aa8; }
 .board-kind-suite .board-card { max-width: 280px; }
 .board-kit .box-content { gap: 0 !important; }
-.board-branch-local, .board-branch-docker { border-left-width: 2px; }
+.board-branch-local,
+.board-branch-docker { border-left-width: 2px; }
 .board-item-kind { display: block; margin: 0 0 3px; color: #475569; font-size: 10px; line-height: 1.15; font-weight: 680; }
 .board-item-subtitle { display: block; color: #64748b; font-size: 10px; line-height: 1.25; }
 .board-title-only:not(.board-diamond) {
@@ -1715,8 +1405,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-legend-evidence { border-top-color: #b85a68; border-top-style: dashed; }
 
 /* TOOLBAR_V3: canvas-shell already sits beside sheet — always left:12px; 3 buttons gap 8px */
-html[data-drawer-mode="board"] .top-float,
-html[data-drawer-mode="mermaid"] .top-float {
+html[data-drawer-mode="board"] .top-float {
   position: absolute !important;
   top: 12px !important;
   left: 12px !important;
@@ -1739,8 +1428,7 @@ html[data-drawer-mode="mermaid"] .top-float {
   z-index: 40 !important;
   overflow: visible !important;
 }
-html[data-drawer-mode="board"] .top-float > *,
-html[data-drawer-mode="mermaid"] .top-float > * {
+html[data-drawer-mode="board"] .top-float > * {
   pointer-events: auto;
 }
 .top-float .btn-source,
@@ -1777,13 +1465,13 @@ html[data-drawer-mode="mermaid"] .top-float > * {
 }
 .top-float .menu-item:hover { background: var(--accent-soft, rgba(37,99,235,.08)); }
 .top-float .theme-item.is-active { font-weight: 650; color: var(--accent, #2563eb); }
-#canvasShell, .canvas-shell { overflow: visible !important; }
+#canvasShell,
+.canvas-shell { overflow: visible !important; }
 
 
 /* MENUS_NO_SHEET_OVERLAP: sheet above menus; panels stay in canvas */
 .sheet { z-index: 60 !important; }
-html[data-drawer-mode="board"] .top-float,
-html[data-drawer-mode="mermaid"] .top-float {
+html[data-drawer-mode="board"] .top-float {
   z-index: 30 !important;
 }
 .top-float .menu-panel {
@@ -2107,16 +1795,15 @@ html[data-drawer-mode="mermaid"] .top-float {
   box-sizing: border-box !important;
 }
 .board-render .board-zone { cursor: grab; }
-.board-render .board-zone .box-content, .board-render .board-zone .board-modules { pointer-events: auto; }
+.board-render .board-zone .box-content,
+.board-render .board-zone .board-modules { pointer-events: auto; }
 
 /* BOARD_DOCK: right rail — Layout / Props / Source; one panel at a time */
-html[data-drawer-mode="board"] .app,
-html[data-drawer-mode="mermaid"] .app {
+html[data-drawer-mode="board"] .app {
   grid-template-columns: minmax(0, 1fr);
 }
 .sheet { display: none !important; }
-html[data-drawer-mode="board"] .zoom-float,
-html[data-drawer-mode="mermaid"] .zoom-float { right: 52px; } /* clear 40px dock rail so Fit is not covered */
+html[data-drawer-mode="board"] .zoom-float { right: 52px; } /* clear 40px dock rail so Fit is not covered */
 .board-dock {
   position: absolute;
   top: 0;
@@ -2136,9 +1823,8 @@ html[data-drawer-mode="mermaid"] .zoom-float { right: 52px; } /* clear 40px dock
   pointer-events: auto;
   transition: none; /* avoid open/close width jitter */
 }
-html[data-drawer-mode="board"] .board-dock,
-html[data-drawer-mode="mermaid"] .board-dock { display: flex; }
-/* Mermaid: Layout deferred; Props enabled for node/link/subgraph editing */
+html[data-drawer-mode="board"] .board-dock { display: flex; }
+/* Layout tab hidden; settings live in Style */
 [data-dock="layout"] {
   display: none !important;
 }
@@ -2274,11 +1960,9 @@ html[data-drawer-mode="mermaid"] .board-dock { display: flex; }
   min-height: 0;
   flex-direction: column;
 }
-html[data-drawer-mode="mermaid"] .dock-source-body[data-source-mode="mermaid"],
-html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] {
+.dock-source-body[data-source-mode="board"] {
   display: flex;
 }
-.board-dock #source { min-height: 0; }
 .dock-source-head {
   display: flex;
   flex-direction: row;
@@ -2393,8 +2077,10 @@ html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] {
   border-color: transparent;
 }
 .props-shape-btn svg { display: block; }
-#boardShapeField[hidden], #boardShapeLabel[hidden] { display: none !important; }
-#boardCapField[hidden], #boardCapLabel[hidden] { display: none !important; }
+#boardShapeField[hidden],
+#boardShapeLabel[hidden] { display: none !important; }
+#boardCapField[hidden],
+#boardCapLabel[hidden] { display: none !important; }
 .props-field:has(#boardIdLabel[hidden]) { display: none !important; }
 .props-field:has(#boardTypeLabel[hidden]) { display: none !important; }
 .props-field:has(#boardShapeLabel[hidden]) { display: none !important; }
@@ -2419,12 +2105,21 @@ html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] {
   text-align: right;
 }
 .props-label { font-size: 11px; color: var(--muted, #64748b); margin: 0; letter-spacing: .02em; }
-#boardTypeEditor, #boardTitleEditor, #boardDirEditor, #boardAlignEditor, #boardJustifyEditor, #boardArrowEditor, #boardCapEditor, #boardIdEditor {
+#boardTypeEditor,
+#boardTitleEditor,
+#boardDirEditor,
+#boardAlignEditor,
+#boardJustifyEditor,
+#boardArrowEditor,
+#boardCapEditor,
+#boardIdEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
 .props-arrow-row { display: flex; align-items: stretch; gap: 8px; }
-.props-arrow-row[hidden], #boardArrowLabel[hidden], #boardArrowReverse[hidden] { display: none !important; }
+.props-arrow-row[hidden],
+#boardArrowLabel[hidden],
+#boardArrowReverse[hidden] { display: none !important; }
 .props-arrow-row #boardArrowEditor { flex: 1 1 auto; min-width: 0; width: auto; }
 .props-arrow-reverse {
   flex: 0 0 40px; width: 40px; box-sizing: border-box;
@@ -2450,10 +2145,22 @@ html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] {
 #boardTitleEditor.is-multiline {
   min-height: 108px;
 }
-#boardTypeEditor:focus, #boardTitleEditor:focus, #boardDirEditor:focus, #boardAlignEditor:focus, #boardJustifyEditor:focus, #boardArrowEditor:focus, #boardCapEditor:focus, #boardIdEditor:focus {
+#boardTypeEditor:focus,
+#boardTitleEditor:focus,
+#boardDirEditor:focus,
+#boardAlignEditor:focus,
+#boardJustifyEditor:focus,
+#boardArrowEditor:focus,
+#boardCapEditor:focus,
+#boardIdEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
-#boardTypeEditor, #boardDirEditor, #boardAlignEditor, #boardJustifyEditor, #boardArrowEditor, #boardCapEditor {
+#boardTypeEditor,
+#boardDirEditor,
+#boardAlignEditor,
+#boardJustifyEditor,
+#boardArrowEditor,
+#boardCapEditor {
   appearance: none; -webkit-appearance: none;
   padding-right: 32px;
   background-color: var(--panel-solid);
@@ -2472,7 +2179,9 @@ html[data-theme="dark"] #boardCapEditor {
 }
 #boardTypeEditor:disabled { opacity: .65; cursor: not-allowed; }
 .props-id-row { display: flex; align-items: stretch; position: relative; }
-.props-id-row[hidden], #boardIdLabel[hidden], #boardIdDup[hidden] { display: none !important; }
+.props-id-row[hidden],
+#boardIdLabel[hidden],
+#boardIdDup[hidden] { display: none !important; }
 #boardIdEditor {
   flex: 1 1 auto; min-width: 0;
   padding-right: 36px;
@@ -2560,10 +2269,14 @@ html[data-theme="dark"] #boardCapEditor {
 
 /* BOARD_LINK_MODE */
 
-html.board-link-mode .board-edges, html.board-link-mode .board-edges *, html.board-link-mode .board-slot { pointer-events: none !important; }
+html.board-link-mode .board-edges,
+html.board-link-mode .board-edges *,
+html.board-link-mode .board-slot { pointer-events: none !important; }
 html.board-link-mode .board-zone { position: relative; z-index: 3; }
 
-html.board-link-mode, html.board-link-mode .board-canvas, html.board-link-mode .board-zone {
+html.board-link-mode,
+html.board-link-mode .board-canvas,
+html.board-link-mode .board-zone {
   cursor: crosshair !important;
 }
 html.board-link-mode .board-zone.board-link-source,
@@ -2579,7 +2292,7 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
 }
 
 
-/* Mermaid history list (Source dock) */
+/* Board history list (Source dock) */
 .history-block {
   display: flex;
   flex-direction: column;
@@ -2811,8 +2524,7 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
   font-size: 12px;
   color: var(--muted, #6b7280);
 }
-html[data-drawer-mode="mermaid"] .dock-source-body[data-source-mode="mermaid"] .board-editor-wrap,
-html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] .board-editor-wrap {
+.dock-source-body[data-source-mode="board"] .board-editor-wrap {
   position: relative;
   margin: 10px 16px;
 }
@@ -2833,88 +2545,25 @@ html[data-drawer-mode="board"] .dock-source-body[data-source-mode="board"] .boar
 
 /* ——— State diagram UI (Cursor-like) ——— */
 /* Leaf states only — not composite outer/inner shells */
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.node.statediagram-state > rect.basic.label-container,
-html[data-drawer-mode="mermaid"] #preview svg g.node.statediagram-state > rect.label-container {
-  rx: 8px;
-  ry: 8px;
-  stroke-width: 1.25px;
-}
+
 /* Composite: outer shell rounded; inner content frame removed */
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.statediagram-cluster rect.outer,
-html[data-drawer-mode="mermaid"] #preview svg g.statediagram-cluster rect.outer {
-  rx: 10px;
-  ry: 10px;
-  stroke-width: 1.25px;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.statediagram-cluster rect.inner,
-html[data-drawer-mode="mermaid"] #preview svg g.statediagram-cluster rect.inner {
-  display: none !important;
-  visibility: hidden !important;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram line.state-title-divider,
-html[data-drawer-mode="mermaid"] #preview svg line.state-title-divider {
-  stroke: currentColor;
-  stroke-opacity: 0.28;
-  stroke-width: 1px;
-  fill: none;
-  pointer-events: none;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram .nodeLabel,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram .label,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram text {
-  font-weight: 500;
-  letter-spacing: 0.01em;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram .nodeLabel p {
-  margin: 0;
-  overflow: visible;
-  line-height: 1.25;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.node.statediagram-state foreignObject div {
-  line-height: 1.25;
-  max-width: none;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram foreignObject {
-  overflow: visible;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram .cluster-label text,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram .cluster-label span {
-  font-weight: 600;
-  font-size: 12px;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram path.transition {
-  stroke-width: 1.35px;
-  fill: none;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel .labelBkg,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel rect {
-  fill: transparent !important;
-  fill-opacity: 0 !important;
-  stroke: none !important;
-  background: transparent !important;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel foreignObject div,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel foreignObject .labelBkg {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel text,
-html[data-drawer-mode="mermaid"] #preview svg.statediagram g.edgeLabel span {
-  font-size: 12px;
-  font-weight: 500;
-}
-html[data-drawer-mode="mermaid"][data-diagram-theme="kami"] #preview svg.statediagram g.node.statediagram-state > rect.label-container {
-  stroke-width: 1.5px;
-}
 
 
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview path.transition {
-  stroke-width: 2px;
-  pointer-events: stroke;
-}
-html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview path.transition.mermaid-selection {
-  stroke-width: 2.5px;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Source dock: editor fills remaining height; History stays below. */
 .dock-source-body > .board-editor-wrap {
@@ -2939,7 +2588,6 @@ html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview path.transitio
   font-weight: 550;
   color: var(--muted, #64748b);
 }
-.dock-source-body #source,
 .dock-source-body #boardSource {
   min-height: 0;
   padding-bottom: 28px;
@@ -2975,7 +2623,6 @@ html[data-drawer-mode="mermaid"][data-mermaid-state="1"] #preview path.transitio
   padding: 0 8px 0 10px;
   min-width: 2.5ch;
 }
-.source-line-editor #source,
 .source-line-editor #boardSource {
   flex: 1 1 auto;
   width: auto;

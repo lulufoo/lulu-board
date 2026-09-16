@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lulu Drawer</title>
+<title>Lulu Board</title>
 <link rel="icon" href="./favicon.ico" sizes="32x32">
 <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="./favicon.svg" type="image/svg+xml" sizes="any">
@@ -16,24 +16,10 @@
   <aside class="sheet" id="sheet">
     <div class="sheet-top">
       <div>
-        <h1>Lulu Drawer</h1>
-        <p>Board + Mermaid</p>
+        <h1>Lulu Board</h1>
+        <p>structured whiteboard</p>
       </div>
     </div>
-    <div class="mode-panel active" id="panelMermaid" data-mode="mermaid">
-      <div class="sheet-actions">
-        <button class="btn primary" id="btnRender">Render</button>
-        <button class="btn ghost" id="btnClear">Clear</button>
-        <div class="menu sheet-menu" id="exportMenu">
-          <button class="btn btn-more" id="btnExportMenu" type="button" aria-haspopup="menu" aria-expanded="false" title="More">⋯</button>
-          <div class="menu-panel" role="menu">
-            <button class="menu-item" id="btnCopySrc" role="menuitem" type="button">Copy Source <span>⌘C</span></button>
-            <button class="menu-item" id="btnDlPng" role="menuitem" type="button" hidden>Export PNG</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
     <div class="resize" id="resize" title="Drag"></div>
   </aside>
 
@@ -41,31 +27,11 @@
     <div class="collapse-hint float" hidden></div>
 
         <div class="float top-float" role="toolbar">
-      <div class="mode-switch" role="tablist" aria-label="Drawer mode">
-        <button type="button" role="tab" id="tabBoard" aria-selected="false" data-mode="board">Board</button>
-        <button type="button" role="tab" id="tabMermaid" aria-selected="true" data-mode="mermaid">Mermaid</button>
-      </div>
       <div class="board-edit-tools" aria-label="Board editing">
         <button class="btn board-edit-tool" id="btnBoardAddBox" type="button" title="Add box"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Box</span></button>
         <button class="btn board-edit-tool" id="btnBoardAddItem" type="button" title="Add item"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Item</span></button>
         <button class="btn board-edit-tool" id="btnBoardLink" type="button" title="Link mode: click source box or item, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
         <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
-      </div>
-      <div class="mermaid-edit-tools" aria-label="Mermaid flowchart editing">
-        <button class="btn mermaid-edit-tool" id="btnMermaidAddSubgraph" type="button" title="Add subgraph"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Subgraph</span></button>
-        <button class="btn mermaid-edit-tool" id="btnMermaidAddNode" type="button" title="Add node"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Node</span></button>
-        <button class="btn mermaid-edit-tool" id="btnMermaidLink" type="button" title="Link mode: click source node, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
-        <button class="btn mermaid-edit-tool" id="btnMermaidDelete" type="button" title="Delete selected node, link, or subgraph" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
-      </div>
-      <div class="mindmap-edit-tools" aria-label="Mermaid mindmap editing">
-        <button class="btn mermaid-edit-tool" id="btnMindmapDelete" type="button" title="Delete selected node" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
-      </div>
-      <div class="state-edit-tools" aria-label="Mermaid state editing">
-        <button class="btn mermaid-edit-tool" id="btnStateAdd" type="button" title="Add state"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>State</span></button>
-        <button class="btn mermaid-edit-tool" id="btnStateAddGroup" type="button" title="Add group (composite)"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Group</span></button>
-        <button class="btn mermaid-edit-tool" id="btnStateAddStart" type="button" title="Select a state, then add start [*] → it"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Start</span></button>
-        <button class="btn mermaid-edit-tool" id="btnStateLink" type="button" title="Link mode: click source state, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
-        <button class="btn mermaid-edit-tool" id="btnStateDelete" type="button" title="Delete selected state, composite, or transition" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
       </div>
     </div>
 
@@ -234,33 +200,6 @@
           <button type="button" class="btn" id="btnSourceCopy" title="Copy Source">Source</button>
         </div>
       </div>
-      <div class="dock-source-body" data-source-mode="mermaid">
-        <div class="board-editor-wrap">
-          <div class="source-line-editor">
-            <div class="source-gutter" aria-hidden="true"></div>
-            <textarea id="source" spellcheck="false" placeholder="Mermaid / C4 source…"></textarea>
-          </div>
-          <span class="source-chars" id="charsPill">0 chars</span>
-          <pre id="errorBox"></pre>
-        </div>
-        <section class="history-block" id="mermaidHistory" aria-label="Mermaid history">
-          <div class="history-head">
-            <strong>History</strong>
-            <button type="button" class="btn history-refresh" id="btnHistoryRefresh" title="Refresh history">Refresh</button>
-          </div>
-          <div class="history-combo" id="mermaidHistoryCombo">
-            <button type="button" class="history-combo-btn" id="mermaidHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="historyList" disabled>
-              <span class="history-combo-face" id="mermaidHistoryComboFace">No snapshots yet</span>
-              <span class="history-combo-chevron" aria-hidden="true"></span>
-            </button>
-            <div class="history-pop" hidden>
-              <input type="search" class="history-search" id="mermaid-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
-              <ul class="history-list" id="historyList" role="listbox"></ul>
-            </div>
-          </div>
-          <p class="history-empty" id="historyEmpty" hidden>No snapshots yet</p>
-        </section>
-      </div>
       <div class="dock-source-body" data-source-mode="board">
         <div class="board-editor-wrap">
           <div class="source-line-editor">
@@ -323,14 +262,6 @@
         </div>
         <p class="style-hint">Middle is default · non-default saves in source</p>
       </section>
-      <section class="style-block" id="mindmapLayoutSection" hidden aria-label="Mindmap layout">
-        <p class="style-section-label">Layout</p>
-        <div class="props-seg" id="mindmapLayoutSeg" role="group" aria-label="Mindmap layout">
-          <button type="button" class="props-seg-btn" id="btnMindmapLayoutRadial" data-mindmap-layout="radial" aria-pressed="true" title="Center-radiating balanced map">Radial</button>
-          <button type="button" class="props-seg-btn" id="btnMindmapLayoutLogic" data-mindmap-layout="logic" aria-pressed="false" title="Left-to-right logic tree">Logic</button>
-        </div>
-        <p class="style-hint">Same source · choice is saved</p>
-      </section>
       <section class="style-block" id="boardItemCapSection" hidden aria-label="Max item width">
         <p class="style-section-label">Max Item Width</p>
         <div class="style-cap-row">
@@ -352,14 +283,7 @@
 
 </div>
 
-<script src="./vendor/mermaid.min.js"></script>
-<script src="./vendor/layout-elk.min.js"></script>
 <script src="./vendor/board.min.js"></script>
-<script src="./vendor/mermaid-themes.min.js"></script>
-<script src="./vendor/flowchart.min.js"></script>
-<script src="./vendor/mindmap.min.js"></script>
-<script src="./vendor/state.min.js"></script>
-<script src="./vendor/drawer-app-mermaid-alias.js"></script>
 <script type="module" src="./vendor/drawer-app.js"></script>
 
 <div class="copy-tip" id="copyTip" hidden>Copied successfully</div>

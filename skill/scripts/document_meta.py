@@ -1,8 +1,7 @@
 """Document envelope: first non-empty line is `meta <base64>`.
 
-Mermaid writes `%% meta …` so official preview treats it as a comment.
-Board stays `meta …`. Both forms are accepted on read. Legacy `meta {…}`
-JSON is accepted on read; write is always a single base64 token.
+Board writes `meta …`. Legacy `meta {…}` JSON is accepted on read; write is
+always a single base64 token.
 """
 from __future__ import annotations
 
@@ -10,11 +9,9 @@ import base64
 import json
 import re
 
-META_LINE = re.compile(r"^(?:%%\s*)?meta\s+(\S+|{.*})\s*$")
-STASH_STYLE_LINE = re.compile(r"^(?:%%\s*)?style\s+(\S+)\s*$", re.IGNORECASE)
+META_LINE = re.compile(r"^meta\s+(\S+|{.*})\s*$")
 ID_RE = {
     "board": re.compile(r"^b_[0-9a-f]{8}$"),
-    "mermaid": re.compile(r"^m_[0-9a-f]{8}$"),
 }
 
 
@@ -45,34 +42,10 @@ def decode_meta_payload(token: str) -> dict:
     return data
 
 
-def _comment_envelope(meta: dict, kind: str | None) -> bool:
-    if kind == "board":
-        return False
-    if kind == "mermaid":
-        return True
-    return str(meta.get("id") or "").startswith("m_")
-
-
-def _normalize_mermaid_style(body: str) -> str:
-    lines = str(body or "").split("\n")
-    idx = 0
-    while idx < len(lines) and not lines[idx].strip():
-        idx += 1
-    if idx < len(lines):
-        hit = STASH_STYLE_LINE.match(lines[idx].strip())
-        if hit:
-            lines[idx] = "%% style " + hit.group(1)
-    return "\n".join(lines)
-
-
 def join_document(meta: dict, body: str, kind: str | None = None) -> str:
     payload = {"id": str(meta["id"]), "version": int(meta["version"])}
-    comment = _comment_envelope(meta, kind)
-    prefix = "%% " if comment else ""
-    line = prefix + "meta " + encode_meta_payload(payload)
+    line = "meta " + encode_meta_payload(payload)
     rest = str(body or "")
-    if comment:
-        rest = _normalize_mermaid_style(rest)
     if rest.startswith("\n"):
         return line + rest
     if rest:
@@ -112,13 +85,9 @@ def validate_meta(data: dict, kind: str | None = None) -> dict:
     version = data.get("version")
     if isinstance(version, bool) or not isinstance(version, int) or version < 1:
         raise DocumentMetaError("document meta required")
-    expect = None
-    if kind in ID_RE:
-        expect = ID_RE[kind]
-    elif doc_id.startswith("b_"):
+    expect = ID_RE.get(kind or "board") if (kind or "board") in ID_RE else None
+    if expect is None and doc_id.startswith("b_"):
         expect = ID_RE["board"]
-    elif doc_id.startswith("m_"):
-        expect = ID_RE["mermaid"]
     if expect is None or not expect.match(doc_id):
         raise DocumentMetaError("document meta required")
     return {"id": doc_id, "version": int(version)}

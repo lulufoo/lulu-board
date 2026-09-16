@@ -10,7 +10,7 @@ assert.ok(labelRule, 'style-section-label rule exists');
 assert.ok(!/text-transform:\s*uppercase/.test(labelRule[0]), 'Style section labels are not forced uppercase');
 
 const labels = [...html.matchAll(/<p class="style-section-label">([^<]+)<\/p>/g)].map((m) => m[1]);
-assert.deepStrictEqual(labels, ['Theme', 'Font Size', 'Layout', 'Max Item Width', 'Link']);
+assert.deepStrictEqual(labels, ['Theme', 'Font Size', 'Max Item Width', 'Link']);
 assert.ok(
   /Applies when Width Cap is on · non-default saves in source/.test(html),
   'Max Item Width hint names Width Cap, not cap',

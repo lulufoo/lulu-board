@@ -5,9 +5,7 @@
   root.DrawerStyleLine = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
-  var RENDERER_STYLE_RE = /^(?:%%\s*)?style\s+(\S+)\s*$/i;
-  var DIAGRAM_START_RE = /^(C4Context|C4Container|C4Component|flowchart|graph|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart-beta|block-beta|architecture-beta|packet-beta|kanban|sankey-beta)\b/i;
-  var STYLE_THEMES = { default: 1, classic: 1, pastel: 1, kami: 1 };
+  var RENDERER_STYLE_RE = /^style\s+(\S+)\s*$/i;
 
   function isRendererStyleLine(line) {
     return RENDERER_STYLE_RE.test(String(line || "").trim());
@@ -31,16 +29,14 @@
     var lines = String(body == null ? "" : body).replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
     var token = "";
     var out = [];
-    var afterDiagram = false;
     for (var i = 0; i < lines.length; i += 1) {
       var trim = String(lines[i] || "").trim();
-      if (!afterDiagram) {
+      if (!token) {
         var hit = RENDERER_STYLE_RE.exec(trim);
         if (hit) {
           token = hit[1];
           continue;
         }
-        if (DIAGRAM_START_RE.test(trim)) afterDiagram = true;
       }
       out.push(lines[i]);
     }
@@ -51,7 +47,7 @@
     var rest = String(body == null ? "" : body);
     var t = String(token || "").trim();
     if (!t) return rest;
-    var line = (bodyIsBoard(rest) ? "style " : "%% style ") + t;
+    var line = "style " + t;
     if (!rest) return line + "\n";
     if (rest.charAt(0) === "\n") return line + rest;
     return line + "\n" + rest;
@@ -70,28 +66,6 @@
     };
   }
 
-  function authoredMermaidStyle(raw) {
-    var src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
-    var out = {};
-    if (STYLE_THEMES[src.theme] && src.theme !== "default") out.theme = src.theme;
-    var viewport = authoredViewport(src.viewport || src.view);
-    if (viewport) out.viewport = viewport;
-    return out;
-  }
-
-  function applyMermaidStylePatch(token, patch, encode, decode) {
-    var raw = {};
-    try { raw = typeof decode === "function" ? decode(token) : {}; } catch (_e) { raw = {}; }
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) raw = {};
-    Object.keys(patch || {}).forEach(function (key) {
-      if (patch[key] == null) delete raw[key];
-      else raw[key] = patch[key];
-    });
-    var authored = authoredMermaidStyle(raw);
-    if (!Object.keys(authored).length) return "";
-    return encode(authored);
-  }
-
   return {
     RENDERER_STYLE_RE: RENDERER_STYLE_RE,
     isRendererStyleLine: isRendererStyleLine,
@@ -99,8 +73,6 @@
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     authoredViewport: authoredViewport,
-    authoredMermaidStyle: authoredMermaidStyle,
-    applyMermaidStylePatch: applyMermaidStylePatch,
   };
 });
 
@@ -114,8 +86,8 @@
   root.sourceBody = api.sourceBody;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
-  var META_LINE = /^(?:%%\s*)?meta\s+(\S+|{.*})\s*$/;
-  var ID_RE = /^[bm]_[0-9a-f]{8}$/;
+  var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
+  var ID_RE = /^b_[0-9a-f]{8}$/;
 
   function encodeMetaPayload(meta) {
     var json = JSON.stringify({ id: String(meta.id), version: Number(meta.version) });
@@ -171,13 +143,8 @@
 
   function joinDocument(meta, body) {
     var id = String(meta.id);
-    var prefix = /^m_[0-9a-f]{8}$/.test(id) ? "%% " : "";
     var rest = String(body == null ? "" : body);
-    if (prefix && typeof DrawerStyleLine !== "undefined") {
-      var styled = DrawerStyleLine.splitRendererStyle(rest);
-      rest = DrawerStyleLine.joinRendererStyle(styled.token, styled.body);
-    }
-    var line = prefix + "meta " + encodeMetaPayload({ id: id, version: Number(meta.version) });
+    var line = "meta " + encodeMetaPayload({ id: id, version: Number(meta.version) });
     if (rest.charAt(0) === "\n") return line + rest;
     if (rest) return line + "\n" + rest;
     return line + "\n";
@@ -218,10 +185,7 @@ function normalizeDocumentView(raw) {
 
 function measureDiagramOnCanvas() {
   if (!previewEl || !stageEl) return null;
-  var mode = document.documentElement.dataset.drawerMode;
-  var content = mode === "board"
-    ? previewEl.querySelector(".board-render")
-    : previewEl.querySelector("svg");
+  var content = previewEl.querySelector(".board-render");
   if (!content) return null;
   var wrap = stageEl.getBoundingClientRect();
   var box = content.getBoundingClientRect();
@@ -231,20 +195,11 @@ function measureDiagramOnCanvas() {
 
 function readDocumentView() {
   try {
-    if (document.documentElement.dataset.drawerMode === "board") {
-      if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;
-      var boardText = boardSourceEl.value;
-      try { boardText = splitDocument(boardText).body; } catch (_e) {}
-      var board = BoardRender.parse(boardText);
-      return normalizeDocumentView(board.style && (board.style.viewport || board.style.view));
-    }
-    if (!sourceEl || typeof DrawerStyleLine === "undefined" || typeof BoardRender === "undefined") return null;
-    var body = sourceEl.value;
-    try { body = splitDocument(body).body; } catch (_e) {}
-    var styled = DrawerStyleLine.splitRendererStyle(body);
-    if (!styled.token) return null;
-    var raw = BoardRender.decodeStylePayload(styled.token);
-    return normalizeDocumentView(raw && (raw.viewport || raw.view));
+    if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;
+    var boardText = boardSourceEl.value;
+    try { boardText = splitDocument(boardText).body; } catch (_e) {}
+    var board = BoardRender.parse(boardText);
+    return normalizeDocumentView(board.style && (board.style.viewport || board.style.view));
   } catch (_err) {
     return null;
   }
@@ -255,11 +210,7 @@ function persistDocumentView(view) {
   if (next && _skipDocumentViewPersist) return;
   if (next && typeof _drawerUiRestoreLock !== "undefined" && _drawerUiRestoreLock) return;
   var patch = { viewport: next, view: null };
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (typeof persistBoardStyle === "function") persistBoardStyle(patch);
-    return;
-  }
-  if (typeof persistMermaidStyle === "function") persistMermaidStyle(patch);
+  if (typeof persistBoardStyle === "function") persistBoardStyle(patch);
 }
 
 function snapshotDocumentView() {
@@ -332,11 +283,7 @@ function applyDocumentView(view, done) {
 function restoreOrFitDocumentView() {
   var view = readDocumentView();
   if (applyDocumentView(view)) return true;
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (typeof fitBoardView === "function") fitBoardView({ persist: true });
-  } else if (typeof centerView === "function") {
-    centerView();
-  }
+  if (typeof fitBoardView === "function") fitBoardView({ persist: true });
   return false;
 }
 
@@ -381,15 +328,12 @@ function setCharsLabel(el, n) {
   el.appendChild(document.createTextNode(" chars"));
 }
 function liveDocumentVersion() {
-  var raw = document.documentElement.dataset.drawerMode === "board"
-    ? (boardSourceEl && boardSourceEl.value)
-    : (sourceEl && sourceEl.value);
+  var raw = boardSourceEl && boardSourceEl.value;
   try {
     var v = splitDocument(raw).meta.version;
     if (Number.isFinite(v) && v > 0) return v;
   } catch (_e) {}
-  var fallback = document.documentElement.dataset.drawerMode === "board" ? boardLocalRev : localRev;
-  return Number.isFinite(fallback) && fallback > 0 ? fallback : 0;
+  return Number.isFinite(boardLocalRev) && boardLocalRev > 0 ? boardLocalRev : 0;
 }
 
 function wrapEditorApi(api) {
@@ -399,22 +343,14 @@ function wrapEditorApi(api) {
     if (typeof fn !== "function") return;
     api[key] = function(text) {
       if (typeof text !== "string") return fn.apply(api, arguments);
-      if (!/^\s*(?:%%\s*)?meta\s+/.test(text)) return fn.apply(api, arguments);
+      if (!/^\s*meta\s+/.test(text)) return fn.apply(api, arguments);
       var doc = splitDocument(text);
-      var body = doc.body;
-      var styleToken = "";
-      if (typeof DrawerStyleLine !== "undefined" && !DrawerStyleLine.bodyIsBoard(body)) {
-        var styled = DrawerStyleLine.splitRendererStyle(body);
-        styleToken = styled.token;
-        body = styled.body;
-      }
       var args = Array.prototype.slice.call(arguments);
-      args[0] = body;
+      args[0] = doc.body;
       var out = fn.apply(api, args);
       if (key === "render" || key === "parse" || key === "isIdTaken" || key === "findNode" || key === "getLinkRouteStyle") return out;
       function rejoin(nextBody) {
-        var merged = styleToken ? DrawerStyleLine.joinRendererStyle(styleToken, nextBody) : nextBody;
-        return joinDocument(doc.meta, merged);
+        return joinDocument(doc.meta, nextBody);
       }
       if (typeof out === "string") return rejoin(out);
       if (out && typeof out.source === "string") {
@@ -427,7 +363,6 @@ function wrapEditorApi(api) {
 
 /* drawer-app/01-shell-state.js — lines 1-699 of former inline module */
 const $ = (s) => document.querySelector(s);
-const sourceEl = $('#source');
 const boardSourceEl = $('#boardSource');
 const boardError = $("#boardError");
 const boardDock = $("#boardDock");
@@ -486,8 +421,6 @@ function openDock(tab) {
   if (!boardDock) return;
   var next = tab || "";
   if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style") next = "";
-  // Mermaid: Props allowed; Layout still deferred (tab hidden + blocked here).
-  if (document.documentElement.dataset.drawerMode === "mermaid" && next === "layout") next = "";
   boardDock.setAttribute("data-open", next);
   if (propsPanel) propsPanel.setAttribute("data-collapsed", next === "props" ? "false" : "true");
   Array.from(boardDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
@@ -500,7 +433,6 @@ function openDock(tab) {
 function openPropsPanel() { openDock("props"); }
 function closePropsPanel() {
   openDock("");
-  try { MermaidInspect.clearPropsShown(); } catch (_e) {}
 }
 function closePropsPanelCollapsedOnly() {
   closePropsPanel();
@@ -532,45 +464,9 @@ const boardDeleteButton = $("#btnBoardDelete");
 const boardLinkButton = $("#btnBoardLink");
 const previewEl = $('#preview');
 const stageEl = $('#preview-stage');
-const errorBox = $('#errorBox');
-const emptyHtml = `<div class="empty" id="emptyState"><h2>Canvas is ready</h2><p>Use <kbd>set-source</kbd> from the skill, or open Source and paste.</p></div>`;
-const SVG_CACHE_KEY = 'lulu-drawer:last-svg';
 const boardSelectionObserver = new MutationObserver(() => { var key = boardSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
-
-function cacheRenderedSvg(svg) {
-  if (!svg) return;
-  try {
-    sessionStorage.setItem(SVG_CACHE_KEY, JSON.stringify({
-      rev: localRev,
-      svg: svg.outerHTML,
-      at: Date.now(),
-    }));
-  } catch (_) {}
-}
-
-function restoreCachedSvg() {
-  if (document.documentElement.dataset.drawerMode === 'board') return false;
-  try {
-    const raw = sessionStorage.getItem(SVG_CACHE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
-    if (!data || typeof data.svg !== 'string' || !data.svg.includes('<svg')) return false;
-    previewEl.innerHTML = data.svg;
-    const svg = previewEl.querySelector('svg');
-    if (!svg) return false;
-    fixSvgIntrinsic(svg);
-    // Document style.viewport is applied after boot; do not use the global drawer.ui zoom here.
-    setStatus(Number.isFinite(data.rev) ? `Restoring r${data.rev}…` : 'Restoring…');
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
-
-
-let localRev = 0;
 let boardLocalRev = 0;
 let boardDirty = false;
 let boardSaveSeq = 0;
@@ -581,33 +477,21 @@ let boardInspectGesture = null;
 let boardLinkMode = false;
 let boardLinkStart = null;
 let boardSaveTimer = null;
-let liveLabel = "";
-let liveArchiveName = "";
-let liveDiagramId = "";
 let liveBoardId = "";
 let liveBoardTitle = "";
 let liveBoardArchive = "";
 let liveBoardPath = "";
-let liveDiagramTitle = "";
-let liveDiagramVia = "";
-let liveArchive = "";
-let liveDiagramPath = "";
-let dirty = false; // local edits not yet acknowledged
-let saveSeq = 0;
-let renderNo = 0;
 let scale = 0.9, panX = 0, panY = 0;
 
 /* ── Drawer UI persistence (`localStorage["drawer.ui"]`) ─────────────────
  * Persist list (refresh restores these). Add a field here when wiring a new one:
- *   mode             "board" | "mermaid"
- *   sheetCollapsed   boolean   — left Source sheet (Mermaid)
+ *   mode             "board"
+ *   sheetCollapsed   boolean
  *   propsOpen        boolean   — right Props panel (legacy)
  *   dockTab          "" | "props" | "layout" | "source"
  *   dockWidth        number   — open sidebar width (px)
  *   scale, panX, panY number   — canvas zoom/pan
  *   boardViewId      string    — board record id that last owned scale/pan
- *   diagramType      string    — last Mermaid diagram keyword (toolbar Type pill)
- *   mermaidFlowchart boolean   — show flowchart edit tools
  * Other already-persistent keys (unchanged): drawer.diagramTheme, drawer.boardLinkRoute, drawer.boardItemCap
  * Board documents also persist those in `style <base64>` when not default.
  */
@@ -636,7 +520,7 @@ function currentDockWidth() {
   return clampDockWidth(loadDrawerUi().dockWidth);
 }
 var DRAWER_UI_PERSIST_LIST = [
-  { key: "mode", kind: "enum:board|mermaid" },
+  { key: "mode", kind: "enum:board" },
   { key: "sheetCollapsed", kind: "boolean" },
   { key: "propsOpen", kind: "boolean" },
   { key: "dockTab", kind: "enum:|props|layout|source" },
@@ -644,13 +528,10 @@ var DRAWER_UI_PERSIST_LIST = [
   { key: "scale", kind: "number" },
   { key: "panX", kind: "number" },
   { key: "panY", kind: "number" },
-  { key: "boardViewId", kind: "string" },
-  { key: "diagramType", kind: "string" },
-  { key: "mermaidFlowchart", kind: "boolean" },
-  { key: "mindmapLayout", kind: "enum:radial|logic" }
+  { key: "boardViewId", kind: "string" }
 ];
 function defaultDrawerUi() {
-  return { v: DRAWER_UI_VERSION, mode: "mermaid", sheetCollapsed: true, propsOpen: false, dockTab: "", dockWidth: 400, scale: 0.9, panX: 0, panY: 0, boardViewId: "", diagramType: "", mermaidFlowchart: true, mindmapLayout: "radial" };
+  return { v: DRAWER_UI_VERSION, mode: "board", sheetCollapsed: true, propsOpen: false, dockTab: "", dockWidth: 400, scale: 0.9, panX: 0, panY: 0, boardViewId: "" };
 }
 function loadDrawerUi() {
   var out = defaultDrawerUi();
@@ -659,7 +540,7 @@ function loadDrawerUi() {
     if (raw) {
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
-        if (parsed.mode === "board" || parsed.mode === "mermaid") out.mode = parsed.mode;
+        out.mode = "board";
         if (typeof parsed.sheetCollapsed === "boolean") out.sheetCollapsed = parsed.sheetCollapsed;
         if (typeof parsed.propsOpen === "boolean") out.propsOpen = parsed.propsOpen;
         if (parsed.dockTab === "" || parsed.dockTab === "props" || parsed.dockTab === "layout" || parsed.dockTab === "source") out.dockTab = parsed.dockTab;
@@ -669,9 +550,6 @@ function loadDrawerUi() {
         if (typeof parsed.panX === "number" && isFinite(parsed.panX)) out.panX = parsed.panX;
         if (typeof parsed.panY === "number" && isFinite(parsed.panY)) out.panY = parsed.panY;
         if (typeof parsed.boardViewId === "string") out.boardViewId = parsed.boardViewId;
-        if (typeof parsed.diagramType === "string") out.diagramType = parsed.diagramType;
-        if (typeof parsed.mermaidFlowchart === "boolean") out.mermaidFlowchart = parsed.mermaidFlowchart;
-        if (parsed.mindmapLayout === "radial" || parsed.mindmapLayout === "logic") out.mindmapLayout = parsed.mindmapLayout;
       }
     } else {
       try { if (localStorage.getItem("drawer.propsOpen") === "1") out.propsOpen = true; } catch (_e) {}
@@ -689,7 +567,7 @@ function snapshotDrawerUi() {
   var app = $("#app");
   var prev = loadDrawerUi();
   return saveDrawerUi({
-    mode: document.documentElement.dataset.drawerMode === "board" ? "board" : (document.documentElement.dataset.drawerMode === "mermaid" ? "mermaid" : prev.mode),
+    mode: "board",
     sheetCollapsed: !!(app && app.classList.contains("sheet-collapsed")),
     propsOpen: currentDockTab() === "props",
     dockTab: currentDockTab(),
@@ -697,10 +575,7 @@ function snapshotDrawerUi() {
     scale: scale,
     panX: panX,
     panY: panY,
-    boardViewId: document.documentElement.dataset.drawerMode === "board" ? (liveBoardId || "") : prev.boardViewId,
-    diagramType: prev.diagramType || "",
-    mermaidFlowchart: document.documentElement.dataset.mermaidFlowchart === "1",
-    mindmapLayout: (typeof currentMindmapLayout === "function") ? currentMindmapLayout() : (prev.mindmapLayout || "radial")
+    boardViewId: liveBoardId || prev.boardViewId || ""
   });
 }
 var _drawerUiSaveTimer = null;
@@ -752,314 +627,8 @@ document.addEventListener("visibilitychange", function() {
   handle.addEventListener("pointercancel", endDrag);
 })();
 
-let renderTimer = null;
-let saveTimer = null;
-let panning = false, panOrigin = null, panMoved = false, panBlankMindmap = false;
+let panning = false, panOrigin = null, panMoved = false;
 
-if (!window.mermaid) {
-  setStatus('Renderer failed to load', true);
-  throw new Error('renderer missing');
-}
-function mermaidTheme() {
-  const raw = document.documentElement.dataset.diagramTheme || localStorage.getItem('drawer.diagramTheme') || 'default';
-  const diagram = (window.BoardThemes && BoardThemes.resolveId) ? BoardThemes.resolveId(raw) : raw;
-  if (diagram === 'classic') return 'base';
-  if (diagram === 'pastel') return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'neutral';
-  // default: keep original Drawer default (neutral in light)
-  return document.documentElement.dataset.theme === 'light' ? 'neutral' : 'dark';
-}
-window.mermaid.initialize({
-  startOnLoad: false,
-  theme: mermaidTheme(),
-  securityLevel: 'loose',
-  fontFamily: 'Inter, SF Pro Text, system-ui, sans-serif',
-  flowchart: { useMaxWidth: false },
-  sequence: {
-    useMaxWidth: false,
-    diagramMarginX: 48,
-    diagramMarginY: 24,
-    actorMargin: 64,
-    boxMargin: 12,
-    boxTextMargin: 6,
-    noteMargin: 12,
-    messageMargin: 40,
-    mirrorActors: true,
-    bottomMarginAdj: 8,
-  },
-  class: { useMaxWidth: false },
-  state: { useMaxWidth: false },
-  er: { useMaxWidth: false },
-  mindmap: { useMaxWidth: false, padding: 18 },
-});
-
-function unoverlapTipLabels(svg) {
-  if (!svg) return;
-  // Edge-bound tip placement: candidate search along nearest connector
-  // (t × normal-offset × flip), then tip↔tip MTV. Best-effort shove if no
-  // free slot. Does not change Mermaid layout / zoom / Fit / theme.
-
-  const nodeBoxes = [];
-  for (const el of svg.querySelectorAll('rect')) {
-    try {
-      const bb = el.getBBox();
-      if (bb.width < 36 || bb.height < 20) continue;
-      if (bb.width > 420 || bb.height > 280) continue;
-      nodeBoxes.push(bb);
-    } catch (_) {}
-  }
-
-  const edges = [];
-  for (const el of svg.querySelectorAll('path, line')) {
-    try {
-      const bb = el.getBBox();
-      if (Math.hypot(bb.width, bb.height) < 36) continue;
-      const stroke = (el.getAttribute('stroke') || '').trim();
-      const fill = (el.getAttribute('fill') || '').trim();
-      if (!(el.tagName === 'line' || (stroke && stroke !== 'none') || fill === 'none' || fill === '')) continue;
-      if (el.tagName === 'line') {
-        const x1 = Number(el.getAttribute('x1'));
-        const y1 = Number(el.getAttribute('y1'));
-        const x2 = Number(el.getAttribute('x2'));
-        const y2 = Number(el.getAttribute('y2'));
-        const len = Math.hypot(x2 - x1, y2 - y1) || 1;
-        edges.push({
-          at(t) {
-            return {
-              x: x1 + (x2 - x1) * t,
-              y: y1 + (y2 - y1) * t,
-              tx: (x2 - x1) / len,
-              ty: (y2 - y1) / len,
-            };
-          },
-        });
-      } else if (typeof el.getTotalLength === 'function') {
-        const len = el.getTotalLength();
-        if (!len) continue;
-        edges.push({
-          at(t) {
-            const clamped = Math.max(0, Math.min(1, t));
-            const a = el.getPointAtLength(clamped * len);
-            const b = el.getPointAtLength(Math.max(0, Math.min(1, clamped + 0.02)) * len);
-            let tx = b.x - a.x, ty = b.y - a.y;
-            const n = Math.hypot(tx, ty) || 1;
-            return { x: a.x, y: a.y, tx: tx / n, ty: ty / n };
-          },
-        });
-      }
-    } catch (_) {}
-  }
-
-  const center = (bb) => ({ x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 });
-  const overlaps = (a, b, pad = 1) => !(
-    a.x + a.width + pad < b.x ||
-    b.x + b.width + pad < a.x ||
-    a.y + a.height + pad < b.y ||
-    b.y + b.height + pad < a.y
-  );
-  const deepInsideNode = (bb, inset = 10) => {
-    const c = center(bb);
-    return nodeBoxes.some((n) =>
-      c.x > n.x + inset && c.x < n.x + n.width - inset &&
-      c.y > n.y + inset && c.y < n.y + n.height - inset
-    );
-  };
-  const hitNode = (bb, pad = 2) => nodeBoxes.find((n) => overlaps(bb, n, pad)) || null;
-  const hitPlaced = (bb, placed, pad = 3) => placed.find((n) => overlaps(bb, n, pad)) || null;
-
-  const nearestOnEdge = (px, py, edge) => {
-    let best = null;
-    for (let i = 0; i <= 48; i++) {
-      const t = i / 48;
-      const p = edge.at(t);
-      const d = Math.hypot(px - p.x, py - p.y);
-      if (!best || d < best.dist) best = { t, dist: d, ...p };
-    }
-    return best;
-  };
-
-  const bindEdge = (cx, cy) => {
-    let best = null;
-    for (const edge of edges) {
-      const hit = nearestOnEdge(cx, cy, edge);
-      if (!hit) continue;
-      if (!best || hit.dist < best.dist) best = { edge, ...hit };
-    }
-    if (best && best.dist <= 72) return best;
-    return null;
-  };
-
-  const isStereotype = (s) => s.startsWith('<<') && s.endsWith('>>');
-  const isDiagramTitle = (s, bb) => {
-    if (s.length < 8) return false;
-    try {
-      const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
-      if (vb.length === 4 && bb.y < vb[1] + 40) return true;
-    } catch (_) {}
-    return false;
-  };
-
-  const mtvOutOfBox = (bb, box) => {
-    const c = center(bb);
-    const dxL = (bb.x + bb.width) - box.x;
-    const dxR = (box.x + box.width) - bb.x;
-    const dyT = (bb.y + bb.height) - box.y;
-    const dyB = (box.y + box.height) - bb.y;
-    const penX = Math.min(dxL, dxR);
-    const penY = Math.min(dyT, dyB);
-    if (penX < penY) {
-      const dir = c.x < box.x + box.width / 2 ? -1 : 1;
-      return { x: dir * (penX + 4), y: 0 };
-    }
-    const dir = c.y < box.y + box.height / 2 ? -1 : 1;
-    return { x: 0, y: dir * (penY + 4) };
-  };
-
-  const tips = [];
-  for (const el of svg.querySelectorAll('text')) {
-    const raw = (el.textContent || '').trim();
-    if (!raw || isStereotype(raw)) continue;
-    let bb0;
-    try { bb0 = el.getBBox(); } catch { continue; }
-    if (!bb0.width || !bb0.height) continue;
-    if (isDiagramTitle(raw, bb0)) continue;
-    if (deepInsideNode(bb0, 10)) continue;
-    tips.push({ el, bb0, c0: center(bb0) });
-  }
-  tips.sort((a, b) => (b.bb0.width * b.bb0.height) - (a.bb0.width * a.bb0.height));
-
-  const tLadder = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.12, 0.88];
-  const offsetLadder = [14, 20, 28, 38, 50, 64, 80, 100];
-  const placed = [];
-
-  const needsMove = (bb0, bind) => {
-    if (hitNode(bb0, 2)) return true;
-    if (bind && bind.dist < Math.max(10, bb0.height * 0.6)) return true;
-    return false;
-  };
-
-  for (const tip of tips) {
-    const { el, bb0, c0 } = tip;
-    const bind0 = bindEdge(c0.x, c0.y);
-    if (!needsMove(bb0, bind0)) {
-      placed.push({ x: bb0.x, y: bb0.y, width: bb0.width, height: bb0.height });
-      continue;
-    }
-
-    let best = null; // {ox,oy,bb,s,clear}
-    const consider = (ox, oy, s, requireClear) => {
-      const bb = { x: bb0.x + ox, y: bb0.y + oy, width: bb0.width, height: bb0.height };
-      const node = hitNode(bb, 2);
-      const other = hitPlaced(bb, placed, 3);
-      if (requireClear && (node || other)) return;
-      let score = s + Math.hypot(ox, oy) * 0.04;
-      if (node) score += 400;
-      if (other) score += 200;
-      if (!best || score < best.s) best = { ox, oy, bb, s: score, clear: !node && !other };
-    };
-
-    if (bind0) {
-      for (const t of tLadder) {
-        const p = bind0.edge.at(t);
-        let nx = -p.ty, ny = p.tx;
-        const nlen = Math.hypot(nx, ny) || 1;
-        nx /= nlen; ny /= nlen;
-        const flips = ny <= 0 ? [false, true] : [true, false];
-        for (const flip of flips) {
-          const sx = flip ? -nx : nx;
-          const sy = flip ? -ny : ny;
-          for (const off of offsetLadder) {
-            const ox = (p.x + sx * off) - c0.x;
-            const oy = (p.y + sy * off) - c0.y;
-            consider(ox, oy, Math.abs(t - 0.5) * 5 + off * 0.12, true);
-          }
-        }
-      }
-    }
-
-    // Cardinal / diagonal shove from original if edge search failed.
-    if (!best || !best.clear) {
-      for (const dist of [16, 28, 40, 56, 72, 96]) {
-        for (const [dx, dy] of [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]]) {
-          consider(dx * dist, dy * dist, dist * 0.2, true);
-        }
-      }
-    }
-
-    // Best-effort: MTV out of overlapping nodes / tips even if not fully clear.
-    if (!best || !best.clear) {
-      let ox = 0, oy = 0;
-      for (let i = 0; i < 14; i++) {
-        const bb = { x: bb0.x + ox, y: bb0.y + oy, width: bb0.width, height: bb0.height };
-        const blocker = hitNode(bb, 2) || hitPlaced(bb, placed, 3);
-        if (!blocker) break;
-        const m = mtvOutOfBox(bb, blocker);
-        ox += m.x;
-        oy += m.y;
-      }
-      consider(ox, oy, Math.hypot(ox, oy) * 0.3, false);
-    }
-
-    if (!best) {
-      placed.push({ x: bb0.x, y: bb0.y, width: bb0.width, height: bb0.height });
-      continue;
-    }
-
-    const ox = Math.round(best.ox);
-    const oy = Math.round(best.oy);
-    if (ox || oy) {
-      el.setAttribute('transform', `translate(${ox} ${oy})`);
-      el.setAttribute('data-tip-nudged', '1');
-    }
-    placed.push(best.bb);
-  }
-
-  // Tip↔tip MTV settle.
-  for (let pass = 0; pass < 5; pass++) {
-    let moved = false;
-    for (let i = 0; i < tips.length; i++) {
-      for (let j = i + 1; j < tips.length; j++) {
-        const a = tips[i], b = tips[j];
-        const parse = (el) => {
-          const tr = el.getAttribute('transform');
-          const m = tr && /translate\(([-\d.]+)\s+([-\d.]+)\)/.exec(tr);
-          return m ? { x: Number(m[1]), y: Number(m[2]) } : { x: 0, y: 0 };
-        };
-        const pa = parse(a.el), pb = parse(b.el);
-        const ra = { x: a.bb0.x + pa.x, y: a.bb0.y + pa.y, width: a.bb0.width, height: a.bb0.height };
-        const rb = { x: b.bb0.x + pb.x, y: b.bb0.y + pb.y, width: b.bb0.width, height: b.bb0.height };
-        if (!overlaps(ra, rb, 2)) continue;
-        const m = mtvOutOfBox(ra, rb);
-        const nax = Math.round(pa.x + m.x / 2), nay = Math.round(pa.y + m.y / 2);
-        const nbx = Math.round(pb.x - m.x / 2), nby = Math.round(pb.y - m.y / 2);
-        const ra2 = { x: a.bb0.x + nax, y: a.bb0.y + nay, width: a.bb0.width, height: a.bb0.height };
-        const rb2 = { x: b.bb0.x + nbx, y: b.bb0.y + nby, width: b.bb0.width, height: b.bb0.height };
-        if (!hitNode(ra2, 1)) {
-          a.el.setAttribute('transform', `translate(${nax} ${nay})`);
-          a.el.setAttribute('data-tip-nudged', '1');
-          moved = true;
-        }
-        if (!hitNode(rb2, 1)) {
-          b.el.setAttribute('transform', `translate(${nbx} ${nby})`);
-          b.el.setAttribute('data-tip-nudged', '1');
-          moved = true;
-        }
-      }
-    }
-    if (!moved) break;
-  }
-}
-
-function diagramType(text) {
-  // Skip Mermaid frontmatter (%%{init: ...}%%) and blanks.
-  for (const raw of String(text || '').split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line || line.startsWith('meta ') || line.startsWith('%%') || line.startsWith('#') || /^---/.test(line)) continue;
-    if (typeof DrawerStyleLine !== 'undefined' && DrawerStyleLine.isRendererStyleLine(line)) continue;
-    const m = line.match(/^(C4Context|C4Container|C4Component|flowchart|graph|sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart-beta|block-beta)\b/i);
-    return m ? m[1] : (line.split(/\s+/, 1)[0] || '—');
-  }
-  return '—';
-}
 function setStatus(msg, isError = false) {
   const el = $('#statusFloat');
   if (!el) return; // status chrome removed — keep API for callers
@@ -1092,131 +661,23 @@ function applyBoardLiveMeta(meta = {}) {
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel("Board");
 }
 
-function applyLiveMeta(meta = {}) {
-  if (meta && meta.label) liveLabel = String(meta.label);
-  if (meta && meta.id) liveDiagramId = String(meta.id);
-  if (meta && meta.title) liveDiagramTitle = String(meta.title);
-  if (meta && meta.via) liveDiagramVia = String(meta.via);
-  // Protocol: meta.current → history/mermaid record. Legacy archive treated as current.
-  var curPath = "";
-  if (meta && meta.current) curPath = String(meta.current);
-  else if (meta && meta.archive) curPath = String(meta.archive);
-  if (curPath) {
-    liveArchive = curPath;
-    try { liveArchiveName = liveArchive.split(/[/\\]/).pop() || ""; }
-    catch (_e) { liveArchiveName = liveArchive; }
-  }
-  if (meta && meta.path) liveDiagramPath = String(meta.path);
-  else if (curPath && curPath.startsWith("/")) liveDiagramPath = curPath;
-  if (meta && Number.isFinite(Number(meta.version != null ? meta.version : meta.rev))) {
-    if (!Number.isFinite(localRev) || localRev <= 0) localRev = Number(meta.version != null ? meta.version : meta.rev);
-  }
-  if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
-  if (typeof syncSourceDockLabel === "function") syncSourceDockLabel(typeof diagramType === "function" && sourceEl ? diagramType(sourceEl.value) : "");
-}
-function setSyncUI(state = 'ok') {
-  const pill = $('#syncPill');
-  if (pill) {
-    const map = {
-      ok: 'ok',
-      saving: 'warn',
-      error: 'warn',
-      conflict: 'warn',
-    };
-    pill.className = 'pill ' + (map[state] || 'ok');
-    const label = state === 'saving' ? 'saving' : state === 'conflict' ? 'conflict' : state === 'error' ? 'error' : 'ok';
-    pill.innerHTML = `${label} <b>${localRev}</b>`;
-  }
-  applyLiveMeta();
-}
-function currentMindmapLayout() {
-  try {
-    if (typeof MindmapEdit !== "undefined" && MindmapEdit.normalizeLayout) {
-      return MindmapEdit.normalizeLayout(loadDrawerUi().mindmapLayout);
-    }
-  } catch (_e) {}
-  var ui = loadDrawerUi();
-  return ui.mindmapLayout === "logic" ? "logic" : "radial";
-}
-function syncMindmapLayoutSeg() {
-  var layout = currentMindmapLayout();
-  document.querySelectorAll("#mindmapLayoutSeg [data-mindmap-layout]").forEach(function(btn) {
-    var on = btn.getAttribute("data-mindmap-layout") === layout;
-    btn.setAttribute("aria-pressed", on ? "true" : "false");
-    btn.classList.toggle("is-active", on);
-  });
-}
-function setMindmapLayout(layout) {
-  var next = (typeof MindmapEdit !== "undefined" && MindmapEdit.normalizeLayout)
-    ? MindmapEdit.normalizeLayout(layout)
-    : (layout === "logic" ? "logic" : "radial");
-  saveDrawerUi({ mindmapLayout: next });
-  syncMindmapLayoutSeg();
-  if (document.documentElement.dataset.drawerMode === "mermaid" && sourceEl && sourceEl.value.trim()) {
-    void renderDiagram({ fit: false });
-  }
-}
 function syncStyleLayoutSections() {
-  var mode = document.documentElement.dataset.drawerMode || "mermaid";
-  var mm = document.getElementById("mindmapLayoutSection");
   var board = document.getElementById("boardLayoutSection");
-  var typeName = "";
-  try {
-    if (mode === "mermaid" && sourceEl && sourceEl.value.trim() && typeof diagramType === "function") {
-      typeName = String(diagramType(sourceEl.value) || "").toLowerCase();
-    }
-  } catch (_e) {}
-  // Exclusive: mindmap → Radial/Logic only; board → Trunk/Stagger/Straight only; never both.
-  var showMm = mode === "mermaid" && (typeName === "mindmap" || document.documentElement.dataset.mermaidMindmap === "1");
-  var showBoard = mode === "board";
-  if (mm) {
-    mm.hidden = !showMm;
-    if (showMm && typeof syncMindmapLayoutSeg === "function") syncMindmapLayoutSeg();
-  }
-  if (board) board.hidden = !showBoard;
+  if (board) board.hidden = false;
   var capSec = document.getElementById("boardItemCapSection");
-  if (capSec) capSec.hidden = !showBoard;
+  if (capSec) capSec.hidden = false;
   var typeSec = document.getElementById("boardFontSizeSection");
-  if (typeSec) typeSec.hidden = !showBoard;
+  if (typeSec) typeSec.hidden = false;
 }
 
-function formatDockTypeLabel(typeName) {
-  var t = String(typeName || "").trim();
-  if (!t) return "Source";
-  var low = t.toLowerCase();
-  var map = {
-    sequencediagram: "sequence",
-    "statediagram-v2": "state",
-    statediagram: "state",
-    "architecture-beta": "architecture",
-    "xychart-beta": "xychart",
-    "block-beta": "block",
-    "packet-beta": "packet",
-    "sankey-beta": "sankey",
-    erdiagram: "er",
-    classdiagram: "class",
-    gitgraph: "git",
-    quadrantchart: "quadrant",
-    c4context: "C4",
-    c4container: "C4",
-    c4component: "C4",
-    graph: "flowchart",
-  };
-  if (map[low]) return map[low];
-  return t;
-}
-function syncSourceDockLabel(typeName) {
-  // Rail tab: fixed "Source" (no dynamic type — kills refresh flicker).
-  // Panel title: keep prior dynamic behavior.
+function syncSourceDockLabel() {
   var tab = document.getElementById("sourceDockTabLabel");
   var title = document.getElementById("sourceDockTitle");
   var btn = document.getElementById("btnDockSource");
-  var boardMode = document.documentElement.dataset.drawerMode === "board";
-  var label = boardMode ? "Board" : formatDockTypeLabel(typeName);
   if (tab && tab.textContent !== "Source") tab.textContent = "Source";
   if (btn && btn.title !== "Source") btn.title = "Source";
   var version = typeof liveDocumentVersion === "function" ? liveDocumentVersion() : 0;
-  if (title && title.textContent !== label) title.textContent = label;
+  if (title && title.textContent !== "Board") title.textContent = "Board";
   var verEl = document.getElementById("sourceDockVersion");
   var verText = formatVersionLabel(version);
   if (verEl) {
@@ -1226,9 +687,7 @@ function syncSourceDockLabel(typeName) {
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
 }
 function liveRecordId() {
-  return document.documentElement.dataset.drawerMode === "board"
-    ? String(typeof liveBoardId !== "undefined" ? liveBoardId : "")
-    : String(typeof liveDiagramId !== "undefined" ? liveDiagramId : "");
+  return String(typeof liveBoardId !== "undefined" ? liveBoardId : "");
 }
 function syncSourceIdChrome() {
   var id = liveRecordId();
@@ -1245,64 +704,18 @@ function syncSourceIdChrome() {
   }
 }
 
-function setTypeUI(text, opts) {
-  opts = opts || {};
+function setTypeUI() {
   const typePill = $('#typePill');
-  const raw = String(text == null ? '' : text);
-  var boardMode = document.documentElement.dataset.drawerMode === 'board';
-  var typeName = boardMode ? 'Board' : (raw.trim() ? diagramType(raw) : '');
-  if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel(boardMode ? 'Board' : typeName);
-  if (typePill) typePill.innerHTML = `<b>${typeName || '—'}</b>`;
+  if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel();
+  if (typePill) typePill.innerHTML = '<b>Board</b>';
   var hint = $('#exportTypeHint');
-  if (hint) {
-    hint.textContent = boardMode
-      ? 'Board mode · Copy Path below.'
-      : (typeName ? (typeName + ' diagram · Copy Path below.') : 'No diagram type yet.');
-  }
-  setCharsLabel($('#charsPill'), [...raw].length);
-  if (boardMode) {
-    if (typeof syncMermaidDeleteButton === 'function') syncMermaidDeleteButton();
-    try { saveDrawerUi({ diagramType: 'Board', mermaidFlowchart: false }); } catch (_e) {}
-    if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
-    return;
-  }
-  // Empty source during boot/theme init must NOT hide toolbar or wipe drawer.ui.
-  if (!raw.trim()) {
-    if (opts.clearTools) {
-      document.documentElement.dataset.mermaidFlowchart = '0';
-      document.documentElement.dataset.mermaidMindmap = '0';
-      document.documentElement.dataset.mermaidState = '0';
-      if (typeof setMermaidLinkMode === 'function') setMermaidLinkMode(false);
-      try { saveDrawerUi({ diagramType: '', mermaidFlowchart: false }); } catch (_e) {}
-    }
-    if (typeof syncMermaidDeleteButton === 'function') syncMermaidDeleteButton();
-    if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
-    return;
-  }
-  var t = String(typeName || '').toLowerCase();
-  var flowchart = (t === 'flowchart' || t === 'graph');
-  var mindmap = (t === 'mindmap');
-  var stateDiag = (t === 'statediagram' || t === 'statediagram-v2');
-  document.documentElement.dataset.mermaidFlowchart = flowchart ? '1' : '0';
-  document.documentElement.dataset.mermaidMindmap = mindmap ? '1' : '0';
-  document.documentElement.dataset.mermaidState = stateDiag ? '1' : '0';
-  if (!flowchart && typeof setMermaidLinkMode === 'function') setMermaidLinkMode(false);
-  if (typeof syncMermaidDeleteButton === 'function') syncMermaidDeleteButton();
-  try {
-    saveDrawerUi({ diagramType: typeName || '', mermaidFlowchart: flowchart });
-  } catch (_e) {}
+  if (hint) hint.textContent = 'Board mode · Copy Path below.';
   if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
 }
 function applyTransform() {
-  if (document.documentElement.dataset.drawerMode === "board") {
-    previewEl.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-    var zr = document.querySelector("#btnZoomReset");
-    if (zr) zr.textContent = Math.round(scale * 100) + "%";
-    scheduleDrawerUiSave();
-    return;
-  }
   previewEl.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-  $('#btnZoomReset').textContent = `${Math.round(scale * 100)}%`;
+  var zr = document.querySelector("#btnZoomReset");
+  if (zr) zr.textContent = Math.round(scale * 100) + "%";
   scheduleDrawerUiSave();
 }
 function boardContentOnStage() {
@@ -1327,7 +740,7 @@ function applyRestoredBoardView() {
 }
 function fitBoardView(opts) {
   opts = opts || {};
-  if (document.documentElement.dataset.drawerMode !== "board") return;
+  if (!previewEl) return;
   previewEl.style.transform = "none";
   pinBoardTitle();
   const content = previewEl.querySelector(".board-render");
@@ -1349,13 +762,6 @@ function fitBoardView(opts) {
     if (retained) retained.classList.add("board-selection");
   });
 }
-function showEmpty() {
-  if (document.documentElement.dataset.drawerMode === 'board') return;
-  previewEl.classList.remove("board-preview");
-  previewEl.innerHTML = emptyHtml || '<div class="empty"><h2>Canvas is ready</h2></div>';
-  errorBox.classList.remove('show');
-  errorBox.textContent = '';
-}
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
 }
@@ -1365,9 +771,6 @@ function updateBoardChars() {
 function showBoardError(message) { boardError.textContent = message || ''; boardError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
-wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);
-wrapEditorApi(typeof MindmapEdit !== "undefined" ? MindmapEdit : null);
-wrapEditorApi(typeof StateEdit !== "undefined" ? StateEdit : null);
 
 /* === 02-board.js === */
 /* drawer-app/02-board.js — lines 700-1719 of former inline module */
@@ -1752,10 +1155,6 @@ function filterBoardIdEditor() {
   return next;
 }
 function commitBoardId() {
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromId();
-    return;
-  }
   if (!boardIdEditor || !selectedBoardNode) return;
   if (selectedBoardNode.kind !== "box" && selectedBoardNode.kind !== "item") return;
   if (typeof BoardRender === "undefined" || typeof BoardRender.updateId !== "function") return;
@@ -2171,7 +1570,7 @@ function pinBoardTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
   if (document.documentElement.dataset.drawerMode !== "board") {
-    if (document.title !== "Lulu Drawer") document.title = "Lulu Drawer";
+    if (document.title !== "Lulu Board") document.title = "Lulu Board";
     return;
   }
   var title = "";
@@ -2182,7 +1581,7 @@ function pinBoardTitle() {
     var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
     title = heading ? String(heading.textContent || "").trim() : "";
   }
-  var next = title || "Lulu Drawer";
+  var next = title || "Lulu Board";
   if (document.title !== next) document.title = next;
 }
 function boardPinnedTitleNode() {
@@ -2582,10 +1981,6 @@ function commitBoardCap() {
 }
 function commitBoardType() {
   if (!boardTypeEditor) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromType();
-    return;
-  }
   if (selectedBoardEdge && typeof BoardRender.updateLinkType === "function") {
     try {
       var nextLink = BoardRender.updateLinkType(boardSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
@@ -2655,73 +2050,8 @@ function commitBoardAlign() {
 function commitBoardJustify() {
   commitBoardBoxFlex("Justify", boardJustifyEditor, BoardRender.updateJustify);
 }
-function commitMermaidPropsFromTitle() {
-  if (!selectedMermaid) return false;
-  var value = boardTitleEditor ? boardTitleEditor.value : "";
-  try {
-    var result;
-    if (selectedMermaid.kind === "topic") {
-      if (typeof MindmapEdit === "undefined") return false;
-      result = MindmapEdit.updateTopicLabel(sourceEl.value, selectedMermaid.id, value);
-    } else if (selectedMermaid.kind === "state" || selectedMermaid.kind === "composite") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateStateLabel(sourceEl.value, selectedMermaid, value);
-    } else if (selectedMermaid.kind === "transition") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateTransitionLabel(sourceEl.value, selectedMermaid, value);
-    } else if (typeof FlowchartEdit === "undefined") return false;
-    else if (selectedMermaid.kind === "node") result = FlowchartEdit.updateNodeLabel(sourceEl.value, selectedMermaid, value);
-    else if (selectedMermaid.kind === "link") result = FlowchartEdit.updateLinkLabel(sourceEl.value, selectedMermaid, value);
-    else if (selectedMermaid.kind === "subgraph") result = FlowchartEdit.updateSubgraphTitle(sourceEl.value, selectedMermaid, value);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved " + selectedMermaid.kind + " label");
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
-function commitMermaidPropsFromType() {
-  if (!selectedMermaid || !boardTypeEditor) return false;
-  if (selectedMermaid.kind !== "topic" && typeof FlowchartEdit === "undefined") return false;
-  var value = boardTypeEditor.value;
-  try {
-    var result;
-    if (selectedMermaid.kind === "topic") {
-      // Mindmap shape UI removed.
-      return false;
-    } else if (selectedMermaid.kind === "node") {
-      // UI kind → Mermaid shape. Do not invent protocol keywords.
-      if (typeof FlowchartEdit.updateNodeKind === "function") result = FlowchartEdit.updateNodeKind(sourceEl.value, selectedMermaid, value);
-      else result = FlowchartEdit.updateNodeShape(sourceEl.value, selectedMermaid, value);
-    } else if (selectedMermaid.kind === "link") result = FlowchartEdit.updateLinkStroke(sourceEl.value, selectedMermaid, value);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved " + selectedMermaid.kind + " type · " + value);
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
-function commitMermaidPropsFromId() {
-  if (!selectedMermaid || !boardIdEditor) return false;
-  var next = String(boardIdEditor.value || "").trim();
-  try {
-    var result;
-    if (selectedMermaid.kind === "state" || selectedMermaid.kind === "composite") {
-      if (typeof StateEdit === "undefined") return false;
-      result = StateEdit.updateStateId(sourceEl.value, selectedMermaid, next);
-    } else if (typeof FlowchartEdit === "undefined") return false;
-    else if (selectedMermaid.kind === "node") result = FlowchartEdit.updateNodeId(sourceEl.value, selectedMermaid, next);
-    else if (selectedMermaid.kind === "subgraph") result = FlowchartEdit.updateSubgraphId(sourceEl.value, selectedMermaid, next);
-    else return false;
-    applyMermaidEditResult(result);
-    setStatus("Saved id · " + next);
-    return true;
-  } catch (err) { showMermaidError(err instanceof Error ? err.message : String(err)); return true; }
-}
 function commitBoardTitle() {
   if (!boardTitleEditor) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && selectedMermaid) {
-    commitMermaidPropsFromTitle();
-    return;
-  }
   if (selectedBoardEdge && typeof BoardRender.updateLinkTitle === "function") {
     try {
       var nextLink = BoardRender.updateLinkTitle(boardSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
@@ -2950,7 +2280,6 @@ function boardClickIsOnNode(event) {
   return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .top-float, .menu, .sheet, button, input, select, textarea, label"));
 }
 // Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
-// Board-only — Mermaid has its own clear on miss / stage blank (must not steal mermaid clicks).
 previewEl.addEventListener("pointerdown", function(event) {
   if (document.documentElement.dataset.drawerMode !== "board") return;
   if (event.button !== 0) return;
@@ -3056,8 +2385,6 @@ async function loadBoardPolled() {
     const meta = await metaRes.json(), remoteRev = Number(meta.version != null ? meta.version : meta.rev) || 0;
     if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
     if (remoteRev <= boardLocalRev) { setBoardSyncUI('ok'); return; }
-    // Mermaid (or other) must not replace in-memory Board source; switch-back remounts from the textarea.
-    if (document.documentElement.dataset.drawerMode !== 'board') return;
     const res = await fetch(`./board.bmd?ts=${Date.now()}`, { cache: 'no-store' }); if (!res.ok) return;
     const text = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || remoteRev; boardDirty = false;
     if (boardSourceEl.value !== text) { boardSourceEl.value = text; renderBoard({ fit: false }); setStatus(`Board loaded r${boardLocalRev}`); }
@@ -3072,8 +2399,7 @@ async function bootstrapBoard() {
     if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
   } catch (_e) {}
   boardDirty = false; updateBoardChars(); setBoardSyncUI('ok');
-  // If we boot into Board mode, paint once here with saved view so setMode(restore) can skip a second render (item flash).
-  if (document.documentElement.dataset.drawerMode === "board" && boardSourceEl.value.trim()) {
+  if (boardSourceEl.value.trim()) {
     await new Promise(function (resolve) {
       var done = false;
       var finish = function () { if (done) return; done = true; resolve(); };
@@ -3092,1729 +2418,8 @@ async function bootstrapBoard() {
 }
 
 
-/* ---- Mermaid flowchart edit (source SSOT → mermaid.render) ---- */
-const mermaidAddNodeButton = $("#btnMermaidAddNode");
-const mermaidAddSubgraphButton = $("#btnMermaidAddSubgraph");
-const mermaidLinkButton = $("#btnMermaidLink");
-const mermaidDeleteButton = $("#btnMermaidDelete");
-let mermaidLinkMode = false;
-let mermaidLinkStart = null;
-let selectedMermaid = null;
-/* mermaidInspectGesture / mermaidPropsShownKey → 03-mermaid-inspect.js */
-
-
-/* === 03-mermaid-inspect.js === */
-/* drawer-app/03-mermaid-inspect.js — Mermaid-common select / open-Props gesture.
- * Shared by flowchart, mindmap, and future diagram kinds (e.g. state). Board stays separate.
- *
- * Rules:
- * 1) pointerdown captures `already` BEFORE select.
- * 2) First click → select only (do not open Props on that click's trailing events).
- * 3) Re-click same selected target → open Props.
- * 4) Props open + already showing that key → noop; open but other target → refresh fill.
- * 5) Pan (moved) cancels Props open.
- */
-var mermaidInspectGesture = null;
-var mermaidPropsShownKey = "";
-
-var MermaidInspect = (function () {
-  function getSelectionKey() {
-    return selectedMermaid && selectedMermaid.key ? selectedMermaid.key : "";
-  }
-
-  function begin(key) {
-    var k = key || "";
-    mermaidInspectGesture = {
-      key: k,
-      already: !!(k && k === getSelectionKey()),
-      moved: false,
-    };
-    return mermaidInspectGesture;
-  }
-
-  function markMoved() {
-    if (mermaidInspectGesture) mermaidInspectGesture.moved = true;
-  }
-
-  function clearGesture() {
-    mermaidInspectGesture = null;
-  }
-
-  /** Consume gesture: true iff re-press on same key without pan. */
-  function consumeClick(key) {
-    var gesture = mermaidInspectGesture;
-    mermaidInspectGesture = null;
-    return !!(gesture && !gesture.moved && gesture.already && gesture.key && gesture.key === key);
-  }
-
-  function clearPropsShown() {
-    mermaidPropsShownKey = "";
-  }
-
-  /**
-   * Open or refresh Props for key.
-   * @param {string} key
-   * @param {{ fill?: function, blocked?: boolean }} opts fill() loads fields; blocked skips (e.g. link mode)
-   */
-  function wantProps(key, opts) {
-    opts = opts || {};
-    if (!key || opts.blocked) return false;
-    if (typeof currentDockTab === "function" && currentDockTab() === "props" && mermaidPropsShownKey === key) {
-      return false;
-    }
-    if (typeof opts.fill === "function") opts.fill();
-    if (typeof openPropsPanel === "function") openPropsPanel();
-    mermaidPropsShownKey = key;
-    return true;
-  }
-
-  /** Open Props for current selection (inspect). */
-  function inspect(opts) {
-    opts = opts || {};
-    if (opts.blocked) return false;
-    if (typeof opts.fill === "function") opts.fill();
-    if (typeof openPropsPanel === "function") openPropsPanel();
-    mermaidPropsShownKey = getSelectionKey() || "";
-    return true;
-  }
-
-  return {
-    begin: begin,
-    markMoved: markMoved,
-    clearGesture: clearGesture,
-    consumeClick: consumeClick,
-    wantProps: wantProps,
-    inspect: inspect,
-    clearPropsShown: clearPropsShown,
-    getSelectionKey: getSelectionKey,
-  };
-})();
-
-/* === 03-mermaid.js === */
-/* drawer-app/03-mermaid.js — lines 1720-2296 of former inline module */
-function currentMermaidSelectionKey() {
-  return MermaidInspect.getSelectionKey();
-}
-function beginMermaidInspectGesture(key) {
-  return MermaidInspect.begin(key);
-}
-function consumeMermaidInspectClick(key) {
-  return MermaidInspect.consumeClick(key);
-}
-function inspectMermaidSelection() {
-  if (mermaidLinkMode) return;
-  MermaidInspect.inspect({
-    blocked: false,
-    fill: function() {
-      if (selectedMermaid && selectedMermaid.kind === "topic") fillMindmapProps();
-      else if (typeof isStateMode === "function" && isStateMode() && typeof fillStateProps === "function") fillStateProps();
-      else fillMermaidProps();
-    },
-  });
-}
-
-function showMermaidError(message) {
-  if (errorBox) {
-    errorBox.textContent = message;
-    errorBox.classList.add("show");
-  }
-  setStatus(message, true);
-}
-
-function syncMermaidDeleteButton() {
-  if (!mermaidDeleteButton) return;
-  var on = document.documentElement.dataset.drawerMode === "mermaid" && document.documentElement.dataset.mermaidFlowchart === "1" && !!selectedMermaid;
-  mermaidDeleteButton.disabled = !on;
-}
-
-
-function installMermaidEdgeHits(root) {
-  if (!root) return;
-  root.querySelectorAll("path.mermaid-edge-hit").forEach(function(el) { el.remove(); });
-  function addHit(path) {
-    if (!path) return;
-    var hit = path.cloneNode(false);
-    hit.removeAttribute("id");
-    hit.removeAttribute("marker-end");
-    hit.removeAttribute("marker-start");
-    hit.removeAttribute("style");
-    hit.setAttribute("class", "mermaid-edge-hit");
-    if (path.id) hit.setAttribute("data-edge-dom-id", path.id);
-    hit.setAttribute("fill", "none");
-    hit.setAttribute("stroke", "transparent");
-    hit.setAttribute("stroke-width", "14");
-    hit.setAttribute("pointer-events", "stroke");
-    if (path.parentNode) path.parentNode.insertBefore(hit, path);
-  }
-  root.querySelectorAll("path.flowchart-link").forEach(function(path) {
-    if (!path.id) return;
-    addHit(path);
-  });
-  // State diagram transitions (incl. short [*] edges) — index-aligned with path.transition.
-  root.querySelectorAll("path.transition").forEach(function(path) {
-    addHit(path);
-  });
-}
-
-/* Color helpers live in 02-board.js (loaded first); keep defs only if absent. */
-if (typeof parseCssColor !== "function") {
-function parseCssColor(raw) {
-  var s = String(raw || "").trim();
-  if (!s || s === "none" || s === "transparent") return null;
-  var m = s.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)(?:\s*,\s*([0-9.]+))?\s*\)$/i);
-  if (m) return { r: +m[1], g: +m[2], b: +m[3], a: m[4] != null ? +m[4] : 1 };
-  m = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  if (m) {
-    var h = m[1];
-    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-    return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 };
-  }
-  return null;
-}
-}
-if (typeof formatCssColor !== "function") {
-function formatCssColor(c) {
-  if (!c) return "";
-  if (c.a != null && c.a < 1) return "rgba(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ", " + c.a + ")";
-  return "rgb(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ")";
-}
-}
-if (typeof darkenCssColor !== "function") {
-/** Darken toward black (Board-like emphasis); hue stays from live theme stroke. */
-function darkenCssColor(raw, amount) {
-  var c = parseCssColor(raw);
-  if (!c) return raw;
-  var f = 1 - (amount == null ? 0.4 : amount);
-  return formatCssColor({ r: c.r * f, g: c.g * f, b: c.b * f, a: c.a });
-}
-}
-function readMermaidEdgeStroke(el) {
-  if (!el) return "#333333";
-  var direct = (el.getAttribute && el.getAttribute("stroke")) || "";
-  if (direct && direct !== "none" && direct !== "currentColor") return direct;
-  try {
-    var cs = window.getComputedStyle(el);
-    if (cs && cs.stroke && cs.stroke !== "none") return cs.stroke;
-  } catch (_e) {}
-  try {
-    var svg = el.ownerSVGElement || (previewEl && previewEl.querySelector("svg"));
-    if (svg) {
-      var gcs = window.getComputedStyle(svg);
-      if (gcs && gcs.color) return gcs.color;
-    }
-  } catch (_e2) {}
-  return "#333333";
-}
-function clearMermaidLinkSelectStyle(root) {
-  var scope = root || previewEl;
-  if (!scope) return;
-  // Board-like: hit strokes are never painted; force-clear any leftover glow from older builds.
-  scope.querySelectorAll("path.mermaid-edge-hit").forEach(function(h) {
-    h.classList.remove("mermaid-selection");
-    h.classList.remove("mermaid-link-selected");
-    h.setAttribute("stroke", "transparent");
-    h.setAttribute("fill", "none");
-    if (h.style) {
-      h.style.removeProperty("stroke");
-      h.style.removeProperty("stroke-width");
-      h.style.removeProperty("filter");
-      h.style.removeProperty("opacity");
-    }
-  });
-  scope.querySelectorAll(".mermaid-link-selected, [data-mermaid-sel-stroke], [data-mermaid-sel-fill]").forEach(function(el) {
-    el.classList.remove("mermaid-link-selected");
-    if (el.hasAttribute("data-mermaid-sel-stroke")) {
-      var prevStroke = el.getAttribute("data-mermaid-sel-stroke");
-      var prevWidth = el.getAttribute("data-mermaid-sel-width");
-      var prevStyleStroke = el.getAttribute("data-mermaid-sel-style-stroke");
-      var prevStyleWidth = el.getAttribute("data-mermaid-sel-style-width");
-      if (prevStroke === "") el.removeAttribute("stroke");
-      else el.setAttribute("stroke", prevStroke);
-      if (prevWidth === "") el.removeAttribute("stroke-width");
-      else el.setAttribute("stroke-width", prevWidth);
-      if (el.style) {
-        if (prevStyleStroke === "") el.style.removeProperty("stroke");
-        else el.style.stroke = prevStyleStroke;
-        if (prevStyleWidth === "") el.style.removeProperty("stroke-width");
-        else el.style.strokeWidth = prevStyleWidth;
-        el.style.removeProperty("filter");
-        el.style.removeProperty("opacity");
-      }
-      el.removeAttribute("data-mermaid-sel-stroke");
-      el.removeAttribute("data-mermaid-sel-width");
-      el.removeAttribute("data-mermaid-sel-style-stroke");
-      el.removeAttribute("data-mermaid-sel-style-width");
-    }
-    if (el.hasAttribute("data-mermaid-sel-fill")) {
-      var prevFill = el.getAttribute("data-mermaid-sel-fill");
-      var prevStyleFill = el.getAttribute("data-mermaid-sel-style-fill");
-      var prevStyleColor = el.getAttribute("data-mermaid-sel-style-color");
-      if (prevFill === "") el.removeAttribute("fill");
-      else el.setAttribute("fill", prevFill);
-      if (el.style) {
-        if (prevStyleFill === "") el.style.removeProperty("fill");
-        else el.style.fill = prevStyleFill;
-        if (prevStyleColor === "") el.style.removeProperty("color");
-        else el.style.color = prevStyleColor;
-      }
-      el.removeAttribute("data-mermaid-sel-fill");
-      el.removeAttribute("data-mermaid-sel-style-fill");
-      el.removeAttribute("data-mermaid-sel-style-color");
-    }
-  });
-}
-function applyMermaidLinkSelectStyle(pathEl) {
-  if (!pathEl) return null;
-  var base = readMermaidEdgeStroke(pathEl);
-  var accent = darkenCssColor(base, 0.4);
-  if (!pathEl.hasAttribute("data-mermaid-sel-stroke")) {
-    pathEl.setAttribute("data-mermaid-sel-stroke", pathEl.getAttribute("stroke") || "");
-    pathEl.setAttribute("data-mermaid-sel-width", pathEl.getAttribute("stroke-width") || "");
-    pathEl.setAttribute("data-mermaid-sel-style-stroke", (pathEl.style && pathEl.style.stroke) || "");
-    pathEl.setAttribute("data-mermaid-sel-style-width", (pathEl.style && pathEl.style.strokeWidth) || "");
-  }
-  pathEl.classList.add("mermaid-selection");
-  pathEl.classList.add("mermaid-link-selected");
-  pathEl.style.stroke = accent;
-  pathEl.style.strokeWidth = "2.6px";
-  pathEl.style.removeProperty("filter");
-  pathEl.style.removeProperty("opacity");
-  pathEl.setAttribute("stroke", accent);
-  pathEl.setAttribute("stroke-width", "2.6");
-  return { base: base, accent: accent };
-}
-function applyMermaidLinkLabelSelectStyle(labelEl, accent) {
-  if (!labelEl || !accent) return;
-  labelEl.classList.add("mermaid-selection");
-  labelEl.classList.add("mermaid-link-selected");
-  if (!labelEl.hasAttribute("data-mermaid-sel-fill")) {
-    labelEl.setAttribute("data-mermaid-sel-fill", labelEl.getAttribute("fill") || "");
-    labelEl.setAttribute("data-mermaid-sel-style-fill", (labelEl.style && labelEl.style.fill) || "");
-    labelEl.setAttribute("data-mermaid-sel-style-color", (labelEl.style && labelEl.style.color) || "");
-  }
-  labelEl.style.color = accent;
-  labelEl.style.fill = accent;
-  labelEl.querySelectorAll("span, p, text, tspan").forEach(function(n) {
-    if (!n.hasAttribute("data-mermaid-sel-fill")) {
-      n.setAttribute("data-mermaid-sel-fill", n.getAttribute("fill") || "");
-      n.setAttribute("data-mermaid-sel-style-fill", (n.style && n.style.fill) || "");
-      n.setAttribute("data-mermaid-sel-style-color", (n.style && n.style.color) || "");
-      n.classList.add("mermaid-link-selected");
-    }
-    n.style.color = accent;
-    if (n.tagName && /text|tspan/i.test(n.tagName)) n.setAttribute("fill", accent);
-  });
-}
-
-function clearMermaidSelectionVisual() {
-  if (!previewEl) return;
-  clearMermaidLinkSelectStyle(previewEl);
-  previewEl.querySelectorAll(".mermaid-selection, .mermaid-link-source, .mermaid-link-selected").forEach(function(el) {
-    el.classList.remove("mermaid-selection");
-    el.classList.remove("mermaid-link-source");
-    el.classList.remove("mermaid-link-selected");
-  });
-}
-
-function applyMermaidSelectionVisual() {
-  clearMermaidSelectionVisual();
-  if (!selectedMermaid || !previewEl) return;
-  var sel = selectedMermaid;
-  if (sel.domId) {
-    var byId = previewEl.querySelector("#" + CSS.escape(sel.domId));
-    if (byId) byId.classList.add("mermaid-selection");
-  }
-  if (sel.kind === "link") {
-    var linkSel = sel;
-    var prefix = (linkSel.from && linkSel.to) ? ("L_" + linkSel.from + "_" + linkSel.to + "_") : "";
-    var accent = null;
-    previewEl.querySelectorAll("path.flowchart-link, g.edgePath").forEach(function(el) {
-      var path = el;
-      if (el.tagName && el.tagName.toLowerCase() === "g") {
-        path = el.querySelector("path.flowchart-link, path.path, path") || el;
-      }
-      var eid = path.id || el.id || "";
-      var ok = !!(linkSel.domId && (eid === linkSel.domId || el.id === linkSel.domId));
-      if (!ok && prefix && (eid.indexOf(prefix) === 0 || String(el.id || "").indexOf(prefix) === 0)) ok = true;
-      if (!ok) return;
-      var painted = applyMermaidLinkSelectStyle(path);
-      if (painted) accent = painted.accent;
-      // Keep hit paths transparent (Board board-edge-hit parity) — no halo/shadow.
-    });
-    if (typeof FlowchartEdit !== "undefined" && FlowchartEdit.getLink) {
-      var info = FlowchartEdit.getLink(sourceEl && sourceEl.value, linkSel.from, linkSel.to);
-      var lab = info && info.label ? String(info.label).trim() : "";
-      if (lab && accent) {
-        previewEl.querySelectorAll("g.edgeLabel").forEach(function(g) {
-          if (String(g.textContent || "").replace(/\s+/g, " ").trim() === lab) {
-            applyMermaidLinkLabelSelectStyle(g, accent);
-          }
-        });
-      }
-    }
-  }
-
-  if (sel.kind === "node" && sel.id) {
-    previewEl.querySelectorAll("g.node").forEach(function(g) {
-      if (g.id && g.id.indexOf("flowchart-" + sel.id + "-") === 0) g.classList.add("mermaid-selection");
-    });
-  }
-  if (sel.kind === "subgraph" && sel.id) {
-    previewEl.querySelectorAll("g.cluster").forEach(function(g) {
-      var gid = g.id || "";
-      if (
-        gid === sel.id ||
-        gid.indexOf("flowchart-" + sel.id + "-") === 0 ||
-        gid === "cluster-" + sel.id ||
-        gid.indexOf(sel.id) >= 0
-      ) g.classList.add("mermaid-selection");
-    });
-    previewEl.querySelectorAll("g.cluster-label").forEach(function(g) {
-      var gid = g.id || "";
-      if (gid.indexOf(sel.id) >= 0) g.classList.add("mermaid-selection");
-    });
-    // Empty subgraph stand-in is a g.node with id === subgraph id
-    previewEl.querySelectorAll("g.node").forEach(function(g) {
-      var gid = g.id || "";
-      if (gid === sel.id || gid.indexOf("flowchart-" + sel.id + "-") === 0) {
-        g.classList.add("mermaid-selection");
-      }
-    });
-  }
-  syncMermaidDeleteButton();
-}
-
-function clearMermaidSelection() {
-  MermaidInspect.clearGesture();
-  selectedMermaid = null;
-  try { if (sourceEl) delete sourceEl.dataset.mermaidSelectionKey; } catch (_e) {}
-  clearMermaidSelectionVisual();
-  if (previewEl) previewEl.querySelectorAll("g.mindmap-node.mermaid-selection").forEach(function(el) { el.classList.remove("mermaid-selection"); });
-  syncMermaidDeleteButton();
-  if (typeof syncMindmapEditButtons === "function") syncMindmapEditButtons();
-  else if (typeof syncMindmapDeleteButton === "function") syncMindmapDeleteButton();
-  if (typeof syncStateDeleteButton === "function") syncStateDeleteButton();
-  if (document.documentElement.dataset.drawerMode === "mermaid" && !mermaidLinkMode) {
-    if (propsEmpty) { propsEmpty.hidden = false; propsEmpty.textContent = "Select a node, link, or subgraph"; }
-    if (propsFields) propsFields.hidden = true;
-    if (propsKindLabel) propsKindLabel.textContent = "—";
-    closePropsPanel();
-  }
-}
-
-function applyMermaidEditResult(result) {
-  if (!result || typeof result.source !== "string") return;
-  sourceEl.value = result.source;
-  selectedMermaid = result.selection || null;
-  mermaidLinkStart = null;
-  setTypeUI(sourceEl.value);
-  void renderDiagram().then(function() {
-    if (selectedMermaid && selectedMermaid.kind === "topic") {
-      if (typeof applyMindmapSelectionVisual === "function") applyMindmapSelectionVisual();
-      if (typeof fillMindmapProps === "function") fillMindmapProps();
-      if (typeof syncMindmapEditButtons === "function") syncMindmapEditButtons();
-    } else if (typeof isStateMode === "function" && isStateMode()) {
-      if (typeof applyStateSelectionVisual === "function") applyStateSelectionVisual();
-      if (selectedMermaid && typeof fillStateProps === "function") fillStateProps();
-    } else {
-      applyMermaidSelectionVisual();
-      if (selectedMermaid) fillMermaidProps();
-    }
-  });
-  scheduleSave();
-}
-
-function mermaidEditAction(action) {
-  try {
-    if (typeof FlowchartEdit === "undefined") failMissingFlowchartEdit();
-    applyMermaidEditResult(action());
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-}
-
-function failMissingFlowchartEdit() {
-  throw new Error("FlowchartEdit missing — hard refresh (cache)");
-}
-
-function setMermaidLinkMode(active) {
-  mermaidLinkMode = !!active;
-  mermaidLinkStart = null;
-  if (mermaidLinkButton) mermaidLinkButton.classList.toggle("is-active", mermaidLinkMode);
-  document.documentElement.classList.toggle("mermaid-link-mode", mermaidLinkMode);
-  clearMermaidSelectionVisual();
-  if (mermaidLinkMode) setStatus("Link mode · click source node, then target");
-  else setStatus("Link mode off");
-}
-
-function mermaidLinkPick(selection) {
-  if (!mermaidLinkMode || !selection || selection.kind !== "node") return false;
-  if (!mermaidLinkStart) {
-    mermaidLinkStart = selection;
-    selectedMermaid = selection;
-    applyMermaidSelectionVisual();
-    previewEl.querySelectorAll("g.node").forEach(function(g) {
-      if (g.id && g.id.indexOf("flowchart-" + selection.id + "-") === 0) g.classList.add("mermaid-link-source");
-    });
-    setStatus("Source " + selection.id + " · click target");
-    return true;
-  }
-  if (mermaidLinkStart.id === selection.id) {
-    setStatus("Pick a different target node", true);
-    return true;
-  }
-  mermaidEditAction(function() {
-    return FlowchartEdit.addLink(sourceEl.value, mermaidLinkStart.id, selection.id);
-  });
-  setMermaidLinkMode(false);
-  return true;
-}
-
-if (mermaidAddNodeButton) mermaidAddNodeButton.onclick = function() {
-  if (document.documentElement.dataset.mermaidFlowchart !== "1") return;
-  var opts = {};
-  if (selectedMermaid && selectedMermaid.kind === "subgraph" && selectedMermaid.id) {
-    opts.parent = selectedMermaid.id;
-  }
-  mermaidEditAction(function() {
-    var result = FlowchartEdit.addNode(sourceEl.value, opts);
-    // Keep subgraph selected so Node can be added repeatedly into the same group.
-    if (opts.parent) {
-      result.selection = { kind: "subgraph", id: opts.parent, key: "subgraph:" + opts.parent };
-    }
-    return result;
-  });
-};
-if (mermaidAddSubgraphButton) mermaidAddSubgraphButton.onclick = function() {
-  if (document.documentElement.dataset.mermaidFlowchart !== "1") return;
-  mermaidEditAction(function() { return FlowchartEdit.addSubgraph(sourceEl.value); });
-};
-if (mermaidLinkButton) mermaidLinkButton.onclick = function() {
-  if (document.documentElement.dataset.mermaidFlowchart !== "1") return;
-  setMermaidLinkMode(!mermaidLinkMode);
-};
-if (mermaidDeleteButton) mermaidDeleteButton.onclick = function() {
-  if (!selectedMermaid) return;
-  mermaidEditAction(function() { return FlowchartEdit.deleteSelection(sourceEl.value, selectedMermaid); });
-};
-
-document.addEventListener("keydown", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "mermaid") return;
-  if (document.documentElement.dataset.mermaidFlowchart !== "1") return;
-  if (event.key !== "Delete" && event.key !== "Backspace") return;
-  if (!selectedMermaid) return;
-  var target = event.target;
-  if (target === sourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
-  event.preventDefault();
-  mermaidEditAction(function() { return FlowchartEdit.deleteSelection(sourceEl.value, selectedMermaid); });
-});
-
-function fillMermaidProps() {
-  if (!selectedMermaid || typeof FlowchartEdit === "undefined") return;
-  if (propsEmpty) propsEmpty.hidden = true;
-  if (propsFields) propsFields.hidden = false;
-  if (boardIconField) boardIconField.hidden = true;
-  if (boardDirEditor) boardDirEditor.hidden = true;
-  if (boardDirLabel) boardDirLabel.hidden = true;
-  if (boardDirTip) boardDirTip.hidden = true;
-  if (typeof setBoardAlignJustifyFields === "function") setBoardAlignJustifyFields(false);
-  if (typeof setBoardCapField === "function") setBoardCapField(false);
-  if (typeof setBoardArrowField === "function") setBoardArrowField(false);
-  else {
-    if (boardArrowField) boardArrowField.hidden = true;
-    if (boardArrowEditor) boardArrowEditor.hidden = true;
-    if (boardArrowLabel) boardArrowLabel.hidden = true;
-    if (boardArrowReverse) boardArrowReverse.hidden = true;
-  }
-  var kind = selectedMermaid.kind;
-  if (propsKindLabel) propsKindLabel.textContent = kind;
-  if (kind === "node") {
-    var node = FlowchartEdit.getNode(sourceEl.value, selectedMermaid.id) || { id: selectedMermaid.id, label: selectedMermaid.id, shape: "rect", nodeKind: "default" };
-    if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Label"; }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.value = node.label || "";
-      boardTitleEditor.rows = 1;
-      boardTitleEditor.classList.remove("is-multiline");
-    }
-    if (boardTypeLabel) { boardTypeLabel.hidden = false; boardTypeLabel.textContent = "Type"; }
-    if (boardTypeEditor) {
-      var kinds = [
-        { value: "default", label: "default" },
-        { value: "start", label: "start" },
-        { value: "end", label: "end" },
-        { value: "judgment", label: "judgment" },
-      ];
-      var curKind = node.nodeKind || (typeof FlowchartEdit.kindFromShape === "function" ? FlowchartEdit.kindFromShape(node.shape, node.label) : "default");
-      if (curKind === "node") curKind = "default";
-      if (typeof FlowchartEdit.normalizeNodeKind === "function") curKind = FlowchartEdit.normalizeNodeKind(curKind);
-      boardTypeEditor.hidden = false;
-      boardTypeEditor.disabled = false;
-      boardTypeEditor.innerHTML = kinds.map(function(k){ return "<option value=\"" + k.value + "\">" + k.label + "</option>"; }).join("");
-      boardTypeEditor.value = kinds.some(function(k){ return k.value === curKind; }) ? curKind : "default";
-    }
-    if (typeof setBoardIdField === "function") setBoardIdField(true, node.id || selectedMermaid.id);
-    if (propsHint) propsHint.textContent = "Type changes the shape: default box, start/end rounded, judgment diamond";
-  } else if (kind === "link") {
-    var link = FlowchartEdit.getLink(sourceEl.value, selectedMermaid.from, selectedMermaid.to) || { label: "", stroke: "solid" };
-    if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Title"; }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.value = link.label || "";
-      boardTitleEditor.rows = 1;
-      boardTitleEditor.classList.remove("is-multiline");
-    }
-    if (boardTypeLabel) { boardTypeLabel.hidden = false; boardTypeLabel.textContent = "Stroke"; }
-    if (boardTypeEditor) {
-      boardTypeEditor.hidden = false;
-      boardTypeEditor.disabled = false;
-      boardTypeEditor.innerHTML = '<option value="solid">solid</option><option value="dotted">dotted</option>';
-      boardTypeEditor.value = (link.stroke === "dotted" || link.stroke === "dashed") ? "dotted" : "solid";
-    }
-    if (typeof setBoardIdField === "function") setBoardIdField(false);
-    if (propsHint) propsHint.textContent = "Edit the link title and stroke; shown on the connector between the two nodes";
-  } else if (kind === "subgraph") {
-    var sg = FlowchartEdit.getSubgraph(sourceEl.value, selectedMermaid.id) || { id: selectedMermaid.id, title: selectedMermaid.id };
-    if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Title"; }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.value = sg.title || "";
-      boardTitleEditor.rows = 1;
-    }
-    if (boardTypeEditor) boardTypeEditor.hidden = true;
-    if (boardTypeLabel) boardTypeLabel.hidden = true;
-    if (typeof setBoardIdField === "function") setBoardIdField(true, sg.id || selectedMermaid.id);
-    if (propsHint) propsHint.textContent = "Group selected · Node adds inside this group; edit title or id";
-  }
-}
-
-function selectMermaidHit(sel, openInspect) {
-  if (!sel) { clearMermaidSelection(); return; }
-  var key = sel.key;
-  var already = key && key === currentMermaidSelectionKey();
-  if (!already && !mermaidLinkMode) closePropsPanel();
-  selectedMermaid = sel;
-  try { if (sourceEl) sourceEl.dataset.mermaidSelectionKey = key || ""; } catch (_e) {}
-  applyMermaidSelectionVisual();
-  syncMermaidDeleteButton();
-  fillMermaidProps();
-  setStatus("Selected " + sel.kind + (sel.id ? (" " + sel.id) : (sel.from && sel.to ? (" " + sel.from + "→" + sel.to) : "")));
-  if (openInspect) inspectMermaidSelection();
-}
-
-/** Board pickBoardElement parity: record gesture + select, never open Props here. */
-function pickMermaidHit(sel) {
-  if (!sel) { clearMermaidSelection(); return; }
-  beginMermaidInspectGesture(sel.key);
-  selectMermaidHit(sel, false);
-}
-
-/**
- * Mermaid Props UX (Board re-press):
- * 1) First click → select only.
- * 2) Re-click same selected target → open Props.
- * 3) Props open and already showing that target → noop.
- * 4) Props open but showing another target → refresh fill, keep open.
- *
- * Critical: do NOT open on the trailing `click` of a first-select.
- * Board uses gesture.already captured on pointerdown BEFORE select;
- * the same physical click's `click` event must not treat "now selected" as re-press.
- */
-function mermaidWantPropsForKey(key) {
-  MermaidInspect.wantProps(key, {
-    blocked: !!mermaidLinkMode,
-    fill: function() { fillMermaidProps(); },
-  });
-}
-
-function mermaidHitSelect(event) {
-  if (document.documentElement.dataset.drawerMode !== "mermaid") return false;
-  if (document.documentElement.dataset.mermaidMindmap === "1") return false;
-  if (document.documentElement.dataset.mermaidFlowchart !== "1") return false;
-  if (typeof FlowchartEdit === "undefined" || typeof FlowchartEdit.selectionFromDom !== "function") return false;
-  if (event.target.closest && event.target.closest(".top-float, .menu, .sheet, .board-dock, .zoom-float, button, input, textarea, select")) return false;
-  var sel = FlowchartEdit.selectionFromDom(event.target, sourceEl && sourceEl.value);
-  if (mermaidLinkMode) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (sel && sel.kind === "node") mermaidLinkPick(sel);
-    else if (!sel) setMermaidLinkMode(false);
-    return true;
-  }
-  if (event.type !== "pointerdown" && event.type !== "click" && event.type !== "dblclick") {
-    return !!sel;
-  }
-  if (!sel) {
-    if (event.type === "pointerdown") {
-      MermaidInspect.clearGesture();
-      clearMermaidSelection();
-    }
-    return false;
-  }
-  var key = sel.key || "";
-  if (event.type === "pointerdown") {
-    // Capture already BEFORE select (Board beginInspectGesture).
-    pickMermaidHit(sel);
-    if (mermaidInspectGesture && mermaidInspectGesture.already) {
-      mermaidWantPropsForKey(key);
-      MermaidInspect.clearGesture();
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-  if (event.type === "click") {
-    // Only re-press if pointerdown marked already (never first-select's click).
-    if (consumeMermaidInspectClick(key)) mermaidWantPropsForKey(key);
-    event.stopPropagation();
-    return true;
-  }
-  if (event.type === "dblclick") {
-    pickMermaidHit(sel);
-    mermaidWantPropsForKey(key);
-    MermaidInspect.clearGesture();
-    if (boardTitleEditor && !boardTitleEditor.hidden) { boardTitleEditor.focus(); boardTitleEditor.select(); }
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-  return true;
-}
-previewEl.addEventListener("pointerdown", function(event) {
-  if (event.button !== 0) return;
-  mermaidHitSelect(event);
-}, true);
-previewEl.addEventListener("click", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "mermaid") return;
-  if (mermaidLinkMode) return;
-  mermaidHitSelect(event);
-}, true);
-previewEl.addEventListener("dblclick", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "mermaid") return;
-  mermaidHitSelect(event);
-}, true);
-
-
-/* ── Mindmap edit: hover + to add child; Delete; select / Props ─ */
-const mindmapDeleteButton = $("#btnMindmapDelete");
-
-
-/* === 04-mindmap.js === */
-/* drawer-app/04-mindmap.js — lines 2297-2625 of former inline module */
-function isMindmapMode() {
-  return document.documentElement.dataset.drawerMode === "mermaid"
-    && document.documentElement.dataset.mermaidMindmap === "1";
-}
-
-function syncMindmapDeleteButton() {
-  if (!mindmapDeleteButton) return;
-  var on = isMindmapMode() && selectedMermaid && selectedMermaid.kind === "topic";
-  var isRoot = false;
-  try {
-    if (on && typeof MindmapEdit !== "undefined" && MindmapEdit.getTopic) {
-      var info = MindmapEdit.getTopic(sourceEl.value, selectedMermaid.id);
-      isRoot = !!(info && info.isRoot);
-    }
-  } catch (_e) {}
-  mindmapDeleteButton.disabled = !on || isRoot;
-}
-
-function applyMindmapSelectionVisual() {
-  if (!previewEl) return;
-  previewEl.querySelectorAll("g.mindmap-node.mermaid-selection").forEach(function(el) {
-    el.classList.remove("mermaid-selection");
-  });
-  if (!selectedMermaid || selectedMermaid.kind !== "topic") return;
-  var g = previewEl.querySelector('g.mindmap-node[data-id="' + selectedMermaid.id + '"]');
-  if (g) g.classList.add("mermaid-selection");
-}
-
-function selectMindmapTopic(sel, openInspect) {
-  if (!sel) { clearMermaidSelection(); return; }
-  var key = sel.key || ("topic:" + sel.id);
-  var already = key && key === currentMermaidSelectionKey();
-  if (!already && !mermaidLinkMode) closePropsPanel();
-  selectedMermaid = {
-    kind: "topic",
-    id: sel.id,
-    key: key,
-    label: sel.label || "",
-    shape: sel.shape || "default",
-  };
-  try { if (sourceEl) sourceEl.dataset.mermaidSelectionKey = key; } catch (_e) {}
-  applyMindmapSelectionVisual();
-  fillMindmapProps();
-  syncMindmapEditButtons();
-  setStatus("Selected topic " + (selectedMermaid.label || selectedMermaid.id));
-  if (openInspect) inspectMermaidSelection();
-}
-
-
-function mindmapSelectionMeta() {
-  if (!selectedMermaid || selectedMermaid.kind !== "topic") return null;
-  var info = null;
-  try {
-    if (typeof MindmapEdit !== "undefined" && MindmapEdit.getTopic) {
-      info = MindmapEdit.getTopic(sourceEl.value, selectedMermaid.id);
-    }
-  } catch (_e) {}
-  var isRoot = !!(info && info.isRoot) || (selectedMermaid.depth === 0);
-  return { info: info, isRoot: isRoot };
-}
-
-function syncMindmapEditButtons() {
-  syncMindmapDeleteButton();
-}
-
-function fillMindmapProps() {
-  if (!selectedMermaid || selectedMermaid.kind !== "topic") return;
-  hidePropsLinkOnlyChrome();
-  if (propsEmpty) propsEmpty.hidden = true;
-  if (propsFields) propsFields.hidden = false;
-  if (typeof setBoardIconField === "function") setBoardIconField(false);
-  else if (boardIconField) boardIconField.hidden = true;
-  if (typeof setBoardIdField === "function") setBoardIdField(false);
-  if (boardDirLabel) boardDirLabel.hidden = true;
-  if (boardDirEditor) boardDirEditor.hidden = true;
-  if (boardDirTip) boardDirTip.hidden = true;
-  if (typeof setBoardAlignJustifyFields === "function") setBoardAlignJustifyFields(false);
-  if (typeof setBoardCapField === "function") setBoardCapField(false);
-  if (typeof setBoardArrowField === "function") setBoardArrowField(false);
-
-  var meta = mindmapSelectionMeta() || { info: null, isRoot: false };
-  var info = meta.info;
-  var isRoot = !!meta.isRoot;
-  if (propsKindLabel) propsKindLabel.textContent = isRoot ? "Root" : "Node";
-
-  var label = (info && info.label) || selectedMermaid.label || "";
-  if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Text"; }
-  if (boardTitleEditor) {
-    boardTitleEditor.hidden = false;
-    boardTitleEditor.value = label;
-    boardTitleEditor.rows = 1;
-    boardTitleEditor.classList.remove("is-multiline");
-  }
-
-  // Shape removed — all mindmap nodes share one pill; Topic stays larger via layout measure.
-  if (boardTypeLabel) {
-    boardTypeLabel.hidden = true;
-    boardTypeLabel.textContent = "Shape";
-  }
-  if (boardTypeEditor) {
-    boardTypeEditor.hidden = true;
-    boardTypeEditor.innerHTML = "";
-  }
-
-  if (propsHint) {
-    propsHint.textContent = isRoot
-      ? "Root · hover any node and click + to add a child"
-      : "Node · hover and click + to add a child";
-  }
-  syncMindmapEditButtons();
-}
-
-function mindmapEditAction(mutator) {
-  if (typeof MindmapEdit === "undefined") throw new Error("MindmapEdit missing — hard refresh");
-  var out = mutator();
-  if (!out || typeof out.source !== "string") return;
-  sourceEl.value = out.source;
-  selectedMermaid = out.selection || null;
-  setTypeUI(sourceEl.value);
-  void renderDiagram({ fit: false }).then(function() {
-    if (selectedMermaid && selectedMermaid.kind === "topic") {
-      applyMindmapSelectionVisual();
-      fillMindmapProps();
-    }
-    syncMindmapEditButtons();
-    applyMindmapAddSuppress();
-  });
-  scheduleSave();
-}
-
-function mindmapWantPropsForKey(key) {
-  MermaidInspect.wantProps(key, {
-    blocked: !isMindmapMode(),
-    fill: function() { fillMindmapProps(); },
-  });
-}
-
-
-var mindmapPointerPress = null;
-var MINDMAP_PAN_SLOP = 5;
-
-var mindmapAddSuppressId = null;
-
-function applyMindmapAddSuppress() {
-  if (!previewEl) return;
-  previewEl.querySelectorAll(".mindmap-add-zone.is-suppressed").forEach(function(el) {
-    el.classList.remove("is-suppressed");
-  });
-  if (mindmapAddSuppressId == null || !isMindmapMode()) return;
-  var node = previewEl.querySelector('g.mindmap-node[data-id="' + mindmapAddSuppressId + '"]');
-  var zone = node && node.querySelector(".mindmap-add-zone");
-  if (zone) zone.classList.add("is-suppressed");
-}
-
-function clearMindmapAddSuppress() {
-  mindmapAddSuppressId = null;
-  if (!previewEl) return;
-  previewEl.querySelectorAll(".mindmap-add-zone.is-suppressed").forEach(function(el) {
-    el.classList.remove("is-suppressed");
-  });
-}
-
-function mindmapAddChildUnder(parentId) {
-  if (typeof MindmapEdit === "undefined" || !MindmapEdit.addChild) throw new Error("MindmapEdit.addChild missing — hard refresh");
-  // Pointer is still in the right-side zone after click — suppress + until leave.
-  mindmapAddSuppressId = Number(parentId);
-  mindmapEditAction(function() { return MindmapEdit.addChild(sourceEl.value, parentId, "Node"); });
-}
-
-function mindmapHitSelect(event) {
-  if (!isMindmapMode()) return false;
-  if (typeof MindmapEdit === "undefined" || typeof MindmapEdit.selectionFromDom !== "function") return false;
-  if (event.target.closest && event.target.closest(".top-float, .menu, .sheet, .board-dock, .zoom-float, button, input, textarea, select")) return false;
-  // Hover + control: add child under that node (Mermaid has no Branch/Leaf).
-  var addEl = event.target.closest ? event.target.closest(".mindmap-add") : null;
-  if (addEl && (event.type === "pointerdown" || event.type === "click")) {
-    var pid = addEl.getAttribute("data-add-parent");
-    if (pid != null && pid !== "") {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.type === "pointerdown") mindmapAddChildUnder(Number(pid));
-      return true;
-    }
-  }
-  var sel = MindmapEdit.selectionFromDom(event.target);
-  if (event.type !== "pointerdown" && event.type !== "click" && event.type !== "dblclick") return !!sel;
-  if (!sel) {
-    // Blank inside SVG: let stage pan handle (keeps selection while dragging).
-    return false;
-  }
-  var key = sel.key || ("topic:" + sel.id);
-  if (event.type === "pointerdown") {
-    beginMermaidInspectGesture(key);
-    var already = !!(mermaidInspectGesture && mermaidInspectGesture.already);
-    selectMindmapTopic(sel, false);
-    mindmapPointerPress = {
-      pointerId: event.pointerId,
-      x: event.clientX,
-      y: event.clientY,
-      key: key,
-      already: already,
-      panning: false,
-    };
-    event.preventDefault();
-    event.stopPropagation();
-    try { previewEl.setPointerCapture(event.pointerId); } catch (_e) {}
-    return true;
-  }
-  if (event.type === "click") {
-    // Props / re-press handled on pointerup if the press did not become a pan.
-    event.stopPropagation();
-    return true;
-  }
-  if (event.type === "dblclick") {
-    selectMindmapTopic(sel, false);
-    mindmapWantPropsForKey(key);
-    MermaidInspect.clearGesture();
-    mindmapPointerPress = null;
-    if (boardTitleEditor && !boardTitleEditor.hidden) { boardTitleEditor.focus(); boardTitleEditor.select(); }
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-  return true;
-}
-
-function mindmapPointerDrag(event) {
-  if (!mindmapPointerPress || event.pointerId !== mindmapPointerPress.pointerId) return;
-  var dx = event.clientX - mindmapPointerPress.x;
-  var dy = event.clientY - mindmapPointerPress.y;
-  if (!mindmapPointerPress.panning) {
-    if (dx * dx + dy * dy < MINDMAP_PAN_SLOP * MINDMAP_PAN_SLOP) return;
-    mindmapPointerPress.panning = true;
-    MermaidInspect.clearGesture();
-    panning = true;
-    panMoved = true;
-    panBlankMindmap = false;
-    stageEl.classList.add("panning");
-    panOrigin = { x: mindmapPointerPress.x - panX, y: mindmapPointerPress.y - panY, startX: mindmapPointerPress.x, startY: mindmapPointerPress.y };
-  }
-  if (mindmapPointerPress.panning && panOrigin) {
-    panX = event.clientX - panOrigin.x;
-    panY = event.clientY - panOrigin.y;
-    applyTransform();
-  }
-}
-
-function mindmapPointerEnd(event) {
-  if (!mindmapPointerPress || event.pointerId !== mindmapPointerPress.pointerId) return;
-  var press = mindmapPointerPress;
-  mindmapPointerPress = null;
-  try { previewEl.releasePointerCapture(event.pointerId); } catch (_e) {}
-  if (press.panning) {
-    panning = false;
-    panOrigin = null;
-    stageEl.classList.remove("panning");
-    flushDrawerUiSave();
-    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
-    return;
-  }
-  // Click without drag: re-press opens Props.
-  if (press.already) {
-    mindmapWantPropsForKey(press.key);
-    MermaidInspect.clearGesture();
-  }
-}
-
-previewEl.addEventListener("pointerout", function(event) {
-  if (!isMindmapMode()) return;
-  var zone = event.target && event.target.closest ? event.target.closest(".mindmap-add-zone") : null;
-  if (!zone || !zone.classList.contains("is-suppressed")) return;
-  var next = event.relatedTarget;
-  if (next && zone.contains(next)) return;
-  // Left the suppressed right-side zone — allow + again on next enter.
-  zone.classList.remove("is-suppressed");
-  var node = zone.closest("g.mindmap-node");
-  var id = node && node.getAttribute("data-id");
-  if (id != null && Number(id) === mindmapAddSuppressId) mindmapAddSuppressId = null;
-}, true);
-previewEl.addEventListener("pointerdown", function(event) {
-  if (event.button !== 0) return;
-  if (!isMindmapMode()) return;
-  mindmapHitSelect(event);
-}, true);
-previewEl.addEventListener("pointermove", function(event) {
-  if (!isMindmapMode()) return;
-  mindmapPointerDrag(event);
-}, true);
-previewEl.addEventListener("pointerup", function(event) {
-  if (!isMindmapMode()) return;
-  mindmapPointerEnd(event);
-}, true);
-previewEl.addEventListener("pointercancel", function(event) {
-  if (!isMindmapMode()) return;
-  mindmapPointerEnd(event);
-}, true);
-previewEl.addEventListener("click", function(event) {
-  if (!isMindmapMode()) return;
-  mindmapHitSelect(event);
-}, true);
-previewEl.addEventListener("dblclick", function(event) {
-  if (!isMindmapMode()) return;
-  mindmapHitSelect(event);
-}, true);
-
-if (mindmapDeleteButton) mindmapDeleteButton.onclick = function() {
-  if (!isMindmapMode() || !selectedMermaid || selectedMermaid.kind !== "topic") return;
-  mindmapEditAction(function() { return MindmapEdit.deleteTopic(sourceEl.value, selectedMermaid.id); });
-};
-document.addEventListener("keydown", function(event) {
-  if (!isMindmapMode()) return;
-  if (event.key !== "Delete" && event.key !== "Backspace") return;
-  if (!selectedMermaid || selectedMermaid.kind !== "topic") return;
-  var tag = (event.target && event.target.tagName) || "";
-  if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-  event.preventDefault();
-  try { mindmapEditAction(function() { return MindmapEdit.deleteTopic(sourceEl.value, selectedMermaid.id); }); }
-  catch (err) { setStatus(err instanceof Error ? err.message : String(err), true); }
-});
-
-
-/* === 04-state.js === */
-/* drawer-app/04-state.js — state diagram select / Props (S4+). */
-
-function isStateMode() {
-  return document.documentElement.dataset.drawerMode === "mermaid"
-    && document.documentElement.dataset.mermaidState === "1";
-}
-
-function applyStateSelectionVisual() {
-  clearMermaidSelectionVisual();
-  if (!selectedMermaid || !previewEl || !isStateMode()) return;
-  var sel = selectedMermaid;
-  if (sel.domId) {
-    try {
-      var byId = previewEl.querySelector("#" + CSS.escape(sel.domId));
-      if (byId) byId.classList.add("mermaid-selection");
-    } catch (_e) {}
-  }
-  if (sel.kind === "state" && sel.id) {
-    previewEl.querySelectorAll("g.node.statediagram-state, g.node").forEach(function(g) {
-      var gid = g.id || "";
-      if (gid.indexOf("state-" + sel.id + "-") === 0) g.classList.add("mermaid-selection");
-    });
-  }
-  if (sel.kind === "composite" && sel.id) {
-    previewEl.querySelectorAll("g.statediagram-cluster").forEach(function(g) {
-      if (g.id === sel.id) {
-        g.classList.add("mermaid-selection");
-        var lab = g.querySelector(":scope > g.cluster-label");
-        if (lab) lab.classList.add("mermaid-selection");
-      }
-    });
-    // classic
-    previewEl.querySelectorAll("g.stateGroup").forEach(function(g) {
-      if (g.id === sel.id) g.classList.add("mermaid-selection");
-    });
-  }
-  if (sel.kind === "pseudostate") {
-    if (sel.domId) {
-      try {
-        var ps = previewEl.querySelector("#" + CSS.escape(sel.domId));
-        if (ps) ps.classList.add("mermaid-selection");
-      } catch (_e2) {}
-    }
-  }
-  if (sel.kind === "transition") {
-    var accent = null;
-    var list = (typeof StateEdit !== "undefined" && StateEdit.listTransitions)
-      ? StateEdit.listTransitions(sourceEl && sourceEl.value)
-      : [];
-    var idx = -1;
-    // Prefer exact line / key so duplicate [*]-->X edges don't share selection chrome.
-    if (sel.line != null && sel.line >= 0) {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].line === sel.line) { idx = i; break; }
-      }
-    }
-    if (idx < 0 && sel.key) {
-      for (var k = 0; k < list.length; k++) {
-        if (list[k].key === sel.key) { idx = k; break; }
-      }
-    }
-    if (idx < 0) {
-      for (var j = 0; j < list.length; j++) {
-        if (list[j].from === sel.from && list[j].to === sel.to) { idx = j; break; }
-      }
-    }
-    var paths = previewEl.querySelectorAll("path.transition");
-    if (idx >= 0 && paths[idx]) {
-      var painted = typeof applyMermaidLinkSelectStyle === "function"
-        ? applyMermaidLinkSelectStyle(paths[idx])
-        : null;
-      if (painted) accent = painted.accent;
-      paths[idx].classList.add("mermaid-selection");
-      var hits = previewEl.querySelectorAll("path.mermaid-edge-hit");
-      if (hits[idx]) hits[idx].classList.add("mermaid-selection");
-    } else if (sel.domId) {
-      try {
-        var p = previewEl.querySelector("#" + CSS.escape(sel.domId));
-        if (p) {
-          if (typeof applyMermaidLinkSelectStyle === "function") {
-            var painted2 = applyMermaidLinkSelectStyle(p);
-            if (painted2) accent = painted2.accent;
-          }
-          p.classList.add("mermaid-selection");
-        }
-      } catch (_e3) {}
-    }
-    // Style only the matching edgeLabel at the same index (not every duplicate "create").
-    if (idx >= 0 && accent && typeof applyMermaidLinkLabelSelectStyle === "function") {
-      var labels = previewEl.querySelectorAll("g.edgeLabel");
-      if (labels[idx]) applyMermaidLinkLabelSelectStyle(labels[idx], accent);
-    }
-  }
-}
-
-/** Minimal Props for S4 (S6 expands fields). */
-function fillStateProps() {
-  if (!isStateMode() || !selectedMermaid) return;
-  var sel = selectedMermaid;
-  var info = null;
-  try {
-    if ((sel.kind === "state" || sel.kind === "composite" || sel.kind === "pseudostate") && typeof StateEdit !== "undefined" && StateEdit.getState) {
-      info = StateEdit.getState(sourceEl.value, sel.id);
-    } else if (sel.kind === "transition" && typeof StateEdit !== "undefined" && StateEdit.getTransition) {
-      info = StateEdit.getTransition(sourceEl.value, sel.from, sel.to);
-    }
-  } catch (_e) { info = null; }
-
-  if (propsEmpty) propsEmpty.hidden = true;
-  if (propsFields) propsFields.hidden = false;
-  if (propsKindLabel) propsKindLabel.textContent = sel.kind || "state";
-  // State transitions have no stroke/direction UI (flowchart-only).
-  if (boardDirEditor) boardDirEditor.hidden = true;
-  if (boardDirLabel) boardDirLabel.hidden = true;
-  if (boardDirTip) boardDirTip.hidden = true;
-  if (typeof setBoardAlignJustifyFields === "function") setBoardAlignJustifyFields(false);
-  if (typeof setBoardCapField === "function") setBoardCapField(false);
-  if (typeof setBoardArrowField === "function") setBoardArrowField(false);
-
-  if (sel.kind === "transition") {
-    if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Label"; }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.readOnly = false;
-      boardTitleEditor.value = (info && info.label != null) ? info.label : (sel.label || "");
-      boardTitleEditor.rows = 1;
-    }
-    if (boardTypeEditor) boardTypeEditor.hidden = true;
-    if (boardTypeLabel) boardTypeLabel.hidden = true;
-    if (typeof setBoardIdField === "function") setBoardIdField(false);
-    if (propsHint) propsHint.textContent = (sel.from || "") + " → " + (sel.to || "") + " · edit label";
-  } else if (sel.kind === "pseudostate") {
-    if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Label"; }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.readOnly = true;
-      boardTitleEditor.value = "[*]";
-      boardTitleEditor.rows = 1;
-    }
-    if (boardTypeEditor) boardTypeEditor.hidden = true;
-    if (boardTypeLabel) boardTypeLabel.hidden = true;
-    if (typeof setBoardIdField === "function") setBoardIdField(true, "[*]");
-    if (boardIdEditor) boardIdEditor.readOnly = true;
-    if (propsHint) propsHint.textContent = (sel.parent ? ("Inside " + sel.parent + " · ") : "") + "Start/end · read-only";
-  } else {
-    // state | composite
-    if (boardTitleLabel) {
-      boardTitleLabel.hidden = false;
-      boardTitleLabel.textContent = sel.kind === "composite" ? "Title" : "Label";
-    }
-    if (boardTitleEditor) {
-      boardTitleEditor.hidden = false;
-      boardTitleEditor.readOnly = false;
-      boardTitleEditor.value = (info && info.label != null) ? info.label : (sel.label || sel.id || "");
-      boardTitleEditor.rows = 1;
-    }
-    if (boardTypeEditor) boardTypeEditor.hidden = true;
-    if (boardTypeLabel) boardTypeLabel.hidden = true;
-    if (typeof setBoardIdField === "function") setBoardIdField(true, (info && info.id) || sel.id || "");
-    if (boardIdEditor) boardIdEditor.readOnly = false;
-    if (propsHint) {
-      propsHint.textContent = sel.kind === "composite"
-        ? "Composite · edit title or id; Node/State adds can nest later"
-        : "State · edit label or id";
-    }
-  }
-  syncStateDeleteButton();
-}
-
-function selectStateHit(sel, openInspect) {
-  if (!sel) { clearMermaidSelection(); return; }
-  var key = sel.key;
-  var already = key && key === currentMermaidSelectionKey();
-  if (!already) closePropsPanel();
-  selectedMermaid = sel;
-  try { if (sourceEl) sourceEl.dataset.mermaidSelectionKey = key || ""; } catch (_e) {}
-  applyStateSelectionVisual();
-  fillStateProps();
-  var statusBits = sel.kind;
-  if (sel.id) statusBits += " " + sel.id;
-  else if (sel.from && sel.to) statusBits += " " + sel.from + "→" + sel.to;
-  setStatus("Selected " + statusBits);
-  if (openInspect) {
-    MermaidInspect.inspect({
-      fill: function() { fillStateProps(); },
-    });
-  }
-}
-
-function stateWantPropsForKey(key) {
-  MermaidInspect.wantProps(key, {
-    blocked: !isStateMode(),
-    fill: function() { fillStateProps(); },
-  });
-}
-
-function stateHitSelect(event) {
-  if (!isStateMode()) return false;
-  if (typeof StateEdit === "undefined" || typeof StateEdit.selectionFromDom !== "function") return false;
-  if (event.target.closest && event.target.closest(".top-float, .menu, .sheet, .board-dock, .zoom-float, button, input, textarea, select")) return false;
-  var sel = StateEdit.selectionFromDom(event.target, sourceEl && sourceEl.value);
-  if (mermaidLinkMode) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (sel && (sel.kind === "state" || sel.kind === "composite")) stateLinkPick(sel);
-    else if (!sel) setMermaidLinkMode(false);
-    return true;
-  }
-  if (event.type !== "pointerdown" && event.type !== "click" && event.type !== "dblclick") return !!sel;
-  if (!sel) {
-    if (event.type === "pointerdown") {
-      MermaidInspect.clearGesture();
-      clearMermaidSelection();
-    }
-    return false;
-  }
-  var key = sel.key || "";
-  if (event.type === "pointerdown") {
-    beginMermaidInspectGesture(key);
-    selectStateHit(sel, false);
-    if (mermaidInspectGesture && mermaidInspectGesture.already) {
-      stateWantPropsForKey(key);
-      MermaidInspect.clearGesture();
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-  if (event.type === "click") {
-    if (consumeMermaidInspectClick(key)) stateWantPropsForKey(key);
-    event.stopPropagation();
-    return true;
-  }
-  if (event.type === "dblclick") {
-    selectStateHit(sel, false);
-    stateWantPropsForKey(key);
-    MermaidInspect.clearGesture();
-    event.preventDefault();
-    event.stopPropagation();
-    return true;
-  }
-  return true;
-}
-
-
-function stateEditAction(fn) {
-  if (typeof StateEdit === "undefined") throw new Error("StateEdit missing — hard refresh");
-  var result = fn();
-  if (!result || typeof result.source !== "string") return;
-  sourceEl.value = result.source;
-  selectedMermaid = result.selection || null;
-  setTypeUI(sourceEl.value);
-  void renderDiagram().then(function() {
-    if (selectedMermaid) {
-      applyStateSelectionVisual();
-      fillStateProps();
-    }
-  });
-  scheduleSave();
-}
-
-
-function syncStateDeleteButton() {
-  var btn = document.getElementById("btnStateDelete");
-  if (!btn) return;
-  var on = isStateMode() && selectedMermaid && selectedMermaid.kind !== "pseudostate";
-  btn.disabled = !on;
-  syncStateStartButton();
-}
-
-function stateLinkPick(selection) {
-  if (!mermaidLinkMode || !selection) return false;
-  if (selection.kind !== "state" && selection.kind !== "composite") return false;
-  if (!mermaidLinkStart) {
-    mermaidLinkStart = selection;
-    selectedMermaid = selection;
-    applyStateSelectionVisual();
-    if (selection.domId) {
-      try {
-        var el = previewEl.querySelector("#" + CSS.escape(selection.domId));
-        if (el) el.classList.add("mermaid-link-source");
-      } catch (_e) {}
-    }
-    setStatus("Source " + selection.id + " · click target");
-    return true;
-  }
-  if (mermaidLinkStart.id === selection.id) {
-    setStatus("Pick a different target state", true);
-    return true;
-  }
-  try {
-    stateEditAction(function() {
-      return StateEdit.addTransition(sourceEl.value, mermaidLinkStart.id, selection.id, "");
-    });
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-  setMermaidLinkMode(false);
-  return true;
-}
-
-function stateAddState() {
-  if (!isStateMode()) return;
-  var parent = (selectedMermaid && selectedMermaid.kind === "composite") ? selectedMermaid.id : "";
-  try {
-    stateEditAction(function() {
-      return StateEdit.addState(sourceEl.value, { label: "state", parent: parent || undefined });
-    });
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-}
-
-function stateAddComposite() {
-  if (!isStateMode()) return;
-  var parent = (selectedMermaid && selectedMermaid.kind === "composite") ? selectedMermaid.id : "";
-  try {
-    stateEditAction(function() {
-      return StateEdit.addComposite(sourceEl.value, { label: "Group", parent: parent || undefined });
-    });
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-}
-
-/** Group for Start: selected state's rendered composite (bbox), else canvas. */
-function startGroupForSelection(sel) {
-  if (!sel || sel.kind !== "state") return null;
-  if (sel.parent) return String(sel.parent);
-  var node = null;
-  if (previewEl && sel.domId) {
-    try { node = previewEl.querySelector("#" + CSS.escape(sel.domId)); } catch (_e) {}
-  }
-  if (!node && previewEl && sel.id) {
-    previewEl.querySelectorAll("g.node").forEach(function(g) {
-      if (node) return;
-      var gid = g.id || "";
-      if (gid.indexOf("state-" + sel.id + "-") === 0) node = g;
-    });
-  }
-  if (node) {
-    if (typeof StateEdit !== "undefined" && StateEdit.clusterParentFromDom) {
-      return StateEdit.clusterParentFromDom(node) || "";
-    }
-    try {
-      var cluster = node.closest && node.closest("g.statediagram-cluster");
-      if (cluster && cluster.id) return cluster.id;
-    } catch (_e2) {}
-  }
-  return "";
-}
-
-function syncStateStartButton() {
-  var btn = document.getElementById("btnStateAddStart");
-  if (!btn) return;
-  if (!isStateMode() || typeof StateEdit === "undefined" || !StateEdit.hasStart || !StateEdit.addStart) {
-    btn.disabled = true;
-    return;
-  }
-  var sel = selectedMermaid;
-  if (!sel || sel.kind !== "state" || !sel.id || sel.id === "[*]") {
-    btn.disabled = true;
-    btn.title = "Select a state, then add start [*] → it";
-    return;
-  }
-  var parent = startGroupForSelection(sel);
-  if (parent == null) {
-    btn.disabled = true;
-    btn.title = "Select a state, then add start [*] → it";
-    return;
-  }
-  var src = sourceEl && sourceEl.value;
-  var blocked = false;
-  var reason = "";
-  try {
-    if (StateEdit.hasStart(src, parent)) {
-      blocked = true;
-      reason = "Start already exists in " + (parent || "canvas");
-    } else if (StateEdit.getTransition && StateEdit.getTransition(src, "[*]", sel.id)) {
-      blocked = true;
-      reason = "A start already points to " + sel.id;
-    }
-  } catch (_e2) {
-    blocked = true;
-    reason = "Cannot add start";
-  }
-  btn.disabled = !!blocked;
-  btn.title = blocked
-    ? reason
-    : ("Add [*] → " + sel.id + " in " + (parent || "canvas"));
-}
-
-function stateAddStart() {
-  if (!isStateMode()) return;
-  var sel = selectedMermaid;
-  if (!sel || sel.kind !== "state" || !sel.id) {
-    showMermaidError("Select a state first, then add Start");
-    return;
-  }
-  var parent = startGroupForSelection(sel);
-  if (parent == null) {
-    showMermaidError("Select a state first, then add Start");
-    return;
-  }
-  try {
-    stateEditAction(function() {
-      return StateEdit.addStart(sourceEl.value, {
-        to: sel.id,
-        parent: parent || undefined,
-      });
-    });
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-}
-
-function stateDeleteSelection() {
-  if (!isStateMode() || !selectedMermaid) return;
-  if (selectedMermaid.kind === "pseudostate") return;
-  try {
-    stateEditAction(function() {
-      return StateEdit.deleteSelection(sourceEl.value, selectedMermaid);
-    });
-  } catch (err) {
-    showMermaidError(err instanceof Error ? err.message : String(err));
-  }
-}
-
-(function wireStateTools() {
-  var addBtn = document.getElementById("btnStateAdd");
-  var groupBtn = document.getElementById("btnStateAddGroup");
-  var linkBtn = document.getElementById("btnStateLink");
-  var delBtn = document.getElementById("btnStateDelete");
-  if (addBtn) addBtn.onclick = function() { stateAddState(); };
-  if (groupBtn) groupBtn.onclick = function() { stateAddComposite(); };
-  var startBtn = document.getElementById("btnStateAddStart");
-  if (startBtn) startBtn.onclick = function() { stateAddStart(); };
-  if (linkBtn) {
-    linkBtn.onclick = function() { setMermaidLinkMode(!mermaidLinkMode); };
-    if (!setMermaidLinkMode._stateLinkHooked) {
-      var _set = setMermaidLinkMode;
-      setMermaidLinkMode = function(active) {
-        _set(active);
-        var b = document.getElementById("btnStateLink");
-        if (b) b.classList.toggle("is-active", !!mermaidLinkMode);
-      };
-      setMermaidLinkMode._stateLinkHooked = true;
-    }
-  }
-  if (delBtn) delBtn.onclick = function() { stateDeleteSelection(); };
-  syncStateDeleteButton();
-})();
-
-if (previewEl) {
-  previewEl.addEventListener("pointerdown", function(event) {
-    if (event.button !== 0) return;
-    stateHitSelect(event);
-  }, true);
-  previewEl.addEventListener("click", function(event) {
-    if (!isStateMode()) return;
-    stateHitSelect(event);
-  }, true);
-  previewEl.addEventListener("dblclick", function(event) {
-    if (!isStateMode()) return;
-    stateHitSelect(event);
-  }, true);
-}
-
-document.addEventListener("keydown", function(event) {
-  if (!isStateMode()) return;
-  if (event.key !== "Delete" && event.key !== "Backspace") return;
-  if (!selectedMermaid || selectedMermaid.kind === "pseudostate") return;
-  var tag = (event.target && event.target.tagName) || "";
-  if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
-  event.preventDefault();
-  stateDeleteSelection();
-});
-
-
 /* === 05-render-io.js === */
-/* drawer-app/05-render-io.js — lines 2626-2898 of former inline module */
-async function renderDiagram(opts) {
-  opts = opts || {};
-  if (document.documentElement.dataset.drawerMode === 'board') return;
-  if (typeof pinBoardTitle === "function") pinBoardTitle();
-  previewEl.classList.remove("board-preview");
-  const text = sourceEl.value;
-  var mermaidText = text;
-  try { mermaidText = splitDocument(text).body; } catch (_e) {
-    if (text.trim()) {
-      errorBox.textContent = "document meta required";
-      errorBox.classList.add("show");
-      setStatus("document meta required", true);
-      return;
-    }
-  }
-  if (typeof applyMermaidDocumentStyle === 'function') mermaidText = applyMermaidDocumentStyle(mermaidText);
-  else if (typeof applyMermaidSiteConfig === 'function') applyMermaidSiteConfig();
-  setTypeUI(text);
-  if (!mermaidText.trim()) {
-    showEmpty();
-    setStatus('No diagram source');
-    return;
-  }
-  // Keep current zoom/pan across edits (Board parity). `drawer.ui` already persists scale/panX/panY.
-  const keepView = opts.fit !== true;
-  const kept = keepView ? { scale: scale, panX: panX, panY: panY } : null;
-  const id = `dv_${++renderNo}_${Date.now()}`;
-  try {
-    const dtypeEarly = String(diagramType(mermaidText) || '').toLowerCase();
-    let svg;
-    if (dtypeEarly === 'mindmap' && typeof MindmapEdit !== 'undefined' && MindmapEdit.render) {
-      const layout = currentMindmapLayout();
-      const mm = MindmapEdit.render(mermaidText.trim(), { layout: layout, id: id, theme: (typeof currentDiagramTheme === 'function' ? currentDiagramTheme() : 'default') });
-      if (mm.errors && mm.errors.length && !mm.svg) throw new Error(mm.errors.join('; '));
-      previewEl.innerHTML = mm.svg;
-      svg = previewEl.querySelector('svg');
-      fixSvgIntrinsic(svg);
-      if (typeof applyMindmapSelectionVisual === "function") applyMindmapSelectionVisual();
-      if (typeof syncMindmapDeleteButton === "function") syncMindmapDeleteButton();
-    } else {
-      const result = await window.mermaid.render(id, mermaidText.trim());
-      previewEl.innerHTML = result.svg;
-      if (typeof result.bindFunctions === 'function') result.bindFunctions(previewEl);
-      svg = previewEl.querySelector('svg');
-      const dtype = dtypeEarly;
-      if (dtype === 'sequencediagram') {
-        tuneSequenceFrames(svg);
-        clearSequenceFrameActorOverlap(svg);
-        styleSequenceLoopLines(svg);
-        lowerSequenceFramesBehindActors(svg);
-        styleSequenceNotes(svg);
-        polishSequenceActors(svg);
-      }
-      if (dtype === 'statediagram' || dtype === 'statediagram-v2') {
-        // ELK already orthogonal; keep path polish only as fallback if no ELK.
-        if (typeof polishStateTransitions === 'function' && !globalThis.__drawerLayoutElkReady) {
-          polishStateTransitions(svg);
-        }
-        if (typeof polishStateDiagram === 'function') polishStateDiagram(svg);
-      }
-      fixSvgIntrinsic(svg);
-      if (dtype === 'flowchart' || dtype === 'graph') {
-        pinClusterTitlesTopLeft(svg);
-        unoverlapTipLabels(svg);
-      }
-    }
-    errorBox.classList.remove('show');
-    errorBox.textContent = '';
-    if (opts.fit) {
-      centerView();
-    } else if (opts.restoreView) {
-      if (typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
-      else applyTransform();
-    } else if (kept) {
-      scale = kept.scale; panX = kept.panX; panY = kept.panY;
-      applyTransform();
-    } else {
-      applyTransform();
-    }
-    cacheRenderedSvg(svg);
-    if (typeof installMermaidEdgeHits === 'function') installMermaidEdgeHits(previewEl);
-    if (typeof isStateMode === 'function' && isStateMode() && typeof applyStateSelectionVisual === 'function') applyStateSelectionVisual();
-    else if (typeof applyMermaidSelectionVisual === 'function') applyMermaidSelectionVisual();
-    setStatus(`Rendered ${diagramType(mermaidText)} · ${new Date().toLocaleTimeString()}`);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    errorBox.textContent = message;
-    errorBox.classList.add('show');
-    setStatus(message, true);
-  }
-}
-function scheduleRender() {
-  clearTimeout(renderTimer);
-  // Source typing: keep zoom/pan like Board scheduleBoardRender → renderBoard() without fit.
-  renderTimer = setTimeout(() => void renderDiagram({ fit: false }), 280);
-}
-function scheduleSave() {
-  dirty = true;
-  clearTimeout(saveTimer);
-  setSyncUI('saving');
-  saveTimer = setTimeout(() => void saveToFile(), 350);
-}
-async function saveToFile() {
-  const text = sourceEl.value;
-  const seq = ++saveSeq;
-  const baseRev = localRev;
-  try {
-    const res = await fetch('./diagram.mmd', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'X-Diagram-Rev': String(baseRev),
-        'X-Diagram-Via': 'ui',
-      },
-      body: text,
-    });
-    if (seq !== saveSeq) return; // newer keystrokes pending
-    if (res.status === 409) {
-      const payload = await res.json();
-      // Someone else advanced the version. Adopt remote SSOT.
-      localRev = Number(payload.version != null ? payload.version : payload.rev) || localRev;
-      dirty = false;
-      if (typeof payload.source === 'string' && sourceEl.value !== payload.source) {
-        sourceEl.value = payload.source;
-        await renderDiagram();
-      }
-      setSyncUI('conflict');
-      setStatus(`Version conflict → loaded v ${localRev} (${payload.via || 'remote'})`, true);
-      return;
-    }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const newRev = Number(res.headers.get('X-Diagram-Rev'));
-    if (Number.isFinite(newRev)) localRev = newRev;
-    else localRev = baseRev + 1;
-    dirty = false;
-    try {
-      const metaRes = await fetch(`./diagram.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-      if (metaRes.ok) applyLiveMeta(await metaRes.json());
-    } catch (_) {}
-    setSyncUI('ok');
-    try {
-      var saved = splitDocument(text);
-      sourceEl.value = joinDocument({ id: saved.meta.id, version: localRev }, saved.body);
-    } catch (_e) {}
-    setStatus(`Saved v ${localRev}`);
-    if (typeof refreshMermaidHistory === 'function') void refreshMermaidHistory();
-  } catch (err) {
-    setSyncUI('error');
-    setStatus(err instanceof Error ? err.message : String(err), true);
-  }
-}
-async function loadPolled() {
-  // Never clobber in-flight local edits; version gate handles the rest.
-  if (dirty || saveTimer) return;
-  try {
-    const metaRes = await fetch(`./diagram.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-    if (!metaRes.ok) return;
-    const meta = await metaRes.json();
-    const remoteRev = Number(meta.version != null ? meta.version : meta.rev) || 0;
-    if (remoteRev < localRev) return;
-    if (remoteRev === localRev) {
-      applyLiveMeta(meta);
-      return;
-    }
-
-    const res = await fetch(`./diagram.mmd?ts=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return;
-    const text = await res.text();
-    const headerRev = Number(res.headers.get('X-Diagram-Rev'));
-    localRev = Number.isFinite(headerRev) ? headerRev : remoteRev;
-    dirty = false;
-    applyLiveMeta(meta);
-    if (sourceEl.value !== text) {
-      sourceEl.value = text;
-      await renderDiagram();
-      setStatus(`Loaded r${localRev} (${meta.via || 'remote'})`);
-    }
-    setSyncUI('ok');
-  } catch (_) {}
-}
-async function bootstrap() {
-  try {
-    try {
-      const metaRes = await fetch('./diagram.meta.json', { cache: 'no-store' });
-      if (metaRes.ok) applyLiveMeta(await metaRes.json());
-    } catch (_) {}
-    const res = await fetch('./diagram.mmd', { cache: 'no-store' });
-    if (res.ok) {
-      const text = await res.text();
-      const rev = Number(res.headers.get('X-Diagram-Rev'));
-      localRev = Number.isFinite(rev) ? rev : 0;
-      sourceEl.value = text;
-      dirty = false;
-      setTypeUI(text);
-      if (!text.trim()) {
-        try { sessionStorage.removeItem(SVG_CACHE_KEY); } catch (_) {}
-        showEmpty();
-        setSyncUI('ok');
-        setStatus('Ready');
-        return;
-      }
-      await renderDiagram({ fit: false, restoreView: true });
-      setSyncUI('ok');
-      setStatus(`Loaded r${localRev}`);
-      return;
-    }
-  } catch (_) {}
-  localRev = 0;
-  setSyncUI('ok');
-  if (!previewEl.querySelector('svg')) showEmpty();
-}
+/* drawer-app/05-render-io.js — board copy helpers + board history */
 function exportStem(raw, fallback) {
   const stem = String(raw || '').replace(/[^\w\-]+/g, '-').replace(/-{2,}/g, '-').replace(/^[-._]+|[-._]+$/g, '');
   return stem.slice(0, 48) || fallback || 'diagram';
@@ -4862,10 +2467,6 @@ async function copyText(text, label) {
   return false;
 }
 
-
-
-
-/* —— Mermaid history list (reload without new archive) —— */
 function formatHistoryWhen(created) {
   var s = String(created || "");
   // YYYYMMDD-HHMMSS → MM-DD HH:MM:SS
@@ -4971,12 +2572,7 @@ function setHistoryComboFace(combo, item, fallbackKind) {
   top.className = "history-item-top";
   var kind = document.createElement("span");
   kind.className = "history-kind";
-  var kindLabel = item.kind || fallbackKind || "";
-  if (typeof formatDockTypeLabel === "function" && kindLabel && fallbackKind !== "board") {
-    kindLabel = formatDockTypeLabel(kindLabel);
-  }
-  if (fallbackKind === "board") kindLabel = "board";
-  kind.textContent = kindLabel || fallbackKind || "diagram";
+  kind.textContent = fallbackKind === "board" ? "board" : (item.kind || fallbackKind || "board");
   var title = document.createElement("span");
   title.className = "history-item-title";
   title.textContent = historyDisplayTitle(item, fallbackKind || "diagram");
@@ -5017,178 +2613,6 @@ function wireHistoryCombos() {
     if (ev.key === "Escape") closeAllHistoryCombos();
   });
 }
-async function refreshMermaidHistory() {
-  var list = document.getElementById("historyList");
-  var empty = document.getElementById("historyEmpty");
-  var combo = list && list.closest(".history-combo");
-  if (!list) return;
-  wireHistoryCombos();
-  try {
-    var res = await fetch("./history.json?ts=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    var data = await res.json();
-    var items = (data && data.items) || [];
-    if (!items.length) {
-      list.innerHTML = "";
-      setHistoryComboFace(combo, null, "diagram");
-      closeHistoryCombo(combo);
-      if (empty) empty.hidden = true;
-      return;
-    }
-    if (empty) empty.hidden = true;
-    var frag = document.createDocumentFragment();
-    // Only highlight the snapshot whose id is the live diagram id.
-    // Do NOT use stale meta.archive (after UI edits it still points at an old tip,
-    // which is often the first row and looked "always selected").
-    var curId = String(typeof liveDiagramId !== "undefined" ? liveDiagramId : "");
-    var activeEl = null;
-    var activeItem = null;
-    items.forEach(function(item) {
-      var li = document.createElement("li");
-      li.className = "history-item";
-      li.setAttribute("role", "option");
-      li.dataset.historyName = item.name || ((item.id || "diagram") + ".mmd");
-      li.dataset.historyId = item.id || "";
-      li.dataset.historyTitle = item.title || item.label || "diagram";
-      li.dataset.historyKind = item.kind || "";
-      var isActive = !!(item.current) || !!(curId && item.id && curId === String(item.id));
-      if (isActive) {
-        li.classList.add("is-active");
-        li.setAttribute("aria-selected", "true");
-        activeEl = li;
-        activeItem = item;
-      } else {
-        li.setAttribute("aria-selected", "false");
-      }
-
-      var main = document.createElement("div");
-      main.className = "history-item-main";
-
-      var top = document.createElement("div");
-      top.className = "history-item-top";
-      var kind = document.createElement("span");
-      kind.className = "history-kind";
-      var kindLabel = item.kind || "";
-      if (typeof formatDockTypeLabel === "function" && kindLabel) kindLabel = formatDockTypeLabel(kindLabel);
-      kind.textContent = kindLabel || "diagram";
-      var title = document.createElement("span");
-      title.className = "history-item-title";
-      title.textContent = historyDisplayTitle(item, "diagram");
-      top.appendChild(kind);
-      top.appendChild(title);
-
-      var meta = document.createElement("div");
-      meta.className = "history-item-meta";
-      appendHistoryMetaLine(meta, item);
-
-      main.appendChild(top);
-      main.appendChild(meta);
-
-      var del = document.createElement("button");
-      del.type = "button";
-      del.className = "history-item-del";
-      del.title = "Delete snapshot";
-      del.setAttribute("aria-label", "Delete snapshot");
-      del.textContent = "×";
-
-      li.appendChild(main);
-      li.appendChild(del);
-      li.addEventListener("click", function(ev) {
-        if (ev.target && (ev.target === del || del.contains(ev.target))) return;
-        closeHistoryCombo(combo);
-        void restoreMermaidHistory(li.dataset.historyName, li.dataset.historyId, li.dataset.historyTitle);
-      });
-      del.addEventListener("click", function(ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        void deleteMermaidHistory(li.dataset.historyName);
-      });
-      frag.appendChild(li);
-    });
-    list.innerHTML = "";
-    list.appendChild(frag);
-    filterHistoryCombo(combo);
-    setHistoryComboFace(combo, activeItem || items[0], "diagram");
-    if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
-      requestAnimationFrame(function() {
-        activeEl.scrollIntoView({ block: "center" });
-      });
-    }
-  } catch (err) {
-    if (empty) {
-      empty.hidden = false;
-      empty.textContent = err instanceof Error ? err.message : String(err);
-    }
-  }
-}
-async function restoreMermaidHistory(name, diagramId, diagramTitle) {
-  if (!name) return;
-  var file = name.indexOf(".mmd") >= 0 ? name : name + ".mmd";
-  try {
-    setStatus("Switching to diagram record " + file + "…");
-    var baseRev = localRev;
-    var headers = {
-      "Content-Type": "text/plain; charset=utf-8",
-      "X-Diagram-Rev": String(baseRev),
-      "X-Diagram-Via": "history",
-      "X-Diagram-Archive": "0",
-      "X-Diagram-History-File": file,
-    };
-    if (diagramId) headers["X-Diagram-Id"] = diagramId;
-    if (diagramTitle) headers["X-Diagram-Title"] = headerByteString(diagramTitle);
-    var put = await fetch("./diagram.mmd", {
-      method: "PUT",
-      headers: headers,
-      body: "",
-    });
-    if (put.status === 409) {
-      var payload = await put.json();
-      localRev = Number(payload.version != null ? payload.version : payload.rev) || localRev;
-      setSyncUI("conflict");
-      setStatus("Version conflict while switching — retry", true);
-      return;
-    }
-    if (!put.ok) throw new Error("HTTP " + put.status);
-    var newRev = Number(put.headers.get("X-Diagram-Rev"));
-    if (Number.isFinite(newRev)) localRev = newRev;
-    else localRev = baseRev + 1;
-    dirty = false;
-    var res = await fetch("./diagram.mmd?ts=" + Date.now(), { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    sourceEl.value = await res.text();
-    if (typeof setTypeUI === "function") setTypeUI(sourceEl.value);
-    await renderDiagram({ fit: false, restoreView: true });
-    try {
-      var metaRes = await fetch("./diagram.meta.json?ts=" + Date.now(), { cache: "no-store" });
-      if (metaRes.ok) applyLiveMeta(await metaRes.json());
-    } catch (_e) {}
-    setSyncUI("ok");
-    setStatus("Current → " + (diagramTitle || file) + (diagramId ? " [" + diagramId + "]" : "") + " · v " + localRev);
-    await refreshMermaidHistory();
-  } catch (err) {
-    setSyncUI("error");
-    setStatus(err instanceof Error ? err.message : String(err), true);
-  }
-}
-
-async function deleteMermaidHistory(name) {
-  if (!name) return;
-  var file = name.indexOf(".mmd") >= 0 ? name : name + ".mmd";
-  if (!window.confirm("Delete history snapshot\\n" + file + "?")) return;
-  try {
-    var res = await fetch("./api/history/" + encodeURIComponent(file), { method: "DELETE" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    setStatus("Deleted " + file);
-    await refreshMermaidHistory();
-    try {
-      var metaRes = await fetch("./diagram.meta.json?ts=" + Date.now(), { cache: "no-store" });
-      if (metaRes.ok) applyLiveMeta(await metaRes.json());
-    } catch (_e) {}
-  } catch (err) {
-    setStatus(err instanceof Error ? err.message : String(err), true);
-  }
-}
-
 /* —— Board history list (reload without new archive) —— */
 function boardHistoryFile(name) {
   name = String(name || "");
@@ -5375,10 +2799,7 @@ const PNG_EXPORT_MAX_EDGE = 16384;
 const PNG_EXPORT_MAX_PIXELS = 64_000_000;
 
 function getExportContentTarget() {
-  if (document.documentElement.dataset.drawerMode === 'board') {
-    return previewEl && previewEl.querySelector('.board-render');
-  }
-  return previewEl && previewEl.querySelector(':scope > svg');
+  return previewEl && previewEl.querySelector('.board-render');
 }
 
 function getExportContentSize(target) {
@@ -5396,19 +2817,17 @@ function stripExportInteractions(root) {
   const interactive = [
     root,
     ...root.querySelectorAll(
-      '.board-selection, .mermaid-selection, .mermaid-link-selected, .board-reorder-dragging, .board-reorder-caret'
+      '.board-selection, .board-reorder-dragging, .board-reorder-caret'
     ),
   ];
   interactive.forEach((el) => {
     el.classList.remove(
       'board-selection',
-      'mermaid-selection',
-      'mermaid-link-selected',
       'board-reorder-dragging'
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .mermaid-edge-hit, .mindmap-node-hit, .mindmap-add-zone-hit, .mindmap-add-hit, .mindmap-add, .board-reorder-caret'
+    '.board-edge-hit, .board-reorder-caret'
   ).forEach((el) => el.remove());
 }
 
@@ -5590,468 +3009,9 @@ async function exportPng() {
   }
 }
 
-/* === 06-view-sequence.js === */
-/* drawer-app/06-view-sequence.js — lines 2899-3336 of former inline module */
-function pinClusterTitlesTopLeft(svg) {
-  if (!svg) return;
-  // Mermaid centers subgraph titles; pin each cluster-label to its rect top-left.
-  const padX = 10, padY = 2;
-  for (const cluster of svg.querySelectorAll('g.cluster')) {
-    const rect = cluster.querySelector(':scope > rect');
-    const label = cluster.querySelector(':scope > g.cluster-label');
-    if (!rect || !label) continue;
-    const x = Number(rect.getAttribute('x'));
-    const y = Number(rect.getAttribute('y'));
-    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
-    label.setAttribute('transform', `translate(${x + padX}, ${y + padY})`);
-    label.setAttribute('data-title-corner', '1');
-    for (const el of label.querySelectorAll('div, p, span')) {
-      el.style.textAlign = 'left';
-      if (el.style.maxWidth) el.style.maxWidth = 'none';
-    }
-  }
-}
-
-
-function tuneSequenceFrames(svg) {
-  if (!svg) return;
-  // 1) Frame inner padding: grow outer edges away from content.
-  // 2) Badge inner padding: size labelBox from measured text (Note-style).
-  const FRAME_PAD = { altBottom: 36, loopLeft: 32, loopBottom: 36 };
-  const BADGE_PAD = {
-    alt:  { left: 10, right: 12, top: 10, bottom: 10 },
-    loop: { left: 14, right: 12, top: 10, bottom: 10 },
-    _:    { left: 10, right: 10, top: 8, bottom: 8 },
-  };
-  const near = (a, b) => Math.abs(a - b) < 0.75;
-  const parents = new Set([...svg.querySelectorAll('line.loopLine')].map((l) => l.parentElement));
-  for (const g of parents) {
-    if (!g) continue;
-    const lines = [...g.querySelectorAll(':scope > line.loopLine')];
-    if (lines.length < 4) continue;
-
-    let x1 = Infinity, x2 = -Infinity, y1 = Infinity, y2 = -Infinity;
-    for (const l of lines) {
-      const a = Number(l.getAttribute('x1'));
-      const b = Number(l.getAttribute('x2'));
-      const c = Number(l.getAttribute('y1'));
-      const d = Number(l.getAttribute('y2'));
-      x1 = Math.min(x1, a, b);
-      x2 = Math.max(x2, a, b);
-      y1 = Math.min(y1, c, d);
-      y2 = Math.max(y2, c, d);
-    }
-    if (!Number.isFinite(x1) || x2 - x1 < 40) continue;
-
-    const poly = g.querySelector(':scope > polygon.labelBox');
-    const labelText = g.querySelector(':scope > text.labelText');
-    const kind = ((labelText && labelText.textContent) || '').trim().split(/\s+/)[0].toLowerCase();
-
-    let padL = 0;
-    let padB = 0;
-    if (kind === 'alt') padB = FRAME_PAD.altBottom;
-    if (kind === 'loop') {
-      padL = FRAME_PAD.loopLeft;
-      padB = FRAME_PAD.loopBottom;
-    }
-
-    const nx1 = x1 - padL;
-    const ny2 = y2 + padB;
-    if (padL || padB) {
-      for (const l of lines) {
-        let lx1 = Number(l.getAttribute('x1'));
-        let lx2 = Number(l.getAttribute('x2'));
-        let ly1 = Number(l.getAttribute('y1'));
-        let ly2 = Number(l.getAttribute('y2'));
-        if (padL) {
-          if (near(lx1, x1)) lx1 = nx1;
-          if (near(lx2, x1)) lx2 = nx1;
-        }
-        if (padB) {
-          if (near(ly1, y2)) ly1 = ny2;
-          if (near(ly2, y2)) ly2 = ny2;
-        }
-        l.setAttribute('x1', String(lx1));
-        l.setAttribute('x2', String(lx2));
-        l.setAttribute('y1', String(ly1));
-        l.setAttribute('y2', String(ly2));
-      }
-      if (padL && poly) {
-        const pts = (poly.getAttribute('points') || '').trim().split(/\s+/).map((pt) => {
-          const [px, py] = pt.split(',').map(Number);
-          return `${px - padL},${py}`;
-        });
-        poly.setAttribute('points', pts.join(' '));
-      }
-      if (padL && labelText) {
-        labelText.setAttribute('x', String(Number(labelText.getAttribute('x')) - padL));
-      }
-      x1 = nx1;
-      y2 = ny2;
-    }
-
-    const loopTexts = [...g.querySelectorAll(':scope > text.loopText')];
-    const titleConds = [];
-    const elseConds = [];
-    for (const t of loopTexts) {
-      const ty = Number(t.getAttribute('y'));
-      const onTitleBar = Number.isFinite(ty) && Math.abs(ty - (y1 + 18)) < 28;
-      if (onTitleBar) titleConds.push(t);
-      else elseConds.push(t);
-    }
-
-    if (poly && labelText) {
-      if (titleConds.length) {
-        const kw = (labelText.textContent || '').trim().split(/\s+/)[0];
-        const cond = titleConds.map((t) => (t.textContent || '').trim()).filter(Boolean).join(' ');
-        const combined = cond ? `${kw} ${cond}` : kw;
-        while (labelText.firstChild) labelText.removeChild(labelText.firstChild);
-        labelText.textContent = combined;
-        for (const t of titleConds) t.remove();
-      }
-
-      const bp = BADGE_PAD[kind] || BADGE_PAD._;
-      labelText.setAttribute('text-anchor', 'start');
-      labelText.setAttribute('dominant-baseline', 'hanging');
-      labelText.setAttribute('alignment-baseline', 'hanging');
-      // Park text, measure, then wrap polygon with real padding.
-      labelText.setAttribute('x', String(x1 + bp.left));
-      labelText.setAttribute('y', String(y1 + bp.top));
-
-      let tb = { x: x1 + bp.left, y: y1 + bp.top, width: Math.max(40, (labelText.textContent || '').length * 7.2), height: 16 };
-      try {
-        const bb = labelText.getBBox();
-        if (bb && bb.width > 0) tb = bb;
-      } catch (_) {}
-
-      // Hang baselines often sit above the y attr — nudge so top pad is real.
-      const topGap = tb.y - y1;
-      if (topGap < bp.top) {
-        const dy = bp.top - topGap;
-        labelText.setAttribute('y', String(Number(labelText.getAttribute('y')) + dy));
-        tb = { x: tb.x, y: tb.y + dy, width: tb.width, height: tb.height };
-        try {
-          const bb2 = labelText.getBBox();
-          if (bb2 && bb2.width > 0) tb = bb2;
-        } catch (_) {}
-      }
-
-      const bx = x1;
-      const by = y1;
-      const bw = Math.ceil((tb.x - x1) + tb.width + bp.right);
-      const bh = Math.ceil((tb.y - y1) + tb.height + bp.bottom);
-      const notch = Math.min(8.4, bh * 0.4);
-      poly.setAttribute(
-        'points',
-        `${bx},${by} ${bx + bw},${by} ${bx + bw},${by + bh - notch} ${bx + bw - notch},${by + bh} ${bx},${by + bh}`
-      );
-    }
-
-    for (const t of elseConds) {
-      t.setAttribute('text-anchor', 'start');
-      t.setAttribute('x', String(x1 + 12));
-      for (const span of t.querySelectorAll('tspan')) {
-        span.setAttribute('x', String(x1 + 12));
-      }
-      t.setAttribute('data-loop-edge', '1');
-    }
-  }
-}
-
-function clearSequenceFrameActorOverlap(svg) {
-  if (!svg) return;
-  // If any alt/loop bottom edge cuts through bottom participant boxes, push
-  // those actors (and their labels) down and extend vertical lifelines.
-  let frameBottom = -Infinity;
-  for (const l of svg.querySelectorAll('line.loopLine')) {
-    frameBottom = Math.max(frameBottom, Number(l.getAttribute('y1')), Number(l.getAttribute('y2')));
-  }
-  if (!Number.isFinite(frameBottom)) return;
-
-  const bottoms = [...svg.querySelectorAll('rect.actor-bottom')];
-  if (!bottoms.length) return;
-  let actorTop = Infinity;
-  for (const r of bottoms) actorTop = Math.min(actorTop, Number(r.getAttribute('y')));
-  if (!Number.isFinite(actorTop)) return;
-
-  const gap = 12;
-  const need = frameBottom + gap;
-  if (actorTop >= need) return;
-  const shift = need - actorTop;
-
-  const bump = (el, attrs) => {
-    for (const a of attrs) {
-      const v = Number(el.getAttribute(a));
-      if (Number.isFinite(v)) el.setAttribute(a, String(v + shift));
-    }
-  };
-
-  for (const r of bottoms) bump(r, ['y']);
-  // Labels sitting on bottom actors (same vertical band).
-  for (const t of svg.querySelectorAll('text.actor, text.actor-box')) {
-    const y = Number(t.getAttribute('y'));
-    if (Number.isFinite(y) && y >= actorTop - 4) bump(t, ['y']);
-  }
-  // Extend vertical lifelines that end at/near the old actor top.
-  for (const l of svg.querySelectorAll('line')) {
-    const cls = l.getAttribute('class') || '';
-    if (cls.includes('loopLine')) continue;
-    const y1 = Number(l.getAttribute('y1'));
-    const y2 = Number(l.getAttribute('y2'));
-    if (![y1, y2].every(Number.isFinite)) continue;
-    const lo = Math.min(y1, y2);
-    const hi = Math.max(y1, y2);
-    // Lifeline: tall vertical line ending near bottom actors.
-    if (Math.abs(Number(l.getAttribute('x1')) - Number(l.getAttribute('x2'))) < 0.75 && hi >= actorTop - 30) {
-      if (y2 >= y1) l.setAttribute('y2', String(y2 + shift));
-      else l.setAttribute('y1', String(y1 + shift));
-    }
-  }
-}
-
-function lowerSequenceFramesBehindActors(svg) {
-  if (!svg) return;
-  const actors = svg.querySelector('g > rect.actor, rect.actor');
-  // Insert each loop-frame group before the first actor rect's parent group or first actor.
-  let anchor = null;
-  for (const el of svg.querySelectorAll('rect.actor, text.actor')) {
-    anchor = el;
-    break;
-  }
-  if (!anchor) return;
-  const parents = new Set([...svg.querySelectorAll('line.loopLine')].map((l) => l.parentElement));
-  for (const g of parents) {
-    if (!g || !g.parentNode) continue;
-    // Move frame group earlier in DOM so actors/messages paint above the borders.
-    g.parentNode.insertBefore(g, g.parentNode.firstChild);
-  }
-}
-
-
-function polishSequenceActors(svg) {
-  if (!svg) return;
-  const theme = (document.documentElement.dataset.diagramTheme || 'default').toLowerCase();
-  const r = theme === 'kami' ? 3 : 8;
-  for (const rect of svg.querySelectorAll('rect.actor')) {
-    rect.setAttribute('rx', String(r));
-    rect.setAttribute('ry', String(r));
-  }
-}
-
-function styleSequenceLoopLines(svg) {
-  if (!svg) return;
-  let solid = '#8a8a8e';
-  let dashed = '#5c5c60';
-  try {
-    const tid = (typeof currentDiagramTheme === 'function')
-      ? currentDiagramTheme()
-      : (document.documentElement.dataset.diagramTheme || 'default');
-    if (window.MermaidSequenceThemes && typeof MermaidSequenceThemes.frameColors === 'function') {
-      const f = MermaidSequenceThemes.frameColors(tid);
-      if (f && f.solid) solid = f.solid;
-      if (f && f.dashed) dashed = f.dashed;
-    }
-  } catch (_e) {}
-  for (const l of svg.querySelectorAll('line.loopLine')) {
-    const dash = l.style.strokeDasharray || l.getAttribute('stroke-dasharray') || '';
-    const color = dash && dash !== 'none' ? dashed : solid;
-    l.setAttribute('stroke', color);
-    l.style.stroke = color;
-  }
-}
-
-function styleSequenceNotes(svg) {
-  if (!svg) return;
-  // Sticky note: size box from real text bounds + L/R padding, then dog-ear.
-  const fold = 14;
-  const padX = 14; // half of prior 28
-  for (const rect of [...svg.querySelectorAll('rect.note')]) {
-    const g = rect.parentElement;
-    if (!g || rect.getAttribute('data-dogear') === '1') continue;
-    const y = Number(rect.getAttribute('y'));
-    const h = Number(rect.getAttribute('height'));
-    if (![y, h].every(Number.isFinite) || h < fold * 2) continue;
-
-    const texts = [...g.querySelectorAll('text.noteText')];
-    let minX = Infinity;
-    let maxX = -Infinity;
-    for (const t of texts) {
-      try {
-        const bb = t.getBBox();
-        if (bb && bb.width > 0) {
-          minX = Math.min(minX, bb.x);
-          maxX = Math.max(maxX, bb.x + bb.width);
-          continue;
-        }
-      } catch (_) {}
-      // fallback if getBBox fails
-      const tx = Number(t.getAttribute('x'));
-      const approx = ((t.textContent || '').length * 7.2);
-      const anchor = t.getAttribute('text-anchor') || 'middle';
-      if (anchor === 'middle') {
-        minX = Math.min(minX, tx - approx / 2);
-        maxX = Math.max(maxX, tx + approx / 2);
-      } else {
-        minX = Math.min(minX, tx);
-        maxX = Math.max(maxX, tx + approx);
-      }
-    }
-    // If measurement failed, fall back to Mermaid rect + fixed pad.
-    let x;
-    let w;
-    if (Number.isFinite(minX) && maxX > minX) {
-      x = minX - padX;
-      w = (maxX - minX) + padX * 2;
-    } else {
-      const x0 = Number(rect.getAttribute('x'));
-      const w0 = Number(rect.getAttribute('width'));
-      if (![x0, w0].every(Number.isFinite)) continue;
-      x = x0 - padX;
-      w = w0 + padX * 2;
-    }
-    if (w < fold * 2) continue;
-
-    const fill = rect.getAttribute('fill') || '#EDF2AE';
-    const stroke = rect.getAttribute('stroke') || '#666';
-    const cls = rect.getAttribute('class') || 'note';
-
-    const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    body.setAttribute('class', cls);
-    body.setAttribute('data-dogear', '1');
-    body.setAttribute('fill', fill);
-    body.setAttribute('stroke', stroke);
-    body.setAttribute('stroke-width', rect.getAttribute('stroke-width') || '1');
-    body.setAttribute(
-      'd',
-      `M ${x} ${y} L ${x + w - fold} ${y} L ${x + w} ${y + fold} L ${x + w} ${y + h} L ${x} ${y + h} Z`
-    );
-
-    const ear = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    ear.setAttribute('class', 'noteDogear');
-    ear.setAttribute('fill', shadeHex(fill, -0.18));
-    ear.setAttribute('stroke', stroke);
-    ear.setAttribute('stroke-width', '1');
-    ear.setAttribute(
-      'd',
-      `M ${x + w - fold} ${y} L ${x + w} ${y + fold} L ${x + w - fold} ${y + fold} Z`
-    );
-
-    const crease = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    crease.setAttribute('class', 'noteDogearCrease');
-    crease.setAttribute('fill', 'none');
-    crease.setAttribute('stroke', stroke);
-    crease.setAttribute('stroke-opacity', '0.45');
-    crease.setAttribute('stroke-width', '1');
-    crease.setAttribute('d', `M ${x + w - fold} ${y} L ${x + w - fold} ${y + fold} L ${x + w} ${y + fold}`);
-
-    g.insertBefore(body, rect);
-    g.insertBefore(ear, rect);
-    g.insertBefore(crease, rect);
-    rect.remove();
-  }
-}
-
-function shadeHex(hex, delta) {
-  // delta in [-1,1]; negative = darker. Falls back to a muted yellow-gray.
-  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
-  if (!m) return '#c9c98a';
-  const n = parseInt(m[1], 16);
-  const ch = (i) => {
-    let v = (n >> (8 * (2 - i))) & 255;
-    v = Math.max(0, Math.min(255, Math.round(v + delta * 255)));
-    return v;
-  };
-  return `#${[ch(0), ch(1), ch(2)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
-}
-function fixSvgIntrinsic(svg) {
-  if (!svg) return;
-  // Kill width="100%" / max-width stretching (common on sequenceDiagram).
-  // Prefer Mermaid viewBox pixel size; fall back to getBBox.
-  const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
-  if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
-    svg.setAttribute('width', String(Math.ceil(vb[2])));
-    svg.setAttribute('height', String(Math.ceil(vb[3])));
-  } else {
-    try {
-      const bb = svg.getBBox();
-      if (bb && bb.width && bb.height) {
-        const pad = 8;
-        svg.setAttribute('viewBox', `${bb.x - pad} ${bb.y - pad} ${bb.width + pad * 2} ${bb.height + pad * 2}`);
-        svg.setAttribute('width', String(Math.ceil(bb.width + pad * 2)));
-        svg.setAttribute('height', String(Math.ceil(bb.height + pad * 2)));
-      }
-    } catch (_) {}
-  }
-  svg.style.width = 'auto';
-  svg.style.height = 'auto';
-  svg.style.maxWidth = 'none';
-}
-
-function centerView() {
-  if (document.documentElement.dataset.drawerMode === 'board') { fitBoardView(); flushDrawerUiSave(); return; }
-  // Default adaptive size vs canvas: keep the larger side in [50%, 90%].
-  // Too big → shrink to 90%; too small → grow to 50%; else keep intrinsic (1).
-  scale = 1;
-  panX = 0;
-  panY = 0;
-  applyTransform();
-  requestAnimationFrame(() => {
-    const content = previewEl.querySelector('svg, .board-render');
-    if (!content) return;
-    const wrap = stageEl.getBoundingClientRect();
-    const box = content.getBoundingClientRect();
-    if (!box.width || !box.height || !wrap.width || !wrap.height) return;
-    const rawW = box.width / (scale || 1);
-    const rawH = box.height / (scale || 1);
-    const dominant = Math.max(rawW / wrap.width, rawH / wrap.height);
-    if (dominant > 0.9) scale = 0.9 / dominant;
-    else if (dominant < 0.5) scale = 0.5 / dominant;
-    else scale = 1;
-    scale = Math.max(0.2, Math.min(3, scale));
-    applyTransform();
-    requestAnimationFrame(() => {
-      const box2 = content.getBoundingClientRect();
-      panX += (wrap.left + wrap.width / 2) - (box2.left + box2.width / 2);
-      panY += (wrap.top + wrap.height / 2) - (box2.top + box2.height / 2);
-      applyTransform();
-    });
-  });
-}
-function pinTopLeft() { centerView(); } // compat alias
-function fitView() {
-  if (document.documentElement.dataset.drawerMode === 'board') { fitBoardView(); return; }
-  const content = previewEl.querySelector('svg, .board-render');
-  if (!content) return;
-  const wrap = stageEl.getBoundingClientRect();
-  const box = content.getBoundingClientRect();
-  const rawW = box.width / (scale || 1);
-  const rawH = box.height / (scale || 1);
-  if (!rawW || !rawH) return;
-  scale = Math.max(0.2, Math.min((wrap.width - 96) / rawW, (wrap.height - 120) / rawH, 2.5));
-  panX = 48; panY = 72;
-  applyTransform();
-}
-
-// resize sheet
-(() => {
-  const handle = $('#resize');
-  let drag = false;
-  handle.addEventListener('pointerdown', (e) => {
-    drag = true; handle.setPointerCapture(e.pointerId);
-  });
-  handle.addEventListener('pointermove', (e) => {
-    if (!drag) return; syncSheetCssVar();
-    const x = Math.min(560, Math.max(280, e.clientX));
-    document.documentElement.style.setProperty('--side', x + 'px');
-  });
-  handle.addEventListener('pointerup', () => { drag = false; });
-})();
-
-
-let chromeTimer = null;
-
 /* === 07-chrome-boot.js === */
-/* drawer-app/07-chrome-boot.js — lines 3337-3886 of former inline module */
+/* drawer-app/07-chrome-boot.js — Board chrome + boot */
+let chromeTimer = null;
 function flashChrome(ms = 900) {
   const shell = $('#canvasShell') || document.querySelector('.canvas-shell');
   if (!shell) return;
@@ -6102,29 +3062,10 @@ stageEl.addEventListener('wheel', (e) => {
 
 stageEl.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
-  // Pan only on blank stage/canvas — not boxes, items, title, edges, mermaid hits, or chrome.
-  // Mindmap nodes are handled separately (press = select, drag = pan while keeping selection).
-  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label, g.node, g.cluster, g.cluster-label, g.edgePath, g.edgeLabel, g.flowchart-link, path.flowchart-link, path.mermaid-edge-hit, g.mindmap-node, g.statediagram-state, g.statediagram-cluster, g.stateGroup, path.transition")) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && document.documentElement.dataset.mermaidMindmap === "1" && typeof MindmapEdit !== "undefined" && MindmapEdit.selectionFromDom && MindmapEdit.selectionFromDom(e.target)) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && typeof FlowchartEdit !== "undefined" && FlowchartEdit.selectionFromDom && FlowchartEdit.selectionFromDom(e.target, sourceEl && sourceEl.value)) return;
-  if (document.documentElement.dataset.drawerMode === "mermaid" && document.documentElement.dataset.mermaidState === "1" && typeof StateEdit !== "undefined" && StateEdit.selectionFromDom && StateEdit.selectionFromDom(e.target, sourceEl && sourceEl.value)) return;
-  // Clicks outside the content bbox land on the stage (preview is max-content) — whole stage is canvas.
-  panBlankMindmap = false;
-  if (document.documentElement.dataset.drawerMode === "board") {
-    if (boardLinkMode) setBoardLinkMode(false);
-    else clearBoardSelection();
-  } else if (document.documentElement.dataset.drawerMode === "mermaid") {
-    if (mermaidLinkMode) setMermaidLinkMode(false);
-    else if (document.documentElement.dataset.mermaidMindmap === "1") {
-      // Mindmap: defer blank deselect until pointerup — drag pan keeps selection.
-      panBlankMindmap = true;
-    } else {
-      clearMermaidSelection();
-    }
-  } else if (currentDockTab()) {
-    openDock("");
-    try { MermaidInspect.clearPropsShown(); } catch (_e) {}
-  }
+  // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
+  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label")) return;
+  if (boardLinkMode) setBoardLinkMode(false);
+  else clearBoardSelection();
   e.preventDefault();
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
   panning = true;
@@ -6146,16 +3087,14 @@ stageEl.addEventListener('pointermove', (e) => {
 });
 stageEl.addEventListener('pointerup', () => {
   var wasPanning = panning;
-  var blankMm = panBlankMindmap;
   var moved = panMoved;
-  panning = false; panOrigin = null; panBlankMindmap = false; panMoved = false;
+  panning = false; panOrigin = null; panMoved = false;
   stageEl.classList.remove('panning');
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
-  if (blankMm && !moved) clearMermaidSelection();
   if (wasPanning && moved) {
     flushDrawerUiSave();
     if (typeof noteUserCanvasView === "function") noteUserCanvasView();
-  } else if (wasPanning && !blankMm) {
+  } else if (wasPanning) {
     flushDrawerUiSave();
   }
 });
@@ -6163,25 +3102,11 @@ stageEl.addEventListener('selectstart', (e) => {
   if (panning) e.preventDefault();
 });
 
-sourceEl.addEventListener('input', () => {
-  setTypeUI(sourceEl.value);
-  scheduleRender();
-  scheduleSave();
-});
 boardSourceEl.addEventListener('input', () => {
   if (typeof updateBoardChars === "function") updateBoardChars();
   scheduleBoardRender();
   scheduleBoardSave();
 });
-
-$('#btnRender').onclick = () => void renderDiagram({ fit: false });
-
-$('#btnClear').onclick = () => {
-  sourceEl.value = '';
-  try { sessionStorage.removeItem(SVG_CACHE_KEY); } catch (_) {}
-  showEmpty(); setTypeUI('', { clearTools: true }); setStatus('Cleared');
-  scheduleSave();
-};
 
 if (boardIdEditor) {
   boardIdEditor.addEventListener("input", filterBoardIdEditor);
@@ -6252,25 +3177,7 @@ boardTitleEditor.addEventListener("change", commitBoardTitle); boardTitleEditor.
   event.preventDefault();
   commitBoardTitle();
 });
-const exportMenu = $('#exportMenu');
-const exportBtn = $('#btnExportMenu');
-function closeExportMenu() {
-  exportMenu.classList.remove('open');
-  exportBtn.setAttribute('aria-expanded', 'false');
-}
-exportBtn.onclick = (e) => {
-  e.stopPropagation();
-  const open = !exportMenu.classList.contains('open');
-  exportMenu.classList.toggle('open', open);
-  exportBtn.setAttribute('aria-expanded', String(open));
-};
-document.addEventListener('click', (e) => {
-  if (!exportMenu.contains(e.target)) closeExportMenu();
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeExportMenu();
-});
-$('#btnCopySrc').onclick = () => { copyText(sourceEl.value, 'Source'); showCopyTip('Copied successfully'); closeExportMenu(); };
+function closeExportMenu() {}
 
 $('#btnZoomIn').onclick = () => { scale = Math.min(3, scale * 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomOut').onclick = () => { scale = Math.max(0.2, scale / 1.08); applyTransform(); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
@@ -6279,15 +3186,9 @@ window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;
 /* $('#btnTheme') removed */
 
-function syncModeBtn() {
-  const board = document.documentElement.dataset.drawerMode === 'board';
-  const tabM = $('#tabMermaid');
-  const tabB = $('#tabBoard');
-  if (tabM) tabM.setAttribute('aria-selected', String(!board));
-  if (tabB) tabB.setAttribute('aria-selected', String(board));
-}
+// —— Canvas toolbar: diagram theme + export + UI theme ——
 
-// —— Canvas toolbar: diagram theme + export + UI theme (visible in Board & Mermaid) ——
+// —— Canvas toolbar: diagram theme + export + UI theme ——
 
 const DIAGRAM_THEME_KEY = 'drawer.diagramTheme';
 function currentDiagramTheme() {
@@ -6297,317 +3198,6 @@ function currentDiagramTheme() {
   const allowed = ['default', 'classic', 'pastel', 'kami'];
   return allowed.includes(v) ? v : 'default';
 }
-function mermaidThemeForDiagram(theme) {
-  // Unified diagram themes → Mermaid.js theme ids (keep original neutral as default)
-  const id = (window.BoardThemes && typeof BoardThemes.resolveId === 'function') ? BoardThemes.resolveId(theme) : theme;
-  if (id === 'pastel') return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'neutral';
-  if (id === 'classic') return 'base';
-  return 'neutral';
-}
-function isFlowchartSource(text) {
-  const t = String(diagramType(text) || '').toLowerCase();
-  return t === 'flowchart' || t === 'graph';
-}
-
-/** State diagram: convert curved transition paths to orthogonal polylines (折线). */
-function polishStateTransitions(svg) {
-  if (!svg) return;
-  var paths = svg.querySelectorAll('path.transition');
-  if (!paths.length) return;
-  function parseEnd(d) {
-    // last explicit point: Lx,y or endpoint of final C (last two nums are end)
-    var m = String(d || '').trim();
-    if (!m) return null;
-    var nums = m.match(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi);
-    if (!nums || nums.length < 2) return null;
-    return { x: Number(nums[nums.length - 2]), y: Number(nums[nums.length - 1]) };
-  }
-  function parseStart(d) {
-    var m = /^M\s*(-?\d*\.?\d+(?:e[-+]?\d+)?)\s*,\s*(-?\d*\.?\d+(?:e[-+]?\d+)?)/i.exec(String(d || '').trim());
-    if (!m) return null;
-    return { x: Number(m[1]), y: Number(m[2]) };
-  }
-  function orthoPath(a, b) {
-    var dx = b.x - a.x;
-    var dy = b.y - a.y;
-    if (Math.abs(dx) < 1.5) {
-      return 'M' + a.x + ',' + a.y + 'L' + b.x + ',' + b.y;
-    }
-    if (Math.abs(dy) < 1.5) {
-      return 'M' + a.x + ',' + a.y + 'L' + b.x + ',' + b.y;
-    }
-    // Prefer mid-Y elbow (H then V then H) when mostly horizontal travel; else mid-X.
-    var r = 8; // corner radius
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      var midY = a.y + dy * 0.5;
-      var x1 = a.x;
-      var y1 = a.y;
-      var x2 = b.x;
-      var y2 = b.y;
-      var sx = dx > 0 ? 1 : -1;
-      var sy = (midY >= y1) ? 1 : -1;
-      var sy2 = (y2 >= midY) ? 1 : -1;
-      // M → vertical toward midY (leave r) → arc → horizontal → arc → vertical to end
-      var v1 = midY - sy * r;
-      var h2 = x2 - sx * r;
-      // keep simple sharp 折线 first (clearer than rounded for review)
-      return 'M' + x1 + ',' + y1 + 'L' + x1 + ',' + midY + 'L' + x2 + ',' + midY + 'L' + x2 + ',' + y2;
-    }
-    var midX = a.x + dx * 0.5;
-    return 'M' + a.x + ',' + a.y + 'L' + midX + ',' + a.y + 'L' + midX + ',' + b.y + 'L' + b.x + ',' + b.y;
-  }
-  Array.prototype.forEach.call(paths, function(p) {
-    var d = p.getAttribute('d') || '';
-    if (!d || d.indexOf('C') < 0) return; // already line-ish or empty
-    var a = parseStart(d);
-    var b = parseEnd(d);
-    if (!a || !b) return;
-    if (Math.hypot(b.x - a.x, b.y - a.y) < 4) return; // degenerate
-    p.setAttribute('d', orthoPath(a, b));
-  });
-}
-
-
-/** State diagram UI polish — outer shell + title divider; no inner nested box. */
-function polishStateDiagram(svg) {
-  if (!svg) return;
-  var NS = 'http://www.w3.org/2000/svg';
-
-  // Leaf state nodes: round label-container only (skip empty label rects).
-  svg.querySelectorAll('g.node.statediagram-state > rect.basic.label-container, g.node.statediagram-state > rect.label-container').forEach(function(r) {
-    try {
-      r.setAttribute('rx', '8');
-      r.setAttribute('ry', '8');
-      r.style.strokeWidth = r.style.strokeWidth || '1.25px';
-    } catch (_e) {}
-  });
-
-  // Composite clusters: keep outer rounded shell; drop inner box; title divider only.
-  svg.querySelectorAll('g.statediagram-cluster, g.cluster').forEach(function(cluster) {
-    try {
-      var outer = cluster.querySelector('rect.outer') || cluster.querySelector('g > rect');
-      var inner = cluster.querySelector('rect.inner');
-      if (outer) {
-        outer.setAttribute('rx', '10');
-        outer.setAttribute('ry', '10');
-        outer.style.strokeWidth = outer.style.strokeWidth || '1.25px';
-      }
-      if (inner) {
-        // Hide nested content frame (was overlapping outer rounded box).
-        inner.setAttribute('visibility', 'hidden');
-        inner.style.display = 'none';
-        // Divider under title row (inner.y is the title/content split).
-        var x = parseFloat(inner.getAttribute('x') || (outer && outer.getAttribute('x')) || '0');
-        var y = parseFloat(inner.getAttribute('y') || '0');
-        var w = parseFloat(inner.getAttribute('width') || (outer && outer.getAttribute('width')) || '0');
-        if (isFinite(x) && isFinite(y) && isFinite(w) && w > 0) {
-          var old = cluster.querySelector('line.state-title-divider');
-          if (old) old.remove();
-          var line = document.createElementNS(NS, 'line');
-          line.setAttribute('class', 'state-title-divider');
-          line.setAttribute('x1', String(x));
-          line.setAttribute('x2', String(x + w));
-          line.setAttribute('y1', String(y));
-          line.setAttribute('y2', String(y));
-          // Insert after outer / before label if possible
-          if (inner.parentNode) inner.parentNode.insertBefore(line, inner);
-          else cluster.appendChild(line);
-        }
-      }
-    } catch (_e) {}
-  });
-
-  // Leaf labels: no clip + vertical center inside the rounded box.
-  svg.querySelectorAll('g.node.statediagram-state').forEach(function(node) {
-    try {
-      var box = node.querySelector('rect.basic.label-container, rect.label-container');
-      var label = node.querySelector('g.label');
-      var fo = node.querySelector('foreignObject');
-      if (!box || !fo) return;
-      fo.style.overflow = 'visible';
-      var div = fo.querySelector('div');
-      if (div) {
-        div.style.overflow = 'visible';
-        div.style.maxWidth = 'none';
-        div.style.lineHeight = '1.25';
-        div.style.verticalAlign = 'middle';
-      }
-      var p = fo.querySelector('p');
-      if (p) {
-        p.style.margin = '0';
-        p.style.overflow = 'visible';
-        p.style.lineHeight = '1.25';
-      }
-      var span = fo.querySelector('.nodeLabel, span, p');
-      var needW = 0;
-      var needH = 0;
-      if (span && span.getBoundingClientRect) {
-        var br = span.getBoundingClientRect();
-        needW = Math.ceil(br.width) + 4;
-        needH = Math.ceil(br.height) + 2;
-      }
-      var curW = parseFloat(fo.getAttribute('width') || '0');
-      var curH = parseFloat(fo.getAttribute('height') || '0');
-      if (isFinite(needW) && needW > curW + 1) {
-        fo.setAttribute('width', String(needW));
-        curW = needW;
-      }
-      if (isFinite(needH) && needH > curH + 1) {
-        fo.setAttribute('height', String(needH));
-        curH = needH;
-      }
-      var bw = parseFloat(box.getAttribute('width') || '0');
-      var bh = parseFloat(box.getAttribute('height') || '0');
-      var bx = parseFloat(box.getAttribute('x') || '0');
-      var by = parseFloat(box.getAttribute('y') || '0');
-      var padX = 16;
-      var padY = 14;
-      var nbw = Math.max(bw, curW + padX);
-      var nbh = Math.max(bh, curH + padY);
-      if (isFinite(nbw) && isFinite(nbh)) {
-        box.setAttribute('width', String(nbw));
-        box.setAttribute('height', String(nbh));
-        box.setAttribute('x', String(-nbw / 2));
-        box.setAttribute('y', String(-nbh / 2));
-        if (label) {
-          label.setAttribute('transform', 'translate(' + (-curW / 2) + ', ' + (-curH / 2) + ')');
-        }
-      }
-    } catch (_e) {}
-  });
-  // Cluster title labels: overflow visible only
-  svg.querySelectorAll('g.statediagram-cluster foreignObject, g.cluster-label foreignObject').forEach(function(fo) {
-    try {
-      fo.style.overflow = 'visible';
-      var p = fo.querySelector('p');
-      if (p) p.style.margin = '0';
-    } catch (_e) {}
-  });
-
-  // Edge labels: transparent plate + light paint halo (no white box)
-  svg.querySelectorAll('g.edgeLabel .labelBkg, g.edgeLabel rect').forEach(function(el) {
-    try {
-      el.setAttribute('fill', 'transparent');
-      el.style.fill = 'transparent';
-      el.style.fillOpacity = '0';
-      el.style.background = 'transparent';
-    } catch (_e) {}
-  });
-  svg.querySelectorAll('g.edgeLabel foreignObject div, g.edgeLabel foreignObject .labelBkg').forEach(function(el) {
-    try {
-      el.style.background = 'transparent';
-      el.style.backgroundColor = 'transparent';
-    } catch (_e) {}
-  });
-  svg.querySelectorAll('g.edgeLabel text, g.edgeLabel span, .edgeLabel foreignObject div').forEach(function(el) {
-    try {
-      el.style.paintOrder = 'stroke fill';
-      el.style.stroke = 'rgba(255,255,255,0.85)';
-      el.style.strokeWidth = '3px';
-      el.style.strokeLinejoin = 'round';
-    } catch (_e) {}
-  });
-  // Transition stroke weight
-  svg.querySelectorAll('path.transition').forEach(function(p) {
-    try {
-      var sw = parseFloat(p.style.strokeWidth || p.getAttribute('stroke-width') || '1');
-      if (!isFinite(sw) || sw < 1.15) p.style.strokeWidth = '1.35px';
-    } catch (_e) {}
-  });
-  // Start / end markers stay crisp
-  svg.querySelectorAll('g.state-start circle, .state-start circle').forEach(function(c) {
-    try { c.style.strokeWidth = '0'; } catch (_e) {}
-  });
-}
-
-function isMindmapSource(text) {
-  return String(diagramType(text) || '').toLowerCase() === 'mindmap';
-}
-function isSequenceSource(text) {
-  return String(diagramType(text) || '').toLowerCase() === 'sequencediagram';
-}
-function isStateSource(text) {
-  var t = String(diagramType(text) || '').toLowerCase();
-  return t === 'statediagram' || t === 'statediagram-v2';
-}
-function mermaidSiteOptions(theme, text) {
-  const id = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
-    ? BoardThemes.resolveId(theme)
-    : theme;
-  const options = {
-    startOnLoad: false,
-    securityLevel: 'loose',
-    flowchart: { useMaxWidth: false },
-    sequence: {
-      useMaxWidth: false,
-      diagramMarginX: 48,
-      diagramMarginY: 24,
-      actorMargin: 64,
-      boxMargin: 12,
-      boxTextMargin: 6,
-      noteMargin: 12,
-      messageMargin: 40,
-      mirrorActors: true,
-      bottomMarginAdj: 8,
-      rightAngles: false,
-    },
-    class: { useMaxWidth: false },
-    state: { useMaxWidth: false, padding: 16 },
-    er: { useMaxWidth: false },
-    mindmap: { useMaxWidth: false, padding: 18 },
-  };
-  // Flowchart / state: ELK orthogonal edges (Cursor Mermaid Preview parity).
-  if (typeof isFlowchartSource === 'function' && isFlowchartSource(text)) {
-    options.layout = 'elk';
-  }
-  if (typeof isStateSource === 'function' && isStateSource(text) && window.MermaidStateThemes) {
-    const vars = Object.assign({}, MermaidStateThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily || 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = vars;
-    options.layout = 'elk';
-    return options;
-  }
-  if (typeof isStateSource === 'function' && isStateSource(text)) {
-    options.layout = 'elk';
-  }
-  if (isFlowchartSource(text) && window.MermaidFlowchartThemes) {
-    const vars = Object.assign({}, MermaidFlowchartThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily;
-    options.themeVariables = vars;
-    return options;
-  }
-  if (isSequenceSource(text) && window.MermaidSequenceThemes) {
-    const vars = Object.assign({}, MermaidSequenceThemes.variables(id), { background: 'transparent' });
-    options.theme = 'base';
-    options.fontFamily = vars.fontFamily || 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = vars;
-    return options;
-  }
-  // Mindmap: avoid Mermaid "neutral" washed edges on the grid — use default (colored sections).
-  if (isMindmapSource(text)) {
-    options.theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
-    options.fontFamily = 'Inter, SF Pro Text, system-ui, sans-serif';
-    options.themeVariables = { background: 'transparent' };
-    return options;
-  }
-  options.theme = mermaidThemeForDiagram(id);
-  options.fontFamily = 'Inter, SF Pro Text, system-ui, sans-serif';
-  // All Mermaid diagram types: no solid diagram plate — sit on the shared grid canvas.
-  options.themeVariables = Object.assign({}, options.themeVariables || {}, { background: 'transparent' });
-  return options;
-}
-function applyMermaidSiteConfig(theme) {
-  const t = theme || currentDiagramTheme();
-  const text = sourceEl ? sourceEl.value : '';
-  if (!window.mermaid || !window.mermaid.initialize) return;
-  window.mermaid.initialize(mermaidSiteOptions(t, text));
-}
-function reinitMermaidForDiagramTheme(theme) {
-  try { applyMermaidSiteConfig(theme); } catch (_) {}
-}
-
 const ITEM_CAP_KEY = 'drawer.boardItemCap';
 const ITEM_CAP_MIN = 8;
 const ITEM_CAP_MAX = 24;
@@ -6650,42 +3240,6 @@ function applyBoardThemeToPreview() {
     else el.dataset.boardTheme = t;
   });
 }
-function persistMermaidStyle(patch) {
-  if (!sourceEl || !sourceEl.value.trim()) return;
-  if (document.documentElement.dataset.drawerMode === 'board') return;
-  if (typeof DrawerStyleLine === 'undefined' || typeof BoardRender === 'undefined') return;
-  if (typeof BoardRender.encodeStylePayload !== 'function' || typeof BoardRender.decodeStylePayload !== 'function') return;
-  try {
-    var doc = splitDocument(sourceEl.value);
-    var styled = DrawerStyleLine.splitRendererStyle(doc.body);
-    var token = DrawerStyleLine.applyMermaidStylePatch(
-      styled.token,
-      patch || {},
-      BoardRender.encodeStylePayload,
-      BoardRender.decodeStylePayload
-    );
-    var next = joinDocument(doc.meta, DrawerStyleLine.joinRendererStyle(token, styled.body));
-    if (next !== sourceEl.value) {
-      sourceEl.value = next;
-      if (typeof setTypeUI === 'function') setTypeUI(next);
-      if (typeof scheduleSave === 'function') scheduleSave();
-    }
-  } catch (_e) {}
-}
-function applyMermaidDocumentStyle(body) {
-  var styled = (typeof DrawerStyleLine !== 'undefined')
-    ? DrawerStyleLine.splitRendererStyle(body)
-    : { token: '', body: body };
-  var theme = 'default';
-  if (styled.token && typeof BoardRender !== 'undefined' && typeof BoardRender.decodeStylePayload === 'function') {
-    var raw = BoardRender.decodeStylePayload(styled.token);
-    if (window.BoardThemes && typeof BoardThemes.resolveId === 'function') theme = BoardThemes.resolveId(raw && raw.theme);
-    else if (raw && ['default', 'classic', 'pastel', 'kami'].includes(raw.theme)) theme = raw.theme;
-  }
-  if (typeof applyDiagramTheme === 'function') applyDiagramTheme(theme, { persist: false, skipRender: true });
-  else if (typeof applyMermaidSiteConfig === 'function') applyMermaidSiteConfig(theme);
-  return styled.body;
-}
 function applyDiagramTheme(theme, opts) {
   const t = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
     ? BoardThemes.resolveId(theme)
@@ -6700,23 +3254,11 @@ function applyDiagramTheme(theme, opts) {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
-  reinitMermaidForDiagramTheme(t);
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (opts && opts.persist && mode === 'board' && typeof persistBoardStyle === 'function') {
+  if (opts && opts.persist && typeof persistBoardStyle === 'function') {
     persistBoardStyle({ theme: t });
   }
-  if (opts && opts.persist && mode !== 'board' && typeof persistMermaidStyle === 'function') {
-    persistMermaidStyle({ theme: t });
-  }
   if (opts && opts.skipRender) return;
-  if (mode === 'board') {
-    // Keep current zoom/pan when switching theme.
-    // Skip while source is empty (init runs before bootstrapBoard).
-    if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
-  } else if (typeof renderDiagram === 'function' && sourceEl && sourceEl.value.trim()) {
-    // Never render empty source on init — that called setTypeUI('') and hid Mermaid edit tools (toolbar flash).
-    void renderDiagram({ fit: false });
-  }
+  if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
 const diagramThemeMenu = $('#diagramThemeMenu');
@@ -6752,12 +3294,7 @@ function closeDiagramThemeMenu() {
   /* Theme lives in Style dock — no popup. */
 }
 
-document.querySelectorAll("#mindmapLayoutSeg [data-mindmap-layout]").forEach(function(btn) {
-  btn.addEventListener("click", function() {
-    setMindmapLayout(btn.getAttribute("data-mindmap-layout"));
-  });
-});
-try { syncMindmapLayoutSeg(); syncStyleLayoutSections(); } catch (_e) {}
+try { syncStyleLayoutSections(); } catch (_e) {}
 
 document.querySelectorAll('#diagramThemeMenu .theme-item').forEach((btn) => {
   btn.addEventListener('click', () => { applyDiagramTheme(btn.dataset.theme, { persist: true }); });
@@ -6820,28 +3357,19 @@ if (canvasExportBtn && canvasExportMenu) {
   });
 }
 function activeSourceText() {
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (mode === 'board') return boardSourceEl ? boardSourceEl.value : '';
-  return sourceEl ? sourceEl.value : '';
+  return boardSourceEl ? boardSourceEl.value : '';
 }
 function activeSourcePath() {
-  const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-  if (mode === 'board') return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
-  if (typeof liveDiagramPath === 'string' && liveDiagramPath) return liveDiagramPath;
-  if (typeof liveArchive === 'string' && liveArchive.startsWith('/')) return liveArchive;
-  return '';
+  return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
 }
 async function copyActiveSourcePath() {
   let path = activeSourcePath();
   if (!path) {
     try {
-      const mode = document.documentElement.dataset.drawerMode || 'mermaid';
-      const url = mode === 'board' ? './board.meta.json?ts=' + Date.now() : './diagram.meta.json?ts=' + Date.now();
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch('./board.meta.json?ts=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const meta = await res.json();
-        if (mode === 'board' && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
-        else if (typeof applyLiveMeta === 'function') applyLiveMeta(meta);
+        if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
         path = activeSourcePath();
       }
     } catch (_e) {}
@@ -6883,15 +3411,10 @@ function toggleSheetCollapsed() {
 function toggleSourceEntry() {
   toggleDock('source');
 }
-syncModeBtn();
-if ($('#tabMermaid')) $('#tabMermaid').onclick = () => setMode('mermaid');
-if ($('#tabBoard')) $('#tabBoard').onclick = () => setMode('board');
-
 window.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
-    if (document.documentElement.dataset.drawerMode === 'board') renderBoard();
-    else void renderDiagram();
+    renderBoard();
   }
   if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
     e.preventDefault();
@@ -6899,129 +3422,72 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+function centerView() {
+  fitBoardView();
+  flushDrawerUiSave();
+}
+function fitView() {
+  fitBoardView();
+}
 
 function setMode(mode, opts) {
   opts = opts || {};
-  const mermaid = mode === 'mermaid';
-  const next = mermaid ? 'mermaid' : 'board';
-  if (!opts.restore && document.documentElement.dataset.drawerMode === next) return;
-  var prevMode = document.documentElement.dataset.drawerMode || "";
-  if (mermaid && prevMode === "board" && typeof flushBoardSave === "function") void flushBoardSave();
-  var panelM = $('#panelMermaid');
-  if (panelM) panelM.classList.toggle('active', mermaid);
-  var panelBoard = $('#panelBoard');
-  if (panelBoard) panelBoard.classList.toggle('active', !mermaid);
-  document.documentElement.dataset.drawerMode = mermaid ? 'mermaid' : 'board';
-  if (opts.persist !== false) saveDrawerUi({ mode: mermaid ? 'mermaid' : 'board' });
-  syncModeBtn();
-  try {
-    if (mermaid) setTypeUI(sourceEl && sourceEl.value);
-    else setTypeUI(boardSourceEl && boardSourceEl.value);
-  } catch (_e) {}
-  if (!mermaid) closeExportMenu();
-  if (mermaid) {
-    pinBoardTitle();
-    if (!opts.restore) openDock("");
-    // User switch and refresh → document style.viewport, else Fit.
-    if (opts.restore) _drawerUiRestoreLock = true;
-    var skipRender = !!(opts.restore && previewEl && previewEl.querySelector("svg"));
-    var renderP = skipRender
-      ? Promise.resolve()
-      : Promise.resolve(renderDiagram({
-          fit: false,
-          restoreView: true,
-        }));
-    void renderP.then(function() {
-      if (skipRender && typeof restoreOrFitDocumentView === "function") restoreOrFitDocumentView();
-      else if (skipRender) applyTransform();
-      // Reveal canvas only after transform is applied (kills left-flash on refresh).
-      requestAnimationFrame(function () {
-        clearDrawerBoot();
-        if (opts.restore) {
-          requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
-        }
-      });
-    }).catch(function() {
-      clearDrawerBoot();
-      if (opts.restore) _drawerUiRestoreLock = false;
-    });
-    setStatus('Mermaid mode');
+  document.documentElement.dataset.drawerMode = "board";
+  if (opts.persist !== false) saveDrawerUi({ mode: "board" });
+  try { setTypeUI(boardSourceEl && boardSourceEl.value); } catch (_e) {}
+  closeExportMenu();
+  if (opts.restore) _drawerUiRestoreLock = true;
+  var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
+  var skipBoard = !!(opts.restore && hasBoard);
+  if (!skipBoard) {
+    renderBoard({ fit: false, restoreView: true });
+    if (typeof refreshBoardHistory === "function") void refreshBoardHistory();
   } else {
-    // User switch and refresh → document style.viewport, else Fit.
-    if (opts.restore) _drawerUiRestoreLock = true;
-    var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
-    var skipBoard = !!(opts.restore && hasBoard);
-    if (!skipBoard) {
-      renderBoard({ fit: false, restoreView: true });
-      if (typeof refreshBoardHistory === 'function') void refreshBoardHistory();
-    } else {
-      applyRestoredBoardView();
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { clearDrawerBoot(); });
-      });
-    }
-    if (!opts.restore) openDock("");
-    if (opts.restore) {
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
-      });
-    }
-    syncBoardLinkRouteButton();
-    setStatus('Board mode');
+    applyRestoredBoardView();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { clearDrawerBoot(); });
+    });
   }
+  if (!opts.restore) openDock("");
+  if (opts.restore) {
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { _drawerUiRestoreLock = false; });
+    });
+  }
+  syncBoardLinkRouteButton();
+  setStatus("Board mode");
 }
 
-setSyncUI('ok');
 (function applyDrawerUiChrome() {
   var ui = loadDrawerUi();
   setSheetCollapsed(!!ui.sheetCollapsed, false);
 })();
 applyTransform();
-restoreCachedSvg(); // mermaid-only; board skips so refresh does not flash Mermaid SVG
 function restoreDrawerMode() {
   var ui = loadDrawerUi();
-  var urlMode = new URLSearchParams(location.search).get("mode");
-  var mode = (urlMode === "board" || urlMode === "mermaid") ? urlMode : (ui.mode || "mermaid");
-  if (urlMode === "board" || urlMode === "mermaid") saveDrawerUi({ mode: urlMode });
-  document.documentElement.dataset.drawerMode = mode;
-  setMode(mode, { restore: true, persist: false });
-  // Restore dock after mode chrome is applied (avoid open→close flash on refresh).
+  document.documentElement.dataset.drawerMode = "board";
+  saveDrawerUi({ mode: "board" });
+  setMode("board", { restore: true, persist: false });
   try {
     var tab = ui.dockTab || "";
-    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || (tab === "layout" && mode === "board")) {
+    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || tab === "layout") {
       openDock(tab);
     }
   } catch (_e) {}
 }
-if (document.documentElement.dataset.drawerMode === "board") {
-  await bootstrapBoard();
-  restoreDrawerMode();
-  void bootstrap();
-} else {
-  await bootstrap();
-  await bootstrapBoard();
-  restoreDrawerMode();
-}
-setInterval(() => { void loadPolled(); void loadBoardPolled(); }, 1500);
+await bootstrapBoard();
+restoreDrawerMode();
+setInterval(() => { void loadBoardPolled(); }, 1500);
 
-/* Mermaid history list */
-(function wireMermaidHistory() {
-  var btn = document.getElementById('btnHistoryRefresh');
-  if (btn) btn.addEventListener('click', function() { void refreshMermaidHistory(); });
-  // Fill as soon as possible (no 400ms empty→full height jump).
-  void refreshMermaidHistory();
-})();
-
-/* Board history list */
 (function wireBoardHistory() {
-  var btn = document.getElementById('btnBoardHistoryRefresh');
-  if (btn) btn.addEventListener('click', function() { void refreshBoardHistory(); });
+  var btn = document.getElementById("btnBoardHistoryRefresh");
+  if (btn) btn.addEventListener("click", function() { void refreshBoardHistory(); });
   void refreshBoardHistory();
 })();
 
 
 /* === 08-source-lines.js === */
-/* Logical line numbers beside #source and #boardSource. Wrapped display still one number. */
+/* Logical line numbers beside #boardSource. Wrapped display still one number. */
 function sourceLineTwin() {
   var el = document.querySelector(".source-line-twin");
   if (el) return el;
@@ -7114,5 +3580,4 @@ function wireSourceLineEditor(textarea) {
   }
   schedule();
 }
-wireSourceLineEditor(typeof sourceEl !== "undefined" ? sourceEl : document.getElementById("source"));
 wireSourceLineEditor(typeof boardSourceEl !== "undefined" ? boardSourceEl : document.getElementById("boardSource"));

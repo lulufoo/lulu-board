@@ -3,21 +3,17 @@ from __future__ import annotations
 
 from pathlib import Path
 
-STATE_DIR = Path.home() / ".cache" / "drawer"
+STATE_DIR = Path.home() / ".cache" / "board"
 DEFAULT_PORT = 49867  # fixed loopback; CLI --port 0 means "use this"
 SERVER_FILE = "server.json"
-SOURCE_FILE = "diagram.mmd"
-META_FILE = "diagram.meta.json"
 BOARD_SOURCE_FILE = "board.bmd"
 LEGACY_BOARD_SOURCE_FILE = "board.dsl"
 BOARD_META_FILE = "board.meta.json"
 VIEWER_FILE = "drawer.html"
 HISTORY_DIR_NAME = "history"
-MERMAID_HISTORY_NAME = "mermaid"
 BOARD_HISTORY_NAME = "board"
 EXPORT_DIR_NAME = "export"
 HISTORY_SOURCE_READ_CAP = 256_000
-
 
 
 def skill_root() -> Path:
@@ -31,10 +27,6 @@ def asset_path() -> Path:
 
 def server_path() -> Path:
     return STATE_DIR / SERVER_FILE
-
-
-def source_path():
-    return STATE_DIR / SOURCE_FILE
 
 
 def board_source_path() -> Path:
@@ -77,14 +69,6 @@ def read_text_capped(path: Path, cap: int = HISTORY_SOURCE_READ_CAP) -> str:
         return ""
 
 
-def mermaid_history_records() -> list[Path]:
-    return sorted(
-        (path for path in history_dir().glob("*.mmd") if path.is_file()),
-        key=lambda path: path.name,
-        reverse=True,
-    )
-
-
 def board_meta_path() -> Path:
     return STATE_DIR / BOARD_META_FILE
 
@@ -95,20 +79,10 @@ def history_root() -> Path:
     return d
 
 
-def history_dir() -> Path:
-    d = history_root() / MERMAID_HISTORY_NAME
-    d.mkdir(parents=True, exist_ok=True)
-    return d
-
-
 def board_history_dir() -> Path:
     d = history_root() / BOARD_HISTORY_NAME
     d.mkdir(parents=True, exist_ok=True)
     return d
-
-
-def meta_path() -> Path:
-    return STATE_DIR / META_FILE
 
 
 def export_dir() -> Path:
@@ -126,21 +100,8 @@ def board_example_template_dir() -> Path:
     return skill_root() / "assets" / "templates" / "board"
 
 
-def mermaid_example_template_dir() -> Path:
-    return skill_root() / "assets" / "templates" / "mermaid"
-
-
 def board_example_template_sources() -> list[Path]:
     root = board_example_template_dir()
     if not root.is_dir():
         return []
     return sorted(p for p in root.glob("*.bmd") if p.is_file())
-
-
-def mermaid_example_template_sources() -> list[Path]:
-    root = mermaid_example_template_dir()
-    if not root.is_dir():
-        return []
-    return sorted(p for p in root.glob("*.mmd") if p.is_file())
-
-

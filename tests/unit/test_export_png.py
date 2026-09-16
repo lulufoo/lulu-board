@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "scripts"))
 
-from drawer_ctl import mermaid
+from drawer_ctl import export as export_mod
 from drawer_ctl import paths
 from drawer_ctl import server
 
@@ -33,7 +33,7 @@ class ExportPngTest(unittest.TestCase):
 
     def test_writes_png_under_export_directory(self) -> None:
         png = server.PNG_SIGNATURE + b"payload"
-        dest = mermaid.write_export_png(png, "Current diagram")
+        dest = export_mod.write_export_png(png, "Current diagram")
 
         self.assertEqual(dest.parent, (self.tmp / "export").resolve())
         self.assertEqual(dest.suffix, ".png")

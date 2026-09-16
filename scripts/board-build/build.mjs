@@ -79,7 +79,7 @@ for (const rel of SCRIPTS) {
   parts.push(readFileSync(file, 'utf8'));
 }
 
-const require = createRequire(new URL('../mermaid-build/package.json', import.meta.url));
+const require = createRequire(new URL('./package.json', import.meta.url));
 const esbuild = require('esbuild');
 const result = await esbuild.transform(parts.join('\n'), { loader: 'js', minify: true, target: 'es2018' });
 writeFileSync(outFile, result.code);

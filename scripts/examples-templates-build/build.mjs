@@ -3,9 +3,8 @@
  * Pack examples/ sources into skill/assets/templates (no PNGs, flat files).
  *
  *   examples/board-.../*.bmd   -> skill/assets/templates/board/<file>.bmd
- *   examples/mermaid-.../*.mmd -> skill/assets/templates/mermaid/<file>.mmd
  *
- * Directory name prefix (board- / mermaid-) picks the destination.
+ * Directory name prefix (board-) picks the destination.
  * AI-facing skill/board/templates/demo.bmd is unrelated and left alone.
  */
 import fs from 'node:fs';
@@ -19,7 +18,6 @@ const templatesRoot = path.join(repo, 'skill/assets/templates');
 
 const KINDS = [
   { prefix: 'board-', ext: '.bmd', outRoot: path.join(templatesRoot, 'board') },
-  { prefix: 'mermaid-', ext: '.mmd', outRoot: path.join(templatesRoot, 'mermaid') },
 ];
 
 function listExampleDirs(prefix) {
@@ -66,11 +64,11 @@ function packOne({ prefix, ext, outRoot }) {
   return keep.size;
 }
 
-for (const legacy of ['board', 'mermaid']) {
-  const p = path.join(repo, 'skill/assets', legacy);
+for (const legacy of ['mermaid']) {
+  const p = path.join(templatesRoot, legacy);
   if (fs.existsSync(p)) {
     fs.rmSync(p, { recursive: true, force: true });
-    console.log(`rm legacy ${path.relative(repo, p)}`);
+    console.log(`rm stale ${path.relative(repo, p)}`);
   }
 }
 
@@ -78,4 +76,4 @@ let total = 0;
 for (const spec of KINDS) {
   total += packOne(spec);
 }
-console.log(`packed ${total} sources into skill/assets/templates/{board,mermaid}`);
+console.log(`packed ${total} sources into skill/assets/templates/board`);

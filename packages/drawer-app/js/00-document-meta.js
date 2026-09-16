@@ -7,8 +7,8 @@
   root.sourceBody = api.sourceBody;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
-  var META_LINE = /^(?:%%\s*)?meta\s+(\S+|{.*})\s*$/;
-  var ID_RE = /^[bm]_[0-9a-f]{8}$/;
+  var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
+  var ID_RE = /^b_[0-9a-f]{8}$/;
 
   function encodeMetaPayload(meta) {
     var json = JSON.stringify({ id: String(meta.id), version: Number(meta.version) });
@@ -64,13 +64,8 @@
 
   function joinDocument(meta, body) {
     var id = String(meta.id);
-    var prefix = /^m_[0-9a-f]{8}$/.test(id) ? "%% " : "";
     var rest = String(body == null ? "" : body);
-    if (prefix && typeof DrawerStyleLine !== "undefined") {
-      var styled = DrawerStyleLine.splitRendererStyle(rest);
-      rest = DrawerStyleLine.joinRendererStyle(styled.token, styled.body);
-    }
-    var line = prefix + "meta " + encodeMetaPayload({ id: id, version: Number(meta.version) });
+    var line = "meta " + encodeMetaPayload({ id: id, version: Number(meta.version) });
     if (rest.charAt(0) === "\n") return line + rest;
     if (rest) return line + "\n" + rest;
     return line + "\n";

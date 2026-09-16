@@ -37,7 +37,6 @@ const jsDir = path.join(srcDir, 'js');
 const earlyMap = {
   '00-early-head.js': 'drawer-app-early-head.js',
   '00-early-hydrate.js': 'drawer-app-early-hydrate.js',
-  '00-mermaid-alias.js': 'drawer-app-mermaid-alias.js',
 };
 for (const [name, outName] of Object.entries(earlyMap)) {
   const src = path.join(jsDir, name);
@@ -60,13 +59,8 @@ const domain = [
   '00-canvas-view.js',
   '01-shell-state.js',
   '02-board.js',
-  '03-mermaid-inspect.js',
-  '03-mermaid.js',
-  '04-mindmap.js',
-  '04-state.js',
   '05-render-io.js',
   '05-export-png.js',
-  '06-view-sequence.js',
   '07-chrome-boot.js',
   '08-source-lines.js',
 ];
