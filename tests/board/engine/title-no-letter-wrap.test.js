@@ -6,7 +6,7 @@ const path = require('path');
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 const boxJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/board-box.js'), 'utf8');
 const template = fs.readFileSync(
-  path.join(__dirname, '../../../skill/assets/templates/board/onboarding.bmd'),
+  path.join(__dirname, '../../../skill/board/assets/templates/board/onboarding.bmd'),
   'utf8'
 );
 

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
-const assetsRoot = path.join(repo, 'skill/assets');
+const assetsRoot = path.join(repo, 'skill/board/assets');
 const srcDir = path.join(packages, 'drawer-app');
 const assetsDir = assetsRoot;
 const vendorOut = path.join(assetsDir, 'vendor');

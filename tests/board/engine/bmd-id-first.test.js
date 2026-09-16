@@ -47,6 +47,6 @@ assert.ok(/title.textContent = "Board"/.test(shell), 'Source title is Board');
 assert.ok(/function setCharsLabel/.test(shell), 'chars use a formatted count');
 assert.ok(shell.includes("if (!/^\\s*meta\\s+/.test(text))"), 'API wrap only peels meta envelopes');
 assert.ok(/var doc = splitDocument\(text\)/.test(shell), 'API wrap still splits a meta document');
-assert.ok(/document meta required/.test(fs.readFileSync(path.join(__dirname, '../../../skill/scripts/document_meta.py'), 'utf8')), 'hard-cut lives in document_meta');
+assert.ok(/document meta required/.test(fs.readFileSync(path.join(__dirname, '../../../skill/board/scripts/document_meta.py'), 'utf8')), 'hard-cut lives in document_meta');
 
 console.log('ok bmd-id-first');

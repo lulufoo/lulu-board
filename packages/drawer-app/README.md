@@ -30,4 +30,4 @@ Build:
 node scripts/drawer-app-build/build.mjs
 ```
 
-Writes `skill/assets/drawer.html` plus `skill/assets/vendor/drawer-app.{css,js}` and early scripts. `drawer_control.py sync_assets` copies them into `~/.cache/board`.
+Writes `skill/board/assets/drawer.html` plus `skill/board/assets/vendor/drawer-app.{css,js}` and early scripts. `drawer_control.py sync_assets` copies them into `~/.cache/board`.

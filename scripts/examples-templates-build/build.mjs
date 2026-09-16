@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Pack examples/ sources into skill/assets/templates (no PNGs, flat files).
+ * Pack examples/ sources into skill/board/assets/templates (no PNGs, flat files).
  *
- *   examples/board-.../*.bmd   -> skill/assets/templates/board/<file>.bmd
+ *   examples/board-.../*.bmd   -> skill/board/assets/templates/board/<file>.bmd
  *
  * Directory name prefix (board-) picks the destination.
  * AI-facing skill/board/templates/demo.bmd is unrelated and left alone.
@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const examplesRoot = path.join(repo, 'examples');
-const templatesRoot = path.join(repo, 'skill/assets/templates');
+const templatesRoot = path.join(repo, 'skill/board/assets/templates');
 
 const KINDS = [
   { prefix: 'board-', ext: '.bmd', outRoot: path.join(templatesRoot, 'board') },
@@ -68,4 +68,4 @@ let total = 0;
 for (const spec of KINDS) {
   total += packOne(spec);
 }
-console.log(`packed ${total} sources into skill/assets/templates/board`);
+console.log(`packed ${total} sources into skill/board/assets/templates/board`);

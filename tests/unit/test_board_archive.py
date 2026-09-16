@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import paths as _ctl_paths

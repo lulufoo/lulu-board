@@ -28,8 +28,8 @@ Local loopback preview for Board. Loaded from `/board` only.
 
 ## Seed
 
-1. If `history` has no `*.bmd`, seed `../assets/templates/board/*.bmd` and point `current` at onboarding.
-2. `board/templates/demo.bmd` is not seeded.
+1. If `history` has no `*.bmd`, seed `assets/templates/board/*.bmd` and point `current` at onboarding.
+2. `templates/demo.bmd` is not seeded.
 3. `preview --kind board` with no file and no stdin does not create a record.
 
 ## Open

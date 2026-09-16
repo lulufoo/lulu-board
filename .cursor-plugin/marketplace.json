@@ -1,0 +1,21 @@
+{
+  "name": "lulu-board",
+  "owner": {
+    "name": "lulufoo"
+  },
+  "metadata": {
+    "description": "Lulu Board — local structured whiteboard plugin"
+  },
+  "plugins": [
+    {
+      "name": "lulu-board",
+      "source": "skill",
+      "description": "Local structured whiteboard: the agent writes BMD, Lulu Board draws it, you edit on the canvas.",
+      "homepage": "https://github.com/lulufoo/lulu-board",
+      "repository": "https://github.com/lulufoo/lulu-board",
+      "license": "MIT",
+      "keywords": ["board", "whiteboard", "diagram", "bmd"],
+      "logo": "board/assets/logo.svg"
+    }
+  ]
+}

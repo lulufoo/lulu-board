@@ -24,7 +24,7 @@ Diagrams go stale when only one side can edit them. Lulu Board keeps one text pr
 
 ## Quick start
 
-Install **only** the [`skill/`](./skill/) folder (not this whole repo) into your agent skills path, then in chat:
+Install the **Lulu Board** Cursor plugin (this public repo; plugin body is [`skill/`](./skill/)), then in chat:
 
 ```text
 /board
@@ -85,18 +85,20 @@ Click a preview to open the source.
 Ship **`skill/`** as the Cursor plugin body. Chat entry is `/board`.
 
 ```text
+.cursor-plugin/marketplace.json   # repo marketplace; source: skill
 skill/
-  board/     # /board skill (references/viewer.md for preview)
-  assets/    # built viewer
-  scripts/   # drawer_control.py
+  .cursor-plugin/plugin.json      # name: lulu-board; skills: board
+  board/     # self-contained /board (SKILL.md, scripts/, assets/)
 ```
 
 Do not ship `packages/`, `scripts/*-build/`, or `tests/`.
 
+Local test: copy `skill/` to `~/.cursor/plugins/local/lulu-board` (do not symlink out of that folder), then Developer: Reload Window.
+
 ## Develop
 
 ```text
-examples/    # README previews (source + PNG) → packed into skill/assets/templates
+examples/    # README previews (source + PNG) → packed into skill/board/assets/templates
 packages/    # board, drawer-app
 scripts/     # build tooling
 skill/       # plugin root

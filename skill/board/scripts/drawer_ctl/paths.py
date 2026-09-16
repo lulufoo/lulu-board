@@ -16,7 +16,7 @@ HISTORY_SOURCE_READ_CAP = 256_000
 
 
 def skill_root() -> Path:
-    """Install root: skill/ (parent of this scripts/ dir)."""
+    """Install root: this skill folder (parent of scripts/)."""
     return Path(__file__).resolve().parents[2]
 
 

@@ -1,0 +1,14 @@
+{
+  "name": "lulu-board",
+  "version": "1.0.0",
+  "description": "Local structured whiteboard: the agent writes BMD, Lulu Board draws it, you edit on the canvas.",
+  "author": {
+    "name": "lulufoo"
+  },
+  "homepage": "https://github.com/lulufoo/lulu-board",
+  "repository": "https://github.com/lulufoo/lulu-board",
+  "license": "MIT",
+  "keywords": ["board", "whiteboard", "diagram", "bmd"],
+  "logo": "board/assets/logo.svg",
+  "skills": ["board"]
+}
