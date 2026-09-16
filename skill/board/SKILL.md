@@ -29,6 +29,7 @@ Load the authoring contract before writing.
 2. Load [vocab](./references/vocab.md); it is the authoring contract.
 3. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
 4. When using an icon, load [icons.json](./common/icons.json).
+5. Load [viewer](./references/viewer.md) for `mount` / `status` / `stop` or the pointer protocol.
 
 ## Flow
 

@@ -5,7 +5,7 @@ Install / publish **this folder only**.
 | Path | Role |
 |---|---|
 | `SKILL.md` | Agent entry (Board) |
-| `board/` `drawer/` | Mode skills |
+| `board/` | Mode skill (`/board`). Viewer notes: `board/references/viewer.md` |
 | `assets/` | Built Drawer viewer (`drawer.html` + `vendor/*.min.js`) |
 | `scripts/` | Runtime CLI (`drawer_control.py` + helpers) |
 

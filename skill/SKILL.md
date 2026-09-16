@@ -12,7 +12,7 @@ This directory is the **skill install root**. Install / publish **only** this fo
 |---|---|---|---|---|
 | Board | **Lulu Board** | BMD ID (`b_…`) | BMD Source | `board/` |
 
-CLI: `$DRAWER_CTL` → `python3 scripts/drawer_control.py` (see `drawer/`).
+CLI: `$DRAWER_CTL` → `python3 scripts/drawer_control.py` (see `board/references/viewer.md`).
 
 Runtime assets: `assets/` (built from the monorepo; synced to `~/.cache/board` on preview).
 

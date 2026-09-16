@@ -87,7 +87,7 @@ Ship **`skill/`** only:
 ```text
 skill/
   SKILL.md                 # agent entry
-  board/ drawer/           # mode skills
+  board/                   # /board skill (+ references/viewer.md)
   assets/                  # viewer + History templates
   scripts/                 # drawer_control CLI
 ```
