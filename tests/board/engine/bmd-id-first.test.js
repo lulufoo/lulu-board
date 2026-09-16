@@ -8,7 +8,6 @@ const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
-const pack = fs.readFileSync(path.join(root, 'skill/SKILL.md'), 'utf8');
 const board = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'skill/board/references/vocab.md'), 'utf8');
@@ -32,8 +31,7 @@ assert.ok(/dockWidth/.test(shell), 'sidebar width is persisted');
 assert.ok(!/Copy BMD ID|Copy MMD ID/.test(html + shell + boot), 'visible copy labels drop BMD/MMD');
 assert.ok(/function syncSourceIdChrome/.test(shell), 'ID chrome syncs with live meta');
 assert.ok(/btnSourceCopyId/.test(boot), 'Copy ID is wired');
-assert.ok(/BMD ID/.test(pack) && !/MMD ID/.test(pack), 'pack table names BMD only');
-assert.ok(/BMD Source/.test(pack) && !/MMD Source/.test(pack), 'pack table names Board source only');
+assert.ok(!fs.existsSync(path.join(root, 'skill/SKILL.md')), 'no pack SKILL at skill root');
 assert.ok(/\*\*BMD ID\*\*/.test(board) && /\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD terms');
 assert.ok(/Keep `id` \(BMD ID\) first/.test(board), 'board flow keeps BMD ID first');
 assert.ok(/`--id` is BMD ID/.test(viewer), 'viewer names BMD ID');

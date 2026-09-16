@@ -82,17 +82,16 @@ Click a preview to open the source.
 
 ## Install
 
-Ship **`skill/`** only:
+Ship **`skill/`** as the Cursor plugin body. Chat entry is `/board`.
 
 ```text
 skill/
-  SKILL.md                 # agent entry
-  board/                   # /board skill (+ references/viewer.md)
-  assets/                  # viewer + History templates
-  scripts/                 # drawer_control CLI
+  board/     # /board skill (references/viewer.md for preview)
+  assets/    # built viewer
+  scripts/   # drawer_control.py
 ```
 
-Do not install the monorepo root. `packages/`, `scripts/*-build/`, and `tests/` are for development.
+Do not ship `packages/`, `scripts/*-build/`, or `tests/`.
 
 ## Develop
 
@@ -100,7 +99,7 @@ Do not install the monorepo root. `packages/`, `scripts/*-build/`, and `tests/` 
 examples/    # README previews (source + PNG) → packed into skill/assets/templates
 packages/    # board, drawer-app
 scripts/     # build tooling
-skill/       # install root
+skill/       # plugin root
 tests/
 ```
 

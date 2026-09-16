@@ -1,13 +1,12 @@
-# skill/ — install root
+# skill/ — plugin root
 
-Install / publish **this folder only**.
+Ship **this folder** as the Cursor plugin. Chat entry is `/board`.
 
 | Path | Role |
 |---|---|
-| `SKILL.md` | Agent entry (Board) |
-| `board/` | Mode skill (`/board`). Viewer notes: `board/references/viewer.md` |
-| `assets/` | Built Drawer viewer (`drawer.html` + `vendor/*.min.js`) |
-| `scripts/` | Runtime CLI (`drawer_control.py` + helpers) |
+| `board/` | `/board` skill (`references/viewer.md` for preview) |
+| `assets/` | Built viewer (`drawer.html` + `vendor/`) |
+| `scripts/` | `drawer_control.py` |
 
 ```bash
 python3 scripts/drawer_control.py preview --kind board
@@ -18,5 +17,5 @@ python3 scripts/drawer_control.py status
 
 ## Not in this folder
 
-Dev monorepo (do not install): `packages/`, `scripts/*-build/`, `tests/`.  
-Rebuild assets from repo root, e.g. `node scripts/drawer-app-build/build.mjs`.
+Do not ship `packages/`, `scripts/*-build/`, or `tests/`.
+Rebuild from the repo root: `node scripts/drawer-app-build/build.mjs`.
