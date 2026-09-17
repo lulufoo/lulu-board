@@ -23,7 +23,8 @@ assert.match(openFile, /saveBoardToHash/, 'writes the opened file into the hash'
 assert.doesNotMatch(openFile, /boardHistoryCombo/, 'does not open the History combo');
 assert.match(boot, /btnHistoryOpenFile.*openBoardFile/, 'Open File button is wired');
 assert.match(boot, /boardPersistMode\(\) === "hash"[\s\S]*~\/\.cache\/board\/history/, 'hash History row titles the SKILL cache path');
-assert.match(css, /\[data-persist="hash"\] #boardHistoryCombo/, 'hash mode hides the History combo');
+assert.match(css, /\[data-persist="hash"\]:not\(\[data-cloud-history="on"\]\) #boardHistoryCombo/, 'unsigned hash mode hides the History combo');
+assert.match(css, /\[data-persist="hash"\]\[data-cloud-history="on"\] #boardHistoryCombo/, 'signed-in hash mode shows cloud History');
 assert.match(css, /\[data-persist="hash"\] #btnHistoryOpenFile/, 'hash mode shows Open File');
 assert.doesNotMatch(css, /\[data-persist="hash"\] #boardHistory\s*\{/, 'hash mode does not hide the History block');
 

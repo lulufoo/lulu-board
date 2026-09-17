@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
-const webVendor = path.join(repo, 'web/vendor');
+const webVendor = path.join(repo, '.cache/web/vendor');
 const srcDir = path.join(packages, 'board');
 const outFile = path.join(webVendor, 'board.min.js');
 const iconCatalogFile = path.join(repo, 'skill/board/common/icons.json');

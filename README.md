@@ -103,7 +103,7 @@ packages/    # board, drawer-app
 scripts/     # build tooling
 skill/       # plugin root
 tests/
-web/         # public viewer (luluboard.app)
+.cache/web/  # generated public viewer (✅ Verified: scripts/web-build/build.mjs)
 ```
 
 From the repo root:

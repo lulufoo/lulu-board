@@ -30,4 +30,4 @@ Build:
 node scripts/drawer-app-build/build.mjs
 ```
 
-Writes `web/vendor/drawer-app.{css,js}` plus early scripts and favicons. The public page is `web/index.html` from `node scripts/web-build/build.mjs`.
+✅ Verified (`scripts/drawer-app-build/build.mjs`, `scripts/web-build/build.mjs`): writes `.cache/web/vendor/drawer-app.{css,js}` plus early scripts and favicons. The public page is `.cache/web/index.html` from `node scripts/web-build/build.mjs`.

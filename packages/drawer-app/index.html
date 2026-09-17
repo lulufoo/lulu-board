@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; worker-src 'self' blob:">
 <title>Lulu Board</title>
 <link rel="icon" href="./favicon.ico" sizes="32x32">
 <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
@@ -32,6 +33,16 @@
         <button class="btn board-edit-tool" id="btnBoardAddItem" type="button" title="Add item"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Item</span></button>
         <button class="btn board-edit-tool" id="btnBoardLink" type="button" title="Link mode: click source box or item, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
         <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
+      <div class="board-account" id="boardAccount">
+        <button class="btn" id="btnBoardSignIn" type="button" aria-haspopup="menu" aria-expanded="false">Sign in</button>
+        <div class="board-auth-menu" id="boardAuthMenu" role="menu" hidden>
+          <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
+          <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
+        </div>
+        <span class="board-account-name" id="boardAccountName" hidden></span>
+        <button class="btn" id="btnBoardSaveCloud" type="button" hidden>Save to cloud</button>
+        <button class="btn" id="btnBoardSignOut" type="button" hidden>Sign out</button>
       </div>
     </div>
 
@@ -286,6 +297,8 @@
 </div>
 
 <script src="./vendor/board.min.js"></script>
+<script src="./vendor/supabase-config.js"></script>
+<script src="./vendor/supabase-client.js"></script>
 <script type="module" src="./vendor/drawer-app.js"></script>
 
 <div class="copy-tip" id="copyTip" hidden>Copied successfully</div>

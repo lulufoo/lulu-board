@@ -1600,6 +1600,9 @@ async function saveBoardToHash() {
 }
 async function saveBoardToFile() {
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    if (typeof cloudBoardId === "function" && cloudBoardId()) {
+      return saveBoardToCloud({ explicit: false });
+    }
     return saveBoardToHash();
   }
   boardSaveTimer = null;
@@ -1642,6 +1645,10 @@ async function loadBoardPolled() {
 }
 async function bootstrapBoardFromHash() {
   var raw = String(location.hash || "").replace(/^#/, "");
+  if (typeof cloudBoardIdFromHash === "function" && cloudBoardIdFromHash(raw)) {
+    await loadCloudBoardByHash(raw);
+    return;
+  }
   if (!raw) {
     var blank = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
@@ -1661,6 +1668,16 @@ async function bootstrapBoardFromHash() {
   try {
     boardSourceEl.value = await decodeBoardHash(raw);
     boardLocalRev = 1;
+    try {
+      var decoded = splitDocument(boardSourceEl.value);
+      if (typeof applyBoardLiveMeta === "function") {
+        applyBoardLiveMeta({
+          id: decoded.meta.id,
+          version: decoded.meta.version,
+          title: typeof boardTitleFromBody === "function" ? boardTitleFromBody(decoded.body) : "",
+        });
+      }
+    } catch (_e) {}
   } catch (err) {
     boardSourceEl.value = "";
     if (typeof showBoardError === "function") {

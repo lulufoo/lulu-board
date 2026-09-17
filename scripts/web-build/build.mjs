@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Public site build: compiled viewer assets into web/. Does not copy skill/.
+ * Public site build: compiled viewer assets into .cache/web/. Does not copy skill/.
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
-const webDir = path.join(repo, 'web');
+const webDir = path.join(repo, '.cache/web');
 const webVendor = path.join(webDir, 'vendor');
 const srcHtml = path.join(repo, 'packages/drawer-app/index.html');
 
@@ -18,6 +18,7 @@ function runBuild(rel) {
   if (result.status) process.exit(result.status || 1);
 }
 
+rmSync(webDir, { recursive: true, force: true });
 runBuild('scripts/board-build/build.mjs');
 runBuild('scripts/drawer-app-build/build.mjs');
 
@@ -28,18 +29,20 @@ const vendorFiles = [
   'drawer-app.js',
   'drawer-app-early-head.js',
   'drawer-app-early-hydrate.js',
+  'supabase-config.js',
+  'supabase-client.js',
   'snapdom.mjs',
 ];
 for (const name of vendorFiles) {
   const src = path.join(webVendor, name);
   if (!existsSync(src)) throw new Error('missing ' + src);
-  console.log('ok web/vendor/' + name);
+  console.log('ok .cache/web/vendor/' + name);
 }
 
 for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   const src = path.join(webDir, name);
   if (!existsSync(src)) throw new Error('missing ' + src);
-  console.log('ok web/' + name);
+  console.log('ok .cache/web/' + name);
 }
 
 let html = readFileSync(srcHtml, 'utf8');
@@ -51,6 +54,6 @@ if (!html.includes('data-persist="hash"')) {
   throw new Error('could not mark web index as hash persist');
 }
 writeFileSync(path.join(webDir, 'index.html'), html);
-console.log('ok web/index.html');
+console.log('ok .cache/web/index.html');
 
 rmSync(path.join(webDir, 'css'), { recursive: true, force: true });

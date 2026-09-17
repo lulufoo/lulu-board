@@ -640,6 +640,54 @@ html[data-drawer-mode="board"] .top-float {
   z-index: 5;
 }
 html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
+.board-account {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  position: relative;
+}
+.board-account-name {
+  max-width: 13rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 3px;
+  color: var(--text, #222);
+  font-size: 12px;
+}
+.board-auth-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 11.5rem;
+  padding: 4px;
+  border: 1px solid var(--stroke, #e5e7eb);
+  border-radius: 8px;
+  background: var(--panel-solid, #fff);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, .18);
+  z-index: 30;
+}
+.board-auth-menu[hidden] { display: none; }
+.board-auth-provider {
+  appearance: none;
+  border: 0;
+  border-radius: 5px;
+  padding: 8px 9px;
+  background: transparent;
+  color: var(--text, #222);
+  cursor: pointer;
+  font: 12px/1.3 inherit;
+  text-align: left;
+}
+.board-auth-provider:hover,
+.board-auth-provider:focus-visible {
+  background: color-mix(in srgb, var(--accent, #2563eb) 10%, transparent);
+  outline: none;
+}
 .top-float-spacer { flex: 1 1 auto; min-width: 12px; pointer-events: none !important; }
 .diagram-theme-wrap {
   display: inline-flex; align-items: center; gap: 6px;
@@ -1760,10 +1808,16 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
 
 
 /* Board history list (Source dock) */
-[data-persist="hash"] #boardHistoryCombo,
-[data-persist="hash"] #boardHistoryEmpty,
-[data-persist="hash"] #btnBoardHistoryRefresh {
+[data-persist="hash"]:not([data-cloud-history="on"]) #boardHistoryCombo,
+[data-persist="hash"]:not([data-cloud-history="on"]) #boardHistoryEmpty,
+[data-persist="hash"]:not([data-cloud-history="on"]) #btnBoardHistoryRefresh {
   display: none;
+}
+[data-persist="hash"][data-cloud-history="on"] #boardHistoryCombo {
+  display: block;
+}
+[data-persist="hash"][data-cloud-history="on"] #btnBoardHistoryRefresh {
+  display: inline-flex;
 }
 #btnHistoryOpenFile {
   display: none;

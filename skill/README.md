@@ -20,5 +20,5 @@ From `board/`, the same CLI is `python3 scripts/drawer_control.py`.
 
 ## Not in this folder
 
-Do not ship `packages/`, `scripts/*-build/`, `tests/`, or `web/`.
+Do not ship `packages/`, `scripts/*-build/`, `tests/`, or `.cache/web/`.
 Rebuild the public viewer from the repo root: `node scripts/web-build/build.mjs`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Developer-only local viewer for rendering a built web board.
+ * Developer-only local viewer for rendering a built cached board.
  *
  * It never serves on a public interface: the listener is bound to 127.0.0.1.
  * Pass --board to put a BMD file in the viewer's #z: fragment.
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const webRoot = path.join(repo, 'web');
+const webRoot = path.join(repo, '.cache', 'web');
 const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
@@ -157,7 +157,7 @@ async function main() {
   let boardHash = '';
   try {
     const stat = statSync(webRoot);
-    if (!stat.isDirectory()) throw new Error('web/ is missing; run node scripts/web-build/build.mjs first');
+    if (!stat.isDirectory()) throw new Error('.cache/web/ is missing; run node scripts/web-build/build.mjs first');
     if (options.board) {
       if (!statSync(options.board).isFile()) throw new Error(`--board must be a file: ${options.board}`);
       boardHash = encodeBoardHash(options.board);

@@ -51,6 +51,15 @@ function formatHistoryWhen(created) {
   // YYYYMMDD-HHMMSS → MM-DD HH:MM:SS
   var m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/.exec(s);
   if (m) return m[2] + "-" + m[3] + " " + m[4] + ":" + m[5];
+  var date = new Date(s);
+  if (!Number.isNaN(date.getTime())) {
+    return date.toLocaleString(undefined, {
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
   return s || "";
 }
 function historyDisplayTitle(item, fallback) {
@@ -200,7 +209,10 @@ function boardHistoryFile(name) {
   return name + ".bmd";
 }
 async function refreshBoardHistory() {
-  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    if (typeof refreshCloudBoardHistory === "function") return refreshCloudBoardHistory();
+    return;
+  }
   var list = document.getElementById("boardHistoryList");
   var empty = document.getElementById("boardHistoryEmpty");
   var combo = list && list.closest(".history-combo");
