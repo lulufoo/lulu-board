@@ -474,6 +474,35 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
   });
 }
 
+async function openOnboardingHash() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() !== "hash") return;
+  if (typeof encodeBoardHash !== "function") {
+    setStatus("Onboarding is unavailable", true);
+    return;
+  }
+  try {
+    var res = await fetch("./onboarding.bmd", { cache: "no-store" });
+    if (!res.ok) throw new Error("Onboarding is unavailable");
+    var text = await res.text();
+    if (!String(text).trim()) throw new Error("Onboarding is unavailable");
+    var token = await encodeBoardHash(text);
+    var next = "#" + token;
+    if (location.hash === next) {
+      setStatus("Onboarding");
+      return;
+    }
+    location.hash = token;
+    setStatus("Onboarding");
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : String(err), true);
+  }
+}
+(function wireBoardOnboarding() {
+  var btn = document.getElementById("btnBoardOnboarding");
+  if (!btn) return;
+  btn.addEventListener("click", function() { void openOnboardingHash(); });
+})();
+
 (function wireBoardHistory() {
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
     var cloudRefresh = document.getElementById("btnBoardHistoryRefresh");

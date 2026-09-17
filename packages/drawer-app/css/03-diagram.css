@@ -1541,6 +1541,18 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   background: var(--accent);
 }
 .board-dock-tab-icon { width: 18px; height: 18px; display: block; }
+.board-dock-help { display: none; }
+html[data-persist="hash"] .board-dock-help {
+  display: flex;
+}
+.board-dock-help-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+}
 .board-dock-tab-label {
   position: absolute;
   width: 1px;

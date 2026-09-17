@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 /**
+ * Examples stay under examples/ for README. They are not packed into skill/.
+ * Website onboarding is packages/drawer-app/onboarding.bmd.
+ */
+console.log('skip examples-templates-build: onboarding lives in packages/drawer-app');
+process.exit(0);
+
+/**
  * Pack examples/ sources into skill/board/templates (no PNGs, flat files).
  *
  *   examples/board-.../*.bmd   -> skill/board/templates/board/<file>.bmd

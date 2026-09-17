@@ -39,7 +39,7 @@ for (const name of vendorFiles) {
   console.log('ok .cache/web/vendor/' + name);
 }
 
-for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
+for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico', 'onboarding.bmd']) {
   const src = path.join(webDir, name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   console.log('ok .cache/web/' + name);

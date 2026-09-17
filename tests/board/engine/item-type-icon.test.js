@@ -45,7 +45,7 @@ assert.ok(/\| `icon` \|/.test(vocab), 'vocab table has icon');
 assert.ok(!/### img/.test(vocab), 'vocab has no img heading');
 assert.ok(!/\| `img` \|/.test(vocab), 'vocab table has no img');
 
-['skill/board/templates/board/onboarding.bmd', 'skill/board/templates/demo.bmd'].forEach((rel) => {
+['packages/drawer-app/onboarding.bmd', 'skill/board/templates/demo.bmd'].forEach((rel) => {
   const src = read(rel);
   assert.ok(/\btype\s+icon\b/.test(src), rel + ' uses type icon');
   assert.ok(!/\btype\s+img\b/.test(src), rel + ' has no type img');

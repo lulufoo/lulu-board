@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Empty history/ is seeded from skill/board/templates/board packed examples."""
+"""Empty history/ no longer seeds packed examples from skill/board/templates/board."""
 from __future__ import annotations
 
 import shutil
@@ -26,20 +26,10 @@ class BoardTemplateSeedTest(unittest.TestCase):
         _ctl_paths.STATE_DIR = self.prev_state
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def test_empty_history_gets_packed_examples(self) -> None:
+    def test_empty_history_does_not_seed_packed_examples(self) -> None:
         dest = dc.seed_default_board_if_empty()
-        self.assertIsNotNone(dest)
-        self.assertTrue(dest.is_file())
-        text = dest.read_text(encoding="utf-8")
-        self.assertIn('board "Lulu Board"', text)
-        meta = dc.read_board_meta()
-        self.assertEqual(meta.get("via"), "template")
-        self.assertEqual(meta.get("label"), "onboarding")
-        self.assertEqual(Path(meta["current"]).name, dest.name)
-        self.assertEqual(dc.read_board_source_text(), text)
-        names = sorted(p.name for p in dc.board_history_dir().glob("*.bmd"))
-        # onboarding + android-mvi + llm-architecture (demo.bmd is AI-only, not seeded)
-        self.assertGreaterEqual(len(names), 3)
+        self.assertIsNone(dest)
+        self.assertEqual(list(dc.board_history_dir().glob("*.bmd")), [])
 
     def test_existing_record_not_replaced(self) -> None:
         _ctl_paths.STATE_DIR.mkdir(parents=True, exist_ok=True)

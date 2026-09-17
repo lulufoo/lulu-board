@@ -2,7 +2,6 @@
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -85,8 +84,3 @@ const result = await esbuild.transform(parts.join('\n'), { loader: 'js', minify:
 mkdirSync(webVendor, { recursive: true });
 writeFileSync(outFile, result.code);
 console.log(`ok ${outFile} ${result.code.length} bytes`);
-
-const pack = spawnSync(process.execPath, [path.join(repo, 'scripts/examples-templates-build/build.mjs')], {
-  stdio: 'inherit',
-});
-if (pack.status) process.exit(pack.status || 1);
