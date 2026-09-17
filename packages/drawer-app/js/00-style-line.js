@@ -52,16 +52,18 @@
     return line + "\n" + rest;
   }
 
+  // Camera viewport: world point at the stage centre + zoom.
+  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
     var scale = Number(raw.scale);
-    var x = Number(raw.x);
-    var y = Number(raw.y);
-    if (!isFinite(scale) || !isFinite(x) || !isFinite(y)) return null;
+    var cx = Number(raw.cx);
+    var cy = Number(raw.cy);
+    if (!isFinite(scale) || !isFinite(cx) || !isFinite(cy)) return null;
     return {
       scale: Math.min(3, Math.max(0.2, scale)),
-      x: Math.round(x),
-      y: Math.round(y),
+      cx: Math.round(cx),
+      cy: Math.round(cy),
     };
   }
 

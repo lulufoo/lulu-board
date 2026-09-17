@@ -10,15 +10,28 @@ function getExportContentTarget() {
   return previewEl && previewEl.querySelector('.board-render');
 }
 
+/* Capture frame = world bounds of nodes + edges (negative coordinates included).
+ * `shift` moves the clone so world (minX, minY) lands on the frame's corner. */
 function getExportContentSize(target) {
-  const rect = target.getBoundingClientRect();
-  const activeScale = Number(scale) > 0 ? Number(scale) : 1;
-  const width = target.clientWidth || target.offsetWidth || rect.width / activeScale;
-  const height = target.clientHeight || target.offsetHeight || rect.height / activeScale;
-  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+  const bounds = typeof BoardRender !== 'undefined' && typeof BoardRender.worldBounds === 'function'
+    ? BoardRender.worldBounds(target)
+    : null;
+  if (!bounds || !(bounds.width > 0) || !(bounds.height > 0)) {
     throw new Error('Diagram has no exportable size');
   }
-  return { width: Math.ceil(width), height: Math.ceil(height) };
+  const canvas = target.querySelector('.board-canvas');
+  const canvasOffset = {
+    x: canvas ? canvas.offsetLeft || 0 : 0,
+    y: canvas ? canvas.offsetTop || 0 : 0,
+  };
+  return {
+    width: Math.ceil(bounds.width),
+    height: Math.ceil(bounds.height),
+    shift: {
+      x: -(bounds.minX + canvasOffset.x),
+      y: -(bounds.minY + canvasOffset.y),
+    },
+  };
 }
 
 function stripExportInteractions(root) {
@@ -71,8 +84,12 @@ function mountExportClone(target, size) {
     'transform:none',
   ].join(';');
   const clone = target.cloneNode(true);
-  clone.style.width = `${size.width}px`;
-  clone.style.height = `${size.height}px`;
+  clone.style.position = 'absolute';
+  clone.style.left = `${size.shift ? size.shift.x : 0}px`;
+  clone.style.top = `${size.shift ? size.shift.y : 0}px`;
+  clone.style.width = 'max-content';
+  clone.style.height = 'auto';
+  clone.style.transform = 'none';
   stripExportInteractions(clone);
   stage.appendChild(clone);
   host.appendChild(stage);

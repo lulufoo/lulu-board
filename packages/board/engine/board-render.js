@@ -76,16 +76,18 @@
     if (!Number.isFinite(n)) return STYLE_DEFAULTS.type_step;
     return Math.min(STYLE_TYPE_MAX, Math.max(STYLE_TYPE_MIN, n));
   }
+  // Camera: the world point (cx, cy) shown at the stage centre, plus zoom.
+  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const scale = Number(raw.scale);
-    const x = Number(raw.x);
-    const y = Number(raw.y);
-    if (!Number.isFinite(scale) || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const cx = Number(raw.cx);
+    const cy = Number(raw.cy);
+    if (!Number.isFinite(scale) || !Number.isFinite(cx) || !Number.isFinite(cy)) return null;
     return {
       scale: Math.min(3, Math.max(0.2, scale)),
-      x: Math.round(x),
-      y: Math.round(y),
+      cx: Math.round(cx),
+      cy: Math.round(cy),
     };
   }
   function authoredStyle(raw) {
@@ -1753,7 +1755,10 @@
     const themeId = docStyle.theme;
     if (Themes && typeof Themes.applyTo === 'function') Themes.applyTo(root, themeId);
     const header = doc.createElement('header'); header.className = 'board-html-header board-title-node'; header.dataset.boardKey = 'title:board'; header.dataset.boardKind = 'title'; header.dataset.boardType = 'title'; header.setAttribute('title', 'Board title'); const heading = doc.createElement('h2'); heading.textContent = board.title || ''; header.appendChild(heading); if (board.title) root.appendChild(header);
-    const canvas = doc.createElement('div'); canvas.className = 'board-canvas'; canvas.style.position = 'relative'; canvas.style.paddingTop = '0'; canvas.style.boxSizing = 'border-box'; canvas.style.minWidth = '0'; canvas.style.overflow = 'visible'; root.appendChild(canvas);
+    // World layer: a zero-size anchor. Children carry world coordinates in
+    // left/top (negative values are legal); the canvas never grows or clips.
+    const canvas = doc.createElement('div'); canvas.className = 'board-canvas'; canvas.style.position = 'relative'; canvas.style.paddingTop = '0'; canvas.style.boxSizing = 'border-box'; canvas.style.minWidth = '0'; canvas.style.width = '0px'; canvas.style.height = '0px'; canvas.style.overflow = 'visible'; root.appendChild(canvas);
+    canvas.appendChild(makeWorldProbe(doc));
     const elements = new Map();
     const ctx = {
       doc,
@@ -1770,7 +1775,12 @@
       canvas.appendChild(View.Types.wrap(node).mount(ctx));
     });
     /* legend removed: edge meaning lives in link labels, not chrome */
-    const edgeSvg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg'); edgeSvg.classList.add('board-edges'); edgeSvg.setAttribute('style', 'position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;z-index:50;shape-rendering:geometricPrecision'); edgeSvg.setAttribute('shape-rendering', 'geometricPrecision'); edgeSvg.setAttribute('aria-hidden', 'true'); canvas.appendChild(edgeSvg); targetEl.appendChild(root);
+    // Edge layer: 1 user unit = 1 world px, anchored at the world origin and
+    // never clipped, so paths simply use world coordinates.
+    // CSSOM assignments, not a style attribute: the app CSP blocks inline style strings.
+    const edgeSvg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg'); edgeSvg.classList.add('board-edges');
+    Object.assign(edgeSvg.style, { position: 'absolute', left: '0px', top: '0px', width: '1px', height: '1px', overflow: 'visible', pointerEvents: 'none', zIndex: '50', shapeRendering: 'geometricPrecision' });
+    edgeSvg.setAttribute('viewBox', '0 0 1 1'); edgeSvg.setAttribute('width', '1'); edgeSvg.setAttribute('height', '1'); edgeSvg.setAttribute('overflow', 'visible'); edgeSvg.setAttribute('shape-rendering', 'geometricPrecision'); edgeSvg.setAttribute('aria-hidden', 'true'); canvas.appendChild(edgeSvg); targetEl.appendChild(root);
 
     // Intrinsic measure -> adaptive solve -> live-CSS remeasure -> crisp repaint.
     // A fixed frame can wrap text differently from the initial max-content probe;
@@ -1792,10 +1802,6 @@
     };
     const applyLayout = (next) => {
       result = next;
-      root.style.width = `${result.width}px`;
-      canvas.style.width = `${result.width}px`;
-      canvas.style.height = `${result.height}px`;
-      canvas.style.minHeight = `${result.height}px`;
       const applyRootFrames = () => {
         result.frames.forEach((frame, id) => {
           const el = elements.get(id);
@@ -1885,7 +1891,8 @@
       return changed;
     };
     const resolve = () => {
-      const available = canvas.clientWidth || root.clientWidth || 1200;
+      // The world has no width; the solver only uses this for parent.end anchors.
+      const available = WORLD_SOLVE_WIDTH;
       const remeasureIntrinsic = !result;
       if (remeasureIntrinsic) {
         eachBox((box) => {
@@ -1996,16 +2003,12 @@
     if (!canvas || !svg) return [];
     const shouldPaint = paint !== false;
     const c = canvas.getBoundingClientRect();
-    const layoutWidth = canvas.clientWidth || canvas.offsetWidth;
-    const layoutHeight = canvas.clientHeight || canvas.offsetHeight;
-    if (!layoutWidth || !layoutHeight || !c.width || !c.height) return [];
-    const scaleX = c.width / layoutWidth || 1;
-    const scaleY = c.height / layoutHeight || 1;
+    const worldScale = canvasScale(canvas);
+    if (!(worldScale.x > 0) || !(worldScale.y > 0)) return [];
+    const scaleX = worldScale.x;
+    const scaleY = worldScale.y;
     if (shouldPaint) {
       while (svg.firstChild) svg.removeChild(svg.firstChild);
-      svg.setAttribute('viewBox', `0 0 ${Math.ceil(layoutWidth)} ${Math.ceil(layoutHeight)}`);
-      svg.setAttribute('width', Math.ceil(layoutWidth));
-      svg.setAttribute('height', Math.ceil(layoutHeight));
     }
     if (!Route) throw new Error('BoardRoute module is not loaded');
     const liveRect = (el) => {
@@ -2173,6 +2176,60 @@
     return (board.boxes || []).map(function(box) { return box.id; });
   }
 
+  // World layer helpers. The canvas is a zero-size anchor at the world origin;
+  // a hidden 100x100 probe lets us read the live CSS scale and origin without
+  // depending on the canvas having any size of its own.
+  var WORLD_SOLVE_WIDTH = 1200;
+  var WORLD_PROBE_SIZE = 100;
+  function makeWorldProbe(doc) {
+    const probe = doc.createElement('div');
+    probe.className = 'board-probe';
+    probe.setAttribute('aria-hidden', 'true');
+    // CSSOM assignments, not a style attribute: the app CSP blocks inline style strings.
+    Object.assign(probe.style, { position: 'absolute', left: '0px', top: '0px', width: `${WORLD_PROBE_SIZE}px`, height: `${WORLD_PROBE_SIZE}px`, visibility: 'hidden', pointerEvents: 'none', margin: '0', padding: '0', border: '0' });
+    return probe;
+  }
+  function canvasScale(canvas) {
+    const probe = canvas && canvas.querySelector && canvas.querySelector(':scope > .board-probe');
+    const rect = probe && probe.getBoundingClientRect ? probe.getBoundingClientRect() : null;
+    if (!rect || !(rect.width > 0) || !(rect.height > 0)) return { x: 1, y: 1 };
+    return { x: rect.width / WORLD_PROBE_SIZE, y: rect.height / WORLD_PROBE_SIZE };
+  }
+  // Screen point -> world point, using the canvas anchor as origin.
+  function worldPointFromClient(canvas, clientX, clientY) {
+    if (!canvas) return { x: 0, y: 0, scale: 1 };
+    const c = canvas.getBoundingClientRect();
+    const s = canvasScale(canvas);
+    return { x: (clientX - c.left) / s.x, y: (clientY - c.top) / s.y, scale: s.x };
+  }
+  // Union of top-level node boxes and painted edges, in world px.
+  function worldBounds(root) {
+    const canvas = root && root.querySelector ? (root.classList && root.classList.contains('board-canvas') ? root : root.querySelector('.board-canvas')) : null;
+    if (!canvas) return null;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const grow = (x, y, w, h) => {
+      if (![x, y, w, h].every(Number.isFinite)) return;
+      if (w <= 0 || h <= 0) return;
+      minX = Math.min(minX, x); minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + w); maxY = Math.max(maxY, y + h);
+    };
+    Array.from(canvas.children || []).forEach((el) => {
+      if (!el.hasAttribute || !el.hasAttribute('data-board-id')) return;
+      const x = Number.parseFloat(el.style.left);
+      const y = Number.parseFloat(el.style.top);
+      grow(Number.isFinite(x) ? x : el.offsetLeft, Number.isFinite(y) ? y : el.offsetTop, el.offsetWidth, el.offsetHeight);
+    });
+    const svg = canvas.querySelector(':scope > svg.board-edges');
+    if (svg && typeof svg.getBBox === 'function') {
+      try {
+        const b = svg.getBBox();
+        grow(b.x, b.y, b.width, b.height);
+      } catch (_) {}
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;
+    return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY, cx: (minX + maxX) / 2, cy: (minY + maxY) / 2 };
+  }
+
   function refreshEdges(root, board) {
     if (!root || !board) return;
     const canvas = root.querySelector('.board-canvas');
@@ -2197,5 +2254,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
 });

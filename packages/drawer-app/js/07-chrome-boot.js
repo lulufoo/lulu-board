@@ -12,7 +12,7 @@ stageEl.addEventListener('wheel', (e) => {
   e.preventDefault();
   const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
   const factor = Math.exp(-(e.deltaY * unit) * 0.0012);
-  setCanvasScaleAroundDiagram(scale * factor);
+  setCanvasZoom(scale * factor);
   flushDrawerUiSave();
   if (typeof noteUserCanvasView === "function") noteUserCanvasView();
   flashChrome();
@@ -166,8 +166,8 @@ boardTitleEditor.addEventListener("change", commitBoardTitle); boardTitleEditor.
 });
 function closeExportMenu() {}
 
-$('#btnZoomIn').onclick = () => { setCanvasScaleAroundDiagram(scale * 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
-$('#btnZoomOut').onclick = () => { setCanvasScaleAroundDiagram(scale / 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomIn').onclick = () => { setCanvasZoom(scale * 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomOut').onclick = () => { setCanvasZoom(scale / 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;

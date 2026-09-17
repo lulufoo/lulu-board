@@ -1,4 +1,7 @@
-/* Document canvas viewport: one style.viewport { scale, x, y }. x/y = diagram top-left vs stage 0,0. */
+/* Document camera: one style.viewport { scale, cx, cy }.
+ * (cx, cy) is the world point shown at the stage centre; scale is the zoom.
+ * Node coordinates live in the world (.board-canvas origin) and never change
+ * when the camera pans or zooms. */
 var _documentViewTimer = 0;
 var _skipDocumentViewPersist = false;
 
@@ -12,38 +15,58 @@ function normalizeDocumentView(raw) {
   return null;
 }
 
-function measureDiagramOnCanvas() {
-  if (!previewEl || !stageEl) return null;
-  var content = previewEl.querySelector(".board-render");
-  if (!content) return null;
-  var wrap = stageEl.getBoundingClientRect();
-  var box = content.getBoundingClientRect();
-  if (!wrap.width || !wrap.height || !box.width || !box.height) return null;
-  return { x: box.left - wrap.left, y: box.top - wrap.top };
-}
-
-function measureDiagramCenterOnCanvas() {
-  if (!previewEl || !stageEl) return null;
-  var content = previewEl.querySelector(".board-render");
-  if (!content) return null;
-  var wrap = stageEl.getBoundingClientRect();
-  var box = content.getBoundingClientRect();
-  if (!wrap.width || !wrap.height || !box.width || !box.height) return null;
+/* Pure camera math. `stage` = { w, h } in screen px; `origin` = layout-px
+ * offset of the world origin from the untransformed #preview corner. */
+function cameraToPan(cam, stage, origin) {
   return {
-    x: (box.left + box.right) / 2 - wrap.left,
-    y: (box.top + box.bottom) / 2 - wrap.top,
+    x: stage.w / 2 - (cam.cx + origin.x) * cam.scale,
+    y: stage.h / 2 - (cam.cy + origin.y) * cam.scale,
   };
 }
 
-function panAfterScaleAroundPoint(panX0, panY0, oldScale, nextScale, cx, cy) {
-  if (!(oldScale > 0) || !isFinite(nextScale) || !isFinite(cx) || !isFinite(cy)) {
-    return { x: panX0, y: panY0 };
-  }
-  var ratio = nextScale / oldScale;
+function panToCamera(panX0, panY0, scale0, stage, origin) {
+  if (!(scale0 > 0)) return null;
   return {
-    x: cx - (cx - panX0) * ratio,
-    y: cy - (cy - panY0) * ratio,
+    scale: scale0,
+    cx: (stage.w / 2 - panX0) / scale0 - origin.x,
+    cy: (stage.h / 2 - panY0) / scale0 - origin.y,
   };
+}
+
+function stageSize() {
+  if (!stageEl) return null;
+  var r = stageEl.getBoundingClientRect();
+  if (!r.width || !r.height) return null;
+  return { w: r.width, h: r.height };
+}
+
+/* Where the world origin sits inside #preview before pan/zoom (root padding etc.). */
+function worldOriginLayout() {
+  if (!previewEl || !stageEl || !(scale > 0)) return null;
+  var canvas = previewEl.querySelector(".board-canvas");
+  if (!canvas) return null;
+  var s = stageEl.getBoundingClientRect();
+  var c = canvas.getBoundingClientRect();
+  return { x: (c.left - s.left - panX) / scale, y: (c.top - s.top - panY) / scale };
+}
+
+function readCamera() {
+  var stage = stageSize();
+  var origin = worldOriginLayout();
+  if (!stage || !origin) return null;
+  return panToCamera(panX, panY, scale, stage, origin);
+}
+
+function applyCamera(cam) {
+  var stage = stageSize();
+  var origin = worldOriginLayout();
+  if (!stage || !origin || !cam || !(cam.scale > 0)) return false;
+  var pan = cameraToPan(cam, stage, origin);
+  scale = cam.scale;
+  panX = pan.x;
+  panY = pan.y;
+  applyTransform();
+  return true;
 }
 
 function readDocumentView() {
@@ -67,13 +90,9 @@ function persistDocumentView(view) {
 }
 
 function snapshotDocumentView() {
-  var hit = measureDiagramOnCanvas();
-  if (!hit) return null;
-  return normalizeDocumentView({
-    scale: scale,
-    x: hit.x,
-    y: hit.y,
-  });
+  var cam = readCamera();
+  if (!cam) return null;
+  return normalizeDocumentView(cam);
 }
 
 function scheduleDocumentViewSave() {
@@ -116,18 +135,11 @@ function applyDocumentView(view, done) {
   }
   var prevSkip = _skipDocumentViewPersist;
   _skipDocumentViewPersist = true;
-  scale = next.scale;
-  applyTransform();
   requestAnimationFrame(function () {
     requestAnimationFrame(function () {
-      var hit = measureDiagramOnCanvas();
-      if (hit) {
-        panX += next.x - hit.x;
-        panY += next.y - hit.y;
-        applyTransform();
-      }
+      var ok = applyCamera(next);
       _skipDocumentViewPersist = prevSkip;
-      if (typeof done === "function") done(!!hit);
+      if (typeof done === "function") done(ok);
     });
   });
   return true;

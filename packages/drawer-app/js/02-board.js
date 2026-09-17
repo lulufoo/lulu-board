@@ -783,7 +783,16 @@ function boardBoxIsTopLevel(board, id) {
   }
   return ((board.views || board.boxes || [])).some(function(node) { return node.id === id; });
 }
-function boardCanvasPoint(canvas, event) { var rect = canvas.getBoundingClientRect(), sx = canvas.clientWidth ? canvas.clientWidth / rect.width : 1, sy = canvas.clientHeight ? canvas.clientHeight / rect.height : 1; return { x: (event.clientX - rect.left) * sx, y: (event.clientY - rect.top) * sy }; }
+/* Pointer -> world point. The canvas is a zero-size anchor at the world origin,
+ * so the live scale comes from the engine probe, not from the canvas box. */
+function boardCanvasPoint(canvas, event) {
+  if (typeof BoardRender !== "undefined" && typeof BoardRender.worldPointFromClient === "function") {
+    var p = BoardRender.worldPointFromClient(canvas, event.clientX, event.clientY);
+    return { x: p.x, y: p.y };
+  }
+  var rect = canvas.getBoundingClientRect(), s = (typeof scale === "number" && scale > 0) ? scale : 1;
+  return { x: (event.clientX - rect.left) / s, y: (event.clientY - rect.top) / s };
+}
 
 function boardTitlePinEl() {
   return document.getElementById("boardTitlePin");

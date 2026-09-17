@@ -123,18 +123,19 @@ item HERO type text "Hi"
 }
 
 {
-  assert.deepStrictEqual(Render.authoredViewport({ scale: 1.25, x: 40.4, y: -12.2 }), {
+  assert.deepStrictEqual(Render.authoredViewport({ scale: 1.25, cx: 40.4, cy: -12.2 }), {
     scale: 1.25,
-    x: 40,
-    y: -12,
+    cx: 40,
+    cy: -12,
   });
-  assert.deepStrictEqual(Render.authoredViewport({ scale: 9, x: 1, y: 2 }), { scale: 3, x: 1, y: 2 });
-  assert.strictEqual(Render.authoredViewport({ scale: 1, x: 1 }), null);
+  assert.deepStrictEqual(Render.authoredViewport({ scale: 9, cx: 1, cy: 2 }), { scale: 3, cx: 1, cy: 2 });
+  assert.strictEqual(Render.authoredViewport({ scale: 1, cx: 1 }), null);
+  assert.strictEqual(Render.authoredViewport({ scale: 1, x: 40, y: 80 }), null, 'legacy pan-pixel viewport is not a camera');
   assert.strictEqual(Render.authoredViewport([1, 2, 3]), null);
 }
 
 {
-  const payload = b64({ theme: 'kami', viewport: { scale: 1.2, x: 40.6, y: 80 } });
+  const payload = b64({ theme: 'kami', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
   const board = Render.parse(src(`
 board Demo
 style ${payload}
@@ -149,17 +150,25 @@ item HERO type text "Hi"
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
     theme: 'kami',
-    viewport: { scale: 1.2, x: 41, y: 80 },
+    viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
 }
 
 {
-  const legacy = b64({ view: { scale: 0.8, x: 12, y: 24 } });
+  const legacy = b64({ view: { scale: 0.8, cx: 12, cy: 24 } });
   const board = Render.parse(`board Demo\nstyle ${legacy}\nitem HERO type text "Hi"\n`);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    viewport: { scale: 0.8, x: 12, y: 24 },
+    viewport: { scale: 0.8, cx: 12, cy: 24 },
   });
+}
+
+{
+  // Old pan-pixel viewports drop out of the style line: the app fits once instead.
+  const stale = b64({ theme: 'kami', viewport: { scale: 0.8, x: 12, y: 24 } });
+  const board = Render.parse(`board Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
+  const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { theme: 'kami' });
 }
 
 {
@@ -167,10 +176,10 @@ item HERO type text "Hi"
 board Demo
 item HERO type text "Hi"
 `);
-  const next = Render.updateStyle(source, { viewport: { scale: 0.9, x: 10, y: 20 } });
+  const next = Render.updateStyle(source, { viewport: { scale: 0.9, cx: 10, cy: 20 } });
   const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    viewport: { scale: 0.9, x: 10, y: 20 },
+    viewport: { scale: 0.9, cx: 10, cy: 20 },
   });
   const back = Render.updateStyle(next, { viewport: null, view: null });
   assert.ok(!/^style /m.test(back), back);

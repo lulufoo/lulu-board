@@ -821,7 +821,10 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:hover {
 html[data-drawer-mode="board"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
 html[data-drawer-mode="board"] #preview .board-diamond-shape,
 html[data-drawer-mode="board"] #preview .board-item-diamond-shape,
-html[data-drawer-mode="board"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; width: 100% !important; height: 100% !important; }
+html[data-drawer-mode="board"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+/* World layer: zero-size anchor; edges paint in world px and are never clipped */
+.board-render .board-canvas { width: 0 !important; height: 0 !important; min-height: 0 !important; }
+.board-render svg.board-edges { width: 1px !important; height: 1px !important; overflow: visible !important; }
 #preview.board-preview { width: max-content; min-width: 0; height: 100%; padding: 0; }
 /* Board: hit area fills the stage (not just content bbox), still grows with large boards */
 html[data-drawer-mode="board"] #preview,

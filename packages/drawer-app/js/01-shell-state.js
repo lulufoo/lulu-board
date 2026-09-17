@@ -423,28 +423,31 @@ function applyTransform() {
   if (zr) zr.textContent = Math.round(scale * 100) + "%";
   scheduleDrawerUiSave();
 }
-function setCanvasScaleAroundDiagram(nextScale) {
+/* Zoom the stage about its centre: the camera's world point stays put. */
+function setCanvasZoom(nextScale) {
   nextScale = Math.min(3, Math.max(0.2, Number(nextScale)));
   if (!isFinite(nextScale)) return;
-  var prev = scale;
-  if (prev > 0 && nextScale !== prev && typeof measureDiagramCenterOnCanvas === "function" && typeof panAfterScaleAroundPoint === "function") {
-    var center = measureDiagramCenterOnCanvas();
-    if (center) {
-      var nextPan = panAfterScaleAroundPoint(panX, panY, prev, nextScale, center.x, center.y);
-      panX = nextPan.x;
-      panY = nextPan.y;
-    }
+  var cam = typeof readCamera === "function" ? readCamera() : null;
+  if (cam && nextScale !== cam.scale) {
+    cam.scale = nextScale;
+    if (applyCamera(cam)) return;
   }
   scale = nextScale;
   applyTransform();
 }
+function boardWorldBounds() {
+  var root = previewEl && previewEl.querySelector(".board-render");
+  if (!root || typeof BoardRender === "undefined" || typeof BoardRender.worldBounds !== "function") return null;
+  return BoardRender.worldBounds(root);
+}
+/* Does the camera's visible world rect touch any content? */
 function boardContentOnStage() {
-  var content = previewEl && previewEl.querySelector(".board-render");
-  if (!content || !stageEl) return false;
-  var wrap = stageEl.getBoundingClientRect();
-  var box = content.getBoundingClientRect();
-  if (!wrap.width || !wrap.height || !box.width || !box.height) return false;
-  return box.right > wrap.left && box.left < wrap.right && box.bottom > wrap.top && box.top < wrap.bottom;
+  var cam = typeof readCamera === "function" ? readCamera() : null;
+  var stage = typeof stageSize === "function" ? stageSize() : null;
+  var b = boardWorldBounds();
+  if (!cam || !stage || !b) return false;
+  var halfW = stage.w / 2 / cam.scale, halfH = stage.h / 2 / cam.scale;
+  return b.maxX > cam.cx - halfW && b.minX < cam.cx + halfW && b.maxY > cam.cy - halfH && b.minY < cam.cy + halfH;
 }
 function applyRestoredBoardView() {
   var view = typeof readDocumentView === "function" ? readDocumentView() : null;
@@ -461,20 +464,18 @@ function applyRestoredBoardView() {
 function fitBoardView(opts) {
   opts = opts || {};
   if (!previewEl) return;
-  previewEl.style.transform = "none";
   pinBoardTitle();
   const content = previewEl.querySelector(".board-render");
   if (!content) return;
   requestAnimationFrame(() => {
-    const wrap = stageEl.getBoundingClientRect(), box = content.getBoundingClientRect();
-    if (!wrap.width || !wrap.height || !box.width || !box.height) return;
+    var stage = typeof stageSize === "function" ? stageSize() : null;
+    var b = boardWorldBounds();
+    if (!stage || !b) return;
     /* Board title is document.title — do not reserve a canvas band for it */
     var topBand = 12;
     const pad = 24;
-    scale = Math.max(0.2, Math.min(1, (wrap.width - pad) / box.width, (wrap.height - topBand - pad) / Math.max(1, box.height)));
-    panX = Math.max(12, (wrap.width - box.width * scale) / 2);
-    panY = Math.max(topBand, (wrap.height - box.height * scale) / 2);
-    applyTransform();
+    var next = Math.max(0.2, Math.min(1, (stage.w - pad) / Math.max(1, b.width), (stage.h - topBand - pad) / Math.max(1, b.height)));
+    if (!applyCamera({ scale: next, cx: b.cx, cy: b.cy })) return;
     if (opts.persist) snapshotDrawerUi();
     var key = boardSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
