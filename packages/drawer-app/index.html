@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; worker-src 'self' blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://*.googleusercontent.com https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co; worker-src 'self' blob:">
 <title>Lulu Board</title>
 <link rel="icon" href="./favicon.ico" sizes="32x32">
 <link rel="icon" href="./favicon-32.png" type="image/png" sizes="32x32">
@@ -28,6 +28,9 @@
     <div class="collapse-hint float" hidden></div>
 
         <div class="float top-float" role="toolbar">
+      <span class="board-brand" role="img" aria-label="Lulu Board" title="Lulu Board">
+        <svg class="board-brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="#1d1d1f"/><path d="M8 8h7v9h9v7H8z" fill="#f5f5f7"/><rect x="18" y="8" width="6" height="6" rx="1.5" fill="#0071e3"/></svg>
+      </span>
       <div class="board-edit-tools" aria-label="Board editing">
         <button class="btn board-edit-tool" id="btnBoardAddBox" type="button" title="Add box"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Box</span></button>
         <button class="btn board-edit-tool" id="btnBoardAddItem" type="button" title="Add item"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Item</span></button>
@@ -35,14 +38,26 @@
         <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
       </div>
       <div class="board-account" id="boardAccount">
-        <button class="btn" id="btnBoardSignIn" type="button" aria-haspopup="menu" aria-expanded="false">Sign in</button>
+        <button class="btn board-account-btn" id="btnBoardSignIn" type="button" aria-haspopup="menu" aria-expanded="false">Sign in</button>
         <div class="board-auth-menu" id="boardAuthMenu" role="menu" hidden>
           <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
           <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
         </div>
-        <span class="board-account-name" id="boardAccountName" hidden></span>
-        <button class="btn" id="btnBoardSaveCloud" type="button" hidden>Save to cloud</button>
-        <button class="btn" id="btnBoardSignOut" type="button" hidden>Sign out</button>
+        <button class="btn board-account-btn" id="btnBoardSaveCloud" type="button" hidden>Save to cloud</button>
+        <div class="board-session" id="boardSession" hidden>
+          <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
+            <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">
+              <img id="boardAccountAvatarImg" alt="" referrerpolicy="no-referrer" hidden>
+              <span class="board-account-initials" id="boardAccountInitials"></span>
+            </span>
+            <span class="board-account-name" id="boardAccountName"></span>
+            <span class="board-account-caret" aria-hidden="true"></span>
+          </button>
+          <div class="board-session-menu board-auth-menu" id="boardSessionMenu" role="menu" hidden>
+            <div class="board-session-meta" id="boardSessionEmail"></div>
+            <button type="button" class="board-auth-provider" id="btnBoardSignOut" role="menuitem">Sign out</button>
+          </div>
+        </div>
       </div>
     </div>
 

@@ -38,35 +38,93 @@ function cloudSetHistoryVisible(visible) {
   }
 }
 
+function cloudSafeAvatarUrl(raw) {
+  try {
+    var url = new URL(String(raw || ""));
+    if (url.protocol !== "https:") return "";
+    var host = String(url.hostname || "").toLowerCase();
+    if (host === "avatars.githubusercontent.com" || host === "googleusercontent.com" || host.slice(-22) === ".googleusercontent.com") {
+      return url.href;
+    }
+    return "";
+  } catch (_e) {
+    return "";
+  }
+}
+
+function cloudAccountProfile(user) {
+  var profile = user && user.user_metadata || {};
+  var email = String((user && user.email) || profile.email || "").trim();
+  var name = String(profile.full_name || profile.name || profile.user_name || profile.preferred_username || "").trim();
+  if (!name) name = email ? email.split("@")[0] : "Signed in";
+  var parts = name.split(/\s+/).filter(Boolean);
+  var initials = parts.slice(0, 2).map(function (part) { return part.charAt(0); }).join("").toUpperCase();
+  return {
+    name: name,
+    email: email,
+    avatarUrl: cloudSafeAvatarUrl(profile.avatar_url || profile.picture || ""),
+    initials: initials || "?",
+  };
+}
+
+function cloudCloseAccountMenus() {
+  var signIn = document.getElementById("btnBoardSignIn");
+  var authMenu = document.getElementById("boardAuthMenu");
+  var chip = document.getElementById("btnBoardAccount");
+  var sessionMenu = document.getElementById("boardSessionMenu");
+  if (authMenu) authMenu.hidden = true;
+  if (signIn) signIn.setAttribute("aria-expanded", "false");
+  if (sessionMenu) sessionMenu.hidden = true;
+  if (chip) chip.setAttribute("aria-expanded", "false");
+}
+
 function cloudSetAccountUi() {
   var configured = cloudConfigured();
   var signedIn = !!(cloudSession && cloudSession.user);
   var signIn = document.getElementById("btnBoardSignIn");
-  var menu = document.getElementById("boardAuthMenu");
-  var account = document.getElementById("boardAccountName");
   var save = document.getElementById("btnBoardSaveCloud");
-  var signOut = document.getElementById("btnBoardSignOut");
+  var session = document.getElementById("boardSession");
+  var chip = document.getElementById("btnBoardAccount");
+  var nameEl = document.getElementById("boardAccountName");
+  var emailEl = document.getElementById("boardSessionEmail");
+  var img = document.getElementById("boardAccountAvatarImg");
+  var initialsEl = document.getElementById("boardAccountInitials");
+  var profile = signedIn ? cloudAccountProfile(cloudSession.user) : null;
 
+  cloudCloseAccountMenus();
   if (signIn) {
     signIn.hidden = signedIn;
     signIn.disabled = !configured;
     signIn.title = configured ? "Sign in to sync boards" : "Cloud sync is not configured";
-    signIn.setAttribute("aria-expanded", "false");
-  }
-  if (menu) menu.hidden = true;
-  if (account) {
-    var user = cloudSession && cloudSession.user;
-    var profile = user && user.user_metadata || {};
-    account.textContent = signedIn
-      ? String(profile.full_name || profile.user_name || user.email || "Signed in")
-      : "";
-    account.hidden = !signedIn;
   }
   if (save) {
     save.hidden = !signedIn;
     save.disabled = !signedIn;
   }
-  if (signOut) signOut.hidden = !signedIn;
+  if (session) session.hidden = !signedIn;
+  if (nameEl) nameEl.textContent = profile ? profile.name : "";
+  if (emailEl) emailEl.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
+  if (chip) chip.title = profile ? (profile.email || profile.name) : "";
+  if (initialsEl) {
+    initialsEl.textContent = profile ? profile.initials : "";
+    initialsEl.hidden = !!(profile && profile.avatarUrl);
+  }
+  if (img) {
+    img.onload = function () {
+      img.hidden = false;
+      if (initialsEl) initialsEl.hidden = true;
+    };
+    img.onerror = function () {
+      img.removeAttribute("src");
+      img.hidden = true;
+      if (initialsEl) initialsEl.hidden = false;
+    };
+    if (profile && profile.avatarUrl) img.src = profile.avatarUrl;
+    else {
+      img.removeAttribute("src");
+      img.hidden = true;
+    }
+  }
   cloudSetHistoryVisible(signedIn);
 }
 
@@ -393,32 +451,48 @@ async function deleteCloudBoard(boardId) {
 (function wireCloudAuth() {
   var signIn = document.getElementById("btnBoardSignIn");
   var menu = document.getElementById("boardAuthMenu");
+  var chip = document.getElementById("btnBoardAccount");
+  var sessionMenu = document.getElementById("boardSessionMenu");
   if (signIn && menu) {
     signIn.addEventListener("click", function () {
       if (signIn.disabled) return;
       var open = !!menu.hidden;
+      cloudCloseAccountMenus();
       menu.hidden = !open;
       signIn.setAttribute("aria-expanded", open ? "true" : "false");
     });
   }
+  if (chip && sessionMenu) {
+    chip.addEventListener("click", function () {
+      var open = !!sessionMenu.hidden;
+      cloudCloseAccountMenus();
+      sessionMenu.hidden = !open;
+      chip.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  }
   document.querySelectorAll("[data-board-oauth]").forEach(function (button) {
     button.addEventListener("click", function () {
-      if (menu) menu.hidden = true;
-      if (signIn) signIn.setAttribute("aria-expanded", "false");
+      cloudCloseAccountMenus();
       void cloudSignIn(button.dataset.boardOauth);
     });
   });
   var save = document.getElementById("btnBoardSaveCloud");
-  if (save) save.addEventListener("click", function () { void saveBoardToCloud({ explicit: true }); });
+  if (save) save.addEventListener("click", function () {
+    cloudCloseAccountMenus();
+    void saveBoardToCloud({ explicit: true });
+  });
   var signOut = document.getElementById("btnBoardSignOut");
-  if (signOut) signOut.addEventListener("click", function () { void cloudSignOut(); });
+  if (signOut) signOut.addEventListener("click", function () {
+    cloudCloseAccountMenus();
+    void cloudSignOut();
+  });
   document.addEventListener("click", function (event) {
-    if (!menu || menu.hidden) return;
     var account = document.getElementById("boardAccount");
-    if (!account || !account.contains(event.target)) {
-      menu.hidden = true;
-      if (signIn) signIn.setAttribute("aria-expanded", "false");
-    }
+    if (!account || account.contains(event.target)) return;
+    cloudCloseAccountMenus();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") cloudCloseAccountMenus();
   });
   cloudInit();
 })();

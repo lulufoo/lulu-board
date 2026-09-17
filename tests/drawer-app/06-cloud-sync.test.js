@@ -14,7 +14,13 @@ const schema = read('supabase/migrations/20260917160000_create_boards.sql');
 const workerConfig = read('wrangler.toml');
 
 assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
+assert.match(html, /img-src[^"]*https:\/\/\*\.googleusercontent\.com/, 'CSP allows Google avatars');
+assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP allows GitHub avatars');
 assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
+assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
+assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
+assert.match(html, /id="btnBoardSaveCloud"/, 'Save to cloud stays in the toolbar');
+assert.match(html, /id="btnBoardSignOut"[\s\S]*boardSessionMenu|id="boardSessionMenu"[\s\S]*id="btnBoardSignOut"/, 'Sign out lives in the account menu');
 assert.match(html, /data-board-oauth="google"/, 'Google is an available provider');
 assert.match(html, /data-board-oauth="github"/, 'GitHub is an available provider');
 assert.match(html, /supabase-config\.js/, 'public page loads runtime Supabase configuration');
@@ -30,6 +36,25 @@ assert.match(cloud, /onConflict: "owner_id,board_id"/, 'cloud saves upsert one r
 assert.match(cloud, /provider: selected/, 'cloud sign in selects an OAuth provider');
 assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, not a token fragment');
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
+assert.match(cloud, /function cloudAccountProfile/, 'account chrome reads the OAuth profile');
+assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one close path');
+
+{
+  const start = cloud.indexOf('function cloudSafeAvatarUrl');
+  const end = cloud.indexOf('function cloudCloseAccountMenus');
+  assert.ok(start >= 0 && end > start, 'profile helpers are closed functions');
+  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudSafeAvatarUrl, cloudAccountProfile };')();
+  assert.strictEqual(helpers.cloudSafeAvatarUrl('https://lh3.googleusercontent.com/a/foo'), 'https://lh3.googleusercontent.com/a/foo');
+  assert.strictEqual(helpers.cloudSafeAvatarUrl('https://avatars.githubusercontent.com/u/1'), 'https://avatars.githubusercontent.com/u/1');
+  assert.strictEqual(helpers.cloudSafeAvatarUrl('http://lh3.googleusercontent.com/a/foo'), '');
+  const profile = helpers.cloudAccountProfile({
+    email: 'namdamlmm@gmail.com',
+    user_metadata: { full_name: 'Man Man', avatar_url: 'https://lh3.googleusercontent.com/a/foo' },
+  });
+  assert.strictEqual(profile.name, 'Man Man');
+  assert.strictEqual(profile.initials, 'MM');
+  assert.strictEqual(profile.avatarUrl, 'https://lh3.googleusercontent.com/a/foo');
+}
 assert.match(schema, /primary key \(owner_id, board_id\)/, 'each owner can hold one latest copy per board id');
 assert.match(schema, /bmd text not null/, 'the current BMD source is stored in Postgres');
 assert.match(schema, /enable row level security/, 'the cloud board table has RLS enabled');
