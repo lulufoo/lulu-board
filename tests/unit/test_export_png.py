@@ -12,7 +12,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" /
 
 from drawer_ctl import export as export_mod
 from drawer_ctl import paths
-from drawer_ctl import server
 
 
 class ExportPngTest(unittest.TestCase):
@@ -26,13 +25,13 @@ class ExportPngTest(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_validates_png_signature_and_minimum_size(self) -> None:
-        png = server.PNG_SIGNATURE + b"payload"
-        self.assertTrue(server.is_valid_png_export(png))
-        self.assertFalse(server.is_valid_png_export(b"not a png"))
-        self.assertFalse(server.is_valid_png_export(server.PNG_SIGNATURE))
+        png = export_mod.PNG_SIGNATURE + b"payload"
+        self.assertTrue(export_mod.is_valid_png_export(png))
+        self.assertFalse(export_mod.is_valid_png_export(b"not a png"))
+        self.assertFalse(export_mod.is_valid_png_export(export_mod.PNG_SIGNATURE))
 
     def test_writes_png_under_export_directory(self) -> None:
-        png = server.PNG_SIGNATURE + b"payload"
+        png = export_mod.PNG_SIGNATURE + b"payload"
         dest = export_mod.write_export_png(png, "Current diagram")
 
         self.assertEqual(dest.parent, (self.tmp / "export").resolve())

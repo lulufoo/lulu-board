@@ -8,6 +8,12 @@ from pathlib import Path
 from drawer_ctl import paths
 from drawer_ctl import util
 
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def is_valid_png_export(data: bytes) -> bool:
+    return len(data) > len(PNG_SIGNATURE) and data.startswith(PNG_SIGNATURE)
+
 
 def write_export_file(data: bytes, stem: str | None, suffix: str) -> Path:
     ts = datetime.now().strftime("%Y%m%d-%H%M%S")

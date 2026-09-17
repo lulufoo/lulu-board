@@ -1578,7 +1578,30 @@ window.addEventListener("pagehide", function() { void flushBoardSave(); });
 document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === "hidden") void flushBoardSave();
 });
+async function saveBoardToHash() {
+  boardSaveTimer = null;
+  const text = boardSourceEl.value;
+  const seq = ++boardSaveSeq;
+  try {
+    const token = await encodeBoardHash(text);
+    if (seq !== boardSaveSeq) return;
+    const next = "#" + token;
+    if (location.hash !== next) {
+      history.replaceState(null, "", location.pathname + location.search + next);
+    }
+    boardDirty = false;
+    boardLocalRev = (Number(boardLocalRev) || 0) + 1;
+    setBoardSyncUI("ok");
+    setStatus("Saved in URL");
+  } catch (err) {
+    setBoardSyncUI("error");
+    setStatus(err instanceof Error ? err.message : String(err), true);
+  }
+}
 async function saveBoardToFile() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    return saveBoardToHash();
+  }
   boardSaveTimer = null;
   const text = boardSourceEl.value, seq = ++boardSaveSeq, baseRev = boardLocalRev;
   try {
@@ -1604,6 +1627,7 @@ async function saveBoardToFile() {
   } catch (err) { setBoardSyncUI('error'); setStatus(err instanceof Error ? err.message : String(err), true); }
 }
 async function loadBoardPolled() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
   if (boardDirty || boardSaveTimer) return;
   try {
     const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' }); if (!metaRes.ok) return;
@@ -1616,13 +1640,46 @@ async function loadBoardPolled() {
     setBoardSyncUI('ok');
   } catch (_) {}
 }
-async function bootstrapBoard() {
-  try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { boardSourceEl.value = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else boardSourceEl.value = ''; }
-  catch (_) { boardSourceEl.value = ''; }
+async function bootstrapBoardFromHash() {
+  var raw = String(location.hash || "").replace(/^#/, "");
+  if (!raw) {
+    var blank = typeof blankHashBoardSource === "function"
+      ? blankHashBoardSource("Untitled")
+      : "board \"Untitled\"\n";
+    boardSourceEl.value = blank;
+    boardLocalRev = 0;
+    try {
+      var seeded = splitDocument(blank);
+      if (typeof applyBoardLiveMeta === "function") {
+        applyBoardLiveMeta({ id: seeded.meta.id, version: seeded.meta.version, title: "Untitled" });
+      }
+    } catch (_e) {}
+    await saveBoardToHash();
+    setStatus("New board");
+    return;
+  }
   try {
-    const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-    if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
-  } catch (_e) {}
+    boardSourceEl.value = await decodeBoardHash(raw);
+    boardLocalRev = 1;
+  } catch (err) {
+    boardSourceEl.value = "";
+    if (typeof showBoardError === "function") {
+      showBoardError(err instanceof Error ? err.message : String(err));
+    }
+    setStatus("Could not read board from URL", true);
+  }
+}
+async function bootstrapBoard() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    await bootstrapBoardFromHash();
+  } else {
+    try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { boardSourceEl.value = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else boardSourceEl.value = ''; }
+    catch (_) { boardSourceEl.value = ''; }
+    try {
+      const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
+      if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
+    } catch (_e) {}
+  }
   boardDirty = false; updateBoardChars(); setBoardSyncUI('ok');
   if (boardSourceEl.value.trim()) {
     await new Promise(function (resolve) {

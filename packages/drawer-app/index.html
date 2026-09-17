@@ -213,6 +213,7 @@
           <div class="history-head">
             <strong>History</strong>
             <button type="button" class="btn history-refresh" id="btnBoardHistoryRefresh" title="Refresh history">Refresh</button>
+            <button type="button" class="btn history-refresh" id="btnHistoryOpenFile" title="Open a board file from disk">Open File</button>
           </div>
           <div class="history-combo" id="boardHistoryCombo">
             <button type="button" class="history-combo-btn" id="boardHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" disabled>
@@ -238,7 +239,7 @@
       </div>
       <p class="export-type-hint" id="exportTypeHint">Current diagram kind (read-only).</p>
       <div class="export-actions" role="group" aria-label="Export actions">
-        <button type="button" class="btn" id="btnCanvasCopySrc" title="Copy absolute path of the current source file">Copy Path</button>
+        <button type="button" class="btn" id="btnCanvasCopySrc" title="Save the current board file">Export File</button>
         <button type="button" class="btn" id="btnCanvasDlPng">Export PNG</button>
       </div>
     </div>

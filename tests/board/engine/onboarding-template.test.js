@@ -16,7 +16,7 @@ function sourceBody(text) {
   return lines.slice(i + 1).join("\n");
 }
 const src = fs.readFileSync(
-  path.join(__dirname, '../../../skill/board/assets/templates/board/onboarding.bmd'),
+  path.join(__dirname, '../../../skill/board/templates/board/onboarding.bmd'),
   'utf8'
 );
 assert.ok(/^meta\s+/.test(src.trim()), 'onboarding starts with meta');

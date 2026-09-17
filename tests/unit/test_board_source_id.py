@@ -42,12 +42,11 @@ class BoardSourceIdTest(unittest.TestCase):
     def _preview(self, path=None, stdin=None, source_id=None) -> dict:
         buf = io.StringIO()
         with (
-            patch.object(dc, "mount", return_value="http://127.0.0.1:9/drawer.html"),
             patch.object(dc, "open_viewer", return_value="none"),
             patch.object(sys, "stdin", stdin or _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(path, 0, should_open=False, open_mode="none", kind="board", source_id=source_id)
+            dc.preview(path, should_open=False, open_mode="none", kind="board", source_id=source_id)
         return json.loads(buf.getvalue())
 
     def _seed(self, text: str, label: str) -> tuple[Path, str]:

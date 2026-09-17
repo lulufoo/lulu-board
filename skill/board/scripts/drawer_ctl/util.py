@@ -1,44 +1,10 @@
 """Small helpers."""
 from __future__ import annotations
 
-import os
 import re
-import socket
 from pathlib import Path
 
 from drawer_ctl import paths
-
-def decode_header_value(raw: str | None) -> str | None:
-    """Decode client headerByteString values (utf8'' + percent-encoding)."""
-    if raw is None:
-        return None
-    s = str(raw)
-    if s.startswith("utf8''"):
-        from urllib.parse import unquote
-        return unquote(s[5:])
-    if "%" in s:
-        from urllib.parse import unquote
-        try:
-            return unquote(s)
-        except Exception:
-            return s
-    return s
-
-
-def pick_free_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
-def resolve_port(port: int | None) -> int:
-    """Concrete loopback port. 0/None → paths.DEFAULT_PORT (fixed); else as given."""
-    if isinstance(port, int) and port > 0:
-        return port
-    default = int(getattr(paths, "DEFAULT_PORT", 0) or 0)
-    if default > 0:
-        return default
-    return pick_free_port()
 
 
 def read_text_capped(path: Path, cap: int = paths.HISTORY_SOURCE_READ_CAP) -> str:
@@ -75,5 +41,3 @@ def write_text_atomic(path: Path, text: str) -> None:
     temp = real.with_name(real.name + ".tmp")
     temp.write_text(text, encoding="utf-8")
     temp.replace(real)
-
-

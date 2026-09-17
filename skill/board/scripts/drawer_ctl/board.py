@@ -182,7 +182,7 @@ def _point_board_current(dest: Path, label: str, body: str) -> None:
 
 
 def seed_default_board_if_empty() -> Path | None:
-    """If history/ is empty, seed every packed example under assets/templates/board.
+    """If history/ is empty, seed every packed example under templates/board.
 
     Points current at onboarding.bmd when present. AI-only demo.bmd under
     board/templates/ is not seeded.

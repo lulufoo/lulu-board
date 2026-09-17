@@ -2292,6 +2292,17 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
 
 
 /* Board history list (Source dock) */
+[data-persist="hash"] #boardHistoryCombo,
+[data-persist="hash"] #boardHistoryEmpty,
+[data-persist="hash"] #btnBoardHistoryRefresh {
+  display: none;
+}
+#btnHistoryOpenFile {
+  display: none;
+}
+[data-persist="hash"] #btnHistoryOpenFile {
+  display: inline-flex;
+}
 .history-block {
   display: flex;
   flex-direction: column;

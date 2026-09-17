@@ -350,21 +350,6 @@ function activeSourceText() {
 function activeSourcePath() {
   return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
 }
-async function copyActiveSourcePath() {
-  let path = activeSourcePath();
-  if (!path) {
-    try {
-      const res = await fetch('./board.meta.json?ts=' + Date.now(), { cache: 'no-store' });
-      if (res.ok) {
-        const meta = await res.json();
-        if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
-        path = activeSourcePath();
-      }
-    } catch (_e) {}
-  }
-  if (!path) { showCopyTip('No file path'); return; }
-  await copyText(path, 'Path');
-}
 $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
   var id = typeof liveRecordId === "function" ? liveRecordId() : "";
   if (!id) { showCopyTip("No ID"); return; }
@@ -373,7 +358,8 @@ $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
 $('#btnSourceCopy') && ($('#btnSourceCopy').onclick = () => {
   void copyText(activeSourceText(), "Source");
 });
-$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void copyActiveSourcePath(); closeCanvasExport(); });
+$('#btnHistoryOpenFile') && ($('#btnHistoryOpenFile').onclick = () => { void openBoardFile(); });
+$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void exportBoardFile(); closeCanvasExport(); });
 $('#btnCanvasDlPng') && ($('#btnCanvasDlPng').onclick = () => { void exportPng(); closeCanvasExport(); });
 /* UI light/dark toggle removed for now */
 
@@ -465,9 +451,25 @@ function restoreDrawerMode() {
 }
 await bootstrapBoard();
 restoreDrawerMode();
-setInterval(() => { void loadBoardPolled(); }, 1500);
+if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
+  setInterval(() => { void loadBoardPolled(); }, 1500);
+} else {
+  window.addEventListener("hashchange", function() {
+    if (boardDirty || boardSaveTimer) return;
+    void bootstrapBoard().then(function() {
+      if (typeof renderBoard === "function" && boardSourceEl && boardSourceEl.value.trim()) {
+        renderBoard({ fit: false, restoreView: true });
+      }
+    });
+  });
+}
 
 (function wireBoardHistory() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    var head = document.querySelector("#boardHistory .history-head");
+    if (head) head.setAttribute("title", "~/.cache/board/history");
+    return;
+  }
   var btn = document.getElementById("btnBoardHistoryRefresh");
   if (btn) btn.addEventListener("click", function() { void refreshBoardHistory(); });
   void refreshBoardHistory();

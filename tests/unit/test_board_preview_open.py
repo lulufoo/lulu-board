@@ -17,6 +17,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts"))
 
 import drawer_control as dc
+from drawer_ctl import commands as _commands
 from drawer_ctl import paths as _ctl_paths
 
 
@@ -63,18 +64,19 @@ class BoardPreviewOpenTest(unittest.TestCase):
     def _preview(self, path=None, stdin=None) -> dict:
         buf = io.StringIO()
         with (
-            patch.object(dc, "mount", return_value="http://127.0.0.1:9/drawer.html"),
             patch.object(dc, "open_viewer", return_value="none"),
             patch.object(sys, "stdin", stdin or _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(path, 0, should_open=False, open_mode="none", kind="board")
+            dc.preview(path, should_open=False, open_mode="none", kind="board")
         return json.loads(buf.getvalue())
 
     def test_empty_history_no_source_is_seeded(self) -> None:
         data = self._preview()
         self.assertEqual(data["open"], "seeded")
-        self.assertIn("mode=board", data["url"])
+        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
+        self.assertEqual(data.get("url"), data.get("web_url"))
+        self.assertNotIn("local_url", data)
         self.assertTrue(str(data.get("id") or "").startswith("b_"))
         self.assertIn('board "Lulu Board"', dc.read_board_source_text())
         self.assertEqual(data.get("current"), dc.read_board_meta().get("current"))
@@ -98,6 +100,26 @@ class BoardPreviewOpenTest(unittest.TestCase):
         data = self._preview(path=str(src))
         self.assertEqual(data["open"], "created")
         self.assertIn('board "New"', dc.read_board_source_text())
+
+    def test_open_uses_public_hash_url(self) -> None:
+        src = self.tmp / "new.bmd"
+        src.write_text('board "New"\n', encoding="utf-8")
+        opened = []
+
+        def _open(url, mode="ide"):
+            opened.append((url, mode))
+            return "system"
+
+        buf = io.StringIO()
+        with (
+            patch.object(_commands, "open_viewer", side_effect=_open),
+            patch.object(sys, "stdin", _Tty()),
+            redirect_stdout(buf),
+        ):
+            dc.preview(str(src), should_open=True, open_mode="ide", kind="board")
+        data = json.loads(buf.getvalue())
+        self.assertIn((data["url"], "system"), opened)
+        self.assertTrue(data["url"].startswith("https://luluboard.app/#z:"))
 
     def test_with_source_is_created(self) -> None:
         rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")

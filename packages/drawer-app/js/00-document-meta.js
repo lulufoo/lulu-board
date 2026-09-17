@@ -5,6 +5,8 @@
   root.splitDocument = api.splitDocument;
   root.joinDocument = api.joinDocument;
   root.sourceBody = api.sourceBody;
+  root.newBoardId = api.newBoardId;
+  root.blankHashBoardSource = api.blankHashBoardSource;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -77,14 +79,37 @@
     return splitDocument(raw).body;
   }
 
+  function newBoardId() {
+    var bytes;
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      bytes = new Uint8Array(4);
+      crypto.getRandomValues(bytes);
+    } else {
+      bytes = require("crypto").randomBytes(4);
+    }
+    var hex = "";
+    for (var i = 0; i < bytes.length; i += 1) hex += ("0" + bytes[i].toString(16)).slice(-2);
+    return "b_" + hex;
+  }
+
+  function blankHashBoardSource(title) {
+    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
+    if (!name) name = "Untitled";
+    return joinDocument({ id: newBoardId(), version: 1 }, "board \"" + name + "\"\n");
+  }
+
   return {
     encodeMetaPayload: encodeMetaPayload,
     decodeMetaPayload: decodeMetaPayload,
     splitDocument: splitDocument,
     joinDocument: joinDocument,
     sourceBody: sourceBody,
+    newBoardId: newBoardId,
+    blankHashBoardSource: blankHashBoardSource,
   };
 });
 var splitDocument = globalThis.splitDocument;
 var joinDocument = globalThis.joinDocument;
 var sourceBody = globalThis.sourceBody;
+var newBoardId = globalThis.newBoardId;
+var blankHashBoardSource = globalThis.blankHashBoardSource;

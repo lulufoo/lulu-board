@@ -30,4 +30,4 @@ Build:
 node scripts/drawer-app-build/build.mjs
 ```
 
-Writes `skill/board/assets/drawer.html` plus `skill/board/assets/vendor/drawer-app.{css,js}` and early scripts. `drawer_control.py sync_assets` copies them into `~/.cache/board`.
+Writes `web/vendor/drawer-app.{css,js}` plus early scripts and favicons. The public page is `web/index.html` from `node scripts/web-build/build.mjs`.

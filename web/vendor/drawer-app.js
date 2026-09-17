@@ -84,6 +84,8 @@
   root.splitDocument = api.splitDocument;
   root.joinDocument = api.joinDocument;
   root.sourceBody = api.sourceBody;
+  root.newBoardId = api.newBoardId;
+  root.blankHashBoardSource = api.blankHashBoardSource;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -156,17 +158,119 @@
     return splitDocument(raw).body;
   }
 
+  function newBoardId() {
+    var bytes;
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      bytes = new Uint8Array(4);
+      crypto.getRandomValues(bytes);
+    } else {
+      bytes = require("crypto").randomBytes(4);
+    }
+    var hex = "";
+    for (var i = 0; i < bytes.length; i += 1) hex += ("0" + bytes[i].toString(16)).slice(-2);
+    return "b_" + hex;
+  }
+
+  function blankHashBoardSource(title) {
+    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
+    if (!name) name = "Untitled";
+    return joinDocument({ id: newBoardId(), version: 1 }, "board \"" + name + "\"\n");
+  }
+
   return {
     encodeMetaPayload: encodeMetaPayload,
     decodeMetaPayload: decodeMetaPayload,
     splitDocument: splitDocument,
     joinDocument: joinDocument,
     sourceBody: sourceBody,
+    newBoardId: newBoardId,
+    blankHashBoardSource: blankHashBoardSource,
   };
 });
 var splitDocument = globalThis.splitDocument;
 var joinDocument = globalThis.joinDocument;
 var sourceBody = globalThis.sourceBody;
+var newBoardId = globalThis.newBoardId;
+var blankHashBoardSource = globalThis.blankHashBoardSource;
+
+/* === 00-hash-persist.js === */
+(function (root, factory) {
+  var api = factory();
+  if (typeof module === "object" && module.exports) module.exports = api;
+  root.DrawerHashPersist = api;
+  root.boardPersistMode = api.boardPersistMode;
+  root.encodeBoardHash = api.encodeBoardHash;
+  root.decodeBoardHash = api.decodeBoardHash;
+})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  "use strict";
+
+  function boardPersistMode() {
+    var doc = typeof document !== "undefined" ? document.documentElement : null;
+    var forced = doc && doc.getAttribute("data-persist");
+    if (forced === "hash" || forced === "local") return forced;
+    var host = typeof location !== "undefined" ? String(location.hostname || "") : "";
+    return host === "127.0.0.1" || host === "localhost" ? "local" : "hash";
+  }
+
+  function bytesToBase64Url(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i += 1) bin += String.fromCharCode(bytes[i]);
+    var b64 = typeof btoa === "function" ? btoa(bin) : Buffer.from(bytes).toString("base64");
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function base64UrlToBytes(token) {
+    var b64 = String(token || "").replace(/-/g, "+").replace(/_/g, "/");
+    var pad = b64.length % 4;
+    if (pad) b64 += "====".slice(pad);
+    if (typeof atob === "function") {
+      var bin = atob(b64);
+      var out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+    return new Uint8Array(Buffer.from(b64, "base64"));
+  }
+
+  async function compressZlib(bytes) {
+    if (typeof CompressionStream === "function") {
+      var stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate"));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+    return new Uint8Array(require("zlib").deflateSync(Buffer.from(bytes)));
+  }
+
+  async function decompressZlib(bytes) {
+    if (typeof DecompressionStream === "function") {
+      var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+    return new Uint8Array(require("zlib").inflateSync(Buffer.from(bytes)));
+  }
+
+  async function encodeBoardHash(text) {
+    var input = new TextEncoder().encode(String(text || ""));
+    return "z:" + bytesToBase64Url(await compressZlib(input));
+  }
+
+  async function decodeBoardHash(raw) {
+    var token = String(raw || "").replace(/^#/, "");
+    if (token.indexOf("z:") !== 0) throw new Error("invalid board hash");
+    var bytes = base64UrlToBytes(token.slice(2));
+    if (!bytes.length) throw new Error("invalid board hash");
+    var out = await decompressZlib(bytes);
+    return new TextDecoder().decode(out);
+  }
+
+  return {
+    boardPersistMode: boardPersistMode,
+    encodeBoardHash: encodeBoardHash,
+    decodeBoardHash: decodeBoardHash,
+  };
+});
+var boardPersistMode = globalThis.boardPersistMode;
+var encodeBoardHash = globalThis.encodeBoardHash;
+var decodeBoardHash = globalThis.decodeBoardHash;
 
 /* === 00-canvas-view.js === */
 /* Document canvas viewport: one style.viewport { scale, x, y }. x/y = diagram top-left vs stage 0,0. */
@@ -709,7 +813,7 @@ function setTypeUI() {
   if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel();
   if (typePill) typePill.innerHTML = '<b>Board</b>';
   var hint = $('#exportTypeHint');
-  if (hint) hint.textContent = 'Board mode · Copy Path below.';
+  if (hint) hint.textContent = 'Board mode · Export File below.';
   if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
 }
 function applyTransform() {
@@ -2353,7 +2457,30 @@ window.addEventListener("pagehide", function() { void flushBoardSave(); });
 document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === "hidden") void flushBoardSave();
 });
+async function saveBoardToHash() {
+  boardSaveTimer = null;
+  const text = boardSourceEl.value;
+  const seq = ++boardSaveSeq;
+  try {
+    const token = await encodeBoardHash(text);
+    if (seq !== boardSaveSeq) return;
+    const next = "#" + token;
+    if (location.hash !== next) {
+      history.replaceState(null, "", location.pathname + location.search + next);
+    }
+    boardDirty = false;
+    boardLocalRev = (Number(boardLocalRev) || 0) + 1;
+    setBoardSyncUI("ok");
+    setStatus("Saved in URL");
+  } catch (err) {
+    setBoardSyncUI("error");
+    setStatus(err instanceof Error ? err.message : String(err), true);
+  }
+}
 async function saveBoardToFile() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    return saveBoardToHash();
+  }
   boardSaveTimer = null;
   const text = boardSourceEl.value, seq = ++boardSaveSeq, baseRev = boardLocalRev;
   try {
@@ -2379,6 +2506,7 @@ async function saveBoardToFile() {
   } catch (err) { setBoardSyncUI('error'); setStatus(err instanceof Error ? err.message : String(err), true); }
 }
 async function loadBoardPolled() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
   if (boardDirty || boardSaveTimer) return;
   try {
     const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' }); if (!metaRes.ok) return;
@@ -2391,13 +2519,46 @@ async function loadBoardPolled() {
     setBoardSyncUI('ok');
   } catch (_) {}
 }
-async function bootstrapBoard() {
-  try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { boardSourceEl.value = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else boardSourceEl.value = ''; }
-  catch (_) { boardSourceEl.value = ''; }
+async function bootstrapBoardFromHash() {
+  var raw = String(location.hash || "").replace(/^#/, "");
+  if (!raw) {
+    var blank = typeof blankHashBoardSource === "function"
+      ? blankHashBoardSource("Untitled")
+      : "board \"Untitled\"\n";
+    boardSourceEl.value = blank;
+    boardLocalRev = 0;
+    try {
+      var seeded = splitDocument(blank);
+      if (typeof applyBoardLiveMeta === "function") {
+        applyBoardLiveMeta({ id: seeded.meta.id, version: seeded.meta.version, title: "Untitled" });
+      }
+    } catch (_e) {}
+    await saveBoardToHash();
+    setStatus("New board");
+    return;
+  }
   try {
-    const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-    if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
-  } catch (_e) {}
+    boardSourceEl.value = await decodeBoardHash(raw);
+    boardLocalRev = 1;
+  } catch (err) {
+    boardSourceEl.value = "";
+    if (typeof showBoardError === "function") {
+      showBoardError(err instanceof Error ? err.message : String(err));
+    }
+    setStatus("Could not read board from URL", true);
+  }
+}
+async function bootstrapBoard() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    await bootstrapBoardFromHash();
+  } else {
+    try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { boardSourceEl.value = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else boardSourceEl.value = ''; }
+    catch (_) { boardSourceEl.value = ''; }
+    try {
+      const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
+      if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
+    } catch (_e) {}
+  }
   boardDirty = false; updateBoardChars(); setBoardSyncUI('ok');
   if (boardSourceEl.value.trim()) {
     await new Promise(function (resolve) {
@@ -2621,6 +2782,7 @@ function boardHistoryFile(name) {
   return name + ".bmd";
 }
 async function refreshBoardHistory() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
   var list = document.getElementById("boardHistoryList");
   var empty = document.getElementById("boardHistoryEmpty");
   var combo = list && list.closest(".history-combo");
@@ -2789,6 +2951,87 @@ async function deleteBoardHistory(name) {
 }
 
 
+/* === 05-board-file.js === */
+/* drawer-app/05-board-file.js — open a .bmd into the hash URL */
+function boardTitleFromBody(body) {
+  var hit = /^\s*board\s+"([^"]*)"/.exec(String(body || ""));
+  return hit ? hit[1] : "";
+}
+
+function pickBoardSourceFile() {
+  return new Promise(function (resolve, reject) {
+    if (typeof window !== "undefined" && typeof window.showOpenFilePicker === "function") {
+      window.showOpenFilePicker({
+        types: [{ description: "Board file", accept: { "text/plain": [".bmd"] } }],
+        multiple: false,
+      }).then(function (handles) {
+        if (!handles || !handles[0]) return resolve(null);
+        return handles[0].getFile().then(function (file) {
+          return file.text().then(resolve, reject);
+        });
+      }).catch(function (error) {
+        if (error && error.name === "AbortError") resolve(null);
+        else reject(error);
+      });
+      return;
+    }
+    var input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".bmd,text/plain";
+    input.hidden = true;
+    var finish = function (text) {
+      input.remove();
+      resolve(text);
+    };
+    input.addEventListener("change", function () {
+      var file = input.files && input.files[0];
+      if (!file) return finish(null);
+      file.text().then(finish, function (error) {
+        input.remove();
+        reject(error);
+      });
+    });
+    input.addEventListener("cancel", function () { finish(null); });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
+async function openBoardFile() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() !== "hash") return;
+  var button = document.getElementById("btnHistoryOpenFile");
+  if (button) button.disabled = true;
+  try {
+    var text = await pickBoardSourceFile();
+    if (text == null) return;
+    text = String(text);
+    if (!text.trim()) throw new Error("Board file is empty");
+    var doc = splitDocument(text);
+    if (!boardSourceEl) throw new Error("Board source is missing");
+    boardSourceEl.value = text;
+    boardDirty = false;
+    boardLocalRev = Number(doc.meta.version) || 1;
+    if (typeof applyBoardLiveMeta === "function") {
+      applyBoardLiveMeta({
+        id: doc.meta.id,
+        version: doc.meta.version,
+        title: boardTitleFromBody(doc.body),
+      });
+    }
+    if (typeof updateBoardChars === "function") updateBoardChars();
+    if (typeof saveBoardToHash === "function") await saveBoardToHash();
+    if (typeof renderBoard === "function") renderBoard({ fit: true });
+    setStatus("Opened file");
+    showCopyTip("Opened file");
+  } catch (error) {
+    console.error(error);
+    setStatus((error && error.message) || "Open file failed", true);
+    showCopyTip("Open file failed");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 /* === 05-export-png.js === */
 import { snapdom } from './snapdom.mjs';
 
@@ -2940,19 +3183,66 @@ function canvasToPngBlob(canvas) {
   });
 }
 
+function exportBoardStem() {
+  const title = typeof liveBoardTitle === "string" ? liveBoardTitle : "";
+  const id = typeof liveRecordId === "function"
+    ? liveRecordId()
+    : (typeof liveBoardId === "string" ? liveBoardId : "");
+  const path = typeof activeSourcePath === "function" ? activeSourcePath() : "";
+  const fromPath = path ? String(path).split("/").pop().replace(/\.[^.]+$/, "") : "";
+  return exportStem(title || fromPath || id, "board");
+}
+
+async function saveExportBlob(blob, filename, mime) {
+  const name = String(filename || "board");
+  const extMatch = name.match(/(\.[A-Za-z0-9]+)$/);
+  const ext = extMatch ? extMatch[1] : "";
+  if (typeof window !== "undefined" && typeof window.showSaveFilePicker === "function") {
+    try {
+      const accept = {};
+      accept[mime || "application/octet-stream"] = ext ? [ext] : [];
+      const handle = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description: ext === ".png" ? "PNG image" : "Board file", accept }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return "picker";
+    } catch (error) {
+      if (error && error.name === "AbortError") return "abort";
+    }
+  }
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+  return "download";
+}
+
+async function exportBoardFile() {
+  const text = typeof activeSourceText === "function" ? activeSourceText() : "";
+  if (!String(text).trim()) {
+    setStatus("Nothing to export", true);
+    return;
+  }
+  const result = await saveExportBlob(
+    new Blob([text], { type: "text/plain;charset=utf-8" }),
+    exportBoardStem() + ".bmd",
+    "text/plain"
+  );
+  if (result === "abort") return;
+  const message = result === "picker" ? "File saved" : "File exported";
+  setStatus(message);
+  showCopyTip(message);
+}
+
 async function writePngExport(blob, stem) {
-  const response = await fetch('./export.png', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'image/png',
-      'X-Export-Stem': stem,
-    },
-    body: blob,
-  });
-  if (!response.ok) throw new Error(`PNG export failed (${response.status})`);
-  const result = await response.json();
-  if (!result || !result.ok || !result.path) throw new Error('PNG export did not return a path');
-  return result.path;
+  return saveExportBlob(blob, String(stem || "board") + ".png", "image/png");
 }
 
 async function exportPng() {
@@ -2995,10 +3285,11 @@ async function exportPng() {
     paintExportGrid(context, output, cropped.surfaceSize);
     context.drawImage(cropped.canvas, 0, 0);
 
-    const stem = exportStem(activeSourcePath().split('/').pop().replace(/\.[^.]+$/, ''), 'diagram');
-    const path = await writePngExport(await canvasToPngBlob(output), stem);
-    setStatus('PNG exported');
-    if (!await copyText(path, 'PNG path')) showCopyTip('PNG exported');
+    const result = await writePngExport(await canvasToPngBlob(output), exportBoardStem());
+    if (result === "abort") return;
+    const message = result === "picker" ? "PNG saved" : "PNG exported";
+    setStatus(message);
+    showCopyTip(message);
   } catch (error) {
     console.error(error);
     setStatus(error.message || 'PNG export failed', true);
@@ -3362,21 +3653,6 @@ function activeSourceText() {
 function activeSourcePath() {
   return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
 }
-async function copyActiveSourcePath() {
-  let path = activeSourcePath();
-  if (!path) {
-    try {
-      const res = await fetch('./board.meta.json?ts=' + Date.now(), { cache: 'no-store' });
-      if (res.ok) {
-        const meta = await res.json();
-        if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
-        path = activeSourcePath();
-      }
-    } catch (_e) {}
-  }
-  if (!path) { showCopyTip('No file path'); return; }
-  await copyText(path, 'Path');
-}
 $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
   var id = typeof liveRecordId === "function" ? liveRecordId() : "";
   if (!id) { showCopyTip("No ID"); return; }
@@ -3385,7 +3661,8 @@ $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
 $('#btnSourceCopy') && ($('#btnSourceCopy').onclick = () => {
   void copyText(activeSourceText(), "Source");
 });
-$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void copyActiveSourcePath(); closeCanvasExport(); });
+$('#btnHistoryOpenFile') && ($('#btnHistoryOpenFile').onclick = () => { void openBoardFile(); });
+$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void exportBoardFile(); closeCanvasExport(); });
 $('#btnCanvasDlPng') && ($('#btnCanvasDlPng').onclick = () => { void exportPng(); closeCanvasExport(); });
 /* UI light/dark toggle removed for now */
 
@@ -3477,9 +3754,25 @@ function restoreDrawerMode() {
 }
 await bootstrapBoard();
 restoreDrawerMode();
-setInterval(() => { void loadBoardPolled(); }, 1500);
+if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
+  setInterval(() => { void loadBoardPolled(); }, 1500);
+} else {
+  window.addEventListener("hashchange", function() {
+    if (boardDirty || boardSaveTimer) return;
+    void bootstrapBoard().then(function() {
+      if (typeof renderBoard === "function" && boardSourceEl && boardSourceEl.value.trim()) {
+        renderBoard({ fit: false, restoreView: true });
+      }
+    });
+  });
+}
 
 (function wireBoardHistory() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    var head = document.querySelector("#boardHistory .history-head");
+    if (head) head.setAttribute("title", "~/.cache/board/history");
+    return;
+  }
   var btn = document.getElementById("btnBoardHistoryRefresh");
   if (btn) btn.addEventListener("click", function() { void refreshBoardHistory(); });
   void refreshBoardHistory();

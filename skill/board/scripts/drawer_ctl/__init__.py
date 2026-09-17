@@ -6,5 +6,4 @@ from drawer_ctl.document import *  # noqa: F403
 from drawer_ctl.export import *  # noqa: F403
 from drawer_ctl.board import *  # noqa: F403
 from drawer_ctl.migrate import migrate_document_envelopes
-from drawer_ctl.server import *  # noqa: F403
 from drawer_ctl.commands import *  # noqa: F403

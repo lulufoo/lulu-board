@@ -4,12 +4,9 @@ from __future__ import annotations
 from pathlib import Path
 
 STATE_DIR = Path.home() / ".cache" / "board"
-DEFAULT_PORT = 49867  # fixed loopback; CLI --port 0 means "use this"
-SERVER_FILE = "server.json"
 BOARD_SOURCE_FILE = "board.bmd"
 LEGACY_BOARD_SOURCE_FILE = "board.dsl"
 BOARD_META_FILE = "board.meta.json"
-VIEWER_FILE = "drawer.html"
 HISTORY_DIR_NAME = "history"
 EXPORT_DIR_NAME = "export"
 HISTORY_SOURCE_READ_CAP = 256_000
@@ -18,14 +15,6 @@ HISTORY_SOURCE_READ_CAP = 256_000
 def skill_root() -> Path:
     """Install root: this skill folder (parent of scripts/)."""
     return Path(__file__).resolve().parents[2]
-
-
-def asset_path() -> Path:
-    return skill_root() / "assets" / VIEWER_FILE
-
-
-def server_path() -> Path:
-    return STATE_DIR / SERVER_FILE
 
 
 def board_source_path() -> Path:
@@ -90,11 +79,11 @@ def export_dir() -> Path:
 
 def default_board_template_path() -> Path:
     """Preferred first-run board (packed from examples/board-onboarding)."""
-    return skill_root() / "assets" / "templates" / "board" / "onboarding.bmd"
+    return skill_root() / "templates" / "board" / "onboarding.bmd"
 
 
 def board_example_template_dir() -> Path:
-    return skill_root() / "assets" / "templates" / "board"
+    return skill_root() / "templates" / "board"
 
 
 def board_example_template_sources() -> list[Path]:

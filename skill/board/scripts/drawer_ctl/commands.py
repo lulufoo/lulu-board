@@ -1,4 +1,4 @@
-"""User-facing commands: mount/status/preview/set/get."""
+"""User-facing commands: status/preview/set/get."""
 from __future__ import annotations
 
 import json
@@ -8,14 +8,13 @@ from pathlib import Path
 from urllib.parse import quote
 
 from drawer_ctl import paths
-from drawer_ctl import util
 from drawer_ctl import board
-from drawer_ctl import server
+from drawer_ctl import hash_url
 from drawer_ctl.migrate import migrate_document_envelopes
 
 
 def open_viewer(url: str, mode: str = "ide") -> str:
-    """Open the drawer URL.
+    """Open the public hash URL.
 
     mode:
       - ide: Cursor/VS Code Simple Browser (default; avoids Chrome)
@@ -43,86 +42,10 @@ def open_viewer(url: str, mode: str = "ide") -> str:
     return "none"
 
 
-def mount(port: int, should_open: bool = False, open_mode: str | None = None) -> str:
-    """Start or reuse the drawer viewer on the fixed default port (unless --port set)."""
-
-    def _run() -> str:
-        server.sync_assets()
-        board.seed_default_board_if_empty()
-        migrate_document_envelopes()
-        mode = open_mode
-        if mode is None:
-            mode = "ide" if should_open else "none"
-
-        target = util.resolve_port(port)
-        url = f"http://127.0.0.1:{target}/{paths.VIEWER_FILE}"
-
-        # Prefer whatever of ours is already listening on the target port.
-        live = server.serve_pid_on_port(target)
-        if live is None:
-            current = server.read_server()
-            if (
-                current
-                and current.get("root") == str(paths.STATE_DIR)
-                and current.get("kind") == "draw-serve-v2"
-                and int(current.get("port", -1)) == target
-                and server.is_drawer_serve_pid(int(current.get("pid") or 0))
-            ):
-                live = int(current["pid"])
-
-        if live is not None:
-            server.stop_other_serves(keep_pid=live)
-            server.write_server(live, target)
-            open_viewer(url, mode)
-            return url
-
-        if server.port_busy_by_foreign(target):
-            raise RuntimeError(
-                f"port 127.0.0.1:{target} is in use by another process; "
-                f"stop it or pass --port <free>"
-            )
-
-        # Clean slate: no orphans left behind when we start fresh.
-        server.stop_server()
-
-        process = subprocess.Popen(
-            [
-                sys.executable,
-                str(Path(__file__).resolve().parent.parent / "drawer_control.py"),
-                server.SERVE_COMMAND,
-                "--port",
-                str(target),
-            ],
-            cwd=str(paths.STATE_DIR),
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-        if not server.server_ready(url, process):
-            try:
-                process.terminate()
-            except OSError:
-                pass
-            raise RuntimeError(f"could not start viewer on 127.0.0.1:{target}")
-        server.stop_other_serves(keep_pid=process.pid)
-        server.write_server(process.pid, target)
-        open_viewer(url, mode)
-        return url
-
-    return server.with_mount_lock(_run)
-
-
 def status():
-    info = server.read_server() or {}
-    running = server.pid_alive(info.get("pid"))
     meta = board.read_board_meta()
     return {
         "ok": True,
-        "running": running,
-        "url": info.get("url") if running else None,
-        "pid": info.get("pid") if running else None,
-        "port": int(info.get("port") or 0),
         "has_source": paths.board_source_path().is_file(),
         "kind": "board",
         "rev": meta["rev"],
@@ -135,10 +58,6 @@ def status():
         "history_dir": str(paths.history_root()),
         "board_history_dir": str(paths.board_history_dir()),
     }
-
-
-def viewer_page_url(base: str, kind: str = "board") -> str:
-    return f"{base}{'&' if '?' in base else '?'}mode=board"
 
 
 def resolve_preview_body(path: str | None, stdin=None, kind: str = "board") -> str | None:
@@ -164,14 +83,14 @@ def resolve_board_preview_body(path: str | None, stdin=None) -> str | None:
     return resolve_preview_body(path, stdin=stdin, kind="board")
 
 
-def preview(path, port: int, should_open: bool = True, open_mode: str | None = None, kind: str = "board", source_id: str | None = None) -> None:
-    """Mount drawer, write Board SSOT, optionally open the browser."""
+def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = "board", source_id: str | None = None) -> None:
+    """Write Board SSOT and emit the public hash URL."""
     if open_mode is None:
         open_mode = "ide" if should_open else "none"
     if kind and kind != "board":
         raise RuntimeError("invalid --kind (expected board)")
     seeded_now = board.seed_default_board_if_empty() is not None
-    url = mount(port, should_open=False, open_mode="none")
+    migrate_document_envelopes()
     payload = {"ok": True, "kind": "board"}
     body = resolve_board_preview_body(path)
     board_id = str(source_id or "").strip() or None
@@ -197,11 +116,11 @@ def preview(path, port: int, should_open: bool = True, open_mode: str | None = N
         )
         open_kind = "current" if board_id else "created"
     payload["open"] = open_kind
-    view = viewer_page_url(url, "board")
-    open_viewer(view, open_mode)
+    web = hash_url.board_web_url(board.read_board_source_text())
     payload.update(
         {
-            "url": view,
+            "url": web,
+            "web_url": web,
             "rev": meta["rev"],
             "version": meta.get("version", meta["rev"]),
             "via": meta["via"],
@@ -212,11 +131,12 @@ def preview(path, port: int, should_open: bool = True, open_mode: str | None = N
             "title": meta.get("title"),
         }
     )
+    if open_mode != "none":
+        open_viewer(web, "system")
     print(json.dumps(payload, ensure_ascii=False))
 
 
 def set_source(path, kind: str = "board", source_id: str | None = None) -> None:
-    # Always content: `--file` is read into memory (not mounted as the live path).
     src = Path(path) if path else None
     body = src.read_text(encoding="utf-8") if src else sys.stdin.read()
     label = src.stem if src else "stdin"

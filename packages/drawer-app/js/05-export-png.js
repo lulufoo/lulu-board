@@ -148,19 +148,66 @@ function canvasToPngBlob(canvas) {
   });
 }
 
+function exportBoardStem() {
+  const title = typeof liveBoardTitle === "string" ? liveBoardTitle : "";
+  const id = typeof liveRecordId === "function"
+    ? liveRecordId()
+    : (typeof liveBoardId === "string" ? liveBoardId : "");
+  const path = typeof activeSourcePath === "function" ? activeSourcePath() : "";
+  const fromPath = path ? String(path).split("/").pop().replace(/\.[^.]+$/, "") : "";
+  return exportStem(title || fromPath || id, "board");
+}
+
+async function saveExportBlob(blob, filename, mime) {
+  const name = String(filename || "board");
+  const extMatch = name.match(/(\.[A-Za-z0-9]+)$/);
+  const ext = extMatch ? extMatch[1] : "";
+  if (typeof window !== "undefined" && typeof window.showSaveFilePicker === "function") {
+    try {
+      const accept = {};
+      accept[mime || "application/octet-stream"] = ext ? [ext] : [];
+      const handle = await window.showSaveFilePicker({
+        suggestedName: name,
+        types: [{ description: ext === ".png" ? "PNG image" : "Board file", accept }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return "picker";
+    } catch (error) {
+      if (error && error.name === "AbortError") return "abort";
+    }
+  }
+  const href = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = href;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+  return "download";
+}
+
+async function exportBoardFile() {
+  const text = typeof activeSourceText === "function" ? activeSourceText() : "";
+  if (!String(text).trim()) {
+    setStatus("Nothing to export", true);
+    return;
+  }
+  const result = await saveExportBlob(
+    new Blob([text], { type: "text/plain;charset=utf-8" }),
+    exportBoardStem() + ".bmd",
+    "text/plain"
+  );
+  if (result === "abort") return;
+  const message = result === "picker" ? "File saved" : "File exported";
+  setStatus(message);
+  showCopyTip(message);
+}
+
 async function writePngExport(blob, stem) {
-  const response = await fetch('./export.png', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'image/png',
-      'X-Export-Stem': stem,
-    },
-    body: blob,
-  });
-  if (!response.ok) throw new Error(`PNG export failed (${response.status})`);
-  const result = await response.json();
-  if (!result || !result.ok || !result.path) throw new Error('PNG export did not return a path');
-  return result.path;
+  return saveExportBlob(blob, String(stem || "board") + ".png", "image/png");
 }
 
 async function exportPng() {
@@ -203,10 +250,11 @@ async function exportPng() {
     paintExportGrid(context, output, cropped.surfaceSize);
     context.drawImage(cropped.canvas, 0, 0);
 
-    const stem = exportStem(activeSourcePath().split('/').pop().replace(/\.[^.]+$/, ''), 'diagram');
-    const path = await writePngExport(await canvasToPngBlob(output), stem);
-    setStatus('PNG exported');
-    if (!await copyText(path, 'PNG path')) showCopyTip('PNG exported');
+    const result = await writePngExport(await canvasToPngBlob(output), exportBoardStem());
+    if (result === "abort") return;
+    const message = result === "picker" ? "PNG saved" : "PNG exported";
+    setStatus(message);
+    showCopyTip(message);
   } catch (error) {
     console.error(error);
     setStatus(error.message || 'PNG export failed', true);

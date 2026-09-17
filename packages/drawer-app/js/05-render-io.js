@@ -200,6 +200,7 @@ function boardHistoryFile(name) {
   return name + ".bmd";
 }
 async function refreshBoardHistory() {
+  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
   var list = document.getElementById("boardHistoryList");
   var empty = document.getElementById("boardHistoryEmpty");
   var combo = list && list.closest(".history-combo");

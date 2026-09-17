@@ -414,7 +414,7 @@ function setTypeUI() {
   if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel();
   if (typePill) typePill.innerHTML = '<b>Board</b>';
   var hint = $('#exportTypeHint');
-  if (hint) hint.textContent = 'Board mode · Copy Path below.';
+  if (hint) hint.textContent = 'Board mode · Export File below.';
   if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
 }
 function applyTransform() {

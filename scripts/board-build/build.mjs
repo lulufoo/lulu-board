@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createRequire } from 'node:module';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
-const assetsRoot = path.join(repo, 'skill/board/assets');
+const webVendor = path.join(repo, 'web/vendor');
 const srcDir = path.join(packages, 'board');
-const outFile = path.join(assetsRoot, 'vendor/board.min.js');
+const outFile = path.join(webVendor, 'board.min.js');
 const iconCatalogFile = path.join(repo, 'skill/board/common/icons.json');
 const iconPathsFile = path.join(srcDir, 'item/icon-paths.json');
 
@@ -82,6 +82,7 @@ for (const rel of SCRIPTS) {
 const require = createRequire(new URL('./package.json', import.meta.url));
 const esbuild = require('esbuild');
 const result = await esbuild.transform(parts.join('\n'), { loader: 'js', minify: true, target: 'es2018' });
+mkdirSync(webVendor, { recursive: true });
 writeFileSync(outFile, result.code);
 console.log(`ok ${outFile} ${result.code.length} bytes`);
 

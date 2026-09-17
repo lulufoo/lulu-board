@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * drawer-app build: vendor/drawer-app → assets outputs.
+ * drawer-app build: vendor/drawer-app → web/.
  */
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
@@ -9,14 +9,12 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
-const assetsRoot = path.join(repo, 'skill/board/assets');
+const webDir = path.join(repo, 'web');
 const srcDir = path.join(packages, 'drawer-app');
-const assetsDir = assetsRoot;
-const vendorOut = path.join(assetsDir, 'vendor');
+const vendorOut = path.join(webDir, 'vendor');
 mkdirSync(vendorOut, { recursive: true });
 
 const srcHtml = path.join(srcDir, 'index.html');
-const outHtml = path.join(assetsDir, 'drawer.html');
 if (!existsSync(srcHtml)) throw new Error('missing ' + srcHtml);
 
 // CSS
@@ -56,10 +54,12 @@ for (const name of ['snapdom.mjs']) {
 const domain = [
   '00-style-line.js',
   '00-document-meta.js',
+  '00-hash-persist.js',
   '00-canvas-view.js',
   '01-shell-state.js',
   '02-board.js',
   '05-render-io.js',
+  '05-board-file.js',
   '05-export-png.js',
   '07-chrome-boot.js',
   '08-source-lines.js',
@@ -73,12 +73,9 @@ const mod = parts.join('\n');
 writeFileSync(path.join(vendorOut, 'drawer-app.js'), mod);
 console.log(`ok drawer-app.js (${mod.split('\n').length} lines, ${domain.length} domains)`);
 
-copyFileSync(srcHtml, outHtml);
-console.log(`ok drawer.html (${readFileSync(outHtml, 'utf8').split('\n').length} lines)`);
-
 for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   const src = path.join(srcDir, 'brand', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
-  copyFileSync(src, path.join(assetsDir, name));
+  copyFileSync(src, path.join(webDir, name));
   console.log('ok ' + name);
 }

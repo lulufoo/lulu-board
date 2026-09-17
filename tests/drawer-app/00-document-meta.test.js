@@ -38,6 +38,14 @@ function token(id, version) {
 }
 
 {
+  const blank = Meta.blankHashBoardSource("Untitled");
+  const doc = Meta.splitDocument(blank);
+  assert.match(doc.meta.id, /^b_[0-9a-f]{8}$/);
+  assert.strictEqual(doc.meta.version, 1);
+  assert.strictEqual(doc.body, 'board "Untitled"\n');
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../skill/board/references/vocab.md'), 'utf8');
   assert.ok(/Mint without meta or style/.test(board), 'board SKILL mints without stash');

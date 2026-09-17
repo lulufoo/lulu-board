@@ -88,7 +88,7 @@ Ship **`skill/`** as the Cursor plugin body. Chat entry is `/board`.
 .cursor-plugin/marketplace.json   # repo marketplace; source: skill
 skill/
   .cursor-plugin/plugin.json      # name: lulu-board; skills: board
-  board/     # self-contained /board (SKILL.md, scripts/, assets/)
+  board/     # self-contained /board (SKILL.md, scripts/, templates/)
 ```
 
 Do not ship `packages/`, `scripts/*-build/`, or `tests/`.
@@ -98,18 +98,18 @@ Local test: copy `skill/` to `~/.cursor/plugins/local/lulu-board` (do not symlin
 ## Develop
 
 ```text
-examples/    # README previews (source + PNG) → packed into skill/board/assets/templates
+examples/    # README previews (source + PNG) → packed into skill/board/templates
 packages/    # board, drawer-app
 scripts/     # build tooling
 skill/       # plugin root
 tests/
+web/         # public viewer (luluboard.app)
 ```
 
 From the repo root:
 
 ```bash
-node scripts/drawer-app-build/build.mjs
-node scripts/board-build/build.mjs
+node scripts/web-build/build.mjs
 # or pack examples alone:
 node scripts/examples-templates-build/build.mjs
 ```

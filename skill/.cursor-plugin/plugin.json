@@ -9,6 +9,6 @@
   "repository": "https://github.com/lulufoo/lulu-board",
   "license": "MIT",
   "keywords": ["board", "whiteboard", "diagram", "bmd"],
-  "logo": "board/assets/logo.svg",
+  "logo": "board/logo.svg",
   "skills": ["board"]
 }

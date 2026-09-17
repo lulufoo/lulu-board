@@ -6,9 +6,9 @@ argument-hint: "[scene intent]"
 
 # board
 
-Define one diagram with the Board protocol and render it with Drawer. Done when
-preview returns `ok` with a URL and the matching `open` line, or chat-only
-BMD Source is delivered.
+Define one diagram with the Board protocol and open it on the public viewer.
+Done when preview returns `ok` with a `luluboard.app` URL and the matching
+`open` line, or chat-only BMD Source is delivered.
 
 ## Identity
 
@@ -29,11 +29,11 @@ Load the authoring contract before writing.
 2. Load [vocab](./references/vocab.md); it is the authoring contract.
 3. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
 4. When using an icon, load [icons.json](./common/icons.json).
-5. Load [viewer](./references/viewer.md) for `mount` / `status` / `stop` or the pointer protocol.
+5. Load [viewer](./references/viewer.md) for `status` or the pointer protocol.
 
 ## Flow
 
-1. Use Drawer unless the user explicitly requests chat-only output.
+1. Use the public viewer unless the user explicitly requests chat-only output.
 2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
    with no `--file` and no stdin body. Keep `id` (BMD ID) first, then `open`
    and `url`. Show the URL and stop.
@@ -41,7 +41,7 @@ Load the authoring contract before writing.
    that BMD Source as the text to edit. `<id>` is the BMD ID from this session’s
    last preview or set-source. If none yet, run step 2 first and keep that BMD ID.
 4. Infer the scene and author one BMD Source string that follows vocab.
-5. For Drawer, run `$DRAWER_CTL preview --kind board --id <id>` with stdin or
+5. For the public viewer, run `$DRAWER_CTL preview --kind board --id <id>` with stdin or
    `--file` when updating that board. Omit `--id` only to mint a new board.
    If it reports a DSL error, correct the BMD Source and rerun. Keep the BMD
    ID from stdout, then `open` and `url`. Show the URL and stop.
@@ -59,7 +59,7 @@ Say one line with the URL, from stdout `open`:
 
 ## Boundaries
 
-The preview URL is user-facing output. CLI success completes the skill; do not
-open the URL, drive Drawer, or screenshot the layout unless the user explicitly
-requests visual verification. Mint without meta or style. On update, leave those
-lines unchanged.
+stdout `url` is the public hash link (`https://luluboard.app/#z:…`). CLI
+success completes the skill; do not open the URL, drive the viewer, or
+screenshot the layout unless the user explicitly requests visual verification.
+Mint without meta or style. On update, leave those lines unchanged.
