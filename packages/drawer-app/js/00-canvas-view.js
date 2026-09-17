@@ -22,6 +22,30 @@ function measureDiagramOnCanvas() {
   return { x: box.left - wrap.left, y: box.top - wrap.top };
 }
 
+function measureDiagramCenterOnCanvas() {
+  if (!previewEl || !stageEl) return null;
+  var content = previewEl.querySelector(".board-render");
+  if (!content) return null;
+  var wrap = stageEl.getBoundingClientRect();
+  var box = content.getBoundingClientRect();
+  if (!wrap.width || !wrap.height || !box.width || !box.height) return null;
+  return {
+    x: (box.left + box.right) / 2 - wrap.left,
+    y: (box.top + box.bottom) / 2 - wrap.top,
+  };
+}
+
+function panAfterScaleAroundPoint(panX0, panY0, oldScale, nextScale, cx, cy) {
+  if (!(oldScale > 0) || !isFinite(nextScale) || !isFinite(cx) || !isFinite(cy)) {
+    return { x: panX0, y: panY0 };
+  }
+  var ratio = nextScale / oldScale;
+  return {
+    x: cx - (cx - panX0) * ratio,
+    y: cy - (cy - panY0) * ratio,
+  };
+}
+
 function readDocumentView() {
   try {
     if (!boardSourceEl || typeof BoardRender === "undefined" || typeof BoardRender.parse !== "function") return null;

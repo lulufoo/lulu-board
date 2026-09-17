@@ -423,6 +423,21 @@ function applyTransform() {
   if (zr) zr.textContent = Math.round(scale * 100) + "%";
   scheduleDrawerUiSave();
 }
+function setCanvasScaleAroundDiagram(nextScale) {
+  nextScale = Math.min(3, Math.max(0.2, Number(nextScale)));
+  if (!isFinite(nextScale)) return;
+  var prev = scale;
+  if (prev > 0 && nextScale !== prev && typeof measureDiagramCenterOnCanvas === "function" && typeof panAfterScaleAroundPoint === "function") {
+    var center = measureDiagramCenterOnCanvas();
+    if (center) {
+      var nextPan = panAfterScaleAroundPoint(panX, panY, prev, nextScale, center.x, center.y);
+      panX = nextPan.x;
+      panY = nextPan.y;
+    }
+  }
+  scale = nextScale;
+  applyTransform();
+}
 function boardContentOnStage() {
   var content = previewEl && previewEl.querySelector(".board-render");
   if (!content || !stageEl) return false;
