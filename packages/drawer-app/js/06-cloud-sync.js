@@ -269,7 +269,9 @@ async function saveBoardToCloud(opts) {
     if (result.error) throw result.error;
     if (seq !== cloudSaveSeq) return false;
     boardDirty = false;
-    cloudSetBoardHash(boardId, true);
+    // Do not steal the hash back if the user already navigated to another cloud board.
+    var openId = cloudBoardId();
+    if (!openId || openId === boardId) cloudSetBoardHash(boardId, true);
     if (typeof applyBoardLiveMeta === "function") {
       applyBoardLiveMeta({ id: boardId, title: result.data && result.data.title });
     }

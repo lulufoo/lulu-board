@@ -454,8 +454,19 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
   setInterval(() => { void loadBoardPolled(); }, 1500);
 } else {
   window.addEventListener("hashchange", function() {
-    if (boardDirty || boardSaveTimer) return;
-    void bootstrapBoard().then(function() {
+    // Never drop a navigation: flush the outgoing cloud board first, then load the new one.
+    var pending = Promise.resolve();
+    if (boardDirty || boardSaveTimer) {
+      clearTimeout(boardSaveTimer);
+      boardSaveTimer = null;
+      var outgoingId = "";
+      try { outgoingId = String(splitDocument(boardSourceEl.value).meta.id || ""); } catch (_e) {}
+      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function") {
+        pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
+      }
+      boardDirty = false;
+    }
+    void pending.then(function() { return bootstrapBoard(); }).then(function() {
       if (typeof renderBoard === "function" && boardSourceEl && boardSourceEl.value.trim()) {
         renderBoard({ fit: false, restoreView: true });
       }

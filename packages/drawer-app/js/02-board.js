@@ -1576,7 +1576,9 @@ function renderBoard(opts) {
 }
 function scheduleBoardRender() { clearTimeout(boardRenderTimer); boardRenderTimer = setTimeout(renderBoard, 220); }
 function setBoardSyncUI(state = 'ok') { const pill = $('#boardSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${boardLocalRev}</b>`; }
-function scheduleBoardSave() { boardDirty = true; clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), 350); }
+// Cloud saves hit Supabase; debounce them longer than local/URL saves.
+function boardSaveDelay() { return typeof cloudBoardId === "function" && cloudBoardId() ? 1000 : 350; }
+function scheduleBoardSave() { boardDirty = true; clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay()); }
 function flushBoardSave() {
   if (!boardDirty && !boardSaveTimer) return Promise.resolve();
   clearTimeout(boardSaveTimer);
@@ -1608,13 +1610,14 @@ async function saveBoardToHash() {
   }
 }
 async function saveBoardToFile() {
+  // Clear the timer on every path; a stale id here blocks hashchange/poll loads forever.
+  boardSaveTimer = null;
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
     if (typeof cloudBoardId === "function" && cloudBoardId()) {
       return saveBoardToCloud({ explicit: false });
     }
     return saveBoardToHash();
   }
-  boardSaveTimer = null;
   const text = boardSourceEl.value, seq = ++boardSaveSeq, baseRev = boardLocalRev;
   try {
     const headers = {
