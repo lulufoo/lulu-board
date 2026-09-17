@@ -30,6 +30,12 @@ function cloudSetHistoryVisible(visible) {
   root.dataset.cloudHistory = visible ? "on" : "off";
   var heading = document.querySelector("#boardHistory .history-head strong");
   if (heading) heading.textContent = visible ? "Cloud history" : "History";
+  var openFile = document.getElementById("btnHistoryOpenFile");
+  if (openFile) {
+    openFile.title = visible
+      ? "Open a board file, then save it to cloud. Local history: ~/.cache/board/history."
+      : "Open a board file. Local history: ~/.cache/board/history.";
+  }
 }
 
 function cloudSetAccountUi() {
@@ -336,7 +342,6 @@ async function refreshCloudBoardHistory() {
       var del = document.createElement("button");
       del.type = "button";
       del.className = "history-item-del";
-      del.title = "Delete cloud board";
       del.setAttribute("aria-label", "Delete cloud board");
       del.textContent = "×";
       li.appendChild(main);

@@ -277,7 +277,6 @@ async function refreshBoardHistory() {
       var del = document.createElement("button");
       del.type = "button";
       del.className = "history-item-del";
-      del.title = "Delete snapshot";
       del.setAttribute("aria-label", "Delete snapshot");
       del.textContent = "×";
 

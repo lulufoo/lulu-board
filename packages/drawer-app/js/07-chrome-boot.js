@@ -466,8 +466,6 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
 
 (function wireBoardHistory() {
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
-    var head = document.querySelector("#boardHistory .history-head");
-    if (head) head.setAttribute("title", "~/.cache/board/history");
     var cloudRefresh = document.getElementById("btnBoardHistoryRefresh");
     if (cloudRefresh) cloudRefresh.addEventListener("click", function() { void refreshBoardHistory(); });
     void refreshBoardHistory();

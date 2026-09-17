@@ -2124,3 +2124,32 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
   min-height: 0;
   padding-bottom: 28px;
 }
+
+/* Keep editing controls left and account controls right. */
+html[data-drawer-mode="board"] .top-float {
+  left: 12px !important;
+  right: 48px !important;
+  width: auto !important;
+}
+html[data-drawer-mode="board"] .board-account {
+  margin-left: auto;
+  flex: 0 1 auto;
+}
+.history-head {
+  justify-content: flex-start;
+}
+.history-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+@media (max-width: 820px) {
+  html[data-drawer-mode="board"] .top-float {
+    left: 6px !important;
+    right: 42px !important;
+  }
+  .board-account-name {
+    max-width: 7rem;
+  }
+}
