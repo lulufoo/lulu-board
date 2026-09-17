@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""preview --kind board reports open=seeded|created|current and skips set-source when empty."""
+"""preview --kind board reports open=created|current and does not write history/."""
 from __future__ import annotations
 
 import io
@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" /
 
 import drawer_control as dc
 from drawer_ctl import commands as _commands
+from drawer_ctl import hash_url
 from drawer_ctl import paths as _ctl_paths
 
 
@@ -61,45 +62,52 @@ class BoardPreviewOpenTest(unittest.TestCase):
         _ctl_paths.STATE_DIR = self.prev_state
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def _preview(self, path=None, stdin=None) -> dict:
+    def _preview(self, path=None, stdin=None, source_id=None) -> dict:
         buf = io.StringIO()
         with (
             patch.object(dc, "open_viewer", return_value="none"),
             patch.object(sys, "stdin", stdin or _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(path, should_open=False, open_mode="none", kind="board")
+            dc.preview(path, should_open=False, open_mode="none", kind="board", source_id=source_id)
         return json.loads(buf.getvalue())
 
-    def test_empty_history_no_source_is_seeded(self) -> None:
-        data = self._preview()
-        self.assertEqual(data["open"], "seeded")
-        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
-        self.assertEqual(data.get("url"), data.get("web_url"))
-        self.assertNotIn("local_url", data)
-        self.assertTrue(str(data.get("id") or "").startswith("b_"))
-        self.assertIn('board "Lulu Board"', dc.read_board_source_text())
-        self.assertEqual(data.get("current"), dc.read_board_meta().get("current"))
+    def _history_names(self) -> list[str]:
+        root = self.tmp / "history"
+        if not root.is_dir():
+            return []
+        return sorted(p.name for p in root.glob("*.bmd"))
 
-    def test_existing_history_no_source_is_current(self) -> None:
-        rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")
-        meta = dc.read_board_meta()
-        meta.update({"current": dc.rel_board_current(rec), "via": "cli", "title": "Mine", "label": "mine"})
-        dc.write_board_meta(meta)
-        dc.refresh_board_dsl_alias(rec)
-        before = dc.read_board_meta().get("current")
+    def test_empty_preview_opens_site_without_write(self) -> None:
         data = self._preview()
         self.assertEqual(data["open"], "current")
-        self.assertEqual(data.get("current"), before)
-        self.assertIn('board "Mine"', dc.read_board_source_text())
-        self.assertTrue(dc.read_board_source_text().lstrip().startswith("meta "))
+        self.assertEqual(data.get("url"), "https://luluboard.app/")
+        self.assertEqual(data.get("url"), data.get("web_url"))
+        self.assertEqual(data.get("id"), "")
+        self.assertNotIn("local_url", data)
+        self.assertEqual(self._history_names(), [])
+        self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 
-    def test_source_on_empty_history_is_created(self) -> None:
+    def test_leftover_id_is_read_not_rewritten(self) -> None:
+        rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")
+        before = rec.read_text(encoding="utf-8")
+        names = self._history_names()
+        data = self._preview(source_id=dc.ensure_board_history_entry_meta(rec)["id"])
+        self.assertEqual(data["open"], "current")
+        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
+        self.assertIn('board "Mine"', hash_url.decode_board_hash(data["url"].split("#", 1)[1]))
+        self.assertEqual(rec.read_text(encoding="utf-8"), before)
+        self.assertEqual(self._history_names(), names)
+
+    def test_source_does_not_write_history(self) -> None:
         src = self.tmp / "new.bmd"
         src.write_text('board "New"\n', encoding="utf-8")
         data = self._preview(path=str(src))
         self.assertEqual(data["open"], "created")
-        self.assertIn('board "New"', dc.read_board_source_text())
+        self.assertTrue(str(data.get("id") or "").startswith("b_"))
+        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
+        self.assertEqual(self._history_names(), [])
+        self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 
     def test_open_uses_public_hash_url(self) -> None:
         src = self.tmp / "new.bmd"
@@ -120,18 +128,7 @@ class BoardPreviewOpenTest(unittest.TestCase):
         data = json.loads(buf.getvalue())
         self.assertIn((data["url"], "system"), opened)
         self.assertTrue(data["url"].startswith("https://luluboard.app/#z:"))
-
-    def test_with_source_is_created(self) -> None:
-        rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")
-        meta = dc.read_board_meta()
-        meta.update({"current": dc.rel_board_current(rec), "via": "cli", "title": "Mine"})
-        dc.write_board_meta(meta)
-        src = self.tmp / "new.bmd"
-        src.write_text('board "New"\n', encoding="utf-8")
-        data = self._preview(path=str(src))
-        self.assertEqual(data["open"], "created")
-        self.assertNotEqual(Path(data["current"]).name, rec.name)
-        self.assertIn('board "New"', dc.read_board_source_text())
+        self.assertEqual(self._history_names(), [])
 
 
 if __name__ == "__main__":

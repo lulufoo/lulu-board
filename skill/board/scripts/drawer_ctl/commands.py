@@ -7,10 +7,12 @@ import sys
 from pathlib import Path
 from urllib.parse import quote
 
+from document_meta import has_envelope, mint_envelope, split_document, strip_leading_meta_lines
 from drawer_ctl import paths
 from drawer_ctl import board
 from drawer_ctl import hash_url
-from drawer_ctl.migrate import migrate_document_envelopes
+from drawer_ctl import titles
+from drawer_ctl import util
 
 
 def open_viewer(url: str, mode: str = "ide") -> str:
@@ -83,54 +85,54 @@ def resolve_board_preview_body(path: str | None, stdin=None) -> str | None:
     return resolve_preview_body(path, stdin=stdin, kind="board")
 
 
+def _preview_board_text(body: str | None, board_id: str | None) -> tuple[str, dict, str]:
+    """Build BMD in memory. Does not write history/."""
+    if body is None:
+        if board_id:
+            text = board.board_source_text_for_id(board_id)
+            doc, _rest = split_document(text, "board")
+            return text, {
+                "id": doc["id"],
+                "title": titles.derive_board_title(text),
+                "version": doc["version"],
+            }, "current"
+        return "", {"id": "", "title": "", "version": 1}, "current"
+    if has_envelope(body, "board"):
+        meta, _rest = split_document(body, "board")
+        if board_id and meta["id"] != board_id:
+            text, doc = mint_envelope(strip_leading_meta_lines(body), "board", board_id)
+        else:
+            text, doc = mint_envelope(body, "board", meta["id"])
+    else:
+        text, doc = mint_envelope(body, "board", board_id or util.new_board_id())
+    return text, {
+        "id": doc["id"],
+        "title": titles.derive_board_title(text),
+        "version": doc["version"],
+    }, ("current" if board_id else "created")
+
+
 def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = "board", source_id: str | None = None) -> None:
-    """Write Board SSOT and emit the public hash URL."""
+    """Encode Board source to the public hash URL. Does not write history/."""
     if open_mode is None:
         open_mode = "ide" if should_open else "none"
     if kind and kind != "board":
         raise RuntimeError("invalid --kind (expected board)")
-    seeded_now = board.seed_default_board_if_empty() is not None
-    migrate_document_envelopes()
-    payload = {"ok": True, "kind": "board"}
     body = resolve_board_preview_body(path)
     board_id = str(source_id or "").strip() or None
-    if body is None:
-        if board_id:
-            rec = board.find_board_record_by_id(board_id)
-            if rec is None:
-                raise RuntimeError(f"unknown board id {board_id}")
-            meta, _ = board.commit_board_source("", via="history", history_file=rec.name)
-            open_kind = "current"
-        else:
-            meta = board.read_board_meta()
-            open_kind = "seeded" if seeded_now else "current"
-    else:
-        label = Path(path).stem if path else "stdin"
-        meta, _ = board.commit_board_source(
-            body,
-            via="cli",
-            base_rev=None,
-            label=label,
-            archive_current=not board_id,
-            board_id=board_id,
-        )
-        open_kind = "current" if board_id else "created"
-    payload["open"] = open_kind
-    web = hash_url.board_web_url(board.read_board_source_text())
-    payload.update(
-        {
-            "url": web,
-            "web_url": web,
-            "rev": meta["rev"],
-            "version": meta.get("version", meta["rev"]),
-            "via": meta["via"],
-            "current": meta.get("current"),
-            "archive": meta.get("current"),
-            "label": meta.get("label"),
-            "id": meta.get("id"),
-            "title": meta.get("title"),
-        }
-    )
+    text, fields, open_kind = _preview_board_text(body, board_id)
+    web = hash_url.board_web_url(text) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
+    payload = {
+        "ok": True,
+        "kind": "board",
+        "open": open_kind,
+        "url": web,
+        "web_url": web,
+        "id": fields["id"],
+        "title": fields["title"],
+        "version": fields["version"],
+        "rev": fields["version"],
+    }
     if open_mode != "none":
         open_viewer(web, "system")
     print(json.dumps(payload, ensure_ascii=False))

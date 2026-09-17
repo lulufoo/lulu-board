@@ -33,8 +33,8 @@ function cloudSetHistoryVisible(visible) {
   var openFile = document.getElementById("btnHistoryOpenFile");
   if (openFile) {
     openFile.title = visible
-      ? "Open a board file, then save it to cloud. Local history: ~/.cache/board/history."
-      : "Open a board file. Local history: ~/.cache/board/history.";
+      ? "Open a board file, then save it to cloud."
+      : "Open a board file.";
   }
 }
 

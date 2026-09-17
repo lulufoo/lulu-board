@@ -18,8 +18,9 @@ assert.match(html, /id="btnHistoryOpenFile"/, 'History exposes Open File');
 assert.match(html, />Open File</, 'Open File label is English');
 assert.match(html, /class="history-actions"[\s\S]*id="btnBoardHistoryRefresh"[\s\S]*id="btnHistoryOpenFile"/,
   'History actions stay in one ordered group');
-assert.match(html, /id="btnHistoryOpenFile" title="Open a board file\. Local history: ~\/\.cache\/board\/history\."/,
-  'History Open File explains its local behavior');
+assert.match(html, /id="btnHistoryOpenFile" title="Open a board file\."/,
+  'History Open File has a short hint');
+assert.doesNotMatch(html, /Local history:/, 'Open File does not name the local cache path');
 assert.doesNotMatch(html, /id="btnBoardHistoryRefresh"[^>]*title=/, 'History Refresh has no hover hint');
 assert.match(build, /05-board-file\.js/, 'build includes board file module');
 assert.match(openFile, /function openBoardFile/, 'opens a board file');
@@ -30,6 +31,7 @@ assert.match(openFile, /saveBoardToHash/, 'writes the opened file into the hash'
 assert.doesNotMatch(openFile, /boardHistoryCombo/, 'does not open the History combo');
 assert.match(boot, /btnHistoryOpenFile.*openBoardFile/, 'Open File button is wired');
 assert.doesNotMatch(boot, /~\/\.cache\/board\/history/, 'History heading has no local cache path hint');
+assert.doesNotMatch(cloud, /Local history:/, 'cloud Open File does not name the local cache path');
 assert.doesNotMatch(renderIo, /\.title = "Delete snapshot"/, 'local History delete has no hover hint');
 assert.doesNotMatch(cloud, /\.title = "Delete cloud board"/, 'Cloud history delete has no hover hint');
 assert.match(cloud, /openFile\.title = visible[\s\S]*Cloud history/, 'Cloud history Open File has a distinct hint');

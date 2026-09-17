@@ -37,9 +37,10 @@ Load the authoring contract before writing.
 2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
    with no `--file` and no stdin body. Keep `id` (BMD ID) first, then `open`
    and `url`. Show the URL and stop.
-3. For an update, run `$DRAWER_CTL get-source --kind board --id <id>` and treat
-   that BMD Source as the text to edit. `<id>` is the BMD ID from this session’s
-   last preview or set-source. If none yet, run step 2 first and keep that BMD ID.
+3. For an update, edit this session’s last BMD Source. `<id>` is the BMD ID
+   from this session’s last preview. If none yet, run step 2 first and keep
+   that BMD ID. Leftover local cache may still be read with
+   `$DRAWER_CTL get-source --kind board --id <id>`.
 4. Infer the scene and author one BMD Source string that follows vocab.
 5. For the public viewer, run `$DRAWER_CTL preview --kind board --id <id>` with stdin or
    `--file` when updating that board. Omit `--id` only to mint a new board.
@@ -53,7 +54,6 @@ Say one line with the URL, from stdout `open`:
 
 | `open` | Say |
 |---|---|
-| `seeded` | First-run welcome: this is the built-in guide. |
 | `created` | The new board is now current. |
 | `current` | This is the current board. |
 
@@ -63,3 +63,4 @@ stdout `url` is the public hash link (`https://luluboard.app/#z:…`). CLI
 success completes the skill; do not open the URL, drive the viewer, or
 screenshot the layout unless the user explicitly requests visual verification.
 Mint without meta or style. On update, leave those lines unchanged.
+`preview` does not write `~/.cache/board/history`.

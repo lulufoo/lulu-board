@@ -12,27 +12,23 @@ Public hash preview for Board. Loaded from `/board` only.
 
 | Concern | Rule |
 |---|---|
-| Write | `preview`, not `set-source` |
+| Write | `preview` encodes BMD to the public hash URL |
+| Cache | `preview` does not write `history/` |
+| Leftover | Existing `history/*.bmd` files are not deleted |
 | `--id` | `--id` is BMD ID. Required on `get-source`. |
-| Mint | Omit `--id` on `preview` / `set-source` only to mint |
+| Mint | Omit `--id` on `preview` only to mint |
 
 ## Pointers
 
-| Term | Meaning |
-|---|---|
-| `history/*.bmd` | Record list (+ `.json` sidecar) |
-| `current` | Viewed pointer, not identity |
-
-1. CLI preview retargets `current`.
+1. CLI preview does not retarget local `current`.
 2. The public page does not write CLI history.
 
 ## Seed
 
-1. If `history` has no `*.bmd`, seed `templates/board/*.bmd` and point `current` at onboarding.
-2. `templates/demo.bmd` is not seeded.
-3. `preview --kind board` with no file and no stdin does not create a record.
+1. `preview --kind board` with no file and no stdin does not create a record.
+2. `templates/demo.bmd` is not opened by preview.
 
 ## Open
 
-stdout `open` is `seeded` | `created` | `current`.
-stdout `url` is the public hash link on `https://luluboard.app/`.
+stdout `open` is `created` | `current`.
+stdout `url` is the public hash link on `https://luluboard.app/`, or the bare site when there is no source.

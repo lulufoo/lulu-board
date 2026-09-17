@@ -41,7 +41,7 @@ def parser():
     p = argparse.ArgumentParser(description="Preview and write Lulu Board source.")
     commands = p.add_subparsers(dest="command", required=True)
     commands.add_parser("status", help="print board status as JSON")
-    prev_p = commands.add_parser("preview", help="write source and emit the public hash URL")
+    prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
     prev_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
     prev_p.add_argument("--id", dest="source_id", help="BMD ID (b_…); omit to mint")
