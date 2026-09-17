@@ -16,7 +16,7 @@
   const DIRECTIONS = new Set(['row', 'column']);
   const RELATIONS = new Set(['after', 'before', 'left-of', 'right-of', 'above', 'below']);
   const ALIGN = new Set(['start', 'center', 'stretch']);
-  const JUSTIFY = new Set(['start', 'center', 'stretch']);
+  const JUSTIFY = new Set(['start', 'center', 'between', 'stretch']);
   const BOX_TYPES = new Set(['card', 'container', 'layout']);
   const ITEM_TYPES = new Set(['chip', 'text', 'note', 'icon']);
   const CHIP_SHAPES = new Set(['rect', 'diamond']);
@@ -397,7 +397,7 @@
         props.align = value; i += 2;
       } else if (key === 'justify') {
         const value = (tokens[i + 1] || '').toLowerCase();
-        if (!JUSTIFY.has(value)) fail('justify must be start, center, or stretch', lineNo);
+        if (!JUSTIFY.has(value)) fail('justify must be start, center, between, or stretch', lineNo);
         props.justify = value; i += 2;
       } else {
         fail(`unknown layout property '${tokens[i]}'`, lineNo);
@@ -588,7 +588,7 @@
     if (first === 'justify') {
       if (tokens.length < 2) fail('justify needs a value', lineNo);
       const value = tokens[tokens.length - 1].toLowerCase();
-      if (!JUSTIFY.has(value)) fail('justify must be start, center, or stretch', lineNo);
+      if (!JUSTIFY.has(value)) fail('justify must be start, center, between, or stretch', lineNo);
       const ids = commaIds(tokens.slice(1, -1), lineNo, 'justify id');
       if (!ids.length) {
         merge(board.layout.board, { justify: value });
@@ -697,7 +697,7 @@
     const boxes = layout.boxes || {};
     const dirGroups = { row: [], column: [] };
     const boxAligns = { start: [], center: [], stretch: [] };
-    const boxJustifies = { start: [], center: [], stretch: [] };
+    const boxJustifies = { start: [], center: [], between: [], stretch: [] };
     Object.keys(boxes).forEach((boxId) => {
       const props = boxes[boxId] || {};
       if (props.direction === 'row' || props.direction === 'column') dirGroups[props.direction].push(boxId);
@@ -711,7 +711,7 @@
     });
     const hasBoxes = dirGroups.row.length || dirGroups.column.length
       || boxAligns.start.length || boxAligns.center.length || boxAligns.stretch.length
-      || boxJustifies.start.length || boxJustifies.center.length || boxJustifies.stretch.length;
+      || boxJustifies.start.length || boxJustifies.center.length || boxJustifies.between.length || boxJustifies.stretch.length;
     const hasRest = (layout.places || []).length || (layout.aligns || []).length || (layout.constraints || []).length;
     if (!hasBoard && !hasBoxes && !hasRest) return;
     lines.push('layout');
@@ -724,7 +724,7 @@
     ['start', 'center', 'stretch'].forEach((edge) => {
       if (boxAligns[edge].length) lines.push('  align ' + boxAligns[edge].join(', ') + ' ' + edge);
     });
-    ['start', 'center', 'stretch'].forEach((edge) => {
+    ['start', 'center', 'between', 'stretch'].forEach((edge) => {
       if (boxJustifies[edge].length) lines.push('  justify ' + boxJustifies[edge].join(', ') + ' ' + edge);
     });
     const boardJustify = layout.board && layout.board.justify;
@@ -1459,7 +1459,9 @@
     }
     el.style.alignItems = props.align === 'start' ? 'flex-start' : props.align === 'center' ? 'center' : 'stretch';
     // Main-axis stretch is grow (applyMainStretch), not justify-content:stretch.
-    el.style.justifyContent = props.justify === 'center' ? 'center' : 'flex-start';
+    el.style.justifyContent = props.justify === 'center'
+      ? 'center'
+      : props.justify === 'between' ? 'space-between' : 'flex-start';
     el.classList.toggle('board-dir-row', props.direction === 'row');
     el.classList.toggle('board-dir-column', props.direction !== 'row');
     el.classList.toggle('board-justify-stretch', props.justify === 'stretch');
@@ -1480,6 +1482,17 @@
     return (row ? el.offsetHeight : el.offsetWidth) || 0;
   }
 
+  function contentFloor(el, axis) {
+    const key = axis === 'width' ? 'boardContentMinWidth' : 'boardContentMinHeight';
+    const value = Number(el && el.dataset && el.dataset[key]);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  function contentFloorStyle(el, axis) {
+    const value = contentFloor(el, axis);
+    return value ? value + 'px' : '';
+  }
+
   function applyMainStretch(content, props) {
     const stretch = !!(props && props.justify === 'stretch');
     const row = !!(props && props.direction === 'row');
@@ -1490,16 +1503,16 @@
         if (row) {
           el.style.width = '';
           el.style.maxWidth = '';
-          el.style.minWidth = 'min-content';
+          el.style.minWidth = contentFloorStyle(el, 'width') || 'min-content';
         } else {
           el.style.height = '';
           el.style.maxHeight = '';
-          el.style.minHeight = 'min-content';
+          el.style.minHeight = contentFloorStyle(el, 'height') || 'min-content';
         }
       } else {
         el.style.flex = '0 0 auto';
-        if (row) el.style.minWidth = '';
-        else el.style.minHeight = '';
+        if (row) el.style.minWidth = contentFloorStyle(el, 'width');
+        else el.style.minHeight = contentFloorStyle(el, 'height');
       }
     });
   }
@@ -1510,11 +1523,11 @@
     const row = dir === 'row';
     kids.forEach((el) => {
       el.style.width = '';
-      el.style.minWidth = '';
+      el.style.minWidth = contentFloorStyle(el, 'width');
       el.style.maxWidth = '';
       if (!isDiamondKid(el)) {
         el.style.height = '';
-        el.style.minHeight = '';
+        el.style.minHeight = contentFloorStyle(el, 'height');
       }
     });
     let max = 0;
@@ -1770,6 +1783,10 @@
       const walk = (box) => { visit(box); (box.boxes || []).forEach(walk); };
       ((View && View.topBoxes(board)) || board.boxes || []).forEach(walk);
     };
+    const eachBoxPostOrder = (visit) => {
+      const walk = (box) => { (box.boxes || []).forEach(walk); visit(box); };
+      ((View && View.topBoxes(board)) || board.boxes || []).forEach(walk);
+    };
     const eachRootItem = (visit) => {
       ((View && View.topItems(board)) || []).forEach(visit);
     };
@@ -1790,16 +1807,21 @@
           inst.applyFrame(el, frame);
         });
       };
-      // Equalize first so contentInsetNeed sees the shared column width
-      // (nested diamond intrinsic, not the pre-stretch article).
+      const fitNestedBoxes = () => {
+        // Children must grow before their parent measures the cross-axis need.
+        eachBoxPostOrder((box) => {
+          const el = elements.get(box.id);
+          const inst = View.Types.wrap(box);
+          if (el && el.dataset.boardNested === '1' && typeof inst.fitNested === 'function') inst.fitNested(el);
+        });
+      };
+      // Equalize first so contentInsetNeed sees the shared column width.
       equalizeAllBoxKids(root, board);
+      fitNestedBoxes();
       applyRootFrames();
       equalizeAllBoxKids(root, board);
-      eachBox((box) => {
-        const el = elements.get(box.id);
-        const inst = View.Types.wrap(box);
-        if (el && el.dataset.boardNested === '1' && typeof inst.fitNested === 'function') inst.fitNested(el);
-      });
+      fitNestedBoxes();
+      applyRootFrames();
       if (View && typeof View.fitChipDiamonds === 'function') View.fitChipDiamonds(root);
     };
     const liveCssMeasure = (measured) => {

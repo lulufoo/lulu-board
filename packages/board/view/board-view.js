@@ -22,6 +22,35 @@
     return Math.max(112, 42 + iconPad + Math.min(title.length, 34) * 6.4);
   }
 
+  // Row/column flex need: max(width sum, first-to-last span) plus padding.
+  // Summing widths alone misses board-slot gaps, so the last kid can sit past the frame.
+  function flexContentNeed(kids, opts) {
+    const row = !!(opts && opts.row);
+    const padX = Number(opts && opts.padX) || 0;
+    const padY = Number(opts && opts.padY) || 0;
+    const titleH = Number(opts && opts.titleH) || 0;
+    if (!kids || !kids.length) return null;
+    let minMain = Infinity;
+    let maxMain = -Infinity;
+    let sum = 0;
+    let cross = 0;
+    kids.forEach((kid) => {
+      const kw = Number(kid.offsetWidth) || 0;
+      const kh = Number(kid.offsetHeight) || 0;
+      const start = row ? (Number(kid.offsetLeft) || 0) : (Number(kid.offsetTop) || 0);
+      const mainSize = row ? kw : kh;
+      minMain = Math.min(minMain, start);
+      maxMain = Math.max(maxMain, start + mainSize);
+      sum += mainSize;
+      if (!kid.isSlot) cross = Math.max(cross, row ? kh : kw);
+    });
+    const span = Math.max(sum, maxMain - minMain);
+    return {
+      w: Math.ceil((row ? span : cross) + padX),
+      h: Math.ceil((row ? cross : span) + padY + titleH),
+    };
+  }
+
   function mark(node, viewRole) {
     if (node) node.role = viewRole;
     return node;
@@ -127,6 +156,6 @@
 
   return {
     role, isItem, isBox, mark, topLevel, topBoxes, topItems, adopt, pushTop, removeTop,
-    intrinsicBoxMinWidth, Node, Types,
+    intrinsicBoxMinWidth, flexContentNeed, Node, Types,
   };
 });

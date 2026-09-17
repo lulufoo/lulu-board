@@ -293,12 +293,15 @@
     }
   }
 
-  function parentCrossStretch(el) {
+  function parentWidthStretch(el) {
     const content = el && el.parentElement;
     if (!content || !content.classList.contains('box-content')) return false;
     const view = content.ownerDocument && content.ownerDocument.defaultView;
     if (!view) return false;
-    return view.getComputedStyle(content).alignItems === 'stretch';
+    const style = view.getComputedStyle(content);
+    // In a row, align-items stretches the height. Clearing the host width
+    // collapses the diamond's flex slot and lets a later sibling cover it.
+    return style.alignItems === 'stretch' && String(style.flexDirection).indexOf('row') !== 0;
   }
 
   function fitChipDiamonds(root) {
@@ -309,7 +312,7 @@
       const visual = el.querySelector('.board-item-diamond-visual');
       const copy = el.querySelector('.board-item-copy');
       const rootItem = el.classList.contains('board-root-item');
-      const stretchHost = !rootItem && parentCrossStretch(el);
+      const stretchHost = !rootItem && parentWidthStretch(el);
       el.style.boxSizing = 'border-box';
       el.style.alignSelf = 'auto';
       el.style.flex = '0 0 auto';

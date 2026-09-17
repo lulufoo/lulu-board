@@ -23,6 +23,12 @@ const Render = require('../../../packages/board/engine/board-render.js');
 }
 
 {
+  const board = Render.parse('board Demo\nbox A "A"\nlayout\n  A justify between\n');
+  assert.strictEqual(board.layout.boxes.A.justify, 'between');
+  assert.ok(Render.serialize(board).includes('justify A between'));
+}
+
+{
   const board = Render.parse('board Demo\nbox A "A"\nlayout\n  A dir column\n  A align start\n');
   const out = Render.serialize(board);
   assert.ok(!out.includes('justify'), out);
@@ -36,7 +42,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
   assert.ok(/function applyMainStretch/.test(renderJs), 'stretch grows kids');
   assert.ok(/flex = '1 0 auto'/.test(renderJs), 'stretch flex grow');
   assert.ok(/board-justify-stretch/.test(renderJs), 'stretch class');
-  assert.ok(/justifyContent = props\.justify === 'center' \? 'center' : 'flex-start'/.test(renderJs), 'stretch is not justify-content');
+  assert.ok(/props\.justify === 'between' \? 'space-between' : 'flex-start'/.test(renderJs), 'between uses flex spacing');
   assert.ok(/if \(isDiamondKid\(el\)\) return;/.test(renderJs), 'diamond skips grow');
 }
 

@@ -29,6 +29,13 @@ const src = 'board Demo\nbox A "A"\n';
 }
 
 {
+  const out = Render.updateJustify(src, { kind: 'box', id: 'A' }, 'between');
+  assert.ok(out.includes('justify A between'), out);
+  const board = Render.parse(out);
+  assert.strictEqual(board.layout.boxes.A.justify, 'between');
+}
+
+{
   const stretched = Render.updateJustify(src, { kind: 'box', id: 'A' }, 'stretch');
   const out = Render.updateJustify(stretched, { kind: 'box', id: 'A' }, 'start');
   assert.ok(out.includes('justify A start'), out);
@@ -52,6 +59,7 @@ const src = 'board Demo\nbox A "A"\n';
   const html = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
   assert.ok(/id="boardAlignEditor"/.test(html), 'align control');
   assert.ok(/id="boardJustifyEditor"/.test(html), 'justify control');
+  assert.ok(/<option value="between">between<\/option>/.test(html), 'between justify control');
   assert.ok(/id="boardDirTip"/.test(html), 'direction tip');
   assert.ok(/id="boardAlignTip"/.test(html), 'align tip');
   assert.ok(/id="boardJustifyTip"/.test(html), 'justify tip');

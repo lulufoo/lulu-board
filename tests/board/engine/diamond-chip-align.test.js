@@ -11,7 +11,14 @@ assert.ok(!/alignSelf = rootItem \? 'auto' : 'stretch'/.test(diamondJs), 'fit mu
 assert.ok(!/el\.style\.alignSelf = 'stretch'/.test(diamondJs), 'decorate must not force stretch');
 assert.ok(/el\.style\.alignSelf = 'auto'/.test(diamondJs), 'diamond host follows parent align');
 assert.ok(/placeChipDiamondOverlay\(el, visual, copy, need, rootItem\)/.test(diamondJs), 'nested diamond never fills the host');
-assert.ok(/stretchHost/.test(diamondJs), 'stretch grows the transparent host only');
+assert.ok(
+  /function parentWidthStretch[\s\S]*flexDirection\)\.indexOf\('row'\) !== 0/.test(diamondJs),
+  'only a column parent can stretch a diamond width'
+);
+assert.ok(
+  /const stretchHost = !rootItem && parentWidthStretch\(el\);/.test(diamondJs),
+  'row parents retain the diamond width'
+);
 
 const itemRule = css.match(/\.board-item-diamond \{[^}]+\}/);
 assert.ok(itemRule, 'item diamond rule');

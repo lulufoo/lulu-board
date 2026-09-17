@@ -10,8 +10,7 @@ const box = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/bo
 assert.ok(!/new ResizeObserver/.test(render), 'preview resize does not re-solve');
 assert.ok(!/window\.addEventListener\("resize", scheduleResolve\)/.test(render), 'window resize does not re-solve');
 assert.ok(/board-layout-halo/.test(view) && /return \{ w: Math\.max\(fallbackW, layoutW\), h: Math\.max\(fallbackH, layoutH\) \}/.test(view), 'halo overflow is not measured');
-assert.ok(/const isSlot = k\.classList\.contains\('board-slot'\)/.test(box), 'slots are detected');
-assert.ok(/if \(!isSlot\) cross = Math\.max\(cross, kh\)/.test(box), 'row slots skip cross size');
-assert.ok(/if \(!isSlot\) cross = Math\.max\(cross, kw\)/.test(box), 'column slots skip cross size');
+assert.ok(/isSlot: k\.classList\.contains\('board-slot'\)/.test(box), 'slots are detected');
+assert.ok(/if \(!kid\.isSlot\) cross = Math\.max\(cross, row \? kh : kw\);/.test(view), 'slots skip cross size');
 
 console.log('ok resize-no-relayout');

@@ -195,7 +195,7 @@ function setBoardDirTip(show, authored) {
 }
 function setBoardAlignJustifyFields(show, align, justify) {
   var authoredA = align === "start" || align === "center" || align === "stretch";
-  var authoredJ = justify === "start" || justify === "center" || justify === "stretch";
+  var authoredJ = justify === "start" || justify === "center" || justify === "between" || justify === "stretch";
   var a = authoredA ? align : "stretch";
   var j = authoredJ ? justify : "start";
   if (boardAlignEditor) {

@@ -41,31 +41,34 @@
       ));
       if (!kids.length) return null;
       const row = String(cs.flexDirection || '').indexOf('row') === 0;
-      let main = 0;
-      let cross = 0;
-      kids.forEach((k) => {
-        const isSlot = k.classList.contains('board-slot');
-        let kw = k.offsetWidth || 0;
-        let kh = k.offsetHeight || 0;
-        if (k.classList.contains('board-item-diamond') || k.dataset.boardShape === 'diamond') {
-          kw = Math.max(kw, k.offsetWidth || 0);
-          kh = Math.max(kh, k.offsetHeight || 0);
-        }
-        if (row) {
-          main += kw;
-          if (!isSlot) cross = Math.max(cross, kh);
-        } else {
-          main += kh;
-          if (!isSlot) cross = Math.max(cross, kw);
-        }
-      });
+      const measured = kids.map((k) => ({
+        offsetLeft: k.offsetLeft || 0,
+        offsetTop: k.offsetTop || 0,
+        offsetWidth: k.offsetWidth || 0,
+        offsetHeight: k.offsetHeight || 0,
+        isSlot: k.classList.contains('board-slot'),
+      }));
       const title = el.querySelector(':scope > .box-title, :scope > .board-zone-title');
       let titleH = 0;
       if (title && getComputedStyle(title).display !== 'none') titleH = title.offsetHeight || 0;
-      return {
-        w: Math.ceil((row ? main : cross) + padX),
-        h: Math.ceil((row ? cross : main) + padY + titleH),
-      };
+      return View.flexContentNeed(measured, { row, padX, padY, titleH });
+    }
+
+    fitNested(el) {
+      if (!el || el.dataset.boardNested !== '1') return;
+      const need = this.contentInsetNeed(el);
+      if (!need) return;
+      // Equalization clears inline sizes to measure natural siblings. Retain the
+      // measured content floors so a linked slot cannot be squeezed back out.
+      el.dataset.boardContentMinWidth = String(Math.ceil(need.w));
+      el.dataset.boardContentMinHeight = String(Math.ceil(need.h));
+      if (need.w > (el.offsetWidth || 0) + 0.5) {
+        el.style.minWidth = need.w + 'px';
+        el.style.width = need.w + 'px';
+      }
+      if (need.h > (el.offsetHeight || 0) + 0.5) {
+        el.style.minHeight = need.h + 'px';
+      }
     }
 
     applyFrame(el, frame, ctx) {
