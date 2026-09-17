@@ -233,9 +233,14 @@ async function cloudSignOut() {
     return;
   }
   cloudSession = null;
-  cloudClearOpenBoard();
+  var leaveCloud = !!cloudBoardId();
   cloudSetAccountUi();
   cloudShowHistoryMessage("");
+  if (leaveCloud) {
+    history.replaceState(null, "", location.pathname + location.search);
+    if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
+    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+  }
   setStatus("Signed out");
 }
 

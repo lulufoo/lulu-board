@@ -60,4 +60,14 @@ assert.match(schema, /bmd text not null/, 'the current BMD source is stored in P
 assert.match(schema, /enable row level security/, 'the cloud board table has RLS enabled');
 assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inserts are owner-scoped');
 
+{
+  const start = cloud.indexOf('async function cloudSignOut');
+  const end = cloud.indexOf('async function saveBoardToCloud');
+  assert.ok(start >= 0 && end > start, 'cloudSignOut is a closed function');
+  const body = cloud.slice(start, end);
+  assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
+  assert.match(body, /bootstrapBoardFromHash/, 'sign-out seeds a blank local board');
+  assert.doesNotMatch(body, /cloudClearOpenBoard/, 'sign-out does not empty the source in place');
+}
+
 console.log('ok cloud-sync');
