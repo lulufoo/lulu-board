@@ -14,6 +14,7 @@ const html = read('packages/drawer-app/index.html');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
 const shareJs = read('packages/drawer-app/js/06-cloud-share.js');
 const shareCss = read('packages/drawer-app/css/05-share.css');
+const dockCss = read('packages/drawer-app/css/03-diagram.css');
 const webBuild = read('scripts/web-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
 const boardJs = read('packages/drawer-app/js/02-board.js');
@@ -31,6 +32,7 @@ assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button')
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays in the toolbar');
 assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"/, 'Share is dock tab 4');
+assert.match(dockCss, /\.board-dock\[data-open="share"\] \{\s*width:/, 'Share tab expands the dock');
 assert.match(html, /id="btnShareRoleView"/, 'owner can choose view access');
 assert.match(html, /id="btnShareRoleEdit"/, 'owner can choose edit access');
 assert.match(html, /id="btnShareAddPerson"[^>]*disabled/, 'adding a person is not available yet');

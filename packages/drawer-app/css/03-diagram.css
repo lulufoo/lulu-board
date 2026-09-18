@@ -1511,7 +1511,8 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 .board-dock[data-open="layout"],
 .board-dock[data-open="source"],
 .board-dock[data-open="export"],
-.board-dock[data-open="style"] {
+.board-dock[data-open="style"],
+.board-dock[data-open="share"] {
   width: var(--dock-open-width, 400px);
   box-shadow: -12px 0 32px rgba(15, 23, 42, .05);
 }
@@ -1542,7 +1543,8 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 .board-dock[data-open="layout"] .board-dock-resize,
 .board-dock[data-open="source"] .board-dock-resize,
 .board-dock[data-open="export"] .board-dock-resize,
-.board-dock[data-open="style"] .board-dock-resize {
+.board-dock[data-open="style"] .board-dock-resize,
+.board-dock[data-open="share"] .board-dock-resize {
   display: block;
 }
 .board-dock-resize:hover::after,
