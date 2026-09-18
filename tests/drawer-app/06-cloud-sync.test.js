@@ -35,7 +35,12 @@ assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockSource"[\s\S]*id="btnDock
 assert.match(dockCss, /\.board-dock\[data-open="share"\] \{\s*width:/, 'Share tab expands the dock');
 assert.match(html, /id="btnShareRoleView"/, 'owner can choose view access');
 assert.match(html, /id="btnShareRoleEdit"/, 'owner can choose edit access');
-assert.match(html, /id="btnShareAddPerson"[^>]*disabled/, 'adding a person is not available yet');
+assert.doesNotMatch(html, /id="btnShareAddPerson"/, 'adding a person is not in the panel');
+assert.match(html, /aria-label="Share audience"[\s\S]*Audience[\s\S]*Anyone with the link can open this board/, 'audience explains the public link');
+assert.match(html, /class="share-actions"/, 'link actions are a stacked list');
+assert.doesNotMatch(html, /shareLinkState|Not shared/, 'share panel has no Not shared status');
+assert.doesNotMatch(shareJs, /Not shared|Link is on/, 'share chrome has no link-state copy');
+assert.match(shareCss, /\.share-role-seg/, 'access uses a segmented control');
 assert.doesNotMatch(html, /id="btnBoardShare"/, 'share left the toolbar');
 assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
@@ -44,6 +49,15 @@ assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud boa
 assert.match(shareJs, /set_share_role/, 'owner access uses set_share_role');
 assert.match(shareJs, /save_shared_board/, 'shared editors save through save_shared_board');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
+{
+  const start = shareJs.indexOf('function shareGuestHint');
+  const end = shareJs.indexOf('function setShareEdit');
+  assert.ok(start >= 0 && end > start, 'shareGuestHint is a closed function');
+  const hint = new Function(shareJs.slice(start, end) + '\nreturn shareGuestHint;')();
+  assert.strictEqual(hint(false, false), 'Sign in and save this board to share.');
+  assert.strictEqual(hint(true, true), 'Only the owner can share this board.');
+  assert.strictEqual(hint(true, false), 'Save this board to share.');
+}
 assert.match(shareJs, /showBoardError\(message\)/, 'a missing share token surfaces an error');
 assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
 assert.match(shareCss, /data-share-view/, 'share view hides owner edit chrome');

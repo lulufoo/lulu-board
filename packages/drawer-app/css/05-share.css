@@ -11,11 +11,58 @@ html[data-share-view="on"] [data-dock-panel="props"],
 html[data-share-view="on"] [data-dock-panel="style"] { display: none !important; }
 
 #btnBoardSaveCopy[hidden] { display: none !important; }
-.share-link-state {
-  margin: 0 0 8px;
-  color: var(--muted, #64748b);
-  font-size: 12px;
-  line-height: 1.35;
+#sharePanel > .props-head {
+  margin-bottom: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--stroke);
 }
-#sharePanel .props-seg { flex-wrap: wrap; }
-#sharePanel .props-seg-btn[hidden] { display: none !important; }
+#shareOwner[hidden] { display: none !important; }
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.share-actions .btn {
+  justify-content: center;
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+}
+.share-actions .btn[hidden] { display: none !important; }
+.share-role-seg {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 3px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--text) 6%, var(--panel-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--stroke-strong) 80%, transparent);
+}
+.share-role-seg .props-seg-btn {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font: 600 11px/1 var(--font);
+  box-shadow: none;
+}
+.share-role-seg .props-seg-btn + .props-seg-btn {
+  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--stroke-strong) 85%, transparent);
+}
+.share-role-seg .props-seg-btn:hover {
+  background: transparent;
+  color: var(--text);
+}
+.share-role-seg .props-seg-btn[aria-pressed="true"] {
+  background: var(--panel-solid);
+  color: var(--text);
+  font-weight: 650;
+  box-shadow: var(--shadow-soft);
+}
+.share-role-seg .props-seg-btn[aria-pressed="true"] + .props-seg-btn {
+  box-shadow: none;
+}

@@ -2,11 +2,11 @@
 var ownerShareId = "";
 var ownerShareRole = "view";
 
-function isShareView() {
-  return document.documentElement.dataset.shareView === "on";
-}
-function isShareEdit() {
-  return document.documentElement.dataset.shareEdit === "on";
+function isShareView() { return document.documentElement.dataset.shareView === "on"; }
+function isShareEdit() { return document.documentElement.dataset.shareEdit === "on"; }
+function shareGuestHint(signedIn, foreign) {
+  if (!signedIn) return "Sign in and save this board to share.";
+  return foreign ? "Only the owner can share this board." : "Save this board to share.";
 }
 function setShareEdit(on) {
   if (on) document.documentElement.dataset.shareEdit = "on";
@@ -131,7 +131,6 @@ async function refreshOwnShareState() {
     rememberOwnerShareId(row.share_id || "");
   } catch (_error) {}
 }
-
 async function mutateOwnShare(name, args, after) {
   var boardId = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   if (!boardId) return;
@@ -258,7 +257,6 @@ async function forkSharedBoard() {
 function syncShareChrome() {
   var signedOut = document.getElementById("shareSignedOut");
   var owner = document.getElementById("shareOwner");
-  var state = document.getElementById("shareLinkState");
   var createBtn = document.getElementById("btnShareCreate");
   var copyBtn = document.getElementById("btnShareCopy");
   var rotateBtn = document.getElementById("btnShareRotate");
@@ -270,9 +268,11 @@ function syncShareChrome() {
   var ownCloud = typeof cloudBoardId === "function" && !!cloudBoardId();
   var viewing = isShareView();
   var showOwner = signedIn && ownCloud && !viewing && !isShareEdit();
-  if (signedOut) signedOut.hidden = showOwner;
+  if (signedOut) {
+    signedOut.hidden = showOwner;
+    if (!showOwner) signedOut.textContent = shareGuestHint(signedIn, viewing || isShareEdit());
+  }
   if (owner) owner.hidden = !showOwner;
-  if (state) state.textContent = ownerShareId ? "Link is on" : "Not shared";
   if (createBtn) createBtn.hidden = !!ownerShareId;
   if (copyBtn) copyBtn.hidden = !ownerShareId;
   if (rotateBtn) rotateBtn.hidden = !ownerShareId;
