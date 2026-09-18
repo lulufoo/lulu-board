@@ -7,12 +7,11 @@ import sys
 from pathlib import Path
 from urllib.parse import quote
 
-from document_meta import has_envelope, mint_envelope, split_document, strip_leading_meta_lines
+from document_meta import strip_leading_meta_lines
 from drawer_ctl import paths
 from drawer_ctl import board
 from drawer_ctl import hash_url
 from drawer_ctl import titles
-from drawer_ctl import util
 
 
 def open_viewer(url: str, mode: str = "ide") -> str:
@@ -85,31 +84,18 @@ def resolve_board_preview_body(path: str | None, stdin=None) -> str | None:
     return resolve_preview_body(path, stdin=stdin, kind="board")
 
 
-def _preview_board_text(body: str | None, board_id: str | None) -> tuple[str, dict, str]:
-    """Build BMD in memory. Does not write history/."""
+def _preview_board_text(body: str | None) -> tuple[str, dict, str]:
+    """Encode a temp file or stdin. Does not write history/."""
     if body is None:
-        if board_id:
-            text = board.board_source_text_for_id(board_id)
-            doc, _rest = split_document(text, "board")
-            return text, {
-                "id": doc["id"],
-                "title": titles.derive_board_title(text),
-                "version": doc["version"],
-            }, "current"
-        return "", {"id": "", "title": "", "version": 1}, "current"
-    if has_envelope(body, "board"):
-        meta, _rest = split_document(body, "board")
-        if board_id and meta["id"] != board_id:
-            text, doc = mint_envelope(strip_leading_meta_lines(body), "board", board_id)
-        else:
-            text, doc = mint_envelope(body, "board", meta["id"])
-    else:
-        text, doc = mint_envelope(body, "board", board_id or util.new_board_id())
+        return "", {"id": "", "title": "", "version": 0}, "current"
+    text = strip_leading_meta_lines(body)
+    if not str(text).strip():
+        raise RuntimeError("board source must not be empty")
     return text, {
-        "id": doc["id"],
+        "id": "",
         "title": titles.derive_board_title(text),
-        "version": doc["version"],
-    }, ("current" if board_id else "created")
+        "version": 1,
+    }, "created"
 
 
 def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = "board", source_id: str | None = None) -> None:
@@ -119,9 +105,8 @@ def preview(path, should_open: bool = True, open_mode: str | None = None, kind: 
     if kind and kind != "board":
         raise RuntimeError("invalid --kind (expected board)")
     body = resolve_board_preview_body(path)
-    board_id = str(source_id or "").strip() or None
-    text, fields, open_kind = _preview_board_text(body, board_id)
-    web = hash_url.board_web_url(text) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
+    text, fields, open_kind = _preview_board_text(body)
+    web = hash_url.board_web_url(text, version=fields["version"]) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
     payload = {
         "ok": True,
         "kind": "board",
@@ -139,45 +124,8 @@ def preview(path, should_open: bool = True, open_mode: str | None = None, kind: 
 
 
 def set_source(path, kind: str = "board", source_id: str | None = None) -> None:
-    src = Path(path) if path else None
-    body = src.read_text(encoding="utf-8") if src else sys.stdin.read()
-    label = src.stem if src else "stdin"
-    if kind and kind != "board":
-        raise RuntimeError("invalid --kind (expected board)")
-    record_id = str(source_id or "").strip() or None
-    if not str(body).strip():
-        raise RuntimeError("board source must not be empty")
-    meta, _ = board.commit_board_source(
-        body,
-        via="cli",
-        base_rev=None,
-        label=label,
-        archive_current=not record_id,
-        board_id=record_id,
-    )
-    print(
-        json.dumps(
-            {
-                "ok": True,
-                "kind": "board",
-                "rev": meta["rev"],
-                "version": meta.get("version", meta["rev"]),
-                "via": meta["via"],
-                "current": meta.get("current"),
-                "archive": meta.get("current") or meta.get("archive"),
-                "label": meta.get("label"),
-                "id": meta.get("id"),
-                "title": meta.get("title"),
-            },
-            ensure_ascii=False,
-        )
-    )
+    raise RuntimeError("set-source is retired; use preview")
 
 
 def get_source(kind: str = "board", source_id: str | None = None) -> None:
-    if kind and kind != "board":
-        raise RuntimeError("invalid --kind (expected board)")
-    record_id = str(source_id or "").strip()
-    if not record_id:
-        raise RuntimeError("get-source --kind board requires --id")
-    sys.stdout.write(board.board_source_text_for_id(record_id))
+    raise RuntimeError("get-source is retired; use preview")

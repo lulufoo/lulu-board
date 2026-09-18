@@ -12,8 +12,9 @@ Done when preview returns `ok` with a `luluboard.app` URL and the matching
 
 ## Identity
 
-**BMD ID** (`b_…`) is which board. **BMD Source** is the `.bmd` body. `--id` is
-BMD ID. Omit `--id` only to mint. `current` is the viewed pointer.
+**BMD Source** is the `.bmd` body. The file has no identity. **BMD ID** (`b_…`)
+is the cloud row on `#b:<id>`. `preview` encodes source plus client version `1`
+into `#z:`.
 
 ## Script Macros
 
@@ -35,17 +36,14 @@ Load the authoring contract before writing.
 
 1. Use the public viewer unless the user explicitly requests chat-only output.
 2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
-   with no `--file` and no stdin body. Keep `id` (BMD ID) first, then `open`
-   and `url`. Show the URL and stop.
-3. For an update, edit this session’s last BMD Source. `<id>` is the BMD ID
-   from this session’s last preview. If none yet, run step 2 first and keep
-   that BMD ID. Leftover local cache may still be read with
-   `$DRAWER_CTL get-source --kind board --id <id>`.
+   with no `--file` and no stdin body. Keep `url` first, then `open`. Show the
+   URL and stop.
+3. For an update, edit this session’s last BMD Source text. If none yet, run
+   step 2 first.
 4. Infer the scene and author one BMD Source string that follows vocab.
-5. For the public viewer, run `$DRAWER_CTL preview --kind board --id <id>` with stdin or
-   `--file` when updating that board. Omit `--id` only to mint a new board.
-   If it reports a DSL error, correct the BMD Source and rerun. Keep the BMD
-   ID from stdout, then `open` and `url`. Show the URL and stop.
+5. For the public viewer, run `$DRAWER_CTL preview --kind board` with stdin or
+   `--file`. If it reports a DSL error, correct the BMD Source and rerun.
+   Keep `url` first, then `open`. Show the URL and stop.
 6. For chat-only output, return one `board`-fenced block and stop.
 
 ## Open wording

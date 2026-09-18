@@ -33,11 +33,6 @@ function setCharsLabel(el, n) {
   el.appendChild(document.createTextNode(" chars"));
 }
 function liveDocumentVersion() {
-  var raw = boardSourceEl && boardSourceEl.value;
-  try {
-    var v = splitDocument(raw).meta.version;
-    if (Number.isFinite(v) && v > 0) return v;
-  } catch (_e) {}
   return Number.isFinite(boardLocalRev) && boardLocalRev > 0 ? boardLocalRev : 0;
 }
 
@@ -173,6 +168,7 @@ const boardSelectionObserver = new MutationObserver(() => { var key = boardSourc
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
 let boardLocalRev = 0;
+let boardServerRev = 0;
 let boardDirty = false;
 let boardSaveSeq = 0;
 let boardRenderTimer = null;

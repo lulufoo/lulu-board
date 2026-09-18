@@ -4,6 +4,7 @@
   root.DrawerDocumentMeta = api;
   root.splitDocument = api.splitDocument;
   root.joinDocument = api.joinDocument;
+  root.stripDocumentMeta = api.stripDocumentMeta;
   root.sourceBody = api.sourceBody;
   root.newBoardId = api.newBoardId;
   root.blankHashBoardSource = api.blankHashBoardSource;
@@ -73,10 +74,21 @@
     return line + "\n";
   }
 
+  function stripDocumentMeta(text) {
+    var raw = String(text == null ? "" : text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    var lines = raw.split("\n");
+    var i = 0;
+    while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
+    while (i < lines.length) {
+      if (!/^meta\s+/.test(String(lines[i]).trim())) break;
+      i += 1;
+      while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
+    }
+    return lines.slice(i).join("\n");
+  }
+
   function sourceBody(text) {
-    var raw = String(text == null ? "" : text);
-    if (!raw.trim()) return "";
-    return splitDocument(raw).body;
+    return stripDocumentMeta(text);
   }
 
   function newBoardId() {
@@ -95,7 +107,7 @@
   function blankHashBoardSource(title) {
     var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
     if (!name) name = "Untitled";
-    return joinDocument({ id: newBoardId(), version: 1 }, "board \"" + name + "\"\n");
+    return "board \"" + name + "\"\n";
   }
 
   return {
@@ -103,6 +115,7 @@
     decodeMetaPayload: decodeMetaPayload,
     splitDocument: splitDocument,
     joinDocument: joinDocument,
+    stripDocumentMeta: stripDocumentMeta,
     sourceBody: sourceBody,
     newBoardId: newBoardId,
     blankHashBoardSource: blankHashBoardSource,
@@ -110,6 +123,7 @@
 });
 var splitDocument = globalThis.splitDocument;
 var joinDocument = globalThis.joinDocument;
+var stripDocumentMeta = globalThis.stripDocumentMeta;
 var sourceBody = globalThis.sourceBody;
 var newBoardId = globalThis.newBoardId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;

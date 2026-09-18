@@ -50,22 +50,22 @@ async function openBoardFile() {
   try {
     var text = await pickBoardSourceFile();
     if (text == null) return;
-    text = String(text);
+    text = typeof stripDocumentMeta === "function" ? stripDocumentMeta(text) : String(text);
     if (!text.trim()) throw new Error("Board file is empty");
-    var doc = splitDocument(text);
     if (!boardSourceEl) throw new Error("Board source is missing");
     boardSourceEl.value = text;
     boardDirty = false;
-    boardLocalRev = Number(doc.meta.version) || 1;
+    boardLocalRev = 1;
+    boardServerRev = 0;
     if (typeof applyBoardLiveMeta === "function") {
       applyBoardLiveMeta({
-        id: doc.meta.id,
-        version: doc.meta.version,
-        title: boardTitleFromBody(doc.body),
+        id: "",
+        version: 1,
+        title: boardTitleFromBody(text),
       });
     }
     if (typeof updateBoardChars === "function") updateBoardChars();
-    if (typeof saveBoardToHash === "function") await saveBoardToHash();
+    if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
     if (typeof renderBoard === "function") renderBoard({ fit: true });
     setStatus("Opened file");
     showCopyTip("Opened file");

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import shutil
 import signal
 import subprocess
@@ -54,7 +55,8 @@ class WebRenderTestServer(unittest.TestCase):
                 self.assertTrue(parsed.fragment.startswith("z:"))
                 token = parsed.fragment.removeprefix("z:")
                 decoded = base64.urlsafe_b64decode(token + "=" * (-len(token) % 4))
-                self.assertEqual(zlib.decompress(decoded), source.read_bytes())
+                payload = json.loads(zlib.decompress(decoded).decode("utf-8"))
+                self.assertEqual(payload, {"bmd": source.read_text(encoding="utf-8"), "version": 1})
 
                 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
                 with opener.open(url, timeout=3) as response:

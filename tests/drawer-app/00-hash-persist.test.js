@@ -10,14 +10,17 @@ const Hash = require('../../packages/drawer-app/js/00-hash-persist.js');
 
 {
   const src = 'board "Hi"\nbox A 405 "Code"\n';
-  Hash.encodeBoardHash(src).then(async (token) => {
+  Hash.encodeBoardHash(src, 4).then(async (token) => {
     assert.match(token, /^z:[A-Za-z0-9_-]+$/);
     const back = await Hash.decodeBoardHash(token);
-    assert.strictEqual(back, src);
-    const py = zlib.deflateSync(Buffer.from(src, 'utf8'));
+    assert.strictEqual(back.bmd, src);
+    assert.strictEqual(back.version, 4);
+    const payload = JSON.stringify({ bmd: src, version: 1 });
+    const py = zlib.deflateSync(Buffer.from(payload, 'utf8'));
     const b64 = py.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
     const fromPy = await Hash.decodeBoardHash('z:' + b64);
-    assert.strictEqual(fromPy, src);
+    assert.strictEqual(fromPy.bmd, src);
+    assert.strictEqual(fromPy.version, 1);
     console.log('ok hash-persist');
   }).catch((err) => {
     console.error(err);

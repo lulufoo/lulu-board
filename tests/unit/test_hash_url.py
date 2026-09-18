@@ -13,10 +13,10 @@ from drawer_ctl.hash_url import board_web_url, decode_board_hash, encode_board_h
 class HashUrlTest(unittest.TestCase):
     def test_round_trip(self) -> None:
         src = 'board "Hi"\nbox A 405 "Code"\n'
-        token = encode_board_hash(src)
+        token = encode_board_hash(src, 4)
         self.assertTrue(token.startswith("z:"))
-        self.assertEqual(decode_board_hash(token), src)
-        self.assertEqual(decode_board_hash("#" + token), src)
+        self.assertEqual(decode_board_hash(token), {"bmd": src, "version": 4})
+        self.assertEqual(decode_board_hash("#" + token), {"bmd": src, "version": 4})
 
     def test_web_url_uses_fragment(self) -> None:
         url = board_web_url('board "X"\n')

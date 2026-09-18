@@ -142,12 +142,8 @@ function cloudShowHistoryMessage(message) {
 }
 
 function cloudBoardTitle(source) {
-  try {
-    var doc = splitDocument(source);
-    return typeof boardTitleFromBody === "function" ? boardTitleFromBody(doc.body) : "";
-  } catch (_e) {
-    return "";
-  }
+  var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(source) : String(source || "");
+  return typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "";
 }
 
 function cloudSetBoardHash(boardId, replace) {
@@ -163,6 +159,7 @@ function cloudClearOpenBoard() {
   boardSourceEl.value = "";
   boardDirty = false;
   boardLocalRev = 0;
+  boardServerRev = 0;
   if (typeof updateBoardChars === "function") updateBoardChars();
   if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", title: "" });
   if (typeof renderBoard === "function") renderBoard({ fit: false });
@@ -244,42 +241,84 @@ async function cloudSignOut() {
   setStatus("Signed out");
 }
 
+function applyCloudBoardRow(row) {
+  var source = typeof stripDocumentMeta === "function"
+    ? stripDocumentMeta(row && row.bmd)
+    : String(row && row.bmd || "");
+  if (boardSourceEl) boardSourceEl.value = source;
+  boardDirty = false;
+  boardServerRev = Number(row && row.version) || 1;
+  boardLocalRev = boardServerRev;
+  if (typeof applyBoardLiveMeta === "function") {
+    applyBoardLiveMeta({
+      id: row && row.board_id || "",
+      title: (row && row.title) || cloudBoardTitle(source),
+      version: boardLocalRev,
+    });
+  }
+  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+}
+
 async function saveBoardToCloud(opts) {
   opts = opts || {};
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     if (opts.explicit) setStatus("Sign in to save to cloud", true);
     return false;
   }
-  var source = String(boardSourceEl && boardSourceEl.value || "");
-  var doc;
-  try {
-    doc = splitDocument(source);
-  } catch (error) {
-    setBoardSyncUI("error");
-    setStatus(error instanceof Error ? error.message : String(error), true);
-    return false;
-  }
-  var boardId = doc.meta.id;
+  var source = typeof stripDocumentMeta === "function"
+    ? stripDocumentMeta(boardSourceEl && boardSourceEl.value)
+    : String(boardSourceEl && boardSourceEl.value || "");
+  if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
+  var boardId = (typeof cloudBoardId === "function" && cloudBoardId())
+    || (typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "");
+  var title = cloudBoardTitle(source) || "Untitled";
   var seq = ++cloudSaveSeq;
   setBoardSyncUI("saving");
   try {
-    var result = await cloudClient.from("boards").upsert({
-      owner_id: cloudSession.user.id,
-      board_id: boardId,
-      title: cloudBoardTitle(source) || "Untitled",
-      bmd: source,
-    }, {
-      onConflict: "owner_id,board_id",
-    }).select("board_id,title,updated_at").single();
-    if (result.error) throw result.error;
-    if (seq !== cloudSaveSeq) return false;
-    boardDirty = false;
+    var result;
+    if (!boardId) {
+      boardId = typeof newBoardId === "function" ? newBoardId() : "";
+      if (!boardId) throw new Error("Could not mint a board id");
+      result = await cloudClient.from("boards").insert({
+        owner_id: cloudSession.user.id,
+        board_id: boardId,
+        title: title,
+        bmd: source,
+      }).select("board_id,title,version,updated_at").single();
+      if (result.error) throw result.error;
+      if (seq !== cloudSaveSeq) return false;
+      applyCloudBoardRow(result.data);
+    } else {
+      boardLocalRev = (Number(boardLocalRev) || 0) + 1;
+      if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+      var expected = Number(boardServerRev);
+      if (!(expected > 0)) expected = 1;
+      result = await cloudClient.from("boards").update({
+        title: title,
+        bmd: source,
+      }).eq("board_id", boardId).eq("version", expected).select("board_id,title,version,updated_at");
+      if (result.error) throw result.error;
+      if (seq !== cloudSaveSeq) return false;
+      var rows = result.data || [];
+      if (!rows.length) {
+        var latest = await cloudClient.from("boards")
+          .select("board_id,title,bmd,version,updated_at")
+          .eq("board_id", boardId)
+          .maybeSingle();
+        if (latest.error) throw latest.error;
+        if (!latest.data) throw new Error("Cloud board not found");
+        applyCloudBoardRow(latest.data);
+        if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+        setBoardSyncUI("conflict");
+        setStatus("Cloud version conflict — reloaded", true);
+        return false;
+      }
+      applyCloudBoardRow(rows[0]);
+    }
     // Do not steal the hash back if the user already navigated to another cloud board.
     var openId = cloudBoardId();
     if (!openId || openId === boardId) cloudSetBoardHash(boardId, true);
-    if (typeof applyBoardLiveMeta === "function") {
-      applyBoardLiveMeta({ id: boardId, title: result.data && result.data.title });
-    }
     setBoardSyncUI("ok");
     setStatus("Saved to cloud");
     if (opts.explicit && typeof showCopyTip === "function") showCopyTip("Saved to cloud");
@@ -310,26 +349,13 @@ async function loadCloudBoardByHash(raw) {
   setStatus("Loading cloud board…");
   try {
     var result = await cloudClient.from("boards")
-      .select("board_id,title,bmd,created_at,updated_at")
+      .select("board_id,title,bmd,version,created_at,updated_at")
       .eq("board_id", boardId)
       .maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
-    var source = String(result.data.bmd || "");
-    var doc = splitDocument(source);
-    if (doc.meta.id !== boardId) throw new Error("Cloud board ID does not match its source");
-    boardSourceEl.value = source;
-    boardDirty = false;
-    boardLocalRev = Number(doc.meta.version) || 1;
-    if (typeof applyBoardLiveMeta === "function") {
-      applyBoardLiveMeta({
-        id: boardId,
-        title: result.data.title || cloudBoardTitle(source),
-        version: doc.meta.version,
-      });
-    }
-    if (typeof updateBoardChars === "function") updateBoardChars();
+    applyCloudBoardRow(result.data);
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");

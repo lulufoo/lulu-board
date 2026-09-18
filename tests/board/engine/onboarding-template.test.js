@@ -8,19 +8,12 @@ const Layout = require('../../../packages/board/engine/board-layout.js');
 global.BoardLayout = Layout;
 const Render = require('../../../packages/board/engine/board-render.js');
 
-function sourceBody(text) {
-  const lines = String(text).split(/\n/);
-  let i = 0;
-  while (i < lines.length && !lines[i].trim()) i += 1;
-  if (!/^meta\s+/.test(lines[i] || "")) throw new Error("expected meta envelope");
-  return lines.slice(i + 1).join("\n");
-}
 const src = fs.readFileSync(
   path.join(__dirname, '../../../packages/drawer-app/onboarding.bmd'),
   'utf8'
 );
-assert.ok(/^meta\s+/.test(src.trim()), 'onboarding starts with meta');
-const board = Render.parse(sourceBody(src));
+assert.ok(!/^\s*meta\s+/.test(src), 'onboarding has no document meta');
+const board = Render.parse(src);
 assert.strictEqual(board.title, 'Lulu Board');
 const ids = [];
 const walk = (b) => { ids.push(b.id); (b.boxes || []).forEach(walk); };

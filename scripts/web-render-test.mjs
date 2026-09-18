@@ -71,8 +71,11 @@ function parseArgs(args) {
 }
 
 function encodeBoardHash(file) {
-  const source = readFileSync(file);
-  return deflateSync(source)
+  const payload = JSON.stringify({
+    bmd: readFileSync(file, 'utf8'),
+    version: 1,
+  });
+  return deflateSync(payload)
     .toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')

@@ -460,7 +460,7 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       clearTimeout(boardSaveTimer);
       boardSaveTimer = null;
       var outgoingId = "";
-      try { outgoingId = String(splitDocument(boardSourceEl.value).meta.id || ""); } catch (_e) {}
+      outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
       if (boardDirty && outgoingId && typeof saveBoardToCloud === "function") {
         pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
       }
@@ -484,8 +484,9 @@ async function openOnboardingHash() {
     var res = await fetch("./onboarding.bmd", { cache: "no-store" });
     if (!res.ok) throw new Error("Onboarding is unavailable");
     var text = await res.text();
+    if (typeof stripDocumentMeta === "function") text = stripDocumentMeta(text);
     if (!String(text).trim()) throw new Error("Onboarding is unavailable");
-    var token = await encodeBoardHash(text);
+    var token = await encodeBoardHash(text, 1);
     var next = "#" + token;
     if (location.hash === next) {
       setStatus("Onboarding");

@@ -1589,19 +1589,25 @@ window.addEventListener("pagehide", function() { void flushBoardSave(); });
 document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === "hidden") void flushBoardSave();
 });
-async function saveBoardToHash() {
+async function saveBoardToHash(opts) {
+  opts = opts || {};
   boardSaveTimer = null;
-  const text = boardSourceEl.value;
+  var text = typeof stripDocumentMeta === "function"
+    ? stripDocumentMeta(boardSourceEl.value)
+    : boardSourceEl.value;
+  if (boardSourceEl && text !== boardSourceEl.value) boardSourceEl.value = text;
   const seq = ++boardSaveSeq;
   try {
-    const token = await encodeBoardHash(text);
+    if (opts.bump !== false) boardLocalRev = (Number(boardLocalRev) || 0) + 1;
+    else if (!(Number(boardLocalRev) > 0)) boardLocalRev = 1;
+    const token = await encodeBoardHash(text, boardLocalRev);
     if (seq !== boardSaveSeq) return;
     const next = "#" + token;
     if (location.hash !== next) {
       history.replaceState(null, "", location.pathname + location.search + next);
     }
     boardDirty = false;
-    boardLocalRev = (Number(boardLocalRev) || 0) + 1;
+    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
     setBoardSyncUI("ok");
     setStatus("Saved in URL");
   } catch (err) {
@@ -1662,34 +1668,32 @@ async function bootstrapBoardFromHash() {
     return;
   }
   if (!raw) {
-    var blank = typeof blankHashBoardSource === "function"
+    boardSourceEl.value = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
       : "board \"Untitled\"\n";
-    boardSourceEl.value = blank;
-    boardLocalRev = 0;
-    try {
-      var seeded = splitDocument(blank);
-      if (typeof applyBoardLiveMeta === "function") {
-        applyBoardLiveMeta({ id: seeded.meta.id, version: seeded.meta.version, title: "Untitled" });
-      }
-    } catch (_e) {}
-    await saveBoardToHash();
+    boardLocalRev = 1;
+    boardServerRev = 0;
+    if (typeof applyBoardLiveMeta === "function") {
+      applyBoardLiveMeta({ id: "", version: 1, title: "Untitled" });
+    }
+    await saveBoardToHash({ bump: false });
     setStatus("New board");
     return;
   }
   try {
-    boardSourceEl.value = await decodeBoardHash(raw);
-    boardLocalRev = 1;
-    try {
-      var decoded = splitDocument(boardSourceEl.value);
-      if (typeof applyBoardLiveMeta === "function") {
-        applyBoardLiveMeta({
-          id: decoded.meta.id,
-          version: decoded.meta.version,
-          title: typeof boardTitleFromBody === "function" ? boardTitleFromBody(decoded.body) : "",
-        });
-      }
-    } catch (_e) {}
+    var decoded = await decodeBoardHash(raw);
+    var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(decoded.bmd) : decoded.bmd;
+    boardSourceEl.value = body;
+    boardLocalRev = Number(decoded.version) || 1;
+    boardServerRev = 0;
+    if (typeof applyBoardLiveMeta === "function") {
+      applyBoardLiveMeta({
+        id: "",
+        version: boardLocalRev,
+        title: typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "",
+      });
+    }
+    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   } catch (err) {
     boardSourceEl.value = "";
     if (typeof showBoardError === "function") {

@@ -16,7 +16,7 @@ python3 board/scripts/drawer_control.py status
 
 From `board/`, the same CLI is `python3 scripts/drawer_control.py`.
 
-`preview` prints a `https://luluboard.app/#z:…` URL. It does not write local history.
+`preview` prints a `https://luluboard.app/#z:…` URL from `{bmd, version}`. It does not write local history.
 
 ## Not in this folder
 

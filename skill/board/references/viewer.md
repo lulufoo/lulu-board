@@ -12,11 +12,11 @@ Public hash preview for Board. Loaded from `/board` only.
 
 | Concern | Rule |
 |---|---|
-| Write | `preview` encodes BMD to the public hash URL |
+| Write | `preview` encodes `{bmd, version}` to the public hash URL |
 | Cache | `preview` does not write `history/` |
 | Leftover | Existing `history/*.bmd` files are not deleted |
-| `--id` | `--id` is BMD ID. Required on `get-source`. |
-| Mint | Omit `--id` on `preview` only to mint |
+| `--id` | leftover; ignored |
+| Mint | any file or stdin is a new encode |
 
 ## Pointers
 

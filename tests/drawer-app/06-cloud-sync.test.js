@@ -11,6 +11,7 @@ const appBuild = read('scripts/drawer-app-build/build.mjs');
 const webBuild = read('scripts/web-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
 const schema = read('supabase/migrations/20260917160000_create_boards.sql');
+const versionSql = read('supabase/migrations/20260918090000_boards_version.sql');
 const workerConfig = read('wrangler.toml');
 
 assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
@@ -32,7 +33,11 @@ assert.match(webBuild, /supabase-client\.js/, 'public site build verifies the cl
 assert.match(webBuild, /\.cache\/web/, 'public site output is temporary cached web assets');
 assert.match(workerConfig, /name = "lulu-board"/, 'Workers Builds deploys the existing Worker');
 assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys the generated cache directory');
-assert.match(cloud, /onConflict: "owner_id,board_id"/, 'cloud saves upsert one row per owner and board');
+assert.match(cloud, /\.insert\(/, 'new boards insert a row');
+assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
+assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
+assert.match(versionSql, /add column if not exists version/, 'version column is added');
+assert.match(versionSql, /new\.version = coalesce\(old\.version, 1\) \+ 1/, 'update increments version');
 assert.match(cloud, /provider: selected/, 'cloud sign in selects an OAuth provider');
 assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, not a token fragment');
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');

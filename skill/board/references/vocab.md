@@ -4,7 +4,7 @@ A Board document has these layers:
 
 | Layer | Syntax | Purpose |
 |---|---|---|
-| Stash | `meta <base64>`, `style <base64>` | Drawer-owned; see Protocol boundary |
+| Stash | `style <base64>` | Drawer-owned; see Protocol boundary |
 | Structure | `board`, `box`, `item` | Define nodes and containment |
 | Relation | `A -> B`, `A <-> B` | Connect nodes semantically |
 | Layout | `layout` | Position nodes (`arrange`, `flush`, `pin`) |
@@ -176,9 +176,9 @@ rewrites it as `parent` pins and drops its `arrange` lines.
 
 ## Protocol boundary
 
-Author structure, relations, and layout. A `meta <base64>` or
-`style <base64>` line is stash: omit when minting; leave it unchanged if
-present; do not add, decode, or edit it.
+Author structure, relations, and layout. A leftover `meta <base64>` line is
+not identity; omit it. A `style <base64>` line is stash: omit when minting;
+leave it unchanged if present; do not add, decode, or edit it.
 
 Position and size live only in `layout`. Node-line `x` / `y` / size fields
 and freehand drawing stay out of this protocol.

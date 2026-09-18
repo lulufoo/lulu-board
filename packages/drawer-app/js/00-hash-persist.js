@@ -12,8 +12,7 @@
     var doc = typeof document !== "undefined" ? document.documentElement : null;
     var forced = doc && doc.getAttribute("data-persist");
     if (forced === "hash" || forced === "local") return forced;
-    var host = typeof location !== "undefined" ? String(location.hostname || "") : "";
-    return host === "127.0.0.1" || host === "localhost" ? "local" : "hash";
+    return "hash";
   }
 
   function bytesToBase64Url(bytes) {
@@ -52,8 +51,12 @@
     return new Uint8Array(require("zlib").inflateSync(Buffer.from(bytes)));
   }
 
-  async function encodeBoardHash(text) {
-    var input = new TextEncoder().encode(String(text || ""));
+  async function encodeBoardHash(text, version) {
+    var payload = JSON.stringify({
+      bmd: String(text || ""),
+      version: Number(version) > 0 ? Number(version) : 1,
+    });
+    var input = new TextEncoder().encode(payload);
     return "z:" + bytesToBase64Url(await compressZlib(input));
   }
 
@@ -63,7 +66,15 @@
     var bytes = base64UrlToBytes(token.slice(2));
     if (!bytes.length) throw new Error("invalid board hash");
     var out = await decompressZlib(bytes);
-    return new TextDecoder().decode(out);
+    var payload = JSON.parse(new TextDecoder().decode(out));
+    if (!payload || typeof payload !== "object" || Array.isArray(payload) || payload.bmd == null) {
+      throw new Error("invalid board hash");
+    }
+    var version = Number(payload.version);
+    return {
+      bmd: String(payload.bmd),
+      version: Number.isFinite(version) && version > 0 ? version : 1,
+    };
   }
 
   return {

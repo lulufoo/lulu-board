@@ -88,14 +88,14 @@ class BoardPreviewOpenTest(unittest.TestCase):
         self.assertEqual(self._history_names(), [])
         self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 
-    def test_leftover_id_is_read_not_rewritten(self) -> None:
+    def test_leftover_id_is_ignored(self) -> None:
         rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")
         before = rec.read_text(encoding="utf-8")
         names = self._history_names()
         data = self._preview(source_id=dc.ensure_board_history_entry_meta(rec)["id"])
         self.assertEqual(data["open"], "current")
-        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
-        self.assertIn('board "Mine"', hash_url.decode_board_hash(data["url"].split("#", 1)[1]))
+        self.assertEqual(data.get("url"), "https://luluboard.app/")
+        self.assertEqual(data.get("id"), "")
         self.assertEqual(rec.read_text(encoding="utf-8"), before)
         self.assertEqual(self._history_names(), names)
 
@@ -104,8 +104,12 @@ class BoardPreviewOpenTest(unittest.TestCase):
         src.write_text('board "New"\n', encoding="utf-8")
         data = self._preview(path=str(src))
         self.assertEqual(data["open"], "created")
-        self.assertTrue(str(data.get("id") or "").startswith("b_"))
+        self.assertEqual(data.get("id"), "")
+        self.assertEqual(data.get("version"), 1)
         self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
+        decoded = hash_url.decode_board_hash(data["url"].split("#", 1)[1])
+        self.assertEqual(decoded["bmd"], 'board "New"\n')
+        self.assertEqual(decoded["version"], 1)
         self.assertEqual(self._history_names(), [])
         self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 

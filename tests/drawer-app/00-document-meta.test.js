@@ -39,10 +39,8 @@ function token(id, version) {
 
 {
   const blank = Meta.blankHashBoardSource("Untitled");
-  const doc = Meta.splitDocument(blank);
-  assert.match(doc.meta.id, /^b_[0-9a-f]{8}$/);
-  assert.strictEqual(doc.meta.version, 1);
-  assert.strictEqual(doc.body, 'board "Untitled"\n');
+  assert.strictEqual(blank, 'board "Untitled"\n');
+  assert.strictEqual(Meta.stripDocumentMeta('meta {"id":"b_0fc10001","version":3}\nboard "A"\n'), 'board "A"\n');
 }
 
 {
@@ -50,7 +48,8 @@ function token(id, version) {
   const vocab = fs.readFileSync(path.join(__dirname, '../../skill/board/references/vocab.md'), 'utf8');
   assert.ok(/Mint without meta or style/.test(board), 'board SKILL mints without stash');
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');
-  assert.ok(/meta <base64>/.test(vocab), 'vocab names meta as base64');
+  assert.ok(/style <base64>/.test(vocab), 'vocab names style as stash');
+  assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
   assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
 }
 

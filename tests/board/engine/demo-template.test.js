@@ -8,19 +8,12 @@ const Layout = require('../../../packages/board/engine/board-layout.js');
 global.BoardLayout = Layout;
 const Render = require('../../../packages/board/engine/board-render.js');
 
-function sourceBody(text) {
-  const lines = String(text).split(/\n/);
-  let i = 0;
-  while (i < lines.length && !lines[i].trim()) i += 1;
-  if (!/^meta\s+\{/.test(lines[i] || "")) throw new Error("expected meta envelope");
-  return lines.slice(i + 1).join("\n");
-}
 const src = fs.readFileSync(
   path.join(__dirname, '../../../skill/board/templates/demo.bmd'),
   'utf8'
 );
-assert.ok(/^meta\s+\{/.test(src.trim()), 'demo starts with meta');
-const board = Render.parse(sourceBody(src));
+assert.ok(!/^\s*meta\s+/.test(src), 'demo has no document meta');
+const board = Render.parse(src);
 assert.strictEqual(board.title, 'Demo');
 assert.ok(board.boxes.some((b) => b.id === 'IN'));
 assert.ok(board.boxes.some((b) => b.id === 'WORK' && String(b.type || b.kind) === 'container'));

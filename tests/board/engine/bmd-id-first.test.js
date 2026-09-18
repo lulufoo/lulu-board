@@ -33,12 +33,12 @@ assert.ok(/function syncSourceIdChrome/.test(shell), 'ID chrome syncs with live 
 assert.ok(/btnSourceCopyId/.test(boot), 'Copy ID is wired');
 assert.ok(!fs.existsSync(path.join(root, 'skill/SKILL.md')), 'no pack SKILL at skill root');
 assert.ok(/\*\*BMD ID\*\*/.test(board) && /\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD terms');
-assert.ok(/Keep `id` \(BMD ID\) first/.test(board), 'board flow keeps BMD ID first');
-assert.ok(/`--id` is BMD ID/.test(viewer), 'viewer names BMD ID');
-assert.ok(/Required on\s+`get-source`/.test(viewer), 'viewer requires --id on get-source');
+assert.ok(/Keep `url` first/.test(board), 'board flow keeps the public URL first');
+assert.ok(/`preview` encodes `\{bmd, version\}`/.test(viewer), 'viewer encodes a JSON envelope');
+assert.ok(/`--id` \| leftover; ignored/.test(viewer), 'viewer ignores leftover --id');
 assert.ok(!/mermaid:\s*'default'/.test(themes), 'theme map drops mermaid alias');
 assert.ok(/They are not the Drawer BMD ID/.test(vocab), 'vocab node IDs are not BMD ID');
-assert.ok(/meta <base64>/.test(vocab), 'vocab names the meta envelope');
+assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
 assert.ok(!/id="syncPill"/.test(html), 'Source does not show a rev pill');
 assert.ok(!/id="boardSyncPill"/.test(html), 'Board Source does not show a rev pill');
 assert.ok(/liveDocumentVersion/.test(shell), 'Source title reads document version');
