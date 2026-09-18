@@ -8,8 +8,8 @@
 
 <p align="center">
   <a href="https://luluboard.app/">luluboard.app</a>
-  &nbsp;·&nbsp;
-  <a href="LICENSE">License</a>
+  &nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License" align="absmiddle"></a>
 </p>
 
 ---
