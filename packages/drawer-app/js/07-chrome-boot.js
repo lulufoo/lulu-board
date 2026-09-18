@@ -357,7 +357,6 @@ $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
 $('#btnSourceCopy') && ($('#btnSourceCopy').onclick = () => {
   void copyText(activeSourceText(), "Source");
 });
-$('#btnHistoryOpenFile') && ($('#btnHistoryOpenFile').onclick = () => { void openBoardFile(); });
 $('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void exportBoardFile(); closeCanvasExport(); });
 $('#btnCanvasDlPng') && ($('#btnCanvasDlPng').onclick = () => { void exportPng(); closeCanvasExport(); });
 /* UI light/dark toggle removed for now */
@@ -443,7 +442,7 @@ function restoreDrawerMode() {
   setMode("board", { restore: true, persist: false });
   try {
     var tab = ui.dockTab || "";
-    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || tab === "layout") {
+    if (tab === "export" || tab === "style" || tab === "share" || tab === "source" || tab === "props" || tab === "layout") {
       openDock(tab);
     }
   } catch (_e) {}
@@ -461,7 +460,9 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       boardSaveTimer = null;
       var outgoingId = "";
       outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && document.documentElement.dataset.shareView !== "on") {
+      if (boardDirty && document.documentElement.dataset.shareEdit === "on" && typeof saveSharedBoard === "function") {
+        pending = saveSharedBoard({ explicit: false }).catch(function() { return false; });
+      } else if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && document.documentElement.dataset.shareView !== "on") {
         pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
       }
       boardDirty = false;

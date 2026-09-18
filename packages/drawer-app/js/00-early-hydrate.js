@@ -12,7 +12,7 @@
       dock.style.setProperty("--dock-open-width", Math.min(720, Math.max(280, Math.round(dockW))) + "px");
     }
     var dockTab = ui.dockTab || "";
-    if (dock && (dockTab === "source" || dockTab === "props" || dockTab === "export" || dockTab === "style" || dockTab === "layout")) {
+    if (dock && (dockTab === "source" || dockTab === "props" || dockTab === "export" || dockTab === "style" || dockTab === "share" || dockTab === "layout")) {
       dock.setAttribute("data-open", dockTab);
       Array.prototype.forEach.call(dock.querySelectorAll("[data-dock]"), function (b) {
         var on = b.getAttribute("data-dock") === dockTab;

@@ -120,7 +120,7 @@ function currentDockTab() {
 function openDock(tab) {
   if (!boardDock) return;
   var next = tab || "";
-  if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style") next = "";
+  if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style" && next !== "share") next = "";
   boardDock.setAttribute("data-open", next);
   if (propsPanel) propsPanel.setAttribute("data-collapsed", next === "props" ? "false" : "true");
   Array.from(boardDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
@@ -189,7 +189,7 @@ let scale = 0.9, panX = 0, panY = 0;
  *   mode             "board"
  *   sheetCollapsed   boolean
  *   propsOpen        boolean   — right Props panel (legacy)
- *   dockTab          "" | "props" | "layout" | "source"
+ *   dockTab          "" | "props" | "layout" | "source" | "style" | "share" | "export"
  *   dockWidth        number   — open sidebar width (px)
  *   scale, panX, panY number   — canvas zoom/pan
  *   boardViewId      string    — board record id that last owned scale/pan
@@ -224,7 +224,7 @@ var DRAWER_UI_PERSIST_LIST = [
   { key: "mode", kind: "enum:board" },
   { key: "sheetCollapsed", kind: "boolean" },
   { key: "propsOpen", kind: "boolean" },
-  { key: "dockTab", kind: "enum:|props|layout|source" },
+  { key: "dockTab", kind: "enum:|props|layout|source|style|share|export" },
   { key: "dockWidth", kind: "number" },
   { key: "scale", kind: "number" },
   { key: "panX", kind: "number" },
@@ -244,7 +244,7 @@ function loadDrawerUi() {
         out.mode = "board";
         if (typeof parsed.sheetCollapsed === "boolean") out.sheetCollapsed = parsed.sheetCollapsed;
         if (typeof parsed.propsOpen === "boolean") out.propsOpen = parsed.propsOpen;
-        if (parsed.dockTab === "" || parsed.dockTab === "props" || parsed.dockTab === "layout" || parsed.dockTab === "source") out.dockTab = parsed.dockTab;
+        if (parsed.dockTab === "" || parsed.dockTab === "props" || parsed.dockTab === "layout" || parsed.dockTab === "source" || parsed.dockTab === "style" || parsed.dockTab === "share" || parsed.dockTab === "export") out.dockTab = parsed.dockTab;
         else if (out.propsOpen) out.dockTab = "props";
         if (typeof parsed.dockWidth === "number" && isFinite(parsed.dockWidth)) out.dockWidth = clampDockWidth(parsed.dockWidth);
         if (typeof parsed.scale === "number" && isFinite(parsed.scale)) out.scale = Math.min(3, Math.max(0.2, parsed.scale));

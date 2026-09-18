@@ -52,16 +52,6 @@
           <span class="board-cloud-status-label">Saved</span>
         </div>
         <button class="btn board-account-btn" id="btnBoardSaveCopy" type="button" hidden>Save a copy</button>
-        <div class="board-share" id="boardShare" hidden>
-          <button class="btn board-account-btn" id="btnBoardShare" type="button" aria-haspopup="menu" aria-expanded="false">Share</button>
-          <div class="board-auth-menu" id="boardShareMenu" role="menu" hidden>
-            <div class="board-share-state" id="boardShareState">Not shared</div>
-            <button type="button" class="board-auth-provider" id="btnBoardShareOpen" role="menuitem">Create link</button>
-            <button type="button" class="board-auth-provider" id="btnBoardShareCopy" role="menuitem" hidden>Copy link</button>
-            <button type="button" class="board-auth-provider" id="btnBoardShareRotate" role="menuitem" hidden>New link</button>
-            <button type="button" class="board-auth-provider" id="btnBoardShareClose" role="menuitem" hidden>Stop sharing</button>
-          </div>
-        </div>
         <div class="board-session" id="boardSession" hidden>
           <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
             <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">
@@ -97,10 +87,6 @@
   <aside class="board-dock" id="boardDock" data-open="" aria-label="Drawer panels">
     <div class="board-dock-resize" id="boardDockResize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
     <div class="board-dock-rail" role="tablist" aria-label="Drawer panels">
-      <button type="button" class="board-dock-tab" id="btnDockLayout" data-dock="layout" role="tab" aria-selected="false" title="Layout">
-        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
-        <span class="board-dock-tab-label">Layout</span>
-      </button>
       <button type="button" class="board-dock-tab" id="btnDockProps" data-dock="props" data-dock-icon="inspector" role="tab" aria-selected="false" title="Properties">
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span class="board-dock-tab-label">Properties</span>
@@ -109,13 +95,21 @@
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4.25 2.75 8 6 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 4.25 13.25 8 10 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span class="board-dock-tab-label" id="sourceDockTabLabel">Source</span>
       </button>
-      <button type="button" class="board-dock-tab" id="btnDockExport" data-dock="export" data-dock-icon="export" role="tab" aria-selected="false" title="Export">
-        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.25 2.75h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.25 2.75 7.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7.15 3.85H4.75A1.75 1.75 0 0 0 3 5.6v5.65A1.75 1.75 0 0 0 4.75 13h5.65A1.75 1.75 0 0 0 12.15 11.25V8.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="board-dock-tab-label">Export</span>
-      </button>
       <button type="button" class="board-dock-tab" id="btnDockStyle" data-dock="style" data-dock-icon="palette" role="tab" aria-selected="false" title="Style">
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r="0.95" fill="currentColor"/><circle cx="8.35" cy="5.55" r="0.95" fill="currentColor"/><circle cx="10.85" cy="7.4" r="0.95" fill="currentColor"/></svg>
         <span class="board-dock-tab-label">Style</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockShare" data-dock="share" role="tab" aria-selected="false" title="Share">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.25 2.75h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.25 2.75 7.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7.15 3.85H4.75A1.75 1.75 0 0 0 3 5.6v5.65A1.75 1.75 0 0 0 4.75 13h5.65A1.75 1.75 0 0 0 12.15 11.25V8.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="board-dock-tab-label">Share</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockExport" data-dock="export" data-dock-icon="export" role="tab" aria-selected="false" title="Export">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.6v7.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.15 7.2 8 10 10.85 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 11.2v1.45A1.6 1.6 0 0 0 5 14.25h6a1.6 1.6 0 0 0 1.6-1.6V11.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="board-dock-tab-label">Export</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockLayout" data-dock="layout" role="tab" aria-selected="false" title="Layout" hidden>
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span class="board-dock-tab-label">Layout</span>
       </button>
       <button type="button" class="board-dock-tab board-dock-help" id="btnBoardOnboarding" title="Onboarding" aria-label="Open onboarding">
         <span class="board-dock-tab-icon board-dock-help-glyph" aria-hidden="true">?</span>
@@ -263,7 +257,6 @@
             <strong>History</strong>
             <div class="history-actions">
               <button type="button" class="btn history-refresh" id="btnBoardHistoryRefresh">Refresh</button>
-              <button type="button" class="btn history-refresh" id="btnHistoryOpenFile" title="Open a board file.">Open File</button>
             </div>
           </div>
           <div class="history-combo" id="boardHistoryCombo">
@@ -330,6 +323,33 @@
         </div>
         <p class="style-hint">Saved with the board</p>
       </section>
+    </div>
+    <div class="board-dock-panel" id="sharePanel" data-dock-panel="share">
+      <div class="props-head">
+        <strong>Share</strong>
+      </div>
+      <p class="style-hint" id="shareSignedOut" hidden>Sign in and save this board to share.</p>
+      <div id="shareOwner" hidden>
+        <p class="style-section-label">Link</p>
+        <p class="share-link-state" id="shareLinkState">Not shared</p>
+        <div class="props-seg" role="group" aria-label="Share link">
+          <button type="button" class="props-seg-btn" id="btnShareCreate">Create link</button>
+          <button type="button" class="props-seg-btn" id="btnShareCopy" hidden>Copy link</button>
+          <button type="button" class="props-seg-btn" id="btnShareRotate" hidden>New link</button>
+          <button type="button" class="props-seg-btn" id="btnShareStop" hidden>Stop</button>
+        </div>
+        <p class="style-section-label">Who</p>
+        <div class="props-seg" role="group" aria-label="Share audience">
+          <button type="button" class="props-seg-btn" aria-pressed="true" disabled>All</button>
+          <button type="button" class="props-seg-btn" id="btnShareAddPerson" disabled title="User search is not available yet">Add person</button>
+        </div>
+        <p class="style-section-label">Access</p>
+        <div class="props-seg" id="shareRoleSeg" role="group" aria-label="Share access">
+          <button type="button" class="props-seg-btn" id="btnShareRoleView" data-share-role="view" aria-pressed="true">View</button>
+          <button type="button" class="props-seg-btn" id="btnShareRoleEdit" data-share-role="edit" aria-pressed="false">Edit</button>
+        </div>
+        <p class="style-hint">Anyone with the link. Signed-in people can edit when Access is Edit.</p>
+      </div>
     </div>
   </aside>
 

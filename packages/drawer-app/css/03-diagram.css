@@ -1631,14 +1631,16 @@ html[data-persist="hash"] .board-dock-help {
 .board-dock[data-open="layout"] [data-dock-panel="layout"],
 .board-dock[data-open="source"] [data-dock-panel="source"],
 .board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.board-dock[data-open="style"] [data-dock-panel="style"],
+.board-dock[data-open="share"] [data-dock-panel="share"] {
   display: flex;
 }
 .board-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 16px 0 16px;
 }
 .board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.board-dock[data-open="style"] [data-dock-panel="style"],
+.board-dock[data-open="share"] [data-dock-panel="share"] {
   padding: 14px;
 }
 .board-dock[data-open="export"] [data-dock-panel="export"] .dock-source-head,
@@ -1984,21 +1986,13 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
 
 
 /* Board history list (Source dock) */
-[data-persist="hash"]:not([data-cloud-history="on"]) #boardHistoryCombo,
-[data-persist="hash"]:not([data-cloud-history="on"]) #boardHistoryEmpty,
-[data-persist="hash"]:not([data-cloud-history="on"]) #btnBoardHistoryRefresh {
+[data-persist="hash"]:not([data-cloud-history="on"]) #boardHistory {
   display: none;
 }
 [data-persist="hash"][data-cloud-history="on"] #boardHistoryCombo {
   display: block;
 }
 [data-persist="hash"][data-cloud-history="on"] #btnBoardHistoryRefresh {
-  display: inline-flex;
-}
-#btnHistoryOpenFile {
-  display: none;
-}
-[data-persist="hash"] #btnHistoryOpenFile {
   display: inline-flex;
 }
 .history-block {

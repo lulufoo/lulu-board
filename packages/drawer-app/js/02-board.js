@@ -1639,6 +1639,9 @@ async function saveBoardToFile() {
   boardSaveTimer = null;
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
     if (document.documentElement.dataset.shareView === "on") return Promise.resolve();
+    if (document.documentElement.dataset.shareEdit === "on" && typeof saveSharedBoard === "function") {
+      return saveSharedBoard({ explicit: false });
+    }
     if (typeof cloudBoardId === "function" && cloudBoardId()) {
       return saveBoardToCloud({ explicit: false });
     }
@@ -1695,6 +1698,7 @@ async function bootstrapBoardFromHash() {
   }
   if (!raw) {
     if (typeof setShareView === "function") setShareView(false);
+    if (typeof setShareEdit === "function") setShareEdit(false);
     boardSourceEl.value = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
       : "board \"Untitled\"\n";
@@ -1709,6 +1713,7 @@ async function bootstrapBoardFromHash() {
   }
   try {
     if (typeof setShareView === "function") setShareView(false);
+    if (typeof setShareEdit === "function") setShareEdit(false);
     var decoded = await decodeBoardHash(raw);
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(decoded.bmd) : decoded.bmd;
     boardSourceEl.value = body;

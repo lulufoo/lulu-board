@@ -30,12 +30,6 @@ function cloudSetHistoryVisible(visible) {
   root.dataset.cloudHistory = visible ? "on" : "off";
   var heading = document.querySelector("#boardHistory .history-head strong");
   if (heading) heading.textContent = visible ? "Cloud history" : "History";
-  var openFile = document.getElementById("btnHistoryOpenFile");
-  if (openFile) {
-    openFile.title = visible
-      ? "Open a board file, then save it to cloud."
-      : "Open a board file.";
-  }
 }
 
 function cloudSafeAvatarUrl(raw) {
@@ -296,7 +290,9 @@ function applyCloudBoardRow(row) {
   if (typeof updateBoardChars === "function") updateBoardChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof setShareView === "function") setShareView(false);
+  if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId(row && row.share_id);
+  if (typeof refreshOwnShareState === "function") void refreshOwnShareState();
   syncCloudSaveChrome();
 }
 
@@ -372,6 +368,7 @@ async function saveBoardToCloud(opts) {
 
 async function loadCloudBoardByHash(raw) {
   if (typeof setShareView === "function") setShareView(false);
+  if (typeof setShareEdit === "function") setShareEdit(false);
   var boardId = typeof cloudBoardIdFromHash === "function" ? cloudBoardIdFromHash(raw) : "";
   if (!boardId) return false;
   if (!cloudConfigured() || !cloudClient) {

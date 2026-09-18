@@ -1,7 +1,8 @@
 html[data-share-view="on"] .board-edit-tools { display: none !important; }
 html[data-share-view="on"] #btnBoardSaveCloud,
 html[data-share-view="on"] #boardCloudStatus { display: none !important; }
-html[data-share-view="on"] .board-share { display: none !important; }
+html[data-share-view="on"] #btnDockShare,
+html[data-share-view="on"] [data-dock-panel="share"],
 html[data-share-view="on"] #btnDockLayout,
 html[data-share-view="on"] #btnDockProps,
 html[data-share-view="on"] #btnDockStyle { display: none !important; }
@@ -9,17 +10,12 @@ html[data-share-view="on"] [data-dock-panel="layout"],
 html[data-share-view="on"] [data-dock-panel="props"],
 html[data-share-view="on"] [data-dock-panel="style"] { display: none !important; }
 
-.board-share {
-  position: relative;
-  min-width: 0;
-}
-.board-share[hidden] { display: none !important; }
-.board-share-state {
-  padding: 7px 9px 8px;
-  margin: 0 0 2px;
-  border-bottom: 1px solid var(--stroke, #e5e7eb);
+#btnBoardSaveCopy[hidden] { display: none !important; }
+.share-link-state {
+  margin: 0 0 8px;
   color: var(--muted, #64748b);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.35;
 }
-#btnBoardSaveCopy[hidden] { display: none !important; }
+#sharePanel .props-seg { flex-wrap: wrap; }
+#sharePanel .props-seg-btn[hidden] { display: none !important; }

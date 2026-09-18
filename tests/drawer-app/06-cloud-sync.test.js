@@ -5,6 +5,10 @@ const path = require('path');
 
 const root = path.join(__dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+const readSql = (name) => fs.readFileSync(
+  path.join(root, '../lulu-dev-skills/docs/archive/lulu-board/supabase/migrations', name),
+  'utf8'
+);
 
 const html = read('packages/drawer-app/index.html');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
@@ -13,9 +17,10 @@ const shareCss = read('packages/drawer-app/css/05-share.css');
 const webBuild = read('scripts/web-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
 const boardJs = read('packages/drawer-app/js/02-board.js');
-const schema = read('supabase/migrations/20260917160000_create_boards.sql');
-const versionSql = read('supabase/migrations/20260918090000_boards_version.sql');
-const shareSql = read('supabase/migrations/20260918142200_board_share.sql');
+const schema = readSql('20260917160000_create_boards.sql');
+const versionSql = readSql('20260918090000_boards_version.sql');
+const shareSql = readSql('20260918142200_board_share.sql');
+const shareRoleSql = readSql('20260918143300_share_access_role.sql');
 const workerConfig = read('wrangler.toml');
 
 assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
@@ -25,11 +30,17 @@ assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
 assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays in the toolbar');
-assert.match(html, /id="btnBoardShare"/, 'owner share control is in the toolbar');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"/, 'Share is dock tab 4');
+assert.match(html, /id="btnShareRoleView"/, 'owner can choose view access');
+assert.match(html, /id="btnShareRoleEdit"/, 'owner can choose edit access');
+assert.match(html, /id="btnShareAddPerson"[^>]*disabled/, 'adding a person is not available yet');
+assert.doesNotMatch(html, /id="btnBoardShare"/, 'share left the toolbar');
 assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
-assert.match(shareJs, /rpc\(name, \{ p_board_id: boardId \}\)/, 'share mutations pass the cloud board id');
+assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
+assert.match(shareJs, /set_share_role/, 'owner access uses set_share_role');
+assert.match(shareJs, /save_shared_board/, 'shared editors save through save_shared_board');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
 assert.match(shareJs, /showBoardError\(message\)/, 'a missing share token surfaces an error');
 assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
@@ -72,6 +83,11 @@ assert.match(shareSql, /grant update \(title, bmd\) on table public\.boards to a
 assert.match(shareSql, /grant insert \(owner_id, board_id, title, bmd\) on table public\.boards to authenticated/, 'clients cannot insert a share token');
 assert.match(shareSql, /grant execute on function public\.get_shared_board\(text\) to anon, authenticated/, 'shared read is an rpc');
 assert.doesNotMatch(shareSql, /grant select[^\n]*anon/, 'anon has no table select on boards');
+assert.match(shareRoleSql, /function public\.set_share_role/, 'owner can change the all grant role');
+assert.match(shareRoleSql, /function public\.own_share_state/, 'owner panel reads the current grant');
+assert.match(shareRoleSql, /function public\.save_shared_board/, 'shared edit writes through rpc');
+assert.match(shareRoleSql, /access text/, 'shared read returns the access role');
+assert.match(shareRoleSql, /grant execute on function public\.save_shared_board/, 'shared edit is authenticated only');
 assert.match(cloud, /provider: selected/, 'cloud sign in selects an OAuth provider');
 assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, not a token fragment');
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
