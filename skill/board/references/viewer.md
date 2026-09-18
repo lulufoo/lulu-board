@@ -22,6 +22,8 @@ Public hash preview for Board. Loaded from `/board` only.
 
 1. CLI preview does not retarget local `current`.
 2. The public page does not write CLI history.
+3. Hash mode emits `#z:`. Cloud mode emits `#b:<id>` after MCP `create_board` or `save_board`.
+4. CLI preview never mints `#b:`.
 
 ## Seed
 

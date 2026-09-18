@@ -1,0 +1,59 @@
+:root {
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --panel: #ffffff;
+  --stroke: rgba(0, 0, 0, 0.1);
+  --accent: #0071e3;
+  --danger: #d70015;
+  --font: "SF Pro Text", Inter, system-ui, sans-serif;
+}
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #f5f5f7;
+  color: var(--text);
+  font: 15px/1.45 var(--font);
+}
+.consent-sheet {
+  box-sizing: border-box;
+  width: min(420px, calc(100% - 32px));
+  margin: 72px auto;
+  padding: 28px 24px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--panel);
+}
+h1 {
+  margin: 0 0 8px;
+  font: 650 22px/1.2 var(--font);
+}
+.consent-lead, .consent-who, #consent-signed-out p {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+.consent-who { color: var(--text); font-weight: 600; }
+.consent-error {
+  margin: 0 0 16px;
+  color: var(--danger);
+}
+.consent-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.consent-btn {
+  height: 36px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text);
+  font: 600 13px/1 var(--font);
+  cursor: pointer;
+}
+.consent-btn.is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.consent-btn.is-quiet { color: var(--muted); }
+.consent-btn[hidden] { display: none; }

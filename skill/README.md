@@ -7,6 +7,7 @@ The installable skill is **`board/`** only. It contains `SKILL.md`, `scripts/`, 
 | Path | Role |
 |---|---|
 | `.cursor-plugin/plugin.json` | Plugin manifest (`name: lulu-board`; `skills: ["board"]`) |
+| `mcp.json` | Remote MCP URL (`mcp.luluboard.app`). Install is not Connect. |
 | `board/` | Self-contained `/board` skill |
 
 ```bash

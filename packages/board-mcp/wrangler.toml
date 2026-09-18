@@ -1,0 +1,10 @@
+name = "lulu-board-mcp"
+main = "src/index.js"
+compatibility_date = "2026-09-17"
+workers_dev = true
+
+# SUPABASE_PUBLISHABLE_KEY is a Worker secret, not a [vars] value.
+
+[vars]
+SUPABASE_URL = "https://xjwlxxuafhsfzksxxmtu.supabase.co"
+PUBLIC_ORIGIN = "https://mcp.luluboard.app"

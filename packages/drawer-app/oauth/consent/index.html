@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://*.googleusercontent.com https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co">
+<title>Authorize Cursor — Lulu Board</title>
+<link rel="icon" href="../../favicon.ico" sizes="32x32">
+<link rel="stylesheet" href="./consent.css">
+</head>
+<body>
+<main class="consent-sheet" id="consent-sheet">
+  <h1>Authorize Cursor</h1>
+  <p class="consent-lead" id="consent-lead">Cursor wants to read and write your Lulu Board clouds.</p>
+  <p class="consent-error" id="consent-error" hidden></p>
+  <div id="consent-signed-out" hidden>
+    <p>Sign in to continue.</p>
+    <div class="consent-actions">
+      <button type="button" class="consent-btn" id="btn-consent-google" data-consent-oauth="google">Continue with Google</button>
+      <button type="button" class="consent-btn" id="btn-consent-github" data-consent-oauth="github">Continue with GitHub</button>
+    </div>
+  </div>
+  <div id="consent-signed-in" hidden>
+    <p class="consent-who" id="consent-who"></p>
+    <div class="consent-actions">
+      <button type="button" class="consent-btn is-primary" id="btn-consent-approve">Approve</button>
+      <button type="button" class="consent-btn" id="btn-consent-deny">Deny</button>
+      <button type="button" class="consent-btn is-quiet" id="btn-consent-switch">Use a different account</button>
+    </div>
+  </div>
+</main>
+<script src="../../vendor/supabase-config.js"></script>
+<script src="../../vendor/supabase-client.js"></script>
+<script src="./consent.js"></script>
+</body>
+</html>

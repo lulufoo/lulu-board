@@ -7,14 +7,14 @@ argument-hint: "[scene intent]"
 # board
 
 Define one diagram with the Board protocol and open it on the public viewer.
-Done when preview returns `ok` with a `luluboard.app` URL and the matching
-`open` line, or chat-only BMD Source is delivered.
+Done when a `luluboard.app` URL is shown — `#z:` from preview, or `#b:` from
+MCP — or chat-only BMD Source is delivered.
 
 ## Identity
 
 **BMD Source** is the `.bmd` body. The file has no identity. **BMD ID** (`b_…`)
 is the cloud row on `#b:<id>`. `preview` encodes source plus client version `1`
-into `#z:`.
+into `#z:`. Cloud mode mints `#b:` through MCP.
 
 ## Script Macros
 
@@ -32,7 +32,15 @@ Load the authoring contract before writing.
 4. When using an icon, load [icons.json](./common/icons.json).
 5. Load [viewer](./references/viewer.md) for `status` or the pointer protocol.
 
-## Flow
+## Mode
+
+1. If the `whoami` MCP tool is listed, use **cloud mode**.
+2. If it is missing, use **hash mode**. Do not mention MCP.
+3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
+4. If the user pastes `#b:` or `#s:` while hash mode is on, say: connect MCP to
+   open the cloud board, or paste the Source.
+
+## Hash flow
 
 1. Use the public viewer unless the user explicitly requests chat-only output.
 2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
@@ -46,9 +54,20 @@ Load the authoring contract before writing.
    Keep `url` first, then `open`. Show the URL and stop.
 6. For chat-only output, return one `board`-fenced block and stop.
 
+## Cloud flow
+
+1. Call `whoami` and remember the email.
+2. New board: author BMD Source → `create_board` → show
+   `https://luluboard.app/#b:<id>` for that account.
+3. Update: `get_board` for this session’s last id, or a `#b:` the user pasted →
+   edit the returned BMD Source → `save_board` with that `version`.
+4. On `conflict`, redo the edit on the returned row and save once. Still
+   conflict: stop and show both versions.
+5. Chat-only: one `board`-fenced block; do not write cloud.
+
 ## Open wording
 
-Say one line with the URL, from stdout `open`:
+Say one line with the URL, from stdout `open` in hash mode, or after MCP write:
 
 | `open` | Say |
 |---|---|
@@ -57,8 +76,9 @@ Say one line with the URL, from stdout `open`:
 
 ## Boundaries
 
-stdout `url` is the public hash link (`https://luluboard.app/#z:…`). CLI
-success completes the skill; do not open the URL, drive the viewer, or
-screenshot the layout unless the user explicitly requests visual verification.
+stdout `url` is the public hash link (`https://luluboard.app/#z:…`). Cloud mode
+shows `#b:<id>` instead. CLI success or MCP write completes the skill; do not
+open the URL, drive the viewer, or screenshot the layout unless the user
+explicitly requests visual verification.
 Mint without meta or style. On update, leave those lines unchanged.
 `preview` does not write `~/.cache/board/history`.

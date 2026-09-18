@@ -2,7 +2,7 @@
 /**
  * Public site build: compiled viewer assets into .cache/web/. Does not copy skill/.
  */
-import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -55,5 +55,15 @@ if (!html.includes('data-persist="hash"')) {
 }
 writeFileSync(path.join(webDir, 'index.html'), html);
 console.log('ok .cache/web/index.html');
+
+const consentSrc = path.join(repo, 'packages/drawer-app/oauth/consent');
+const consentOut = path.join(webDir, 'oauth/consent');
+mkdirSync(consentOut, { recursive: true });
+for (const name of ['index.html', 'consent.css', 'consent.js']) {
+  const src = path.join(consentSrc, name);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(consentOut, name));
+  console.log('ok .cache/web/oauth/consent/' + name);
+}
 
 rmSync(path.join(webDir, 'css'), { recursive: true, force: true });
