@@ -241,10 +241,15 @@ async function cloudSignOut() {
   setStatus("Signed out");
 }
 
+function cloudRowSource(row, fallback) {
+  if (row && row.bmd != null) {
+    return typeof stripDocumentMeta === "function" ? stripDocumentMeta(row.bmd) : String(row.bmd);
+  }
+  return fallback == null ? "" : String(fallback);
+}
+
 function applyCloudBoardRow(row) {
-  var source = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(row && row.bmd)
-    : String(row && row.bmd || "");
+  var source = cloudRowSource(row, boardSourceEl ? boardSourceEl.value : "");
   if (boardSourceEl) boardSourceEl.value = source;
   boardDirty = false;
   boardServerRev = Number(row && row.version) || 1;
@@ -285,7 +290,7 @@ async function saveBoardToCloud(opts) {
         board_id: boardId,
         title: title,
         bmd: source,
-      }).select("board_id,title,version,updated_at").single();
+      }).select("board_id,title,bmd,version,updated_at").single();
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       applyCloudBoardRow(result.data);
@@ -297,7 +302,7 @@ async function saveBoardToCloud(opts) {
       result = await cloudClient.from("boards").update({
         title: title,
         bmd: source,
-      }).eq("board_id", boardId).eq("version", expected).select("board_id,title,version,updated_at");
+      }).eq("board_id", boardId).eq("version", expected).select("board_id,title,bmd,version,updated_at");
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var rows = result.data || [];

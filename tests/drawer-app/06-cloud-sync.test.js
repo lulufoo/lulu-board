@@ -35,6 +35,8 @@ assert.match(workerConfig, /name = "lulu-board"/, 'Workers Builds deploys the ex
 assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys the generated cache directory');
 assert.match(cloud, /\.insert\(/, 'new boards insert a row');
 assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
+assert.match(cloud, /\.insert\([\s\S]*\.select\("board_id,title,bmd,version,updated_at"\)/, 'insert returns the saved source');
+assert.match(cloud, /\.update\([\s\S]*\.select\("board_id,title,bmd,version,updated_at"\)/, 'update returns the saved source');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
 assert.match(versionSql, /add column if not exists version/, 'version column is added');
 assert.match(versionSql, /new\.version = coalesce\(old\.version, 1\) \+ 1/, 'update increments version');
@@ -43,6 +45,16 @@ assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, n
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
 assert.match(cloud, /function cloudAccountProfile/, 'account chrome reads the OAuth profile');
 assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one close path');
+
+{
+  const start = cloud.indexOf('function cloudRowSource');
+  const end = cloud.indexOf('function applyCloudBoardRow');
+  assert.ok(start >= 0 && end > start, 'cloudRowSource is a closed function');
+  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudRowSource };')();
+  assert.strictEqual(helpers.cloudRowSource({ version: 2 }, 'board "Keep"\n'), 'board "Keep"\n');
+  assert.strictEqual(helpers.cloudRowSource({ bmd: 'board "A"\n' }, 'board "Keep"\n'), 'board "A"\n');
+  assert.strictEqual(helpers.cloudRowSource({ bmd: null }, 'board "Keep"\n'), 'board "Keep"\n');
+}
 
 {
   const start = cloud.indexOf('function cloudSafeAvatarUrl');
