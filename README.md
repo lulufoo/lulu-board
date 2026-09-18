@@ -4,9 +4,11 @@
 
 <h1 align="center">Lulu Board</h1>
 
-<p align="center"><b>One text protocol. AI agent writes it. Lulu Board draws it. You work on the canvas.</b></p>
+<p align="center"><b>Structured whiteboard. A way to collaborate visually with AI.</b></p>
 
 <p align="center">
+  <a href="https://luluboard.app/">Website · luluboard.app</a>
+  &nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
 </p>
 
