@@ -61,6 +61,23 @@ function cloudAccountProfile(user) {
   };
 }
 
+function cloudSignInDialog() {
+  return document.getElementById("boardSignInDialog");
+}
+
+function cloudShowSignInDialog() {
+  var dialog = cloudSignInDialog();
+  if (!dialog) return;
+  dialog.hidden = false;
+  var first = dialog.querySelector("[data-board-oauth]");
+  if (first && typeof first.focus === "function") first.focus();
+}
+
+function cloudHideSignInDialog() {
+  var dialog = cloudSignInDialog();
+  if (dialog) dialog.hidden = true;
+}
+
 function cloudCloseAccountMenus() {
   var signIn = document.getElementById("btnBoardSignIn");
   var authMenu = document.getElementById("boardAuthMenu");
@@ -117,6 +134,7 @@ function cloudSetAccountUi() {
   var profile = signedIn ? cloudAccountProfile(cloudSession.user) : null;
 
   cloudCloseAccountMenus();
+  if (signedIn) cloudHideSignInDialog();
   if (signIn) {
     signIn.hidden = signedIn;
     signIn.disabled = !configured;
@@ -378,6 +396,7 @@ async function loadCloudBoardByHash(raw) {
   await cloudSessionReady;
   if (!cloudSession || !cloudSession.user) {
     cloudClearOpenBoard();
+    cloudShowSignInDialog();
     setStatus("Sign in to open this cloud board", true);
     return true;
   }
@@ -545,6 +564,10 @@ async function deleteCloudBoard(boardId) {
       void cloudSignIn(button.dataset.boardOauth);
     });
   });
+  var closeDialog = document.getElementById("btnBoardSignInClose");
+  var backdrop = document.getElementById("boardSignInBackdrop");
+  if (closeDialog) closeDialog.addEventListener("click", cloudHideSignInDialog);
+  if (backdrop) backdrop.addEventListener("click", cloudHideSignInDialog);
   var save = document.getElementById("btnBoardSaveCloud");
   if (save) save.addEventListener("click", function () {
     cloudCloseAccountMenus();
@@ -561,7 +584,10 @@ async function deleteCloudBoard(boardId) {
     cloudCloseAccountMenus();
   });
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") cloudCloseAccountMenus();
+    if (event.key === "Escape") {
+      cloudHideSignInDialog();
+      cloudCloseAccountMenus();
+    }
   });
   cloudInit();
 })();

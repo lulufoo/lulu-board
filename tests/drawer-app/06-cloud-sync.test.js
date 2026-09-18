@@ -28,6 +28,9 @@ assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
 assert.match(html, /img-src[^"]*https:\/\/\*\.googleusercontent\.com/, 'CSP allows Google avatars');
 assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP allows GitHub avatars');
 assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
+assert.match(html, /id="boardSignInDialog"/, 'unsigned #b: has a sign-in dialog');
+assert.match(html, /Sign in to open this board/, 'dialog copy asks to sign in');
+assert.match(html, /id="btnBoardSignInClose"/, 'dialog can be dismissed');
 assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays in the toolbar');
@@ -109,6 +112,10 @@ assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, n
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
 assert.match(cloud, /function cloudAccountProfile/, 'account chrome reads the OAuth profile');
 assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one close path');
+assert.match(cloud, /function cloudShowSignInDialog/, 'unsigned cloud hash opens the dialog');
+assert.match(cloud, /cloudShowSignInDialog\(\)/, 'unsigned #b: load shows the dialog');
+assert.match(cloud, /if \(signedIn\) cloudHideSignInDialog/, 'signed-in chrome closes the dialog');
+assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force sign-in');
 
 {
   const start = cloud.indexOf('function cloudVersionsAligned');

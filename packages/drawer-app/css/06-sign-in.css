@@ -1,0 +1,63 @@
+.board-sign-in {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.board-sign-in[hidden] { display: none !important; }
+.board-sign-in-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: color-mix(in srgb, #000 36%, transparent);
+  cursor: pointer;
+}
+.board-sign-in-sheet {
+  position: relative;
+  box-sizing: border-box;
+  width: min(360px, 100%);
+  padding: 24px 22px 18px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+}
+.board-sign-in-sheet h2 {
+  margin: 0 0 8px;
+  font: 650 18px/1.25 var(--font);
+  color: var(--text);
+}
+.board-sign-in-sheet p {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.board-sign-in-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.board-sign-in .board-auth-provider {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: var(--panel-solid);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.board-sign-in-close {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: 600 12px/1 var(--font);
+}

@@ -363,5 +363,17 @@
 <script type="module" src="./vendor/drawer-app.js"></script>
 
 <div class="copy-tip" id="copyTip" hidden>Copied successfully</div>
+<div class="board-sign-in" id="boardSignInDialog" hidden>
+  <button type="button" class="board-sign-in-backdrop" id="boardSignInBackdrop" aria-label="Dismiss sign in"></button>
+  <div class="board-sign-in-sheet" role="dialog" aria-modal="true" aria-labelledby="boardSignInTitle">
+    <h2 id="boardSignInTitle">Sign in to open this board</h2>
+    <p>This cloud board is only visible after you sign in.</p>
+    <div class="board-sign-in-actions">
+      <button type="button" class="board-auth-provider" data-board-oauth="google">Continue with Google</button>
+      <button type="button" class="board-auth-provider" data-board-oauth="github">Continue with GitHub</button>
+    </div>
+    <button type="button" class="board-sign-in-close" id="btnBoardSignInClose">Not now</button>
+  </div>
+</div>
 </body>
 </html>
