@@ -7,9 +7,9 @@
 <p align="center"><b>Structured whiteboard. A way to collaborate visually with AI.</b></p>
 
 <p align="center">
-  <a href="https://luluboard.app/">Website · luluboard.app</a>
-  &nbsp;
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
+  <a href="https://luluboard.app/">luluboard.app</a>
+  &nbsp;·&nbsp;
+  <a href="LICENSE">License</a>
 </p>
 
 ---
