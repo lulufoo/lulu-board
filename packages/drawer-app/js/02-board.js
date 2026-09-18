@@ -1577,8 +1577,17 @@ function renderBoard(opts) {
 function scheduleBoardRender() { clearTimeout(boardRenderTimer); boardRenderTimer = setTimeout(renderBoard, 220); }
 function setBoardSyncUI(state = 'ok') { const pill = $('#boardSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${boardLocalRev}</b>`; }
 // Cloud saves hit Supabase; debounce them longer than local/URL saves.
-function boardSaveDelay() { return typeof cloudBoardId === "function" && cloudBoardId() ? 1000 : 350; }
-function scheduleBoardSave() { boardDirty = true; clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay()); }
+function boardSaveDelay() { return typeof cloudBoardId === "function" && cloudBoardId() ? 3000 : 350; }
+function bumpClientRevIfSynced() {
+  var server = Number(boardServerRev);
+  var client = Number(boardLocalRev);
+  if (Number.isFinite(server) && server > 0 && server === client) {
+    boardLocalRev = server + 1;
+    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+  }
+  if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
+}
+function scheduleBoardSave() { boardDirty = true; bumpClientRevIfSynced(); clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay()); }
 function flushBoardSave() {
   if (!boardDirty && !boardSaveTimer) return Promise.resolve();
   clearTimeout(boardSaveTimer);
@@ -1608,6 +1617,7 @@ async function saveBoardToHash(opts) {
     }
     boardDirty = false;
     if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+    if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
     setBoardSyncUI("ok");
     setStatus("Saved in URL");
   } catch (err) {

@@ -682,6 +682,31 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:hover {
   background: var(--panel-solid, #fff);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
+html[data-drawer-mode="board"] .top-float .board-account-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+  box-shadow: none;
+}
+html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
+  border-color: var(--stroke);
+}
+html[data-drawer-mode="board"] .top-float .board-account-btn.is-current,
+html[data-drawer-mode="board"] .top-float .board-account-btn.is-current:disabled {
+  appearance: none;
+  -webkit-appearance: none;
+  background: color-mix(in srgb, var(--ok) 22%, var(--panel-solid));
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 48%, var(--stroke));
+  box-shadow: none;
+  opacity: 1;
+  filter: none;
+}
+html[data-drawer-mode="board"] .top-float .board-account-btn.is-current:hover,
+html[data-drawer-mode="board"] .top-float .board-account-btn.is-current:disabled:hover {
+  background: color-mix(in srgb, var(--ok) 22%, var(--panel-solid));
+  border-color: color-mix(in srgb, var(--ok) 48%, var(--stroke));
+  color: var(--ok);
+}
 .board-session {
   position: relative;
   min-width: 0;

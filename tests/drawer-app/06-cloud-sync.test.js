@@ -10,6 +10,7 @@ const html = read('packages/drawer-app/index.html');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
 const webBuild = read('scripts/web-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
+const boardJs = read('packages/drawer-app/js/02-board.js');
 const schema = read('supabase/migrations/20260917160000_create_boards.sql');
 const versionSql = read('supabase/migrations/20260918090000_boards_version.sql');
 const workerConfig = read('wrangler.toml');
@@ -21,6 +22,9 @@ assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
 assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
 assert.match(html, /id="btnBoardSaveCloud"/, 'Save to cloud stays in the toolbar');
+assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
+assert.match(cloud, /classList.toggle\("is-current"/, 'aligned save chrome uses a status class');
+assert.match(boardJs, /cloudBoardId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
 assert.match(html, /id="btnBoardSignOut"[\s\S]*boardSessionMenu|id="boardSessionMenu"[\s\S]*id="btnBoardSignOut"/, 'Sign out lives in the account menu');
 assert.match(html, /data-board-oauth="google"/, 'Google is an available provider');
 assert.match(html, /data-board-oauth="github"/, 'GitHub is an available provider');
@@ -45,6 +49,29 @@ assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, n
 assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
 assert.match(cloud, /function cloudAccountProfile/, 'account chrome reads the OAuth profile');
 assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one close path');
+
+{
+  const start = cloud.indexOf('function cloudVersionsAligned');
+  const end = cloud.indexOf('function syncCloudSaveChrome');
+  assert.ok(start >= 0 && end > start, 'cloud save copy helpers are closed functions');
+  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudVersionsAligned, cloudSaveButtonCopy };')();
+  assert.strictEqual(helpers.cloudVersionsAligned(5, 5), true);
+  assert.strictEqual(helpers.cloudVersionsAligned(5, 6), false);
+  assert.strictEqual(helpers.cloudVersionsAligned(0, 1), false);
+  assert.strictEqual(helpers.cloudSaveButtonCopy(false, false).hidden, true);
+  assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, true), {
+    hidden: false,
+    disabled: true,
+    label: "Up to date",
+    title: "Already saved to the cloud",
+  });
+  assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, false), {
+    hidden: false,
+    disabled: false,
+    label: "Save to cloud",
+    title: "Save this board to the cloud",
+  });
+}
 
 {
   const start = cloud.indexOf('function cloudRowSource');

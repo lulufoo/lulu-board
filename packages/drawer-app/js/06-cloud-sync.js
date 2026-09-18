@@ -78,11 +78,36 @@ function cloudCloseAccountMenus() {
   if (chip) chip.setAttribute("aria-expanded", "false");
 }
 
+function cloudVersionsAligned(serverRev, clientRev) {
+  var server = Number(serverRev);
+  var client = Number(clientRev);
+  return Number.isFinite(server) && Number.isFinite(client) && server > 0 && server === client;
+}
+
+function cloudSaveButtonCopy(signedIn, aligned) {
+  if (!signedIn) return { hidden: true, disabled: true, label: "Save to cloud", title: "" };
+  if (aligned) return { hidden: false, disabled: true, label: "Up to date", title: "Already saved to the cloud" };
+  return { hidden: false, disabled: false, label: "Save to cloud", title: "Save this board to the cloud" };
+}
+
+function syncCloudSaveChrome() {
+  var save = document.getElementById("btnBoardSaveCloud");
+  if (!save) return;
+  var copy = cloudSaveButtonCopy(
+    !!(cloudSession && cloudSession.user),
+    cloudVersionsAligned(boardServerRev, boardLocalRev)
+  );
+  save.hidden = copy.hidden;
+  save.disabled = copy.disabled;
+  save.classList.toggle("is-current", !copy.hidden && copy.disabled);
+  if (save.textContent !== copy.label) save.textContent = copy.label;
+  save.title = copy.title;
+}
+
 function cloudSetAccountUi() {
   var configured = cloudConfigured();
   var signedIn = !!(cloudSession && cloudSession.user);
   var signIn = document.getElementById("btnBoardSignIn");
-  var save = document.getElementById("btnBoardSaveCloud");
   var session = document.getElementById("boardSession");
   var chip = document.getElementById("btnBoardAccount");
   var nameEl = document.getElementById("boardAccountName");
@@ -97,10 +122,7 @@ function cloudSetAccountUi() {
     signIn.disabled = !configured;
     signIn.title = configured ? "Sign in to sync boards" : "Cloud sync is not configured";
   }
-  if (save) {
-    save.hidden = !signedIn;
-    save.disabled = !signedIn;
-  }
+  syncCloudSaveChrome();
   if (session) session.hidden = !signedIn;
   if (nameEl) nameEl.textContent = profile ? profile.name : "";
   if (emailEl) emailEl.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
@@ -163,6 +185,7 @@ function cloudClearOpenBoard() {
   if (typeof updateBoardChars === "function") updateBoardChars();
   if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", title: "" });
   if (typeof renderBoard === "function") renderBoard({ fit: false });
+  syncCloudSaveChrome();
 }
 
 function cloudInit() {
@@ -263,6 +286,7 @@ function applyCloudBoardRow(row) {
   }
   if (typeof updateBoardChars === "function") updateBoardChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+  syncCloudSaveChrome();
 }
 
 async function saveBoardToCloud(opts) {
@@ -295,8 +319,6 @@ async function saveBoardToCloud(opts) {
       if (seq !== cloudSaveSeq) return false;
       applyCloudBoardRow(result.data);
     } else {
-      boardLocalRev = (Number(boardLocalRev) || 0) + 1;
-      if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
       var expected = Number(boardServerRev);
       if (!(expected > 0)) expected = 1;
       result = await cloudClient.from("boards").update({
