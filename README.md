@@ -64,6 +64,22 @@ A signed-in owner can share a saved cloud board from the Share dock. The first a
 
 <p align="center"><strong>Board · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
 
+## MCP configuration
+
+`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud board for your account, add the hosted MCP and Connect.
+
+```json
+{
+  "mcpServers": {
+    "lulu-board": {
+      "url": "https://mcp.luluboard.app/mcp"
+    }
+  }
+}
+```
+
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://luluboard.app/#b:…` instead of `#z:`. Installing the plugin is not Connect.
+
 ## Examples
 
 Click a preview to open the source.
