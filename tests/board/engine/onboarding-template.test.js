@@ -32,7 +32,7 @@ const topIds = board.views.map((v) => v.id);
 assert.strictEqual(board.boxes.find((b) => b.id === 'HERO').type, 'layout');
 ['AI', 'CANVAS', 'YOU', 'PROTO'].forEach((id) => assert.strictEqual(board.boxes.find((b) => b.id === id).type, 'container', id + ' container'));
 assert.ok(src.includes('Welcome to Lulu Board'), src);
-assert.ok(src.includes('One protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas.'), src);
+assert.ok(src.includes('One protocol. AI writes it. Lulu Board draws it. You work on the canvas.'), src);
 assert.ok(src.includes('/board login flow'), src);
 assert.ok(src.includes('drag · edit · link'), src);
 assert.ok(src.includes('A compact protocol'), src);

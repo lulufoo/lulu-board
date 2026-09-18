@@ -1,13 +1,13 @@
 meta eyJpZCI6ImJfMGZjMTAwMDEiLCJ2ZXJzaW9uIjoxMjV9
 board "Lulu Board"
-style eyJ0aGVtZSI6ImNsYXNzaWMifQ==
+style eyJ0aGVtZSI6ImNsYXNzaWMiLCJ2aWV3cG9ydCI6eyJzY2FsZSI6MC45NzUxMTQ4Njk1NTA4MjMyLCJjeCI6NTAyLCJjeSI6MjkzfX0=
 box HERO type layout
   item type icon 515
   box COPY type layout
-    item type text cap off "# Welcome to Lulu Board\n## One protocol. AI writes it. Lulu-Drawer draws it. You work on the canvas."
-box AI type container 406 "AI"
+    item type text cap off "# Welcome to Lulu Board\n## One protocol. AI writes it. Lulu Board draws it. You work on the canvas."
+box AI type container 206 "AI"
   item cap off "/board login flow"
-box CANVAS type container "Lulu-Drawer"
+box CANVAS type container 307 "Lulu Board"
   box MINI type layout
     box LOGIN 512 "Login"
       item "Email · Password"
