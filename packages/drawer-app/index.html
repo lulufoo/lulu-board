@@ -51,6 +51,17 @@
           <span class="board-cloud-status-dot" aria-hidden="true"></span>
           <span class="board-cloud-status-label">Saved</span>
         </div>
+        <button class="btn board-account-btn" id="btnBoardSaveCopy" type="button" hidden>Save a copy</button>
+        <div class="board-share" id="boardShare" hidden>
+          <button class="btn board-account-btn" id="btnBoardShare" type="button" aria-haspopup="menu" aria-expanded="false">Share</button>
+          <div class="board-auth-menu" id="boardShareMenu" role="menu" hidden>
+            <div class="board-share-state" id="boardShareState">Not shared</div>
+            <button type="button" class="board-auth-provider" id="btnBoardShareOpen" role="menuitem">Create link</button>
+            <button type="button" class="board-auth-provider" id="btnBoardShareCopy" role="menuitem" hidden>Copy link</button>
+            <button type="button" class="board-auth-provider" id="btnBoardShareRotate" role="menuitem" hidden>New link</button>
+            <button type="button" class="board-auth-provider" id="btnBoardShareClose" role="menuitem" hidden>Stop sharing</button>
+          </div>
+        </div>
         <div class="board-session" id="boardSession" hidden>
           <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
             <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">

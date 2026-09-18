@@ -10,16 +10,22 @@ packages/drawer-app/
     02-chrome.css
     03-diagram.css
     04-source-lines.css
+    05-share.css
   js/
     00-early-head.js
     00-early-hydrate.js
     00-style-line.js
     00-document-meta.js
+    00-cloud-route.js
+    00-hash-persist.js
     00-canvas-view.js
     01-shell-state.js
     02-board.js
     05-render-io.js
+    05-board-file.js
     05-export-png.js
+    06-cloud-sync.js
+    06-cloud-share.js
     07-chrome-boot.js
     08-source-lines.js
 ```

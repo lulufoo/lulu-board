@@ -76,6 +76,7 @@ function cloudCloseAccountMenus() {
   if (signIn) signIn.setAttribute("aria-expanded", "false");
   if (sessionMenu) sessionMenu.hidden = true;
   if (chip) chip.setAttribute("aria-expanded", "false");
+  if (typeof closeShareMenu === "function") closeShareMenu();
 }
 
 function cloudVersionsAligned(serverRev, clientRev) {
@@ -153,6 +154,7 @@ function cloudSetAccountUi() {
     }
   }
   cloudSetHistoryVisible(signedIn);
+  if (typeof syncShareChrome === "function") syncShareChrome();
 }
 
 function cloudShowHistoryMessage(message) {
@@ -211,7 +213,9 @@ function cloudInit() {
     cloudClient.auth.onAuthStateChange(function (_event, session) {
       cloudSession = session || null;
       cloudSetAccountUi();
-      if (cloudSession) {
+      if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(location.hash)) {
+        if (typeof loadSharedBoardByHash === "function") void loadSharedBoardByHash(location.hash);
+      } else if (cloudSession) {
         void refreshCloudBoardHistory();
         if (cloudBoardId()) void loadCloudBoardByHash(location.hash);
       }
@@ -291,6 +295,8 @@ function applyCloudBoardRow(row) {
   }
   if (typeof updateBoardChars === "function") updateBoardChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
+  if (typeof setShareView === "function") setShareView(false);
+  if (typeof rememberOwnerShareId === "function") rememberOwnerShareId(row && row.share_id);
   syncCloudSaveChrome();
 }
 
@@ -319,7 +325,7 @@ async function saveBoardToCloud(opts) {
         board_id: boardId,
         title: title,
         bmd: source,
-      }).select("board_id,title,bmd,version,updated_at").single();
+      }).select("board_id,title,bmd,version,share_id,updated_at").single();
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       applyCloudBoardRow(result.data);
@@ -329,13 +335,13 @@ async function saveBoardToCloud(opts) {
       result = await cloudClient.from("boards").update({
         title: title,
         bmd: source,
-      }).eq("board_id", boardId).eq("version", expected).select("board_id,title,bmd,version,updated_at");
+      }).eq("board_id", boardId).eq("version", expected).select("board_id,title,bmd,version,share_id,updated_at");
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var rows = result.data || [];
       if (!rows.length) {
         var latest = await cloudClient.from("boards")
-          .select("board_id,title,bmd,version,updated_at")
+          .select("board_id,title,bmd,version,share_id,updated_at")
           .eq("board_id", boardId)
           .maybeSingle();
         if (latest.error) throw latest.error;
@@ -365,6 +371,7 @@ async function saveBoardToCloud(opts) {
 }
 
 async function loadCloudBoardByHash(raw) {
+  if (typeof setShareView === "function") setShareView(false);
   var boardId = typeof cloudBoardIdFromHash === "function" ? cloudBoardIdFromHash(raw) : "";
   if (!boardId) return false;
   if (!cloudConfigured() || !cloudClient) {
@@ -381,7 +388,7 @@ async function loadCloudBoardByHash(raw) {
   setStatus("Loading cloud board…");
   try {
     var result = await cloudClient.from("boards")
-      .select("board_id,title,bmd,version,created_at,updated_at")
+      .select("board_id,title,bmd,version,share_id,created_at,updated_at")
       .eq("board_id", boardId)
       .maybeSingle();
     if (result.error) throw result.error;

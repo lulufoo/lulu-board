@@ -54,6 +54,8 @@ Describe what you want after `/board`:
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
 
+A signed-in owner can share a saved cloud board with a `#s:` link. Anyone with the link can view the current board; a signed-in viewer can save a copy to their own cloud row. ✅ Verified (`packages/drawer-app/js/00-cloud-route.js`, `packages/drawer-app/js/06-cloud-share.js`)
+
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
     <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI" width="720" />

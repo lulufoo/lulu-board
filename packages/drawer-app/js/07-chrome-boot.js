@@ -461,7 +461,7 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       boardSaveTimer = null;
       var outgoingId = "";
       outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function") {
+      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && document.documentElement.dataset.shareView !== "on") {
         pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
       }
       boardDirty = false;

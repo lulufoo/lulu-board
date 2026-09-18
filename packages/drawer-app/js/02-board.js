@@ -555,6 +555,7 @@ function applyBoardEdgeSelection(root) {
   });
 }
 function selectBoardEdge(root, index) {
+  if (document.documentElement.dataset.shareView === "on") return;
   var nextKey = "link:" + index;
   var alreadySelected = !!(selectedBoardEdge && selectedBoardEdge.key === nextKey);
   if (!alreadySelected && !boardLinkMode) closePropsPanel();
@@ -610,6 +611,7 @@ function consumeInspectClick(key) {
   return !!(gesture && !gesture.moved && gesture.already && gesture.key && gesture.key === key);
 }
 function inspectBoardSelection() {
+  if (document.documentElement.dataset.shareView === "on") return;
   if (boardLinkMode) return;
   openPropsPanel();
 }
@@ -753,6 +755,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
             : "Box · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected")));
   } syncBoardEditControls(); }
 function selectBoardElement(el, root, board, event) {
+  if (document.documentElement.dataset.shareView === "on") return;
   if (!el) return clearBoardSelection();
   var isTitle = el.classList.contains("board-title-node") || el.classList.contains("board-html-header") || el.dataset.boardKind === "title" || (el.dataset.boardKey || "") === "title:board";
   var isItem = !isTitle && (el.classList.contains("board-item") || el.dataset.boardKind === "item" || (el.dataset.boardKey || "").indexOf("item:") === 0);
@@ -772,6 +775,7 @@ function selectBoardElement(el, root, board, event) {
   applyBoardSelection(root, board);
 }
 function pickBoardElement(el, root, board, event) {
+  if (document.documentElement.dataset.shareView === "on") return;
   beginInspectGesture(selectionKeyFromEl(el));
   selectBoardElement(el, root, board, event);
 }
@@ -983,6 +987,7 @@ function startBoardReorderDrag(dragEl, event) {
 function wireBoardDrag(root, board) {
   var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardDragWired === "1") return; canvas.dataset.boardDragWired = "1"; var drag = null;
   canvas.addEventListener("pointerdown", function(event) {
+    if (document.documentElement.dataset.shareView === "on") return;
     if (event.button !== 0) return;
     if (boardLinkMode) {
       boardLinkPickFromEvent(event, root, board);
@@ -1322,6 +1327,7 @@ function applyBoardEditResult(result) {
   scheduleBoardSave();
 }
 function boardEditAction(action) {
+  if (document.documentElement.dataset.shareView === "on") return;
   try { applyBoardEditResult(action()); }
   catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
 }
@@ -1587,7 +1593,10 @@ function bumpClientRevIfSynced() {
   }
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
-function scheduleBoardSave() { boardDirty = true; bumpClientRevIfSynced(); clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay()); }
+function scheduleBoardSave() {
+  if (document.documentElement.dataset.shareView === "on") return;
+  boardDirty = true; bumpClientRevIfSynced(); clearTimeout(boardSaveTimer); setBoardSyncUI('saving'); boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay());
+}
 function flushBoardSave() {
   if (!boardDirty && !boardSaveTimer) return Promise.resolve();
   clearTimeout(boardSaveTimer);
@@ -1629,6 +1638,7 @@ async function saveBoardToFile() {
   // Clear the timer on every path; a stale id here blocks hashchange/poll loads forever.
   boardSaveTimer = null;
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
+    if (document.documentElement.dataset.shareView === "on") return Promise.resolve();
     if (typeof cloudBoardId === "function" && cloudBoardId()) {
       return saveBoardToCloud({ explicit: false });
     }
@@ -1677,7 +1687,14 @@ async function bootstrapBoardFromHash() {
     await loadCloudBoardByHash(raw);
     return;
   }
+  if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(raw)) {
+    if (typeof loadSharedBoardByHash === "function") {
+      await loadSharedBoardByHash(raw);
+      return;
+    }
+  }
   if (!raw) {
+    if (typeof setShareView === "function") setShareView(false);
     boardSourceEl.value = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
       : "board \"Untitled\"\n";
@@ -1691,6 +1708,7 @@ async function bootstrapBoardFromHash() {
     return;
   }
   try {
+    if (typeof setShareView === "function") setShareView(false);
     var decoded = await decodeBoardHash(raw);
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(decoded.bmd) : decoded.bmd;
     boardSourceEl.value = body;
