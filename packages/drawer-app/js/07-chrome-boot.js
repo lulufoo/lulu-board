@@ -460,9 +460,7 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       boardSaveTimer = null;
       var outgoingId = "";
       outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && document.documentElement.dataset.shareEdit === "on" && typeof saveSharedBoard === "function") {
-        pending = saveSharedBoard({ explicit: false }).catch(function() { return false; });
-      } else if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && document.documentElement.dataset.shareView !== "on") {
+      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
         pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
       }
       boardDirty = false;

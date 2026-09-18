@@ -46,11 +46,14 @@ assert.doesNotMatch(shareJs, /Not shared|Link is on/, 'share chrome has no link-
 assert.match(shareCss, /\.share-role-seg/, 'access uses a segmented control');
 assert.doesNotMatch(html, /id="btnBoardShare"/, 'share left the toolbar');
 assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
+assert.match(html, /id="btnShareSync"/, 'share guests with edit access get Share sync');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
 assert.match(shareJs, /set_share_role/, 'owner access uses set_share_role');
 assert.match(shareJs, /save_shared_board/, 'shared editors save through save_shared_board');
+assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
+assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
 {
   const start = shareJs.indexOf('function shareGuestHint');
@@ -63,8 +66,21 @@ assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load
 }
 assert.match(shareJs, /showBoardError\(message\)/, 'a missing share token surfaces an error');
 assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
-assert.match(shareCss, /data-share-view/, 'share view hides owner edit chrome');
-assert.match(boardJs, /dataset\.shareView === "on"\) return/, 'share view blocks board edits');
+assert.match(shareCss, /data-share-view/, 'share view hides owner share chrome');
+assert.match(shareCss, /data-share-edit/, 'share edit hides owner share chrome');
+assert.doesNotMatch(boardJs, /dataset\.shareView === "on"\) return/, 'share view still lets the guest edit locally');
+assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosave does not write the shared original');
+{
+  const start = boardJs.indexOf('async function saveBoardToFile');
+  const guest = boardJs.slice(start, boardJs.indexOf('if (typeof cloudBoardId', start));
+  assert.match(guest, /isShareGuest\(\)/, 'hash persist sees share guests');
+  assert.match(guest, /return Promise\.resolve\(\)/, 'share guests stay in memory');
+  assert.doesNotMatch(guest, /forkSharedBoard|saveSharedBoard/, 'autosave does not create a share copy');
+}
+assert.match(cloud, /shareGuest && signedIn/, 'signed-in share guests keep Saved clickable');
+assert.match(cloud, /save\.title = "Not created"/, 'red share Saved hints Not created');
+assert.match(shareCss, /#btnBoardSaveCloud\.is-pending[\s\S]*--cloud-dot: var\(--danger\)/, 'signed-in share Saved stays red until the guest forks');
+assert.match(cloud, /isShareGuest[\s\S]*forkSharedBoard/, 'Saved on a share creates the guest\'s own copy');
 assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
 assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
 assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
@@ -134,14 +150,14 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
     pending: false,
     current: true,
     label: "Saved",
-    title: "Already saved to the cloud",
+    title: "Synced",
   });
   assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, false), {
     hidden: false,
     pending: true,
     current: false,
     label: "Saved",
-    title: "Save this board to the cloud",
+    title: "Not saved",
   });
 }
 

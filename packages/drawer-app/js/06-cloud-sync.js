@@ -114,19 +114,26 @@ function cloudSaveButtonCopy(signedIn, aligned) {
     return { hidden: true, pending: false, current: false, label: "Saved", title: "" };
   }
   if (aligned) {
-    return { hidden: false, pending: false, current: true, label: "Saved", title: "Already saved to the cloud" };
+    return { hidden: false, pending: false, current: true, label: "Saved", title: "Synced" };
   }
-  return { hidden: false, pending: true, current: false, label: "Saved", title: "Save this board to the cloud" };
+  return { hidden: false, pending: true, current: false, label: "Saved", title: "Not saved" };
 }
 
 function syncCloudSaveChrome() {
   var save = document.getElementById("btnBoardSaveCloud");
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
-  var copy = cloudSaveButtonCopy(
-    !!(cloudSession && cloudSession.user),
-    cloudVersionsAligned(boardServerRev, boardLocalRev)
-  );
+  var signedIn = !!(cloudSession && cloudSession.user);
+  var shareGuest = typeof isShareGuest === "function" && isShareGuest();
+  if (shareGuest && signedIn) {
+    save.hidden = false;
+    save.disabled = false;
+    save.title = "Not created";
+    status.hidden = true;
+    status.title = "";
+    return;
+  }
+  var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, boardLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
   save.title = copy.pending ? copy.title : "";
@@ -584,6 +591,10 @@ async function deleteCloudBoard(boardId) {
   var save = document.getElementById("btnBoardSaveCloud");
   if (save) save.addEventListener("click", function () {
     cloudCloseAccountMenus();
+    if (typeof isShareGuest === "function" && isShareGuest() && typeof forkSharedBoard === "function") {
+      void forkSharedBoard();
+      return;
+    }
     void saveBoardToCloud({ explicit: true });
   });
   var signOut = document.getElementById("btnBoardSignOut");
