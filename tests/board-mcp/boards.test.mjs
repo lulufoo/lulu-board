@@ -82,6 +82,14 @@ const meta = metadataDocument({
 });
 assert.equal(meta.resource, 'https://mcp.luluboard.app/mcp');
 assert.deepEqual(meta.authorization_servers, ['https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1']);
+const viaAlias = metadataDocument(
+  {
+    SUPABASE_URL: 'https://xjwlxxuafhsfzksxxmtu.supabase.co',
+    PUBLIC_ORIGIN: 'https://mcp.luluboard.app',
+  },
+  new Request('https://example.workers.dev/mcp')
+);
+assert.equal(viaAlias.resource, 'https://mcp.luluboard.app/mcp');
 const denied = unauthorized(
   { PUBLIC_ORIGIN: 'https://mcp.luluboard.app' },
   new Request('https://mcp.luluboard.app/mcp')
@@ -93,6 +101,7 @@ assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_board"/, 'get_board is registered');
 assert.match(worker, /registerTool\("create_board"/, 'create_board is registered');
 assert.match(worker, /registerTool\("save_board"/, 'save_board is registered');
+assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const payload = Buffer.from(JSON.stringify({
   iss: 'https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1',
   sub: 'user-1',
