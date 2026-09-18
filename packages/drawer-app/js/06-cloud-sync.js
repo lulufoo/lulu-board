@@ -78,6 +78,19 @@ function cloudHideSignInDialog() {
   if (dialog) dialog.hidden = true;
 }
 
+function cloudSignInDialogOpen() {
+  var dialog = cloudSignInDialog();
+  return !!(dialog && !dialog.hidden);
+}
+
+async function cloudDeclineCloudBoard() {
+  cloudHideSignInDialog();
+  if (!cloudBoardId()) return;
+  history.replaceState(null, "", location.pathname + location.search);
+  if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
+  if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+}
+
 function cloudCloseAccountMenus() {
   var signIn = document.getElementById("btnBoardSignIn");
   var authMenu = document.getElementById("boardAuthMenu");
@@ -566,8 +579,8 @@ async function deleteCloudBoard(boardId) {
   });
   var closeDialog = document.getElementById("btnBoardSignInClose");
   var backdrop = document.getElementById("boardSignInBackdrop");
-  if (closeDialog) closeDialog.addEventListener("click", cloudHideSignInDialog);
-  if (backdrop) backdrop.addEventListener("click", cloudHideSignInDialog);
+  if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
+  if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
   var save = document.getElementById("btnBoardSaveCloud");
   if (save) save.addEventListener("click", function () {
     cloudCloseAccountMenus();
@@ -585,7 +598,8 @@ async function deleteCloudBoard(boardId) {
   });
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-      cloudHideSignInDialog();
+      if (cloudSignInDialogOpen()) void cloudDeclineCloudBoard();
+      else cloudHideSignInDialog();
       cloudCloseAccountMenus();
     }
   });

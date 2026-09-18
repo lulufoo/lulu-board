@@ -115,6 +115,9 @@ assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one 
 assert.match(cloud, /function cloudShowSignInDialog/, 'unsigned cloud hash opens the dialog');
 assert.match(cloud, /cloudShowSignInDialog\(\)/, 'unsigned #b: load shows the dialog');
 assert.match(cloud, /if \(signedIn\) cloudHideSignInDialog/, 'signed-in chrome closes the dialog');
+assert.match(cloud, /function cloudDeclineCloudBoard/, 'Not now leaves the cloud pointer');
+assert.match(cloud, /btnBoardSignInClose[\s\S]*cloudDeclineCloudBoard/, 'Not now resets the URL off #b:');
+assert.match(cloud, /async function cloudDeclineCloudBoard[\s\S]*bootstrapBoardFromHash/, 'declining seeds an unsigned #z: board');
 assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force sign-in');
 
 {
