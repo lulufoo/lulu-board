@@ -43,7 +43,14 @@
           <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
           <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
         </div>
-        <button class="btn board-account-btn" id="btnBoardSaveCloud" type="button" hidden>Save to cloud</button>
+        <button class="board-cloud-status is-pending" id="btnBoardSaveCloud" type="button" hidden>
+          <span class="board-cloud-status-dot" aria-hidden="true"></span>
+          <span class="board-cloud-status-label">Saved</span>
+        </button>
+        <div class="board-cloud-status is-current" id="boardCloudStatus" hidden role="status">
+          <span class="board-cloud-status-dot" aria-hidden="true"></span>
+          <span class="board-cloud-status-label">Saved</span>
+        </div>
         <div class="board-session" id="boardSession" hidden>
           <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
             <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">

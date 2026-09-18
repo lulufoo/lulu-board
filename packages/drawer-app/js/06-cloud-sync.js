@@ -85,23 +85,28 @@ function cloudVersionsAligned(serverRev, clientRev) {
 }
 
 function cloudSaveButtonCopy(signedIn, aligned) {
-  if (!signedIn) return { hidden: true, disabled: true, label: "Save to cloud", title: "" };
-  if (aligned) return { hidden: false, disabled: true, label: "Up to date", title: "Already saved to the cloud" };
-  return { hidden: false, disabled: false, label: "Save to cloud", title: "Save this board to the cloud" };
+  if (!signedIn) {
+    return { hidden: true, pending: false, current: false, label: "Saved", title: "" };
+  }
+  if (aligned) {
+    return { hidden: false, pending: false, current: true, label: "Saved", title: "Already saved to the cloud" };
+  }
+  return { hidden: false, pending: true, current: false, label: "Saved", title: "Save this board to the cloud" };
 }
 
 function syncCloudSaveChrome() {
   var save = document.getElementById("btnBoardSaveCloud");
-  if (!save) return;
+  var status = document.getElementById("boardCloudStatus");
+  if (!save || !status) return;
   var copy = cloudSaveButtonCopy(
     !!(cloudSession && cloudSession.user),
     cloudVersionsAligned(boardServerRev, boardLocalRev)
   );
-  save.hidden = copy.hidden;
-  save.disabled = copy.disabled;
-  save.classList.toggle("is-current", !copy.hidden && copy.disabled);
-  if (save.textContent !== copy.label) save.textContent = copy.label;
-  save.title = copy.title;
+  save.hidden = !copy.pending;
+  save.disabled = !copy.pending;
+  save.title = copy.pending ? copy.title : "";
+  status.hidden = !copy.current;
+  status.title = copy.current ? copy.title : "";
 }
 
 function cloudSetAccountUi() {

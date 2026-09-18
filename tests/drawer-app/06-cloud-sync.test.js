@@ -21,9 +21,11 @@ assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP
 assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
 assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
-assert.match(html, /id="btnBoardSaveCloud"/, 'Save to cloud stays in the toolbar');
+assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays in the toolbar');
+assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
+assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
 assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
-assert.match(cloud, /classList.toggle\("is-current"/, 'aligned save chrome uses a status class');
+assert.match(cloud, /copy\.pending/, 'unsaved chrome keeps the pending chip');
 assert.match(boardJs, /cloudBoardId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
 assert.match(html, /id="btnBoardSignOut"[\s\S]*boardSessionMenu|id="boardSessionMenu"[\s\S]*id="btnBoardSignOut"/, 'Sign out lives in the account menu');
 assert.match(html, /data-board-oauth="google"/, 'Google is an available provider');
@@ -61,14 +63,16 @@ assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one 
   assert.strictEqual(helpers.cloudSaveButtonCopy(false, false).hidden, true);
   assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, true), {
     hidden: false,
-    disabled: true,
-    label: "Up to date",
+    pending: false,
+    current: true,
+    label: "Saved",
     title: "Already saved to the cloud",
   });
   assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, false), {
     hidden: false,
-    disabled: false,
-    label: "Save to cloud",
+    pending: true,
+    current: false,
+    label: "Saved",
     title: "Save this board to the cloud",
   });
 }
