@@ -77,9 +77,9 @@ assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosa
   assert.match(guest, /return Promise\.resolve\(\)/, 'share guests stay in memory');
   assert.doesNotMatch(guest, /forkSharedBoard|saveSharedBoard/, 'autosave does not create a share copy');
 }
-assert.match(cloud, /shareGuest && signedIn/, 'signed-in share guests keep Saved clickable');
-assert.match(cloud, /save\.title = "Not created"/, 'red share Saved hints Not created');
-assert.match(shareCss, /#btnBoardSaveCloud\.is-pending[\s\S]*--cloud-dot: var\(--danger\)/, 'signed-in share Saved stays red until the guest forks');
+assert.match(cloud, /cloudSaveUncreated\(signedIn, ownCloud\)/, 'signed-in #z: and #s: keep Saved clickable');
+assert.match(cloud, /save\.title = "Not created"/, 'uncreated Saved hints Not created');
+assert.match(dockCss, /\.is-pending\.is-uncreated[\s\S]*--cloud-dot: var\(--danger\)/, 'uncreated Saved stays red until the row exists');
 assert.match(cloud, /isShareGuest[\s\S]*forkSharedBoard/, 'Saved on a share creates the guest\'s own copy');
 assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
 assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
@@ -140,10 +140,13 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
   const start = cloud.indexOf('function cloudVersionsAligned');
   const end = cloud.indexOf('function syncCloudSaveChrome');
   assert.ok(start >= 0 && end > start, 'cloud save copy helpers are closed functions');
-  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudVersionsAligned, cloudSaveButtonCopy };')();
+  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudVersionsAligned, cloudSaveButtonCopy, cloudSaveUncreated };')();
   assert.strictEqual(helpers.cloudVersionsAligned(5, 5), true);
   assert.strictEqual(helpers.cloudVersionsAligned(5, 6), false);
   assert.strictEqual(helpers.cloudVersionsAligned(0, 1), false);
+  assert.strictEqual(helpers.cloudSaveUncreated(true, ""), true);
+  assert.strictEqual(helpers.cloudSaveUncreated(true, "b_abc"), false);
+  assert.strictEqual(helpers.cloudSaveUncreated(false, ""), false);
   assert.strictEqual(helpers.cloudSaveButtonCopy(false, false).hidden, true);
   assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, true), {
     hidden: false,

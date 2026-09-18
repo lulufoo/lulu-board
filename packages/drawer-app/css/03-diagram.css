@@ -729,12 +729,19 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   cursor: pointer;
   transition: transform .08s, background .08s;
 }
+.board-cloud-status.is-pending.is-uncreated {
+  --cloud-dot: var(--danger);
+  color: var(--danger);
+}
 .board-cloud-status.is-pending:active {
   transform: scale(.98);
   background: color-mix(in srgb, var(--panel-solid, #fff) 88%, transparent);
 }
 [data-theme="dark"] .board-cloud-status.is-pending {
   --cloud-dot: #ffd60a;
+}
+[data-theme="dark"] .board-cloud-status.is-pending.is-uncreated {
+  --cloud-dot: var(--danger);
 }
 .board-session {
   position: relative;

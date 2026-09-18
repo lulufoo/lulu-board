@@ -119,20 +119,26 @@ function cloudSaveButtonCopy(signedIn, aligned) {
   return { hidden: false, pending: true, current: false, label: "Saved", title: "Not saved" };
 }
 
+function cloudSaveUncreated(signedIn, boardId) {
+  return !!(signedIn && !String(boardId || "").trim());
+}
+
 function syncCloudSaveChrome() {
   var save = document.getElementById("btnBoardSaveCloud");
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
   var signedIn = !!(cloudSession && cloudSession.user);
-  var shareGuest = typeof isShareGuest === "function" && isShareGuest();
-  if (shareGuest && signedIn) {
+  var ownCloud = typeof cloudBoardId === "function" && cloudBoardId();
+  if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
     save.disabled = false;
     save.title = "Not created";
+    save.classList.add("is-uncreated");
     status.hidden = true;
     status.title = "";
     return;
   }
+  save.classList.remove("is-uncreated");
   var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, boardLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
