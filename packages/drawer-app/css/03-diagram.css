@@ -726,23 +726,20 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   pointer-events: none;
 }
 .board-cloud-status.is-pending {
-  --cloud-dot: #e6c200;
+  --cloud-dot: var(--accent);
   border: 1px solid var(--stroke);
   cursor: pointer;
   transition: transform .08s, background .08s, border-color .08s;
 }
 .board-cloud-status.is-pending.is-uncreated {
-  --cloud-dot: var(--danger);
+  --cloud-dot: transparent;
+}
+.board-cloud-status.is-pending.is-uncreated .board-cloud-status-dot {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 .board-cloud-status.is-pending:active {
   transform: scale(.98);
   background: color-mix(in srgb, var(--panel-solid, #fff) 88%, transparent);
-}
-[data-theme="dark"] .board-cloud-status.is-pending {
-  --cloud-dot: #ffd60a;
-}
-[data-theme="dark"] .board-cloud-status.is-pending.is-uncreated {
-  --cloud-dot: var(--danger);
 }
 .board-session {
   position: relative;
