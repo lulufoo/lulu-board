@@ -128,7 +128,8 @@ function syncCloudSaveChrome() {
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
   var signedIn = !!(cloudSession && cloudSession.user);
-  var ownCloud = typeof cloudBoardId === "function" && cloudBoardId();
+  var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
   if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
     save.disabled = false;
@@ -397,6 +398,7 @@ async function saveBoardToCloud(opts) {
     // Do not steal the hash back if the user already navigated to another cloud board.
     var openId = cloudBoardId();
     if (!openId || openId === boardId) cloudSetBoardHash(boardId, true);
+    syncCloudSaveChrome();
     setBoardSyncUI("ok");
     setStatus("Saved to cloud");
     if (opts.explicit && typeof showCopyTip === "function") showCopyTip("Saved to cloud");

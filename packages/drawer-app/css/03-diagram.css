@@ -721,17 +721,18 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 }
 .board-cloud-status.is-current {
   --cloud-dot: var(--ok);
+  border: 0;
   cursor: default;
   pointer-events: none;
 }
 .board-cloud-status.is-pending {
   --cloud-dot: #e6c200;
+  border: 1px solid var(--stroke);
   cursor: pointer;
-  transition: transform .08s, background .08s;
+  transition: transform .08s, background .08s, border-color .08s;
 }
 .board-cloud-status.is-pending.is-uncreated {
   --cloud-dot: var(--danger);
-  color: var(--danger);
 }
 .board-cloud-status.is-pending:active {
   transform: scale(.98);

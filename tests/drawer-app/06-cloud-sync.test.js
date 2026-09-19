@@ -78,8 +78,16 @@ assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosa
   assert.doesNotMatch(guest, /forkSharedBoard|saveSharedBoard/, 'autosave does not create a share copy');
 }
 assert.match(cloud, /cloudSaveUncreated\(signedIn, ownCloud\)/, 'signed-in #z: and #s: keep Saved clickable');
+assert.match(cloud, /if \(!ownCloud && typeof liveBoardId/, 'Saved chrome follows the created row before the hash flips');
 assert.match(cloud, /save\.title = "Not created"/, 'uncreated Saved hints Not created');
-assert.match(dockCss, /\.is-pending\.is-uncreated[\s\S]*--cloud-dot: var\(--danger\)/, 'uncreated Saved stays red until the row exists');
+{
+  const block = dockCss.match(/\.board-cloud-status\.is-pending\.is-uncreated \{[^}]+\}/);
+  assert.ok(block, 'uncreated Saved has a pending rule');
+  assert.match(block[0], /--cloud-dot: var\(--danger\)/, 'only the uncreated dot is red');
+  assert.doesNotMatch(block[0], /color:/, 'uncreated Saved text matches the other states');
+}
+assert.match(dockCss, /\.board-cloud-status\.is-pending \{[\s\S]*?border: 1px solid var\(--stroke\)/, 'red and yellow Saved have a border');
+assert.match(dockCss, /\.board-cloud-status\.is-current \{[\s\S]*?border: 0/, 'green Saved has no border');
 assert.match(cloud, /isShareGuest[\s\S]*forkSharedBoard/, 'Saved on a share creates the guest\'s own copy');
 assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
 assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
