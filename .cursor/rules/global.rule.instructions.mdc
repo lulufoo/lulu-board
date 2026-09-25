@@ -1,0 +1,8 @@
+---
+description: Global Rule Instructions
+alwaysApply: true
+---
+
+# Global Rule Instructions
+
+1. lulu-board changes → read `docs/discipline/board-arch-layer-constraints.md` first and confirm the change follows its architecture constraints.
