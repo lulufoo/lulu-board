@@ -1,13 +1,9 @@
-# skill/ — plugin root
+# skill/
 
-Ship **this folder** as the Cursor plugin. Chat entry is `/board`.
-
-The installable skill is **`board/`** only. It contains `SKILL.md`, `scripts/`, and `templates/`.
+Chat entry is `/board`. The skill is **`board/`**. It contains `SKILL.md`, `scripts/`, and `templates/`.
 
 | Path | Role |
 |---|---|
-| `.cursor-plugin/plugin.json` | Plugin manifest (`name: lulu-board`; `skills: ["board"]`) |
-| `mcp.json` | Remote MCP URL (`mcp.luluboard.app`). Install is not Connect. |
 | `board/` | Self-contained `/board` skill |
 
 ```bash
@@ -19,7 +15,4 @@ From `board/`, the same CLI is `python3 scripts/drawer_control.py`.
 
 `preview` prints a `https://luluboard.app/#z:…` URL from `{bmd, version}`. It does not write local history.
 
-## Not in this folder
-
-Do not ship `packages/`, `scripts/*-build/`, `tests/`, or `.cache/web/`.
 Rebuild the public viewer from the repo root: `node scripts/web-build/build.mjs`.

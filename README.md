@@ -26,7 +26,7 @@ Diagrams go stale when only one side can edit them. Lulu Board keeps one text pr
 
 ## Quick start
 
-Install the **Lulu Board** Cursor plugin (this public repo; plugin body is [`skill/`](./skill/)), then in chat:
+Chat entry is [`/board`](./skill/board/SKILL.md):
 
 ```text
 /board
@@ -78,7 +78,7 @@ A signed-in owner can share a saved cloud board from the Share dock. The first a
 }
 ```
 
-In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://luluboard.app/#b:…` instead of `#z:`. Installing the plugin is not Connect.
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://luluboard.app/#b:…` instead of `#z:`.
 
 ## Examples
 
@@ -100,20 +100,14 @@ Click a preview to open the source.
   </tr>
 </table>
 
-## Install
+## Skill
 
-Ship **`skill/`** as the Cursor plugin body. Chat entry is `/board`.
+Chat entry is `/board`.
 
 ```text
-.cursor-plugin/marketplace.json   # repo marketplace; source: skill
 skill/
-  .cursor-plugin/plugin.json      # name: lulu-board; skills: board
-  board/     # self-contained /board (SKILL.md, scripts/, templates/)
+  board/     # SKILL.md, scripts/, templates/
 ```
-
-Do not ship `packages/`, `scripts/*-build/`, or `tests/`.
-
-Local test: copy `skill/` to `~/.cursor/plugins/local/lulu-board` (do not symlink out of that folder), then Developer: Reload Window.
 
 ## Develop
 
@@ -121,7 +115,7 @@ Local test: copy `skill/` to `~/.cursor/plugins/local/lulu-board` (do not symlin
 examples/    # README previews (source + PNG) → packed into skill/board/templates
 packages/    # board, drawer-app
 scripts/     # build tooling
-skill/       # plugin root
+skill/       # /board skill
 tests/
 .cache/web/  # generated public viewer (✅ Verified: scripts/web-build/build.mjs)
 ```
