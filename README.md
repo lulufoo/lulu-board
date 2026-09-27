@@ -54,7 +54,7 @@ Describe what you want after `/board`:
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
 
-A signed-in owner can share a saved cloud board from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current board; Edit lets a signed-in visitor change that same row. ✅ Verified (`packages/drawer-app/js/06-cloud-share.js`, `lulu-dev-skills/docs/archive/lulu-board/supabase/migrations/20260918143300_share_access_role.sql`)
+A signed-in owner can share a saved cloud board from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current board; Edit lets a signed-in visitor change that same row.
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
