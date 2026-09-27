@@ -117,7 +117,7 @@ packages/    # board, drawer-app
 scripts/     # build tooling
 skill/       # /board skill
 tests/
-.cache/web/  # generated public viewer (✅ Verified: scripts/web-build/build.mjs)
+.cache/web/  # generated public viewer
 ```
 
 From the repo root:

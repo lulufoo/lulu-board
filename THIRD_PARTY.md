@@ -2,13 +2,14 @@
 
 ## @zumer/snapdom
 
-- ✅ Verified (`npm` registry): Package: `@zumer/snapdom`; version: `2.24.18`.
-- ✅ Verified (`npm` registry): Upstream: https://github.com/zumerlab/snapdom
-- ✅ Verified (`packages/drawer-app/vendor/snapdom.LICENSE`): License: MIT.
+- Package: `@zumer/snapdom`
+- Version: `2.24.18`
+- Upstream: https://github.com/zumerlab/snapdom
+- License: MIT — see `packages/drawer-app/vendor/snapdom.LICENSE`
 
 ## Own layers
 
-- ✅ Verified (`packages/board/`): Lulu Board renderer — project MIT.
-- ✅ Verified (`packages/drawer-app/`): Drawer shell UI — project MIT.
+- `packages/board/` — Lulu Board renderer
+- `packages/drawer-app/` — Drawer shell UI
 
 These are part of this project and covered by the root `LICENSE` (MIT).
