@@ -1141,6 +1141,11 @@
     board.layout.places = (board.layout.places || []).filter(function(place) {
       return place.source !== selection.id;
     });
+    // Drop this node from flush groups. Leave the rest of each group unchanged.
+    board.layout.aligns = (board.layout.aligns || []).map(function(align) {
+      var ids = (align.ids || []).filter(function(idValue) { return idValue !== selection.id; });
+      return { ids: ids, edge: align.edge, line: align.line };
+    }).filter(function(align) { return align.ids.length >= 2; });
     return serialize(board);
   }
   function updateLinkTitle(source, selection, title) {

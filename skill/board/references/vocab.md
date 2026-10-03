@@ -172,7 +172,7 @@ when they meet.
 
 Pin `start` and `top` to `parent` to place a node; add `end` or `bottom` to fix
 its size. A pin wins over `arrange` on its axis. Dragging a node on the canvas
-rewrites it as `parent` pins and drops its `arrange` lines.
+rewrites it as `parent` pins and drops its `arrange` lines and `flush` membership.
 
 ## Protocol boundary
 
