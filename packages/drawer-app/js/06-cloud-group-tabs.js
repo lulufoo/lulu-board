@@ -8,6 +8,20 @@ function sortBoardRowsByCreatedAt(rows) {
   });
 }
 
+function cloudMembersInclude(boardId, groupId, members) {
+  var id = String(boardId || "");
+  if (!id || !groupId) return false;
+  var rows = members || [];
+  for (var i = 0; i < rows.length; i += 1) {
+    if (rows[i] && rows[i].board_id === id) return true;
+  }
+  return false;
+}
+
+function cloudKnownGroupBoard(boardId) {
+  return cloudMembersInclude(boardId, cloudGroupId, cloudGroupMembers);
+}
+
 function cloudGroupTabsVisible() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   if (!cloudSession || !cloudSession.user) return false;
@@ -154,18 +168,27 @@ async function refreshCloudGroupMembers(boardId) {
   renderCloudGroupTabs();
 }
 
+function cloudOpenBoardById(boardId) {
+  var id = String(boardId || "");
+  if (!id) return;
+  cloudSetBoardHash(id, true);
+  if (typeof loadCloudBoardByHash !== "function") return;
+  var hash = typeof cloudBoardHash === "function" ? cloudBoardHash(id) : "#b:" + id;
+  void loadCloudBoardByHash(hash);
+}
+
 function cloudSwitchToBoard(boardId) {
   var id = String(boardId || "");
   if (!id) return;
   if (cloudPlusDraftActive) {
     cloudParkPlusDraft();
-    cloudSetBoardHash(id, false);
+    cloudOpenBoardById(id);
     return;
   }
   if (id === cloudBoardId()) return;
   if (!cloudConfirmLeaveBoard()) return;
   cloudClearDirtyLeave();
-  cloudSetBoardHash(id, false);
+  cloudOpenBoardById(id);
 }
 
 async function cloudSwitchToPlusDraft() {

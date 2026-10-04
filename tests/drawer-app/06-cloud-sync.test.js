@@ -273,7 +273,9 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   const reject = load.indexOf('if (!boardId) return false');
   const members = load.search(/refreshCloudGroupMembers|from\("group_members"\)|loadSiblingBoardIds/);
   assert.ok(reject >= 0 && members > reject, 'invalid hash returns false and does not query groups');
-  assert.match(load, /refreshCloudGroupMembers/, '#b: then refreshes group tabs');
+  assert.match(load, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
+  assert.match(load, /cloudKnownGroupBoard/, '#b: known sibling skips the group list');
+  assert.match(load, /if \(!known\) void refreshCloudBoardHistory/, 'known sibling skips history refresh');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
   assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');

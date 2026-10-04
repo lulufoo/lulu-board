@@ -329,7 +329,8 @@ function cloudRowSource(row, fallback) {
   return fallback == null ? "" : String(fallback);
 }
 
-function applyCloudBoardRow(row) {
+function applyCloudBoardRow(row, opts) {
+  opts = opts || {};
   var source = cloudRowSource(row, boardSourceEl ? boardSourceEl.value : "");
   if (boardSourceEl) boardSourceEl.value = source;
   boardDirty = false;
@@ -347,7 +348,7 @@ function applyCloudBoardRow(row) {
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId(row && row.share_id);
-  if (typeof refreshOwnShareState === "function") void refreshOwnShareState();
+  if (!opts.skipShare && typeof refreshOwnShareState === "function") void refreshOwnShareState();
   syncCloudSaveChrome();
 }
 
@@ -507,15 +508,18 @@ async function loadCloudBoardByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
     cloudPlusDraftActive = false;
-    applyCloudBoardRow(result.data);
-    if (typeof refreshCloudGroupMembers === "function") {
+    var known = typeof cloudKnownGroupBoard === "function" && cloudKnownGroupBoard(boardId);
+    applyCloudBoardRow(result.data, { skipShare: known });
+    if (known) {
+      if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
+    } else if (typeof refreshCloudGroupMembers === "function") {
       await refreshCloudGroupMembers(boardId);
       if (seq !== cloudLoadSeq) return true;
     }
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
-    void refreshCloudBoardHistory();
+    if (!known) void refreshCloudBoardHistory();
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;

@@ -35,8 +35,13 @@ assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
 assert.match(cloud, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
 assert.match(cloud, /p_group_id:\s*joinGroupId/);
 assert.match(cloud, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
+assert.match(tabs, /function cloudOpenBoardById/, 'tab switch loads one board id');
+assert.match(tabs, /cloudSetBoardHash\(id, true\)/, 'tab switch replaces the hash without hashchange');
+assert.match(tabs, /loadCloudBoardByHash/, 'tab switch does not wait for hashchange bootstrap');
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
-assert.match(cloud, /refreshCloudGroupMembers/, '#b: then refreshes group tabs');
+assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
+assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
+assert.match(cloud, /if \(!known\) void refreshCloudBoardHistory/, 'sibling switch does not refresh history');
 assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
 assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
 assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveBoardToHash/, 'plus draft edits persist in #z:');
@@ -45,13 +50,17 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
 {
   const start = tabs.indexOf('function sortBoardRowsByCreatedAt');
   const end = tabs.indexOf('function cloudGroupTabsVisible');
-  assert.ok(start >= 0 && end > start, 'sortBoardRowsByCreatedAt is a closed function');
-  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByCreatedAt };')();
+  assert.ok(start >= 0 && end > start, 'sort helpers are a closed block');
+  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByCreatedAt, cloudMembersInclude };')();
   const sorted = helpers.sortBoardRowsByCreatedAt([
     { board_id: 'b_22222222', created_at: '2026-10-04T12:00:00Z' },
     { board_id: 'b_11111111', created_at: '2026-10-04T10:00:00Z' },
   ]);
   assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
+  const members = [{ board_id: 'b_11111111' }, { board_id: 'b_22222222' }];
+  assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
+  assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
+  assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
 }
 
 console.log('ok cloud-group-tabs');
