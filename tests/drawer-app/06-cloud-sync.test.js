@@ -292,8 +292,9 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   assert.ok(start >= 0 && end > start, 'cloudCachePut is a closed helper');
   const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudCachePut, cloudCacheGet };')();
   const store = {};
-  helpers.cloudCachePut(store, { board_id: 'b_11111111', title: 'One', bmd: 'board "One"\n', version: 2 });
+  helpers.cloudCachePut(store, { board_id: 'b_11111111', title: 'One', bmd: 'board "One"\n', version: 2, dirty: true, localRev: 3 });
   assert.strictEqual(helpers.cloudCacheGet(store, 'b_11111111').bmd, 'board "One"\n');
+  assert.strictEqual(helpers.cloudCacheGet(store, 'b_11111111').dirty, true);
   assert.strictEqual(helpers.cloudCacheGet(store, 'b_22222222'), null);
 }
 
@@ -333,7 +334,7 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   ]);
   assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
   assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
-  assert.match(tabs, /Leave without saving/, 'dirty saved tabs confirm before leave');
+  assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
   assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
   assert.match(tabCss, /\.group-tab-float/, 'group tabs are canvas chrome');
   assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');

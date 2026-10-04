@@ -80,7 +80,7 @@ function renderCloudGroupTabs() {
     btn.setAttribute("aria-label", "Board " + (index + 1));
     btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
-    btn.addEventListener("click", function () { cloudSwitchToBoard(row.board_id); });
+    btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
     root.appendChild(btn);
   });
   if (cloudPlusDraft) {
@@ -113,10 +113,18 @@ function cloudClearGroupTabs() {
   renderCloudGroupTabs();
 }
 
-function cloudConfirmLeaveBoard() {
+async function cloudConfirmLeaveBoard() {
   if (cloudPlusDraftActive) return true;
   if (boardDirty && cloudBoardId()) {
-    return window.confirm("Leave without saving?");
+    if (typeof boardAskConfirm === "function") {
+      return boardAskConfirm({
+        title: "还没有保存",
+        copy: "是否确认切换？",
+        ok: "确认",
+        cancel: "取消",
+      });
+    }
+    return true;
   }
   return true;
 }
@@ -177,7 +185,7 @@ function cloudOpenBoardById(boardId) {
   void loadCloudBoardByHash(hash);
 }
 
-function cloudSwitchToBoard(boardId) {
+async function cloudSwitchToBoard(boardId) {
   var id = String(boardId || "");
   if (!id) return;
   if (cloudPlusDraftActive) {
@@ -186,14 +194,20 @@ function cloudSwitchToBoard(boardId) {
     return;
   }
   if (id === cloudBoardId()) return;
-  if (!cloudConfirmLeaveBoard()) return;
+  if (!(await cloudConfirmLeaveBoard())) return;
+  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+    cloudParkDirtyBoard();
+  }
   cloudClearDirtyLeave();
   cloudOpenBoardById(id);
 }
 
 async function cloudSwitchToPlusDraft() {
   if (!cloudPlusDraft || cloudPlusDraftActive) return;
-  if (!cloudConfirmLeaveBoard()) return;
+  if (!(await cloudConfirmLeaveBoard())) return;
+  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+    cloudParkDirtyBoard();
+  }
   cloudClearDirtyLeave();
   cloudPlusDraftActive = true;
   if (boardSourceEl) {
@@ -227,7 +241,10 @@ async function cloudStartPlusDraft() {
   }
   if (!cloudGroupId || !cloudSession || !cloudSession.user) return;
   if (typeof isShareGuest === "function" && isShareGuest()) return;
-  if (!cloudConfirmLeaveBoard()) return;
+  if (!(await cloudConfirmLeaveBoard())) return;
+  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+    cloudParkDirtyBoard();
+  }
   cloudClearDirtyLeave();
   cloudPlusDraft = true;
   cloudPlusDraftActive = true;

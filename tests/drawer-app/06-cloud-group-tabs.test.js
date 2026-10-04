@@ -18,6 +18,8 @@ const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 
 assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
+assert.match(appBuild, /06-board-confirm\.js/, 'drawer app concatenates the in-app confirm');
+assert.match(html, /id="boardConfirmDialog"/, 'canvas keeps one in-app confirm');
 assert.match(chromeCss, /\.zoom-float \{[\s\S]*left: 50%;/, 'zoom / Fit sit at the bottom center');
 assert.match(chromeCss, /show-chrome \.zoom-float/, 'zoom chrome still appears after a zoom change');
 assert.doesNotMatch(tabCss, /right: 88px/, 'group tabs do not shove zoom left');
@@ -33,8 +35,12 @@ assert.match(tabs, /function cloudParkPlusDraft/, 'leaving the draft parks sourc
 assert.match(tabs, /function cloudSwitchToPlusDraft/, 'the parked tab restores from memory');
 assert.match(tabs, /cloudPlusDraft && cloudGroupId && groupId !== cloudGroupId/, 'changing group drops the memory slot');
 assert.match(tabCss, /\.group-tab:disabled/, 'disabled plus is gray');
-assert.match(tabs, /Leave without saving/, 'dirty saved tabs confirm before leave');
+assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
+assert.doesNotMatch(tabs, /window\.confirm/, 'tab switch does not use the browser confirm');
+assert.match(tabs, /cloudParkDirtyBoard/, 'confirming a switch parks dirty source');
 assert.match(tabs, /cloudPlusDraftActive\) return true/, 'parking a draft does not prompt');
+assert.match(cloud, /boardAskConfirm/, 'history delete uses the in-app confirm');
+assert.match(cloud, /function cloudParkDirtyBoard/, 'dirty boards can be parked in memory');
 assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
 assert.match(cloud, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
 assert.match(cloud, /p_group_id:\s*joinGroupId/);

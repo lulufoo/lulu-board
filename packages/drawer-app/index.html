@@ -377,5 +377,16 @@
     <button type="button" class="board-sign-in-close" id="btnBoardSignInClose">Not now</button>
   </div>
 </div>
+<div class="board-sign-in" id="boardConfirmDialog" hidden>
+  <button type="button" class="board-sign-in-backdrop" id="boardConfirmBackdrop" aria-label="Cancel"></button>
+  <div class="board-sign-in-sheet" role="dialog" aria-modal="true" aria-labelledby="boardConfirmTitle">
+    <h2 id="boardConfirmTitle">Not saved yet</h2>
+    <p id="boardConfirmCopy">Switch anyway?</p>
+    <div class="board-sign-in-actions board-confirm-actions">
+      <button type="button" class="btn" id="btnBoardConfirmCancel">Cancel</button>
+      <button type="button" class="btn primary" id="btnBoardConfirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

@@ -23,6 +23,8 @@ function cloudCachePut(store, row) {
     share_id: String(row.share_id || ""),
     created_at: String(row.created_at || ""),
     updated_at: String(row.updated_at || ""),
+    dirty: !!row.dirty,
+    localRev: Number(row.localRev) > 0 ? Number(row.localRev) : 0,
   };
   return store[row.board_id];
 }
@@ -38,6 +40,24 @@ function cloudRememberBoardRow(row) {
 
 function cloudCachedBoardRow(boardId) {
   return cloudCacheGet(cloudBoardCache, boardId);
+}
+
+function cloudParkDirtyBoard() {
+  var id = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  if (!id || !boardSourceEl) return;
+  var prev = cloudCachedBoardRow(id) || {};
+  var source = boardSourceEl.value;
+  cloudRememberBoardRow({
+    board_id: id,
+    title: (typeof cloudBoardTitle === "function" ? cloudBoardTitle(source) : "") || prev.title,
+    bmd: source,
+    version: Number(prev.version || boardServerRev) || 1,
+    share_id: prev.share_id,
+    created_at: prev.created_at,
+    updated_at: prev.updated_at,
+    dirty: true,
+    localRev: Number(boardLocalRev) || 1,
+  });
 }
 
 function cloudForgetBoardCache(ids) {
@@ -372,9 +392,10 @@ function applyCloudBoardRow(row, opts) {
   opts = opts || {};
   var source = cloudRowSource(row, boardSourceEl ? boardSourceEl.value : "");
   if (boardSourceEl) boardSourceEl.value = source;
-  boardDirty = false;
+  boardDirty = !!(row && row.dirty);
   boardServerRev = Number(row && row.version) || 1;
-  boardLocalRev = boardServerRev;
+  if (boardDirty && Number(row.localRev) > 0) boardLocalRev = Number(row.localRev);
+  else boardLocalRev = boardServerRev;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: row && row.board_id || "",
@@ -396,6 +417,8 @@ function applyCloudBoardRow(row, opts) {
     share_id: row && row.share_id,
     created_at: row && row.created_at,
     updated_at: row && row.updated_at,
+    dirty: boardDirty,
+    localRev: boardLocalRev,
   });
   syncCloudSaveChrome();
 }
@@ -674,7 +697,7 @@ async function refreshCloudBoardHistory() {
         if (event.target === del || del.contains(event.target)) return;
         if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
         if (inGroup) return;
-        if (typeof cloudSwitchToBoard === "function") cloudSwitchToBoard(item.id);
+        if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(item.id);
         else cloudSetBoardHash(item.id, false);
       });
       del.addEventListener("click", function (event) {
@@ -703,7 +726,13 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
   var ids = (boardIds || []).filter(Boolean);
   if (!ids.length) return;
-  if (!window.confirm("Delete this group and all boards?")) return;
+  if (typeof boardAskConfirm !== "function") return;
+  if (!(await boardAskConfirm({
+    title: "删除这一组？",
+    copy: "组里的图都会删掉。",
+    ok: "删除",
+    cancel: "取消",
+  }))) return;
   try {
     var boards = await cloudClient.from("boards").delete().in("board_id", ids);
     if (boards.error) throw boards.error;

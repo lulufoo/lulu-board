@@ -61,3 +61,12 @@
   cursor: pointer;
   font: 600 12px/1 var(--font);
 }
+.board-confirm-actions {
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+.board-confirm-actions .btn {
+  min-width: 72px;
+  justify-content: center;
+}

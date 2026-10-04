@@ -364,7 +364,13 @@ async function restoreBoardHistory(name, boardId, boardTitle) {
 async function deleteBoardHistory(name) {
   if (!name) return;
   var file = boardHistoryFile(name);
-  if (!window.confirm("Delete history snapshot\n" + file + "?")) return;
+  if (typeof boardAskConfirm !== "function") return;
+  if (!(await boardAskConfirm({
+    title: "删除这条记录？",
+    copy: file,
+    ok: "删除",
+    cancel: "取消",
+  }))) return;
   try {
     var res = await fetch("./api/board-history/" + encodeURIComponent(file), { method: "DELETE" });
     if (!res.ok) throw new Error("HTTP " + res.status);
