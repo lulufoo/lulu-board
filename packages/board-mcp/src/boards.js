@@ -1,6 +1,8 @@
 /* board-mcp/boards.js — PostgREST board reads and writes with CAS */
 
 const BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
+const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
+const BOARD_PUBLIC_SELECT = "board_id,title,bmd,version,updated_at,group_members(group_id)";
 
 export function boardTitleFromBody(body) {
   var hit = /^\s*board\s+"([^"]*)"/.exec(String(body || ""));
@@ -17,20 +19,39 @@ export function newBoardId(bytes) {
   return "b_" + hex;
 }
 
+export function newGroupId(bytes) {
+  var raw = bytes || new Uint8Array(4);
+  if (!bytes && globalThis.crypto && globalThis.crypto.getRandomValues) {
+    globalThis.crypto.getRandomValues(raw);
+  }
+  var hex = "";
+  for (var i = 0; i < raw.length; i += 1) hex += ("0" + raw[i].toString(16)).slice(-2);
+  return "g_" + hex;
+}
+
 export function assertBoardId(boardId) {
   var id = String(boardId || "").trim();
   if (!BOARD_ID_RE.test(id)) throw new Error("invalid board id");
   return id;
 }
 
+export function assertGroupId(groupId) {
+  var id = String(groupId || "").trim();
+  if (!GROUP_ID_RE.test(id)) throw new Error("invalid group id");
+  return id;
+}
+
 function rowPublic(row) {
   if (!row) return null;
+  var members = row.group_members;
+  var groupId = row.group_id || (members && members[0] && members[0].group_id) || "";
   return {
     board_id: row.board_id,
     title: row.title || "",
     bmd: row.bmd || "",
     version: Number(row.version) || 1,
     updated_at: row.updated_at || "",
+    group_id: groupId,
   };
 }
 
@@ -61,23 +82,24 @@ export async function getBoard(env, token, boardId) {
   var rows = await restJson(
     env,
     token,
-    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&select=board_id,title,bmd,version,updated_at"
+    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&select=" + BOARD_PUBLIC_SELECT
   );
   if (!rows || !rows[0]) throw new Error("Cloud board not found");
   return rowPublic(rows[0]);
 }
 
-export async function createBoard(env, token, userId, bmd, boardId) {
+export async function createBoard(env, token, userId, bmd, boardId, groupId) {
   var source = String(bmd || "");
   if (!source.trim()) throw new Error("board source must not be empty");
   var id = boardId ? assertBoardId(boardId) : newBoardId();
-  var rows = await restJson(env, token, "/rest/v1/boards", {
+  var ownedGroup = groupId ? assertGroupId(groupId) : null;
+  var rows = await restJson(env, token, "/rest/v1/rpc/create_owned_board_with_group", {
     method: "POST",
     body: JSON.stringify({
-      owner_id: userId,
-      board_id: id,
-      title: boardTitleFromBody(source) || "Untitled",
-      bmd: source,
+      p_board_id: id,
+      p_title: boardTitleFromBody(source) || "Untitled",
+      p_bmd: source,
+      p_group_id: ownedGroup,
     }),
   });
   var row = Array.isArray(rows) ? rows[0] : rows;
@@ -94,7 +116,7 @@ export async function saveBoard(env, token, boardId, bmd, expectedVersion) {
   var rows = await restJson(
     env,
     token,
-    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&version=eq." + encodeURIComponent(String(expected)),
+    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&version=eq." + encodeURIComponent(String(expected)) + "&select=" + BOARD_PUBLIC_SELECT,
     {
       method: "PATCH",
       body: JSON.stringify({

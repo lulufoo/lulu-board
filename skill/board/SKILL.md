@@ -57,8 +57,8 @@ Load the authoring contract before writing.
 ## Cloud flow
 
 1. Call `whoami` and remember the email.
-2. New board: author BMD Source → `create_board` → show
-   `https://luluboard.app/#b:<id>` for that account.
+2. New board: author BMD Source → `create_board` (optional `group_id` to join
+   an owned group) → show `https://luluboard.app/#b:<id>` for that account.
 3. Update: `get_board` for this session’s last id, or a `#b:` the user pasted →
    edit the returned BMD Source → `save_board` with that `version`.
 4. On `conflict`, redo the edit on the returned row and save once. Still

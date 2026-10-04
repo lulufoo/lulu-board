@@ -31,9 +31,9 @@ function createServer(env, identity, token) {
   });
   server.registerTool("create_board", {
     description: "Insert a new owned board and return its cloud id.",
-    inputSchema: { bmd: z.string() },
-  }, async ({ bmd }) => {
-    try { return toolText(await createBoard(env, token, identity.user_id, bmd)); }
+    inputSchema: { bmd: z.string(), board_id: z.string().optional(), group_id: z.string().optional() },
+  }, async ({ bmd, board_id, group_id }) => {
+    try { return toolText(await createBoard(env, token, identity.user_id, bmd, board_id, group_id)); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("save_board", {
