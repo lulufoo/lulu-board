@@ -4,6 +4,7 @@ var cloudSession = null;
 var cloudSessionReady = Promise.resolve(null);
 var cloudLoadSeq = 0;
 var cloudSaveSeq = 0;
+var cloudSiblingBoardIds = [];
 
 function cloudConfig() {
   var config = globalThis.LuluBoardSupabaseConfig || {};
@@ -341,6 +342,45 @@ function applyCloudBoardRow(row) {
   syncCloudSaveChrome();
 }
 
+function groupBoardRowsByGroup(boardRows, memberships) {
+  var groupOf = {};
+  (memberships || []).forEach(function (row) {
+    if (!row || !row.board_id || !row.group_id) return;
+    groupOf[row.board_id] = row.group_id;
+  });
+  var groups = [];
+  var seen = {};
+  (boardRows || []).forEach(function (row) {
+    if (!row || !row.board_id) return;
+    var groupId = groupOf[row.board_id];
+    if (!groupId) return;
+    var group = seen[groupId];
+    if (!group) {
+      group = { group_id: groupId, members: [] };
+      seen[groupId] = group;
+      groups.push(group);
+    }
+    group.members.push(row);
+  });
+  return groups;
+}
+
+function loadSiblingBoardIds(boardId, memberships) {
+  var id = String(boardId || "");
+  var groupId = "";
+  (memberships || []).forEach(function (row) {
+    if (row && row.board_id === id) groupId = row.group_id;
+  });
+  if (!groupId) return [];
+  var siblings = [];
+  (memberships || []).forEach(function (row) {
+    if (row && row.group_id === groupId && row.board_id && row.board_id !== id) {
+      siblings.push(row.board_id);
+    }
+  });
+  return siblings;
+}
+
 async function saveBoardToCloud(opts) {
   opts = opts || {};
   if (!cloudClient || !cloudSession || !cloudSession.user) {
@@ -361,15 +401,18 @@ async function saveBoardToCloud(opts) {
     if (!boardId) {
       boardId = typeof newBoardId === "function" ? newBoardId() : "";
       if (!boardId) throw new Error("Could not mint a board id");
-      result = await cloudClient.from("boards").insert({
-        owner_id: cloudSession.user.id,
-        board_id: boardId,
-        title: title,
-        bmd: source,
-      }).select("board_id,title,bmd,version,share_id,updated_at").single();
+      result = await cloudClient.rpc("create_owned_board_with_group", {
+        p_board_id: boardId,
+        p_title: title,
+        p_bmd: source,
+        p_group_id: null,
+      });
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
-      applyCloudBoardRow(result.data);
+      var created = Array.isArray(result.data) ? result.data[0] : result.data;
+      if (!created) throw new Error("Could not create cloud board");
+      applyCloudBoardRow(created);
+      cloudSetBoardHash(boardId, true);
     } else {
       var expected = Number(boardServerRev);
       if (!(expected > 0)) expected = 1;
@@ -439,6 +482,11 @@ async function loadCloudBoardByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
     applyCloudBoardRow(result.data);
+    var members = await cloudClient.from("group_members").select("board_id,group_id");
+    if (seq !== cloudLoadSeq) return true;
+    cloudSiblingBoardIds = members.error
+      ? []
+      : loadSiblingBoardIds(boardId, members.data || []);
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
@@ -469,8 +517,12 @@ async function refreshCloudBoardHistory() {
       .select("board_id,title,created_at,updated_at")
       .order("updated_at", { ascending: false });
     if (result.error) throw result.error;
+    var memberResult = await cloudClient.from("group_members")
+      .select("board_id,group_id");
+    if (memberResult.error) throw memberResult.error;
     var rows = result.data || [];
-    if (!rows.length) {
+    var groups = groupBoardRowsByGroup(rows, memberResult.data || []);
+    if (!groups.length) {
       cloudShowHistoryMessage("No cloud boards yet");
       return;
     }
@@ -478,67 +530,82 @@ async function refreshCloudBoardHistory() {
     var current = cloudBoardId();
     var activeItem = null;
     var fragment = document.createDocumentFragment();
-    rows.forEach(function (row) {
-      var item = {
-        id: row.board_id,
-        title: row.title,
-        created_at: row.updated_at || row.created_at,
-      };
-      var li = document.createElement("li");
-      li.className = "history-item";
-      li.setAttribute("role", "option");
-      li.dataset.historyId = item.id;
-      li.dataset.historyTitle = item.title || "Untitled";
-      li.dataset.historyKind = "board";
-      var active = item.id === current;
-      li.classList.toggle("is-active", active);
-      li.setAttribute("aria-selected", active ? "true" : "false");
-      if (active) activeItem = item;
+    groups.forEach(function (group) {
+      var groupLi = document.createElement("li");
+      groupLi.className = "history-group";
+      groupLi.setAttribute("role", "group");
+      groupLi.dataset.historyGroupId = group.group_id;
+      var memberList = document.createElement("ul");
+      memberList.className = "history-group-members";
+      memberList.style.listStyle = "none";
+      memberList.style.margin = "0";
+      memberList.style.padding = "0";
+      group.members.forEach(function (row) {
+        var item = {
+          id: row.board_id,
+          title: row.title,
+          created_at: row.updated_at || row.created_at,
+        };
+        var li = document.createElement("li");
+        li.className = "history-item";
+        li.setAttribute("role", "option");
+        li.dataset.historyId = item.id;
+        li.dataset.historyTitle = item.title || "Untitled";
+        li.dataset.historyKind = "board";
+        li.dataset.historyGroupId = group.group_id;
+        var active = item.id === current;
+        li.classList.toggle("is-active", active);
+        li.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) activeItem = item;
 
-      var main = document.createElement("div");
-      main.className = "history-item-main";
-      var top = document.createElement("div");
-      top.className = "history-item-top";
-      var kind = document.createElement("span");
-      kind.className = "history-kind";
-      kind.textContent = "board";
-      var title = document.createElement("span");
-      title.className = "history-item-title";
-      title.textContent = historyDisplayTitle(item, "board");
-      top.appendChild(kind);
-      top.appendChild(title);
-      var meta = document.createElement("div");
-      meta.className = "history-item-meta";
-      appendHistoryMetaLine(meta, item);
-      main.appendChild(top);
-      main.appendChild(meta);
+        var main = document.createElement("div");
+        main.className = "history-item-main";
+        var top = document.createElement("div");
+        top.className = "history-item-top";
+        var kind = document.createElement("span");
+        kind.className = "history-kind";
+        kind.textContent = "board";
+        var title = document.createElement("span");
+        title.className = "history-item-title";
+        title.textContent = historyDisplayTitle(item, "board");
+        top.appendChild(kind);
+        top.appendChild(title);
+        var meta = document.createElement("div");
+        meta.className = "history-item-meta";
+        appendHistoryMetaLine(meta, item);
+        main.appendChild(top);
+        main.appendChild(meta);
 
-      var del = document.createElement("button");
-      del.type = "button";
-      del.className = "history-item-del";
-      del.setAttribute("aria-label", "Delete cloud board");
-      del.textContent = "×";
-      li.appendChild(main);
-      li.appendChild(del);
-      li.addEventListener("click", function (event) {
-        if (event.target === del || del.contains(event.target)) return;
-        if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
-        cloudSetBoardHash(item.id, false);
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "history-item-del";
+        del.setAttribute("aria-label", "Delete cloud board");
+        del.textContent = "×";
+        li.appendChild(main);
+        li.appendChild(del);
+        li.addEventListener("click", function (event) {
+          if (event.target === del || del.contains(event.target)) return;
+          if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
+          cloudSetBoardHash(item.id, false);
+        });
+        del.addEventListener("click", function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          void deleteCloudBoard(item.id);
+        });
+        memberList.appendChild(li);
       });
-      del.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        void deleteCloudBoard(item.id);
-      });
-      fragment.appendChild(li);
+      groupLi.appendChild(memberList);
+      fragment.appendChild(groupLi);
     });
     list.innerHTML = "";
     list.appendChild(fragment);
     if (typeof filterHistoryCombo === "function") filterHistoryCombo(combo);
+    var faceRow = groups[0].members[0];
     var faceItem = activeItem || {
-      id: rows[0].board_id,
-      title: rows[0].title,
-      created_at: rows[0].updated_at || rows[0].created_at,
+      id: faceRow.board_id,
+      title: faceRow.title,
+      created_at: faceRow.updated_at || faceRow.created_at,
     };
     if (typeof setHistoryComboFace === "function") setHistoryComboFace(combo, faceItem, "board");
   } catch (error) {

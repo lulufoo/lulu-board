@@ -107,9 +107,8 @@ assert.match(webBuild, /supabase-client\.js/, 'public site build verifies the cl
 assert.match(webBuild, /\.cache\/web/, 'public site output is temporary cached web assets');
 assert.match(workerConfig, /name = "lulu-board"/, 'Workers Builds deploys the existing Worker');
 assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys the generated cache directory');
-assert.match(cloud, /\.insert\(/, 'new boards insert a row');
+assert.match(cloud, /rpc\("create_owned_board_with_group"/, 'first insert writes board, group, and membership together');
 assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
-assert.match(cloud, /\.insert\([\s\S]*\.select\("board_id,title,bmd,version,share_id,updated_at"\)/, 'insert returns the saved source');
 assert.match(cloud, /\.update\([\s\S]*\.select\("board_id,title,bmd,version,share_id,updated_at"\)/, 'update returns the saved source');
 assert.match(cloud, /\.select\("board_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
@@ -212,6 +211,81 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
   assert.match(body, /bootstrapBoardFromHash/, 'sign-out seeds a blank local board');
   assert.doesNotMatch(body, /cloudClearOpenBoard/, 'sign-out does not empty the source in place');
+}
+
+{
+  const start = cloud.indexOf('function groupBoardRowsByGroup');
+  const sib = cloud.indexOf('function loadSiblingBoardIds');
+  const save = cloud.indexOf('async function saveBoardToCloud');
+  assert.ok(start >= 0 && sib > start && save > sib, 'group helpers are closed functions');
+  const helpers = new Function(
+    cloud.slice(start, save) + '\nreturn { groupBoardRowsByGroup, loadSiblingBoardIds };'
+  )();
+  const a = { board_id: 'b_11111111', title: 'A', updated_at: '2026-10-04T12:00:00Z' };
+  const b = { board_id: 'b_22222222', title: 'B', updated_at: '2026-10-04T11:00:00Z' };
+  const c = { board_id: 'b_33333333', title: 'C', updated_at: '2026-10-03T10:00:00Z' };
+  const memberships = [
+    { board_id: 'b_11111111', group_id: 'g_aaaa0001' },
+    { board_id: 'b_22222222', group_id: 'g_aaaa0001' },
+    { board_id: 'b_33333333', group_id: 'g_bbbb0002' },
+  ];
+  const grouped = helpers.groupBoardRowsByGroup([a, b, c], memberships);
+  assert.strictEqual(grouped.length, 2);
+  assert.strictEqual(grouped[0].group_id, 'g_aaaa0001');
+  assert.deepStrictEqual(grouped[0].members.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
+  assert.strictEqual(grouped[1].members[0].board_id, 'b_33333333');
+  const solo = helpers.groupBoardRowsByGroup([c], [memberships[2]]);
+  assert.strictEqual(solo.length, 1);
+  assert.strictEqual(solo[0].members.length, 1);
+  assert.deepStrictEqual(helpers.loadSiblingBoardIds('b_11111111', memberships), ['b_22222222']);
+  assert.deepStrictEqual(helpers.loadSiblingBoardIds('b_33333333', [memberships[2]]), []);
+}
+
+{
+  const hist = cloud.slice(
+    cloud.indexOf('async function refreshCloudBoardHistory'),
+    cloud.indexOf('async function deleteCloudBoard')
+  );
+  assert.match(hist, /from\("group_members"\)/, 'history loads memberships');
+  assert.match(hist, /groupBoardRowsByGroup/, 'history renders by group');
+  assert.match(hist, /history-group|historyGroupId|data-history-group-id/, 'each group is a list group');
+  assert.match(hist, /dataset\.historyId/, 'each member stays addressable by board_id');
+}
+
+{
+  const load = cloud.slice(
+    cloud.indexOf('async function loadCloudBoardByHash'),
+    cloud.indexOf('async function refreshCloudBoardHistory')
+  );
+  const reject = load.indexOf('if (!boardId) return false');
+  const members = load.search(/from\("group_members"\)|loadSiblingBoardIds/);
+  assert.ok(reject >= 0 && members > reject, 'invalid hash returns false and does not query groups');
+  assert.match(load, /loadSiblingBoardIds/, '#b: then resolves sibling board ids');
+  assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
+  assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
+  assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
+  assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_board/);
+}
+
+{
+  const save = cloud.slice(
+    cloud.indexOf('async function saveBoardToCloud'),
+    cloud.indexOf('async function loadCloudBoardByHash')
+  );
+  const minted = save.indexOf('if (!boardId)');
+  const updated = save.indexOf('} else {');
+  assert.ok(minted >= 0 && updated > minted);
+  const insertBranch = save.slice(minted, updated);
+  const updateBranch = save.slice(updated);
+  assert.match(insertBranch, /rpc\("create_owned_board_with_group"/);
+  assert.match(insertBranch, /p_board_id:\s*boardId/);
+  assert.match(insertBranch, /p_group_id:\s*null/);
+  assert.doesNotMatch(insertBranch, /from\("boards"\)\.insert|from\("group_members"\)/);
+  assert.match(insertBranch, /cloudSetBoardHash\(boardId/);
+  assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);
+  assert.doesNotMatch(updateBranch, /create_owned_board_with_group|from\("group_members"\)/);
+  assert.doesNotMatch(updateBranch, /share_id\s*:/);
+  assert.doesNotMatch(save, /from\("boards"\)\.(insert|update)\([\s\S]*group_id/);
 }
 
 console.log('ok cloud-sync');
