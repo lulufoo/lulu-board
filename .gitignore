@@ -1,5 +1,6 @@
 .scratch/
 .cache/
+.agents/
 **/node_modules/
 .wrangler/
 .dev.vars
