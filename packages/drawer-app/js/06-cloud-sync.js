@@ -8,6 +8,9 @@ var cloudSiblingBoardIds = [];
 var cloudGroupId = "";
 var cloudGroupMembers = [];
 var cloudPlusDraft = false;
+var cloudPlusDraftActive = false;
+var cloudPlusDraftSource = "";
+var cloudPlusDraftRev = 1;
 
 function cloudConfig() {
   var config = globalThis.LuluBoardSupabaseConfig || {};
@@ -134,7 +137,7 @@ function syncCloudSaveChrome() {
   var signedIn = !!(cloudSession && cloudSession.user);
   var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
-  if (cloudPlusDraft) ownCloud = "";
+  if (cloudPlusDraftActive) ownCloud = "";
   if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
     save.disabled = false;
@@ -393,7 +396,7 @@ async function saveBoardToCloud(opts) {
     if (opts.explicit) setStatus("Sign in to save to cloud", true);
     return false;
   }
-  if (cloudPlusDraft && !opts.explicit) {
+  if (cloudPlusDraftActive && !opts.explicit) {
     setBoardSyncUI("ok");
     syncCloudSaveChrome();
     return false;
@@ -404,7 +407,7 @@ async function saveBoardToCloud(opts) {
   if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
   var boardId = (typeof cloudBoardId === "function" && cloudBoardId())
     || (typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "");
-  if (cloudPlusDraft) boardId = "";
+  if (cloudPlusDraftActive) boardId = "";
   var title = cloudBoardTitle(source) || "Untitled";
   var seq = ++cloudSaveSeq;
   setBoardSyncUI("saving");
@@ -413,7 +416,7 @@ async function saveBoardToCloud(opts) {
     if (!boardId) {
       boardId = typeof newBoardId === "function" ? newBoardId() : "";
       if (!boardId) throw new Error("Could not mint a board id");
-      var joinGroupId = cloudPlusDraft && cloudGroupId ? cloudGroupId : null;
+      var joinGroupId = cloudPlusDraftActive && cloudGroupId ? cloudGroupId : null;
       result = await cloudClient.rpc("create_owned_board_with_group", {
         p_board_id: boardId,
         p_title: title,
@@ -424,7 +427,13 @@ async function saveBoardToCloud(opts) {
       if (seq !== cloudSaveSeq) return false;
       var created = Array.isArray(result.data) ? result.data[0] : result.data;
       if (!created) throw new Error("Could not create cloud board");
-      cloudPlusDraft = false;
+      if (typeof cloudClearPlusDraftSlot === "function") cloudClearPlusDraftSlot();
+      else {
+        cloudPlusDraft = false;
+        cloudPlusDraftActive = false;
+        cloudPlusDraftSource = "";
+        cloudPlusDraftRev = 1;
+      }
       applyCloudBoardRow(created);
       cloudSetBoardHash(boardId, true);
       if (typeof refreshCloudGroupMembers === "function") await refreshCloudGroupMembers(boardId);
@@ -475,6 +484,7 @@ async function loadCloudBoardByHash(raw) {
   if (typeof setShareEdit === "function") setShareEdit(false);
   var boardId = typeof cloudBoardIdFromHash === "function" ? cloudBoardIdFromHash(raw) : "";
   if (!boardId) return false;
+  if (typeof cloudParkPlusDraft === "function" && cloudPlusDraftActive) cloudParkPlusDraft();
   if (!cloudConfigured() || !cloudClient) {
     setStatus("Cloud sync is not configured", true);
     return true;
@@ -496,7 +506,7 @@ async function loadCloudBoardByHash(raw) {
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
-    cloudPlusDraft = false;
+    cloudPlusDraftActive = false;
     applyCloudBoardRow(result.data);
     if (typeof refreshCloudGroupMembers === "function") {
       await refreshCloudGroupMembers(boardId);

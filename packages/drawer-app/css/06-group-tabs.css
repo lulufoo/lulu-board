@@ -35,3 +35,8 @@ html[data-drawer-mode="board"] .zoom-float { right: 88px; }
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
 }
+.group-tab:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.group-tab:disabled:hover { background: transparent; }

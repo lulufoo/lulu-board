@@ -1596,9 +1596,14 @@ function scheduleBoardSave() {
     if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
     return;
   }
-  if (typeof cloudPlusDraft !== "undefined" && cloudPlusDraft) {
-    boardSaveTimer = null;
-    if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
+  if (typeof cloudPlusDraftActive !== "undefined" && cloudPlusDraftActive) {
+    boardSaveTimer = setTimeout(function () {
+      void saveBoardToHash().then(function () {
+        if (!cloudPlusDraftActive || !boardSourceEl) return;
+        cloudPlusDraftSource = boardSourceEl.value;
+        cloudPlusDraftRev = Number(boardLocalRev) || 1;
+      });
+    }, boardSaveDelay());
     return;
   }
   setBoardSyncUI('saving');

@@ -274,6 +274,8 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   const members = load.search(/refreshCloudGroupMembers|from\("group_members"\)|loadSiblingBoardIds/);
   assert.ok(reject >= 0 && members > reject, 'invalid hash returns false and does not query groups');
   assert.match(load, /refreshCloudGroupMembers/, '#b: then refreshes group tabs');
+  assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
+  assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
   assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
@@ -292,9 +294,9 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   const updateBranch = save.slice(updated);
   assert.match(insertBranch, /rpc\("create_owned_board_with_group"/);
   assert.match(insertBranch, /p_board_id:\s*boardId/);
-  assert.match(insertBranch, /joinGroupId = cloudPlusDraft && cloudGroupId \? cloudGroupId : null/);
+  assert.match(insertBranch, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
   assert.match(insertBranch, /p_group_id:\s*joinGroupId/);
-  assert.match(save, /cloudPlusDraft && !opts\.explicit/, 'plus draft does not autosave');
+  assert.match(save, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
   assert.doesNotMatch(insertBranch, /from\("boards"\)\.insert|from\("group_members"\)/);
   assert.match(insertBranch, /cloudSetBoardHash\(boardId/);
   assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);

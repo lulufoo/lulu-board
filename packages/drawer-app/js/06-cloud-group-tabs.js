@@ -16,6 +16,38 @@ function cloudGroupTabsVisible() {
   return true;
 }
 
+function blankPlusDraftSource() {
+  return typeof blankHashBoardSource === "function"
+    ? blankHashBoardSource("Untitled")
+    : "board \"Untitled\"\n";
+}
+
+function cloudClearPlusDraftSlot() {
+  cloudPlusDraft = false;
+  cloudPlusDraftActive = false;
+  cloudPlusDraftSource = "";
+  cloudPlusDraftRev = 1;
+}
+
+function cloudClearDirtyLeave() {
+  if (typeof boardSaveTimer !== "undefined") {
+    clearTimeout(boardSaveTimer);
+    boardSaveTimer = null;
+  }
+  boardDirty = false;
+}
+
+function cloudParkPlusDraft() {
+  if (!cloudPlusDraft || !cloudPlusDraftActive) return;
+  if (typeof boardSaveTimer !== "undefined") {
+    clearTimeout(boardSaveTimer);
+    boardSaveTimer = null;
+  }
+  cloudPlusDraftSource = boardSourceEl ? String(boardSourceEl.value || "") : "";
+  cloudPlusDraftRev = Number(boardLocalRev) || 1;
+  cloudPlusDraftActive = false;
+}
+
 function renderCloudGroupTabs() {
   var root = document.getElementById("board-group-tabs");
   if (!root) return;
@@ -23,7 +55,8 @@ function renderCloudGroupTabs() {
   root.hidden = !show;
   root.innerHTML = "";
   if (!show) return;
-  var current = cloudPlusDraft ? "" : cloudBoardId();
+  var viewingDraft = !!cloudPlusDraftActive;
+  var current = viewingDraft ? "" : cloudBoardId();
   cloudGroupMembers.forEach(function (row, index) {
     var btn = document.createElement("button");
     btn.type = "button";
@@ -31,18 +64,30 @@ function renderCloudGroupTabs() {
     btn.textContent = String(index + 1);
     btn.dataset.boardId = row.board_id;
     btn.setAttribute("aria-label", "Board " + (index + 1));
-    btn.setAttribute("aria-current", !cloudPlusDraft && row.board_id === current ? "true" : "false");
-    btn.classList.toggle("is-active", !cloudPlusDraft && row.board_id === current);
+    btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
+    btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
     btn.addEventListener("click", function () { cloudSwitchToBoard(row.board_id); });
     root.appendChild(btn);
   });
+  if (cloudPlusDraft) {
+    var draftNo = cloudGroupMembers.length + 1;
+    var draft = document.createElement("button");
+    draft.type = "button";
+    draft.className = "group-tab";
+    draft.textContent = String(draftNo);
+    draft.setAttribute("aria-label", "Board " + draftNo);
+    draft.setAttribute("aria-current", viewingDraft ? "true" : "false");
+    draft.classList.toggle("is-active", viewingDraft);
+    draft.addEventListener("click", function () { void cloudSwitchToPlusDraft(); });
+    root.appendChild(draft);
+  }
   var plus = document.createElement("button");
   plus.type = "button";
   plus.className = "group-tab group-tab-plus";
   plus.textContent = "+";
   plus.setAttribute("aria-label", "Add board");
-  plus.classList.toggle("is-active", !!cloudPlusDraft);
-  plus.addEventListener("click", function () { cloudStartPlusDraft(); });
+  plus.disabled = !!cloudPlusDraft;
+  plus.addEventListener("click", function () { void cloudStartPlusDraft(); });
   root.appendChild(plus);
 }
 
@@ -50,25 +95,16 @@ function cloudClearGroupTabs() {
   cloudGroupId = "";
   cloudGroupMembers = [];
   cloudSiblingBoardIds = [];
-  cloudPlusDraft = false;
+  cloudClearPlusDraftSlot();
   renderCloudGroupTabs();
 }
 
 function cloudConfirmLeaveBoard() {
-  if (cloudPlusDraft) return true;
+  if (cloudPlusDraftActive) return true;
   if (boardDirty && cloudBoardId()) {
     return window.confirm("Leave without saving?");
   }
   return true;
-}
-
-function cloudAbandonUnsavedLeave() {
-  cloudPlusDraft = false;
-  if (typeof boardSaveTimer !== "undefined") {
-    clearTimeout(boardSaveTimer);
-    boardSaveTimer = null;
-  }
-  boardDirty = false;
 }
 
 async function refreshCloudGroupMembers(boardId) {
@@ -101,6 +137,9 @@ async function refreshCloudGroupMembers(boardId) {
     renderCloudGroupTabs();
     return;
   }
+  if (cloudPlusDraft && cloudGroupId && groupId !== cloudGroupId) {
+    cloudClearPlusDraftSlot();
+  }
   cloudGroupId = groupId;
   var ids = [];
   rows.forEach(function (row) {
@@ -118,39 +157,64 @@ async function refreshCloudGroupMembers(boardId) {
 function cloudSwitchToBoard(boardId) {
   var id = String(boardId || "");
   if (!id) return;
-  if (cloudPlusDraft && cloudBoardId() === id) {
-    if (!cloudConfirmLeaveBoard()) return;
-    cloudAbandonUnsavedLeave();
-    if (typeof loadCloudBoardByHash === "function") void loadCloudBoardByHash(location.hash);
+  if (cloudPlusDraftActive) {
+    cloudParkPlusDraft();
+    cloudSetBoardHash(id, false);
     return;
   }
-  if (!cloudPlusDraft && id === cloudBoardId()) return;
+  if (id === cloudBoardId()) return;
   if (!cloudConfirmLeaveBoard()) return;
-  cloudAbandonUnsavedLeave();
+  cloudClearDirtyLeave();
   cloudSetBoardHash(id, false);
 }
 
-function cloudStartPlusDraft() {
+async function cloudSwitchToPlusDraft() {
+  if (!cloudPlusDraft || cloudPlusDraftActive) return;
+  if (!cloudConfirmLeaveBoard()) return;
+  cloudClearDirtyLeave();
+  cloudPlusDraftActive = true;
+  if (boardSourceEl) {
+    boardSourceEl.value = cloudPlusDraftSource || blankPlusDraftSource();
+    delete boardSourceEl.dataset.boardSelectionKey;
+    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  }
+  boardLocalRev = Number(cloudPlusDraftRev) || 1;
+  boardServerRev = 0;
+  if (typeof applyBoardLiveMeta === "function") {
+    applyBoardLiveMeta({
+      id: "",
+      title: typeof boardTitleFromBody === "function"
+        ? boardTitleFromBody(boardSourceEl ? boardSourceEl.value : cloudPlusDraftSource)
+        : "Untitled",
+      version: boardLocalRev,
+    });
+  }
+  if (typeof rememberOwnerShareId === "function") rememberOwnerShareId("");
+  if (typeof renderBoard === "function") renderBoard({ fit: false });
+  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
+  if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
+  renderCloudGroupTabs();
+}
+
+async function cloudStartPlusDraft() {
   if (cloudPlusDraft) {
-    renderCloudGroupTabs();
+    if (!cloudPlusDraftActive) void cloudSwitchToPlusDraft();
+    else renderCloudGroupTabs();
     return;
   }
   if (!cloudGroupId || !cloudSession || !cloudSession.user) return;
   if (typeof isShareGuest === "function" && isShareGuest()) return;
   if (!cloudConfirmLeaveBoard()) return;
-  if (typeof boardSaveTimer !== "undefined") {
-    clearTimeout(boardSaveTimer);
-    boardSaveTimer = null;
-  }
+  cloudClearDirtyLeave();
   cloudPlusDraft = true;
+  cloudPlusDraftActive = true;
+  cloudPlusDraftSource = blankPlusDraftSource();
+  cloudPlusDraftRev = 1;
   if (boardSourceEl) {
-    boardSourceEl.value = typeof blankHashBoardSource === "function"
-      ? blankHashBoardSource("Untitled")
-      : "board \"Untitled\"\n";
+    boardSourceEl.value = cloudPlusDraftSource;
     delete boardSourceEl.dataset.boardSelectionKey;
     delete boardSourceEl.dataset.boardEdgeSelectionKey;
   }
-  boardDirty = true;
   boardLocalRev = 1;
   boardServerRev = 0;
   if (typeof applyBoardLiveMeta === "function") {
@@ -158,6 +222,7 @@ function cloudStartPlusDraft() {
   }
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId("");
   if (typeof renderBoard === "function") renderBoard({ fit: false });
+  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
   setStatus("New board in this group");
