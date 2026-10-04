@@ -50,7 +50,7 @@ assert.match(html, /id="btnShareSync"/, 'share guests with edit access get Share
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
 assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
-assert.match(dockCss, /html\[data-drawer-mode="board"\] \.zoom-float \{ right: 88px; \}/, 'zoom clears the group tab column');
+assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
 assert.match(shareJs, /set_share_role/, 'owner access uses set_share_role');

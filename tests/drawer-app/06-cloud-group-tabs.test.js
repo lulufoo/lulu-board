@@ -11,13 +11,17 @@ const appBuild = read('scripts/drawer-app-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
 const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
 const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
+const chromeCss = read('packages/drawer-app/css/02-chrome.css');
 const dockCss = read('packages/drawer-app/css/03-diagram.css');
 const boardJs = read('packages/drawer-app/js/02-board.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 
 assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
-assert.match(dockCss, /html\[data-drawer-mode="board"\] \.zoom-float \{ right: 88px; \}/, 'zoom clears the group tab column');
+assert.match(chromeCss, /\.zoom-float \{[\s\S]*left: 50%;/, 'zoom / Fit sit at the bottom center');
+assert.match(chromeCss, /show-chrome \.zoom-float/, 'zoom chrome still appears after a zoom change');
+assert.doesNotMatch(tabCss, /right: 88px/, 'group tabs do not shove zoom left');
+assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'dock css does not shove zoom left');
 assert.match(tabCss, /\.group-tab-float/, 'group tabs are canvas chrome');
 assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');
 assert.match(tabCss, /z-index: 4/, 'open dock covers the tab strip');

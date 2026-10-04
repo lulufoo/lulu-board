@@ -288,17 +288,19 @@ html[data-drawer-mode="board"] .top-float {
 .collapse-hint { display: none !important; }
 
 .zoom-float {
-  right: 8px; bottom: 8px;
+  left: 50%;
+  right: auto;
+  bottom: 8px;
   opacity: 0;
   pointer-events: none; /* never steal diagram clicks while hidden */
-  transform: translateY(4px);
+  transform: translate(-50%, 4px);
 }
 .canvas-shell.chrome-br .zoom-float,
 .canvas-shell.show-chrome .zoom-float,
 .zoom-float:focus-within {
   opacity: 1;
   pointer-events: auto;
-  transform: none;
+  transform: translateX(-50%);
 }
 .copy-tip {
   position: fixed;

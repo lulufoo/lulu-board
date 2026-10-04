@@ -1,5 +1,4 @@
 /* drawer-app/06-group-tabs.css — group board tabs, bottom-right of canvas */
-html[data-drawer-mode="board"] .zoom-float { right: 88px; }
 .group-tab-float {
   position: absolute;
   right: 48px;
