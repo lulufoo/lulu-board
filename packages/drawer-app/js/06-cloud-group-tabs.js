@@ -118,10 +118,10 @@ async function cloudConfirmLeaveBoard() {
   if (boardDirty && cloudBoardId()) {
     if (typeof boardAskConfirm === "function") {
       return boardAskConfirm({
-        title: "还没有保存",
-        copy: "是否确认切换？",
-        ok: "确认",
-        cancel: "取消",
+        title: "Not saved yet",
+        copy: "Switch anyway?",
+        ok: "Switch",
+        cancel: "Cancel",
       });
     }
     return true;

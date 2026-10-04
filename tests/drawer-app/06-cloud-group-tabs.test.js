@@ -36,7 +36,11 @@ assert.match(tabs, /function cloudSwitchToPlusDraft/, 'the parked tab restores f
 assert.match(tabs, /cloudPlusDraft && cloudGroupId && groupId !== cloudGroupId/, 'changing group drops the memory slot');
 assert.match(tabCss, /\.group-tab:disabled/, 'disabled plus is gray');
 assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
+assert.match(tabs, /Not saved yet/, 'tab leave copy is English');
+assert.doesNotMatch(tabs, /还没有保存/, 'tab leave copy is not Chinese');
 assert.doesNotMatch(tabs, /window\.confirm/, 'tab switch does not use the browser confirm');
+assert.match(cloud, /Delete this group\?/, 'history delete copy is English');
+assert.doesNotMatch(cloud, /删除这一组/, 'history delete copy is not Chinese');
 assert.match(tabs, /cloudParkDirtyBoard/, 'confirming a switch parks dirty source');
 assert.match(tabs, /cloudPlusDraftActive\) return true/, 'parking a draft does not prompt');
 assert.match(cloud, /boardAskConfirm/, 'history delete uses the in-app confirm');

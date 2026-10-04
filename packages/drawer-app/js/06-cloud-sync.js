@@ -728,10 +728,10 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (!ids.length) return;
   if (typeof boardAskConfirm !== "function") return;
   if (!(await boardAskConfirm({
-    title: "删除这一组？",
-    copy: "组里的图都会删掉。",
-    ok: "删除",
-    cancel: "取消",
+    title: "Delete this group?",
+    copy: "All boards in the group will be deleted.",
+    ok: "Delete",
+    cancel: "Cancel",
   }))) return;
   try {
     var boards = await cloudClient.from("boards").delete().in("board_id", ids);

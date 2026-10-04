@@ -366,10 +366,10 @@ async function deleteBoardHistory(name) {
   var file = boardHistoryFile(name);
   if (typeof boardAskConfirm !== "function") return;
   if (!(await boardAskConfirm({
-    title: "删除这条记录？",
+    title: "Delete this snapshot?",
     copy: file,
-    ok: "删除",
-    cancel: "取消",
+    ok: "Delete",
+    cancel: "Cancel",
   }))) return;
   try {
     var res = await fetch("./api/board-history/" + encodeURIComponent(file), { method: "DELETE" });
