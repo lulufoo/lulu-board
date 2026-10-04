@@ -42,6 +42,9 @@ assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instea
 assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
 assert.match(cloud, /if \(!known\) void refreshCloudBoardHistory/, 'sibling switch does not refresh history');
+assert.match(cloud, /function cloudCachePut/, 'visited boards stay in a memory cache');
+assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
+assert.match(cloud, /cloudForgetBoardCache/, 'sign out and group delete drop the memory cache');
 assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
 assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
 assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveBoardToHash/, 'plus draft edits persist in #z:');

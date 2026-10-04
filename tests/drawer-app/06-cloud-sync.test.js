@@ -275,6 +275,8 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   assert.ok(reject >= 0 && members > reject, 'invalid hash returns false and does not query groups');
   assert.match(load, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
   assert.match(load, /cloudKnownGroupBoard/, '#b: known sibling skips the group list');
+  assert.match(load, /cloudCachedBoardRow/, '#b: uses an in-memory row when present');
+  assert.match(load, /if \(cached\)/, '#b: cache hit does not query boards');
   assert.match(load, /if \(!known\) void refreshCloudBoardHistory/, 'known sibling skips history refresh');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
@@ -282,6 +284,17 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
   assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_board/);
+}
+
+{
+  const start = cloud.indexOf('function cloudCachePut');
+  const end = cloud.indexOf('function cloudRememberBoardRow');
+  assert.ok(start >= 0 && end > start, 'cloudCachePut is a closed helper');
+  const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudCachePut, cloudCacheGet };')();
+  const store = {};
+  helpers.cloudCachePut(store, { board_id: 'b_11111111', title: 'One', bmd: 'board "One"\n', version: 2 });
+  assert.strictEqual(helpers.cloudCacheGet(store, 'b_11111111').bmd, 'board "One"\n');
+  assert.strictEqual(helpers.cloudCacheGet(store, 'b_22222222'), null);
 }
 
 {

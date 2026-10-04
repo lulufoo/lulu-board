@@ -11,6 +11,44 @@ var cloudPlusDraft = false;
 var cloudPlusDraftActive = false;
 var cloudPlusDraftSource = "";
 var cloudPlusDraftRev = 1;
+var cloudBoardCache = {};
+
+function cloudCachePut(store, row) {
+  if (!store || !row || !row.board_id) return null;
+  store[row.board_id] = {
+    board_id: String(row.board_id),
+    title: String(row.title || ""),
+    bmd: row.bmd == null ? "" : String(row.bmd),
+    version: Number(row.version) > 0 ? Number(row.version) : 1,
+    share_id: String(row.share_id || ""),
+    created_at: String(row.created_at || ""),
+    updated_at: String(row.updated_at || ""),
+  };
+  return store[row.board_id];
+}
+
+function cloudCacheGet(store, boardId) {
+  var id = String(boardId || "");
+  return id && store && store[id] ? store[id] : null;
+}
+
+function cloudRememberBoardRow(row) {
+  return cloudCachePut(cloudBoardCache, row);
+}
+
+function cloudCachedBoardRow(boardId) {
+  return cloudCacheGet(cloudBoardCache, boardId);
+}
+
+function cloudForgetBoardCache(ids) {
+  if (!ids) {
+    cloudBoardCache = {};
+    return;
+  }
+  (ids || []).forEach(function (id) {
+    if (id) delete cloudBoardCache[id];
+  });
+}
 
 function cloudConfig() {
   var config = globalThis.LuluBoardSupabaseConfig || {};
@@ -311,6 +349,7 @@ async function cloudSignOut() {
   }
   cloudSession = null;
   var leaveCloud = !!cloudBoardId();
+  cloudForgetBoardCache();
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
   cloudSetAccountUi();
   cloudShowHistoryMessage("");
@@ -349,6 +388,15 @@ function applyCloudBoardRow(row, opts) {
   if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId(row && row.share_id);
   if (!opts.skipShare && typeof refreshOwnShareState === "function") void refreshOwnShareState();
+  cloudRememberBoardRow({
+    board_id: row && row.board_id,
+    title: (row && row.title) || cloudBoardTitle(source),
+    bmd: source,
+    version: boardServerRev,
+    share_id: row && row.share_id,
+    created_at: row && row.created_at,
+    updated_at: row && row.updated_at,
+  });
   syncCloudSaveChrome();
 }
 
@@ -498,6 +546,24 @@ async function loadCloudBoardByHash(raw) {
     return true;
   }
   var seq = ++cloudLoadSeq;
+  var known = typeof cloudKnownGroupBoard === "function" && cloudKnownGroupBoard(boardId);
+  var cached = cloudCachedBoardRow(boardId);
+  if (cached) {
+    if (seq !== cloudLoadSeq) return true;
+    cloudPlusDraftActive = false;
+    applyCloudBoardRow(cached, { skipShare: known });
+    if (known) {
+      if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
+    } else if (typeof refreshCloudGroupMembers === "function") {
+      await refreshCloudGroupMembers(boardId);
+      if (seq !== cloudLoadSeq) return true;
+    }
+    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    setBoardSyncUI("ok");
+    setStatus("Cloud board loaded");
+    if (!known) void refreshCloudBoardHistory();
+    return true;
+  }
   setStatus("Loading cloud board…");
   try {
     var result = await cloudClient.from("boards")
@@ -508,7 +574,6 @@ async function loadCloudBoardByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
     cloudPlusDraftActive = false;
-    var known = typeof cloudKnownGroupBoard === "function" && cloudKnownGroupBoard(boardId);
     applyCloudBoardRow(result.data, { skipShare: known });
     if (known) {
       if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
@@ -642,6 +707,7 @@ async function deleteCloudGroup(groupId, boardIds) {
   try {
     var boards = await cloudClient.from("boards").delete().in("board_id", ids);
     if (boards.error) throw boards.error;
+    cloudForgetBoardCache(ids);
     var group = await cloudClient.from("groups").delete().eq("group_id", groupId);
     if (group.error) throw group.error;
     var openId = cloudBoardId();
