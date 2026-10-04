@@ -28,6 +28,8 @@ assert.match(cloud, /joinGroupId = cloudPlusDraft && cloudGroupId \? cloudGroupI
 assert.match(cloud, /p_group_id:\s*joinGroupId/);
 assert.match(cloud, /cloudPlusDraft && !opts\.explicit/, 'plus draft does not autosave');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: then refreshes group tabs');
+assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
+assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
 assert.match(boardJs, /cloudPlusDraft/, 'autosave skips plus drafts');
 assert.match(boot, /!cloudPlusDraft/, 'hashchange does not flush a plus draft');
 

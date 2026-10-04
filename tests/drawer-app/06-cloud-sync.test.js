@@ -247,12 +247,22 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
 {
   const hist = cloud.slice(
     cloud.indexOf('async function refreshCloudBoardHistory'),
-    cloud.indexOf('async function deleteCloudBoard')
+    cloud.indexOf('async function deleteCloudGroup')
   );
   assert.match(hist, /from\("group_members"\)/, 'history loads memberships');
   assert.match(hist, /groupBoardRowsByGroup/, 'history renders by group');
-  assert.match(hist, /history-group|historyGroupId|data-history-group-id/, 'each group is a list group');
-  assert.match(hist, /dataset\.historyId/, 'each member stays addressable by board_id');
+  assert.match(hist, /dataset\.historyGroupId/, 'each row is a group');
+  assert.match(hist, /deleteCloudGroup\(group\.group_id, boardIds\)/, '× deletes the group');
+  assert.doesNotMatch(hist, /history-group-members/, 'history does not list each board_id');
+}
+
+{
+  const del = cloud.slice(
+    cloud.indexOf('async function deleteCloudGroup'),
+    cloud.indexOf('(function wireCloudAuth')
+  );
+  assert.match(del, /from\("boards"\)\.delete\(\)\.in\("board_id"/, 'group delete removes every board');
+  assert.match(del, /from\("groups"\)\.delete\(\)\.eq\("group_id"/, 'group delete removes the group row');
 }
 
 {

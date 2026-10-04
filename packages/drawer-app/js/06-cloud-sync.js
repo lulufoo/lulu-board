@@ -546,73 +546,64 @@ async function refreshCloudBoardHistory() {
     var activeItem = null;
     var fragment = document.createDocumentFragment();
     groups.forEach(function (group) {
-      var groupLi = document.createElement("li");
-      groupLi.className = "history-group";
-      groupLi.setAttribute("role", "group");
-      groupLi.dataset.historyGroupId = group.group_id;
-      var memberList = document.createElement("ul");
-      memberList.className = "history-group-members";
-      memberList.style.listStyle = "none";
-      memberList.style.margin = "0";
-      memberList.style.padding = "0";
-      group.members.forEach(function (row) {
-        var item = {
-          id: row.board_id,
-          title: row.title,
-          created_at: row.updated_at || row.created_at,
-        };
-        var li = document.createElement("li");
-        li.className = "history-item";
-        li.setAttribute("role", "option");
-        li.dataset.historyId = item.id;
-        li.dataset.historyTitle = item.title || "Untitled";
-        li.dataset.historyKind = "board";
-        li.dataset.historyGroupId = group.group_id;
-        var active = item.id === current;
-        li.classList.toggle("is-active", active);
-        li.setAttribute("aria-selected", active ? "true" : "false");
-        if (active) activeItem = item;
+      var faceRow = group.members[0];
+      if (!faceRow) return;
+      var boardIds = group.members.map(function (row) { return row.board_id; });
+      var inGroup = boardIds.indexOf(current) >= 0;
+      var item = {
+        id: faceRow.board_id,
+        title: faceRow.title,
+        created_at: faceRow.updated_at || faceRow.created_at,
+      };
+      var li = document.createElement("li");
+      li.className = "history-item";
+      li.setAttribute("role", "option");
+      li.dataset.historyId = item.id;
+      li.dataset.historyTitle = item.title || "Untitled";
+      li.dataset.historyKind = "board";
+      li.dataset.historyGroupId = group.group_id;
+      li.classList.toggle("is-active", inGroup);
+      li.setAttribute("aria-selected", inGroup ? "true" : "false");
+      if (inGroup) activeItem = item;
 
-        var main = document.createElement("div");
-        main.className = "history-item-main";
-        var top = document.createElement("div");
-        top.className = "history-item-top";
-        var kind = document.createElement("span");
-        kind.className = "history-kind";
-        kind.textContent = "board";
-        var title = document.createElement("span");
-        title.className = "history-item-title";
-        title.textContent = historyDisplayTitle(item, "board");
-        top.appendChild(kind);
-        top.appendChild(title);
-        var meta = document.createElement("div");
-        meta.className = "history-item-meta";
-        appendHistoryMetaLine(meta, item);
-        main.appendChild(top);
-        main.appendChild(meta);
+      var main = document.createElement("div");
+      main.className = "history-item-main";
+      var top = document.createElement("div");
+      top.className = "history-item-top";
+      var kind = document.createElement("span");
+      kind.className = "history-kind";
+      kind.textContent = "board";
+      var title = document.createElement("span");
+      title.className = "history-item-title";
+      title.textContent = historyDisplayTitle(item, "board");
+      top.appendChild(kind);
+      top.appendChild(title);
+      var meta = document.createElement("div");
+      meta.className = "history-item-meta";
+      appendHistoryMetaLine(meta, item);
+      main.appendChild(top);
+      main.appendChild(meta);
 
-        var del = document.createElement("button");
-        del.type = "button";
-        del.className = "history-item-del";
-        del.setAttribute("aria-label", "Delete cloud board");
-        del.textContent = "×";
-        li.appendChild(main);
-        li.appendChild(del);
-        li.addEventListener("click", function (event) {
-          if (event.target === del || del.contains(event.target)) return;
-          if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
-          if (typeof cloudSwitchToBoard === "function") cloudSwitchToBoard(item.id);
-          else cloudSetBoardHash(item.id, false);
-        });
-        del.addEventListener("click", function (event) {
-          event.preventDefault();
-          event.stopPropagation();
-          void deleteCloudBoard(item.id);
-        });
-        memberList.appendChild(li);
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "history-item-del";
+      del.setAttribute("aria-label", "Delete group");
+      del.textContent = "×";
+      li.appendChild(main);
+      li.appendChild(del);
+      li.addEventListener("click", function (event) {
+        if (event.target === del || del.contains(event.target)) return;
+        if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
+        if (inGroup) return;
+        if (typeof cloudSwitchToBoard === "function") cloudSwitchToBoard(item.id);
+        else cloudSetBoardHash(item.id, false);
       });
-      groupLi.appendChild(memberList);
-      fragment.appendChild(groupLi);
+      del.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        void deleteCloudGroup(group.group_id, boardIds);
+      });
+      fragment.appendChild(li);
     });
     list.innerHTML = "";
     list.appendChild(fragment);
@@ -629,18 +620,26 @@ async function refreshCloudBoardHistory() {
   }
 }
 
-async function deleteCloudBoard(boardId) {
-  if (!cloudClient || !cloudSession || !cloudSession.user || !boardId) return;
-  if (!window.confirm("Delete cloud board\n" + boardId + "?")) return;
+async function deleteCloudGroup(groupId, boardIds) {
+  if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
+  var ids = (boardIds || []).filter(Boolean);
+  if (!ids.length) return;
+  if (!window.confirm("Delete this group and all boards?")) return;
   try {
-    var result = await cloudClient.from("boards").delete().eq("board_id", boardId);
-    if (result.error) throw result.error;
-    if (boardId === cloudBoardId()) {
+    var boards = await cloudClient.from("boards").delete().in("board_id", ids);
+    if (boards.error) throw boards.error;
+    var group = await cloudClient.from("groups").delete().eq("group_id", groupId);
+    if (group.error) throw group.error;
+    var openId = cloudBoardId();
+    if (openId && ids.indexOf(openId) >= 0) {
       history.replaceState(null, "", location.pathname + location.search);
       await bootstrapBoardFromHash();
       if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     }
-    setStatus("Deleted cloud board");
+    if (typeof refreshCloudGroupMembers === "function") {
+      await refreshCloudGroupMembers(cloudBoardId());
+    }
+    setStatus("Deleted group");
     await refreshCloudBoardHistory();
   } catch (error) {
     setStatus(error && error.message ? error.message : "Cloud delete failed", true);
