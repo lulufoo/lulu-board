@@ -48,6 +48,9 @@ assert.doesNotMatch(html, /id="btnBoardShare"/, 'share left the toolbar');
 assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
 assert.match(html, /id="btnShareSync"/, 'share guests with edit access get Share sync');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
+assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
+assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
+assert.match(dockCss, /html\[data-drawer-mode="board"\] \.zoom-float \{ right: 88px; \}/, 'zoom clears the group tab column');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
 assert.match(shareJs, /set_share_role/, 'owner access uses set_share_role');
@@ -258,9 +261,9 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
     cloud.indexOf('async function refreshCloudBoardHistory')
   );
   const reject = load.indexOf('if (!boardId) return false');
-  const members = load.search(/from\("group_members"\)|loadSiblingBoardIds/);
+  const members = load.search(/refreshCloudGroupMembers|from\("group_members"\)|loadSiblingBoardIds/);
   assert.ok(reject >= 0 && members > reject, 'invalid hash returns false and does not query groups');
-  assert.match(load, /loadSiblingBoardIds/, '#b: then resolves sibling board ids');
+  assert.match(load, /refreshCloudGroupMembers/, '#b: then refreshes group tabs');
   assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
@@ -279,13 +282,35 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   const updateBranch = save.slice(updated);
   assert.match(insertBranch, /rpc\("create_owned_board_with_group"/);
   assert.match(insertBranch, /p_board_id:\s*boardId/);
-  assert.match(insertBranch, /p_group_id:\s*null/);
+  assert.match(insertBranch, /joinGroupId = cloudPlusDraft && cloudGroupId \? cloudGroupId : null/);
+  assert.match(insertBranch, /p_group_id:\s*joinGroupId/);
+  assert.match(save, /cloudPlusDraft && !opts\.explicit/, 'plus draft does not autosave');
   assert.doesNotMatch(insertBranch, /from\("boards"\)\.insert|from\("group_members"\)/);
   assert.match(insertBranch, /cloudSetBoardHash\(boardId/);
   assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);
   assert.doesNotMatch(updateBranch, /create_owned_board_with_group|from\("group_members"\)/);
   assert.doesNotMatch(updateBranch, /share_id\s*:/);
   assert.doesNotMatch(save, /from\("boards"\)\.(insert|update)\([\s\S]*group_id/);
+}
+
+{
+  const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
+  const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
+  const start = tabs.indexOf('function sortBoardRowsByCreatedAt');
+  const end = tabs.indexOf('function cloudGroupTabsVisible');
+  assert.ok(start >= 0 && end > start, 'sortBoardRowsByCreatedAt is a closed function');
+  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByCreatedAt };')();
+  const sorted = helpers.sortBoardRowsByCreatedAt([
+    { board_id: 'b_22222222', created_at: '2026-10-04T12:00:00Z' },
+    { board_id: 'b_11111111', created_at: '2026-10-04T10:00:00Z' },
+  ]);
+  assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
+  assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
+  assert.match(tabs, /Leave without saving/, 'dirty saved tabs confirm before leave');
+  assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
+  assert.match(tabCss, /\.group-tab-float/, 'group tabs are canvas chrome');
+  assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');
+  assert.match(tabCss, /z-index: 4/, 'open dock covers the tab strip');
 }
 
 console.log('ok cloud-sync');

@@ -5,6 +5,9 @@ var cloudSessionReady = Promise.resolve(null);
 var cloudLoadSeq = 0;
 var cloudSaveSeq = 0;
 var cloudSiblingBoardIds = [];
+var cloudGroupId = "";
+var cloudGroupMembers = [];
+var cloudPlusDraft = false;
 
 function cloudConfig() {
   var config = globalThis.LuluBoardSupabaseConfig || {};
@@ -131,6 +134,7 @@ function syncCloudSaveChrome() {
   var signedIn = !!(cloudSession && cloudSession.user);
   var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
+  if (cloudPlusDraft) ownCloud = "";
   if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
     save.disabled = false;
@@ -224,6 +228,7 @@ function cloudSetBoardHash(boardId, replace) {
 }
 
 function cloudClearOpenBoard() {
+  if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
   if (!cloudBoardId() || !boardSourceEl) return;
   boardSourceEl.value = "";
   boardDirty = false;
@@ -303,6 +308,7 @@ async function cloudSignOut() {
   }
   cloudSession = null;
   var leaveCloud = !!cloudBoardId();
+  if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
   cloudSetAccountUi();
   cloudShowHistoryMessage("");
   if (leaveCloud) {
@@ -387,12 +393,18 @@ async function saveBoardToCloud(opts) {
     if (opts.explicit) setStatus("Sign in to save to cloud", true);
     return false;
   }
+  if (cloudPlusDraft && !opts.explicit) {
+    setBoardSyncUI("ok");
+    syncCloudSaveChrome();
+    return false;
+  }
   var source = typeof stripDocumentMeta === "function"
     ? stripDocumentMeta(boardSourceEl && boardSourceEl.value)
     : String(boardSourceEl && boardSourceEl.value || "");
   if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
   var boardId = (typeof cloudBoardId === "function" && cloudBoardId())
     || (typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "");
+  if (cloudPlusDraft) boardId = "";
   var title = cloudBoardTitle(source) || "Untitled";
   var seq = ++cloudSaveSeq;
   setBoardSyncUI("saving");
@@ -401,18 +413,21 @@ async function saveBoardToCloud(opts) {
     if (!boardId) {
       boardId = typeof newBoardId === "function" ? newBoardId() : "";
       if (!boardId) throw new Error("Could not mint a board id");
+      var joinGroupId = cloudPlusDraft && cloudGroupId ? cloudGroupId : null;
       result = await cloudClient.rpc("create_owned_board_with_group", {
         p_board_id: boardId,
         p_title: title,
         p_bmd: source,
-        p_group_id: null,
+        p_group_id: joinGroupId,
       });
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var created = Array.isArray(result.data) ? result.data[0] : result.data;
       if (!created) throw new Error("Could not create cloud board");
+      cloudPlusDraft = false;
       applyCloudBoardRow(created);
       cloudSetBoardHash(boardId, true);
+      if (typeof refreshCloudGroupMembers === "function") await refreshCloudGroupMembers(boardId);
     } else {
       var expected = Number(boardServerRev);
       if (!(expected > 0)) expected = 1;
@@ -481,12 +496,12 @@ async function loadCloudBoardByHash(raw) {
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud board not found");
+    cloudPlusDraft = false;
     applyCloudBoardRow(result.data);
-    var members = await cloudClient.from("group_members").select("board_id,group_id");
-    if (seq !== cloudLoadSeq) return true;
-    cloudSiblingBoardIds = members.error
-      ? []
-      : loadSiblingBoardIds(boardId, members.data || []);
+    if (typeof refreshCloudGroupMembers === "function") {
+      await refreshCloudGroupMembers(boardId);
+      if (seq !== cloudLoadSeq) return true;
+    }
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
@@ -586,7 +601,8 @@ async function refreshCloudBoardHistory() {
         li.addEventListener("click", function (event) {
           if (event.target === del || del.contains(event.target)) return;
           if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
-          cloudSetBoardHash(item.id, false);
+          if (typeof cloudSwitchToBoard === "function") cloudSwitchToBoard(item.id);
+          else cloudSetBoardHash(item.id, false);
         });
         del.addEventListener("click", function (event) {
           event.preventDefault();

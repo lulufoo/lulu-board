@@ -460,7 +460,7 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       boardSaveTimer = null;
       var outgoingId = "";
       outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && outgoingId && typeof saveBoardToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
+      if (boardDirty && outgoingId && !cloudPlusDraft && typeof saveBoardToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
         pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
       }
       boardDirty = false;

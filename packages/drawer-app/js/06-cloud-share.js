@@ -95,6 +95,7 @@ async function loadSharedBoardByHash(raw) {
     setShareView(!canEdit);
     setShareEdit(canEdit);
     applySharedBoardRow(result.data);
+    if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
     if (typeof showBoardError === "function") showBoardError("");
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");

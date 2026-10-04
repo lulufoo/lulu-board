@@ -1487,7 +1487,7 @@ html[data-drawer-mode="board"] .app {
   grid-template-columns: minmax(0, 1fr);
 }
 .sheet { display: none !important; }
-html[data-drawer-mode="board"] .zoom-float { right: 52px; } /* clear 40px dock rail so Fit is not covered */
+html[data-drawer-mode="board"] .zoom-float { right: 88px; } /* clear dock rail + group tab column */
 .board-dock {
   position: absolute;
   top: 0;

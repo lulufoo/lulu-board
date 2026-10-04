@@ -1596,6 +1596,11 @@ function scheduleBoardSave() {
     if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
     return;
   }
+  if (typeof cloudPlusDraft !== "undefined" && cloudPlusDraft) {
+    boardSaveTimer = null;
+    if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
+    return;
+  }
   setBoardSyncUI('saving');
   boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay());
 }
