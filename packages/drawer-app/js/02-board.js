@@ -535,10 +535,10 @@ function applyBoardEdgeSelection(root) {
       var base = readBoardEdgePaint(el, "stroke") || "#2563eb";
       var accent = darkenCssColor(base, 0.4);
       el.setAttribute("stroke", accent);
-      el.setAttribute("stroke-width", "2.6");
+      el.setAttribute("stroke-width", "2");
       if (el.style) {
         el.style.stroke = accent;
-        el.style.strokeWidth = "2.6px";
+        el.style.strokeWidth = "2px";
       }
     }
     if (el.classList.contains("board-edge-label")) {

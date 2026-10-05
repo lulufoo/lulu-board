@@ -2123,7 +2123,7 @@
       path.setAttribute('data-board-edge-index', String(item.linkIndex));
       path.setAttribute('fill', 'none');
       path.setAttribute('stroke', style.color);
-      path.setAttribute('stroke-width', style.evidence ? '1.6' : '1.7');
+      path.setAttribute('stroke-width', '1.2');
       if (style.markerStart) path.setAttribute('marker-start', style.markerStart);
       path.setAttribute('marker-end', style.marker);
       path.setAttribute('stroke-linecap', 'round');
