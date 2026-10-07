@@ -23,21 +23,27 @@ function createServer(env, identity, token) {
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
   server.registerTool("get_board", {
-    description: "Load one owned board by id.",
+    description: "Load one owned board by id. group_id in the result is the group this board_id belongs to.",
     inputSchema: { board_id: z.string() },
   }, async ({ board_id }) => {
     try { return toolText(await getBoard(env, token, board_id)); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_board", {
-    description: "Insert a new owned board and return its cloud id.",
-    inputSchema: { bmd: z.string(), board_id: z.string().optional(), group_id: z.string().optional() },
+    description: "Insert a new owned board and return its cloud id. group_id in the result is the group this board_id belongs to. Optional group_id joins that group on the current account so this board is classified with other board ids that share it. Omit group_id to create a new group.",
+    inputSchema: {
+      bmd: z.string(),
+      board_id: z.string().optional(),
+      group_id: z.string().optional().describe(
+        "If set, join this group on the current account so this board_id is classified with other board ids that share the same group_id. Omit to create a new group."
+      ),
+    },
   }, async ({ bmd, board_id, group_id }) => {
     try { return toolText(await createBoard(env, token, identity.user_id, bmd, board_id, group_id)); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("save_board", {
-    description: "Update an owned board when expected_version still matches.",
+    description: "Update an owned board when expected_version still matches. row.group_id is the group this board_id belongs to.",
     inputSchema: { board_id: z.string(), bmd: z.string(), expected_version: z.number() },
   }, async ({ board_id, bmd, expected_version }) => {
     try { return toolText(await saveBoard(env, token, board_id, bmd, expected_version)); }

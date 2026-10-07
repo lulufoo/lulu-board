@@ -221,6 +221,11 @@ assert.match(worker, /registerTool\("create_board"/, 'create_board is registered
 assert.match(worker, /registerTool\("save_board"/, 'save_board is registered');
 assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, board_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
+assert.match(worker, /group this board_id belongs to/, 'get/create say group_id is the board group');
+assert.match(worker, /row\.group_id is the group this board_id belongs to/, 'save describes row.group_id');
+assert.match(worker, /current account/, 'create joins a group on the current account');
+assert.match(worker, /Omit group_id to create a new group/, 'create says omit mints a group');
+assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const payload = Buffer.from(JSON.stringify({
   iss: 'https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1',
