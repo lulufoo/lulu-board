@@ -239,6 +239,9 @@ assert.doesNotMatch(worker, /list_recent/, 'list_recent stays out of v1');
 assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no service key');
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
-assert.match(skill, /optional `group_id`/, 'cloud create can join an owned group');
+assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
+assert.match(skill, /group this\s+board id belongs to/, 'skill says group_id is the board group');
+assert.match(skill, /current\s+account/, 'skill joins on the current account');
+assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
 
 console.log('ok board-mcp boards');
