@@ -44,11 +44,31 @@ const latest = {
   bmd: 'board "Now"\n',
   version: 4,
   updated_at: '2026-09-19T00:00:00Z',
-  group_id: 'g_99aabbcc',
+  group_members: { group_id: 'g_99aabbcc' },
+};
+const arrayEmbed = {
+  board_id: 'b_0fc10002',
+  title: 'Arr',
+  bmd: 'board "Arr"\n',
+  version: 1,
+  updated_at: '2026-09-19T00:00:00Z',
   group_members: [{ group_id: 'g_99aabbcc' }],
+};
+const missingEmbed = {
+  board_id: 'b_0fc10003',
+  title: 'Bare',
+  bmd: 'board "Bare"\n',
+  version: 1,
+  updated_at: '2026-09-19T00:00:00Z',
 };
 const ownedGroupId = 'g_abcdef01';
 const missingGroupId = 'g_ffffffff';
+
+function rowForBoardId(href) {
+  if (href.includes('board_id=eq.b_0fc10002')) return arrayEmbed;
+  if (href.includes('board_id=eq.b_0fc10003')) return missingEmbed;
+  return latest;
+}
 
 function isBoardsInsert(call) {
   return call.method === 'POST' && /\/rest\/v1\/boards(?:\?|$)/.test(call.url);
@@ -90,14 +110,11 @@ globalThis.fetch = async (url, init) => {
         bmd: patch.bmd,
         version: 5,
         updated_at: latest.updated_at,
-        group_members: [{ group_id: latest.group_id }],
+        group_members: { group_id: 'g_99aabbcc' },
       }]),
     };
   }
-  if (href.includes('board_id=eq.b_0fc10001')) {
-    return { ok: true, text: async () => JSON.stringify([latest]) };
-  }
-  return { ok: true, text: async () => JSON.stringify([latest]) };
+  return { ok: true, text: async () => JSON.stringify([rowForBoardId(href)]) };
 };
 
 try {
@@ -149,6 +166,11 @@ try {
   assert.equal(got.updated_at, latest.updated_at);
   assert.equal(got.group_id, 'g_99aabbcc');
   assert.ok(calls.some((c) => c.url.includes('select=board_id,title,bmd,version,updated_at,group_members(group_id)')));
+
+  const fromArray = await getBoard(env, 'tok', 'b_0fc10002');
+  assert.equal(fromArray.group_id, 'g_99aabbcc');
+
+  await assert.rejects(() => getBoard(env, 'tok', 'b_0fc10003'), /missing group id/);
 
   const beforeInvalidGet = calls.length;
   await assert.rejects(() => getBoard(env, 'tok', 'nope'), /invalid board id/);
