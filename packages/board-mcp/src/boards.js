@@ -41,17 +41,23 @@ export function assertGroupId(groupId) {
   return id;
 }
 
+function groupIdFromMembers(members) {
+  if (!members) return "";
+  if (Array.isArray(members)) return (members[0] && members[0].group_id) || "";
+  return members.group_id || "";
+}
+
 function rowPublic(row) {
   if (!row) return null;
-  var members = row.group_members;
-  var groupId = row.group_id || (members && members[0] && members[0].group_id) || "";
+  var raw = row.group_id || groupIdFromMembers(row.group_members);
+  if (!String(raw || "").trim()) throw new Error("missing group id");
   return {
     board_id: row.board_id,
     title: row.title || "",
     bmd: row.bmd || "",
     version: Number(row.version) || 1,
     updated_at: row.updated_at || "",
-    group_id: groupId,
+    group_id: assertGroupId(raw),
   };
 }
 
