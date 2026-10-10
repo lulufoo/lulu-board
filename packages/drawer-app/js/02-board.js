@@ -1511,7 +1511,7 @@ document.addEventListener("keydown", function(event) {
 });
 
 function boardClickIsOnNode(event) {
-  return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .top-float, .menu, .sheet, button, input, select, textarea, label"));
+  return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .top-float, .menu, .sheet, button, input, select, textarea, label"));
 }
 // Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
 previewEl.addEventListener("pointerdown", function(event) {

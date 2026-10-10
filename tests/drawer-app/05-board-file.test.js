@@ -8,6 +8,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const html = read('packages/drawer-app/index.html');
 const css = read('packages/drawer-app/css/03-diagram.css');
+const chromeCss = read('packages/drawer-app/css/07-cloud-chrome.css');
 const build = read('scripts/drawer-app-build/build.mjs');
 const boardFile = read('packages/drawer-app/js/05-board-file.js');
 const renderIo = read('packages/drawer-app/js/05-render-io.js');
@@ -32,9 +33,14 @@ assert.match(css, /\[data-persist="hash"\]:not\(\[data-cloud-history="on"\]\) #b
 assert.match(css, /\[data-persist="hash"\]\[data-cloud-history="on"\] #boardHistoryCombo/, 'signed-in hash mode shows cloud History');
 assert.doesNotMatch(css, /#btnHistoryOpenFile/, 'Open File styles are gone');
 assert.match(css, /\.history-actions\s*\{[^}]*margin-left:\s*auto/, 'History actions align on the right');
-assert.match(css, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^}]*margin-left:\s*auto/,
-  'account controls align on the right');
+assert.match(html, /class="float top-float"[\s\S]*id="boardHistory"/, 'Cloud History sits on the top-right');
+assert.doesNotMatch(html, /data-dock-panel="source"[\s\S]*id="boardHistory"/, 'Cloud History left the Source dock');
+assert.match(html, /id="boardDock"[\s\S]*id="boardAccount"/, 'account chrome sits after the dock');
+assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.top-float #boardHistory\s*\{[^}]*margin:\s*0 0 0 auto/,
+  'Cloud History aligns on the right');
+assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^}]*bottom:\s*8px/,
+  'account chrome sits on the sidebar foot');
 assert.match(css, /Keep editing controls left and account controls right\.[\s\S]*right:\s*48px/,
-  'account controls clear the right-side dock');
+  'top chrome still clears the right-side dock');
 
 console.log('ok board-file');

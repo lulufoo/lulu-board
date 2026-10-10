@@ -7,7 +7,8 @@ const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 const io = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/05-render-io.js'), 'utf8');
 
-assert.ok(/id="boardHistoryComboBtn"/.test(html), 'Board Source history is a combo');
+assert.ok(/id="boardHistoryComboBtn"/.test(html), 'Board history is a combo');
+assert.ok(/class="float top-float"[\s\S]*id="boardHistory"/.test(html), 'Board history sits on the canvas chrome');
 assert.ok(!/id="mermaidHistoryComboBtn"/.test(html), 'no Mermaid history combo');
 assert.ok(!/data-board-theme="mermaid"/.test(css), 'CSS drops mermaid theme alias');
 assert.ok(/aria-haspopup="listbox"/.test(html), 'History combo exposes a listbox');

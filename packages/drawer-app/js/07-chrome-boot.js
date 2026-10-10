@@ -50,7 +50,7 @@ stageEl.addEventListener('wheel', (e) => {
 stageEl.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
-  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label")) return;
+  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label")) return;
   if (boardLinkMode) setBoardLinkMode(false);
   else clearBoardSelection();
   e.preventDefault();

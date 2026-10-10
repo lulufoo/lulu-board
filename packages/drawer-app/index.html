@@ -37,37 +37,25 @@
         <button class="btn board-edit-tool" id="btnBoardLink" type="button" title="Link mode: click source box or item, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
         <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
       </div>
-      <div class="board-account" id="boardAccount">
-        <button class="btn board-account-btn" id="btnBoardSignIn" type="button" aria-haspopup="menu" aria-expanded="false">Sign in</button>
-        <div class="board-auth-menu" id="boardAuthMenu" role="menu" hidden>
-          <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
-          <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
-        </div>
-        <button class="board-cloud-status is-pending" id="btnBoardSaveCloud" type="button" hidden>
-          <span class="board-cloud-status-dot" aria-hidden="true"></span>
-          <span class="board-cloud-status-label">Saved</span>
-        </button>
-        <div class="board-cloud-status is-current" id="boardCloudStatus" hidden role="status">
-          <span class="board-cloud-status-dot" aria-hidden="true"></span>
-          <span class="board-cloud-status-label">Saved</span>
-        </div>
-        <button class="btn board-account-btn" id="btnShareSync" type="button" hidden>Share sync</button>
-        <button class="btn board-account-btn" id="btnBoardSaveCopy" type="button" hidden>Save a copy</button>
-        <div class="board-session" id="boardSession" hidden>
-          <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
-            <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">
-              <img id="boardAccountAvatarImg" alt="" referrerpolicy="no-referrer" hidden>
-              <span class="board-account-initials" id="boardAccountInitials"></span>
-            </span>
-            <span class="board-account-name" id="boardAccountName"></span>
-            <span class="board-account-caret" aria-hidden="true"></span>
-          </button>
-          <div class="board-session-menu board-auth-menu" id="boardSessionMenu" role="menu" hidden>
-            <div class="board-session-meta" id="boardSessionEmail"></div>
-            <button type="button" class="board-auth-provider" id="btnBoardSignOut" role="menuitem">Sign out</button>
+      <section class="history-block" id="boardHistory" aria-label="Board history">
+        <div class="history-head">
+          <strong>History</strong>
+          <div class="history-actions">
+            <button type="button" class="btn history-refresh" id="btnBoardHistoryRefresh">Refresh</button>
           </div>
         </div>
-      </div>
+        <div class="history-combo" id="boardHistoryCombo">
+          <button type="button" class="history-combo-btn" id="boardHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" disabled>
+            <span class="history-combo-face" id="boardHistoryComboFace">No snapshots yet</span>
+            <span class="history-combo-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="history-pop" hidden>
+            <input type="search" class="history-search" id="board-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
+            <ul class="history-list" id="boardHistoryList" role="listbox"></ul>
+          </div>
+        </div>
+        <p class="history-empty" id="boardHistoryEmpty" hidden>No snapshots yet</p>
+      </section>
     </div>
 
     <script src="./vendor/drawer-app-early-hydrate.js"></script>
@@ -254,25 +242,6 @@
           <span class="source-chars" id="boardCharsPill">0 chars</span>
           <pre id="boardError"></pre>
         </div>
-        <section class="history-block" id="boardHistory" aria-label="Board history">
-          <div class="history-head">
-            <strong>History</strong>
-            <div class="history-actions">
-              <button type="button" class="btn history-refresh" id="btnBoardHistoryRefresh">Refresh</button>
-            </div>
-          </div>
-          <div class="history-combo" id="boardHistoryCombo">
-            <button type="button" class="history-combo-btn" id="boardHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" disabled>
-              <span class="history-combo-face" id="boardHistoryComboFace">No snapshots yet</span>
-              <span class="history-combo-chevron" aria-hidden="true"></span>
-            </button>
-            <div class="history-pop" hidden>
-              <input type="search" class="history-search" id="board-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
-              <ul class="history-list" id="boardHistoryList" role="listbox"></ul>
-            </div>
-          </div>
-          <p class="history-empty" id="boardHistoryEmpty" hidden>No snapshots yet</p>
-        </section>
       </div>
     </div>
     <div class="board-dock-panel" id="exportPanel" data-dock-panel="export">
@@ -356,6 +325,42 @@
       </div>
     </div>
   </aside>
+
+  <div class="board-account" id="boardAccount">
+    <button class="btn board-account-btn" id="btnBoardSignIn" type="button" aria-haspopup="menu" aria-expanded="false">
+      <svg class="board-account-sign-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.2" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M3.6 13c.6-2.4 2.3-3.6 4.4-3.6s3.8 1.2 4.4 3.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span class="board-account-sign-label">Sign in</span>
+    </button>
+    <div class="board-auth-menu" id="boardAuthMenu" role="menu" hidden>
+      <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
+      <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
+    </div>
+    <button class="board-cloud-status is-pending" id="btnBoardSaveCloud" type="button" hidden>
+      <span class="board-cloud-status-dot" aria-hidden="true"></span>
+      <span class="board-cloud-status-label">Saved</span>
+    </button>
+    <div class="board-cloud-status is-current" id="boardCloudStatus" hidden role="status">
+      <span class="board-cloud-status-dot" aria-hidden="true"></span>
+      <span class="board-cloud-status-label">Saved</span>
+    </div>
+    <button class="btn board-account-btn" id="btnShareSync" type="button" hidden>Share sync</button>
+    <button class="btn board-account-btn" id="btnBoardSaveCopy" type="button" hidden>Save a copy</button>
+    <div class="board-session" id="boardSession" hidden>
+      <button class="board-account-chip" id="btnBoardAccount" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="boardSessionMenu">
+        <span class="board-account-avatar" id="boardAccountAvatar" aria-hidden="true">
+          <img id="boardAccountAvatarImg" alt="" referrerpolicy="no-referrer" hidden>
+          <span class="board-account-initials" id="boardAccountInitials"></span>
+        </span>
+        <span class="board-account-name" id="boardAccountName"></span>
+        <span class="board-account-caret" aria-hidden="true"></span>
+      </button>
+      <div class="board-session-menu board-auth-menu" id="boardSessionMenu" role="menu" hidden>
+        <div class="board-session-name" id="boardSessionName"></div>
+        <div class="board-session-meta" id="boardSessionEmail"></div>
+        <button type="button" class="board-auth-provider" id="btnBoardSignOut" role="menuitem">Sign out</button>
+      </div>
+    </div>
+  </div>
 
 </div>
 

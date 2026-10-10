@@ -221,6 +221,7 @@ function cloudSetAccountUi() {
   var session = document.getElementById("boardSession");
   var chip = document.getElementById("btnBoardAccount");
   var nameEl = document.getElementById("boardAccountName");
+  var sessionName = document.getElementById("boardSessionName");
   var emailEl = document.getElementById("boardSessionEmail");
   var img = document.getElementById("boardAccountAvatarImg");
   var initialsEl = document.getElementById("boardAccountInitials");
@@ -236,6 +237,7 @@ function cloudSetAccountUi() {
   syncCloudSaveChrome();
   if (session) session.hidden = !signedIn;
   if (nameEl) nameEl.textContent = profile ? profile.name : "";
+  if (sessionName) sessionName.textContent = profile ? profile.name : "";
   if (emailEl) emailEl.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (chip) chip.title = profile ? (profile.email || profile.name) : "";
   if (initialsEl) {
