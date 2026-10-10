@@ -49,6 +49,10 @@ assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^
 assert.doesNotMatch(chromeCss, /#boardCloudStatus \{\s*display:\s*none/,
   'Saved stays its own control');
 assert.match(html, /class="board-cloud-status-icon"/, 'Saved is a sidebar-style icon');
+assert.doesNotMatch(html, /board-cloud-status-icon"[\s\S]*?<rect /,
+  'Saved icon has no drawn frame');
+assert.match(css, /\.board-cloud-status:hover \{[^}]*background:\s*color-mix\(in srgb, var\(--text\) 6%/,
+  'Saved hover matches the rail icon plate');
 assert.match(chromeCss, /\.board-account \.board-cloud-status \{[^}]*background:\s*transparent/,
   'Saved matches the rail icon chrome');
 assert.match(css, /Keep editing controls left and account controls right\.[\s\S]*right:\s*48px/,

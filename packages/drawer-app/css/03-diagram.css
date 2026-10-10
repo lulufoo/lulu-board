@@ -725,15 +725,15 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   color: var(--ok);
   border: 0;
   cursor: default;
-  pointer-events: none;
 }
 .board-cloud-status.is-pending {
   color: var(--warn);
   border: 0;
   cursor: pointer;
 }
-.board-cloud-status.is-pending:hover {
+.board-cloud-status:hover {
   background: color-mix(in srgb, var(--text) 6%, transparent);
+  box-shadow: none;
 }
 .board-cloud-status.is-pending.is-uncreated {
   color: var(--muted, #64748b);

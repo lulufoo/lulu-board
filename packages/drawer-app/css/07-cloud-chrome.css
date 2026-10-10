@@ -115,6 +115,10 @@ html[data-drawer-mode="board"] .board-account .board-cloud-status {
   background: transparent;
   box-shadow: none;
 }
+html[data-drawer-mode="board"] .board-account .board-cloud-status:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  box-shadow: none;
+}
 html[data-drawer-mode="board"] .board-account .board-account-chip {
   width: 26px;
   height: 26px;

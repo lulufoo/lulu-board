@@ -154,10 +154,14 @@ function applyLocalSignedInPreview() {
   var img = document.getElementById("boardAccountAvatarImg");
   if (signIn) signIn.hidden = true;
   if (session) session.hidden = false;
-  if (save) save.hidden = true;
   if (status) {
-    status.hidden = false;
-    status.title = "Synced";
+    status.hidden = true;
+    status.title = "";
+  }
+  if (save) {
+    save.hidden = false;
+    save.disabled = false;
+    save.title = "Not saved";
   }
   if (chip) chip.title = "Local preview";
   if (initialsEl) {
@@ -270,11 +274,11 @@ function syncCloudSaveChrome() {
   if (!save || !status) return;
   var signedIn = !!(cloudSession && cloudSession.user);
   if (!signedIn && isLocalDrawerPreview()) {
-    save.hidden = true;
-    save.disabled = true;
-    save.title = "";
-    status.hidden = false;
-    status.title = "Synced";
+    save.hidden = false;
+    save.disabled = false;
+    save.title = "Not saved";
+    status.hidden = true;
+    status.title = "";
     return;
   }
   var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
