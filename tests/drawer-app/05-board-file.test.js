@@ -38,9 +38,24 @@ assert.doesNotMatch(html, /data-dock-panel="source"[\s\S]*id="boardHistory"/, 'C
 assert.match(html, /id="boardDock"[\s\S]*id="boardAccount"/, 'account chrome sits after the dock');
 assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.top-float #boardHistory\s*\{[^}]*margin:\s*0 0 0 auto/,
   'Cloud History aligns on the right');
+assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.top-float #boardHistory\s*\{[^}]*max-width:\s*320px/,
+  'Cloud History input is a wider field');
+assert.match(css, /\.history-combo-input \{[^}]*box-shadow:\s*inset/,
+  'History field is inset like an input, not a raised button');
+assert.doesNotMatch(css, /\.history-combo-input \{[^}]*font-weight:\s*550/,
+  'History field does not bold the value');
 assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^}]*bottom:\s*8px/,
   'account chrome sits on the sidebar foot');
+assert.doesNotMatch(chromeCss, /#boardCloudStatus \{\s*display:\s*none/,
+  'Saved stays its own control');
+assert.match(html, /class="board-cloud-status-icon"/, 'Saved is a sidebar-style icon');
+assert.match(chromeCss, /\.board-account \.board-cloud-status \{[^}]*background:\s*transparent/,
+  'Saved matches the rail icon chrome');
 assert.match(css, /Keep editing controls left and account controls right\.[\s\S]*right:\s*48px/,
   'top chrome still clears the right-side dock');
+assert.match(cloud, /function applyLocalSignedInPreview/, '127 can preview signed-in chrome');
+assert.match(cloud, /host === "127\.0\.0\.1"/, 'signed-in preview stays on localhost');
+assert.match(cloud, /if \(cloudSession && cloudSession\.user\) return/,
+  'real sessions replace the local preview');
 
 console.log('ok board-file');

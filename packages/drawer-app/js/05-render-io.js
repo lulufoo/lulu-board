@@ -92,10 +92,14 @@ function appendHistoryMetaLine(meta, item) {
 function historyPop(combo) {
   return combo && combo.querySelector(".history-pop");
 }
+function historyComboInput(combo) {
+  return combo && combo.querySelector(".history-combo-input");
+}
 function filterHistoryCombo(combo) {
   if (!combo) return;
-  var input = combo.querySelector(".history-search");
-  var q = String(input && input.value || "").trim().toLowerCase();
+  var input = historyComboInput(combo);
+  var raw = String(input && input.value || "");
+  var q = raw === (combo.dataset.faceTitle || "") ? "" : raw.trim().toLowerCase();
   var list = combo.querySelector(".history-list");
   if (!list) return;
   list.querySelectorAll(".history-item").forEach(function(li) {
@@ -109,17 +113,26 @@ function filterHistoryCombo(combo) {
     ].join(" ").toLowerCase();
     li.hidden = hay.indexOf(q) < 0;
   });
-  list.scrollTop = 0;
+  if (q) list.scrollTop = 0;
+}
+function revealHistoryActiveItem(combo) {
+  var list = combo && combo.querySelector(".history-list");
+  var active = list && list.querySelector(".history-item.is-active:not([hidden])");
+  if (!list || !active) return;
+  void list.offsetHeight;
+  var top = active.offsetTop - (list.clientHeight / 2) + (active.offsetHeight / 2);
+  list.scrollTop = Math.max(0, top);
 }
 function closeHistoryCombo(combo) {
   if (!combo) return;
   combo.classList.remove("is-open");
-  var btn = combo.querySelector(".history-combo-btn");
   var pop = historyPop(combo);
-  var input = combo.querySelector(".history-search");
-  if (btn) btn.setAttribute("aria-expanded", "false");
+  var input = historyComboInput(combo);
+  if (input) {
+    input.setAttribute("aria-expanded", "false");
+    input.value = combo.dataset.faceTitle || "";
+  }
   if (pop) pop.hidden = true;
-  if (input) input.value = "";
   filterHistoryCombo(combo);
 }
 function closeAllHistoryCombos() {
@@ -127,70 +140,58 @@ function closeAllHistoryCombos() {
 }
 function openHistoryCombo(combo) {
   if (!combo) return;
+  var input = historyComboInput(combo);
+  if (input && input.disabled) return;
   document.querySelectorAll(".history-combo.is-open").forEach(function(other) {
     if (other !== combo) closeHistoryCombo(other);
   });
+  var already = combo.classList.contains("is-open");
   combo.classList.add("is-open");
-  var btn = combo.querySelector(".history-combo-btn");
   var pop = historyPop(combo);
-  var list = combo.querySelector(".history-list");
-  var input = combo.querySelector(".history-search");
-  if (btn) btn.setAttribute("aria-expanded", "true");
+  if (input) input.setAttribute("aria-expanded", "true");
   if (pop) pop.hidden = false;
-  filterHistoryCombo(combo);
-  if (input) requestAnimationFrame(function() { input.focus(); input.select(); });
-  var active = list && list.querySelector(".history-item.is-active:not([hidden])");
-  if (active && active.scrollIntoView) {
-    void list.offsetHeight;
-    active.scrollIntoView({ block: "center" });
-  }
-}
-function setHistoryComboFace(combo, item, fallbackKind) {
-  var face = combo && combo.querySelector(".history-combo-face");
-  var btn = combo && combo.querySelector(".history-combo-btn");
-  if (!face) return;
-  face.textContent = "";
-  if (!item) {
-    face.textContent = "No snapshots yet";
-    if (btn) btn.disabled = true;
+  if (!already) {
+    filterHistoryCombo(combo);
+    requestAnimationFrame(function() {
+      if (input) { input.focus(); input.select(); }
+      revealHistoryActiveItem(combo);
+    });
     return;
   }
-  if (btn) btn.disabled = false;
-  var top = document.createElement("div");
-  top.className = "history-item-top";
-  var kind = document.createElement("span");
-  kind.className = "history-kind";
-  kind.textContent = fallbackKind === "board" ? "board" : (item.kind || fallbackKind || "board");
-  var title = document.createElement("span");
-  title.className = "history-item-title";
-  title.textContent = historyDisplayTitle(item, fallbackKind || "diagram");
-  top.appendChild(kind);
-  top.appendChild(title);
-  var meta = document.createElement("div");
-  meta.className = "history-item-meta";
-  appendHistoryMetaLine(meta, item);
-  face.appendChild(top);
-  face.appendChild(meta);
+  if (input && document.activeElement !== input) input.focus();
+}
+function setHistoryComboFace(combo, item, fallbackKind) {
+  var input = historyComboInput(combo);
+  if (!input) return;
+  if (!item) {
+    combo.dataset.faceTitle = "";
+    input.value = "";
+    input.placeholder = "No snapshots yet";
+    input.disabled = true;
+    return;
+  }
+  var title = historyDisplayTitle(item, fallbackKind || "diagram");
+  combo.dataset.faceTitle = title;
+  input.disabled = false;
+  if (!combo.classList.contains("is-open")) input.value = title;
 }
 function wireHistoryCombos() {
   if (wireHistoryCombos.wired) return;
   wireHistoryCombos.wired = true;
   document.querySelectorAll(".history-combo").forEach(function(combo) {
-    var btn = combo.querySelector(".history-combo-btn");
-    if (!btn) return;
-    btn.addEventListener("click", function(ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if (btn.disabled) return;
-      if (combo.classList.contains("is-open")) closeHistoryCombo(combo);
-      else openHistoryCombo(combo);
+    var input = historyComboInput(combo);
+    if (!input) return;
+    input.addEventListener("focus", function() {
+      if (!input.disabled) openHistoryCombo(combo);
     });
-    var search = combo.querySelector(".history-search");
-    if (search) {
-      search.addEventListener("input", function() { filterHistoryCombo(combo); });
-      search.addEventListener("search", function() { filterHistoryCombo(combo); });
-      search.addEventListener("click", function(ev) { ev.stopPropagation(); });
-    }
+    input.addEventListener("click", function(ev) {
+      ev.stopPropagation();
+      if (!input.disabled) openHistoryCombo(combo);
+    });
+    input.addEventListener("input", function() {
+      if (!input.disabled) openHistoryCombo(combo);
+      filterHistoryCombo(combo);
+    });
   });
   document.addEventListener("click", function(ev) {
     var hit = ev.target && ev.target.closest && ev.target.closest(".history-combo");
@@ -298,10 +299,8 @@ async function refreshBoardHistory() {
     list.appendChild(frag);
     filterHistoryCombo(combo);
     setHistoryComboFace(combo, activeItem || items[0], "board");
-    if (combo && combo.classList.contains("is-open") && activeEl && activeEl.scrollIntoView) {
-      requestAnimationFrame(function() {
-        activeEl.scrollIntoView({ block: "center" });
-      });
+    if (combo && combo.classList.contains("is-open")) {
+      requestAnimationFrame(function() { revealHistoryActiveItem(combo); });
     }
   } catch (err) {
     if (empty) {

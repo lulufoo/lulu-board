@@ -97,6 +97,82 @@ function cloudSetHistoryVisible(visible) {
   if (heading) heading.textContent = visible ? "Cloud history" : "History";
 }
 
+function isLocalDrawerPreview() {
+  var host = location.hostname;
+  return host === "127.0.0.1" || host === "localhost";
+}
+
+function paintLocalHistoryPreview() {
+  var list = document.getElementById("boardHistoryList");
+  var empty = document.getElementById("boardHistoryEmpty");
+  var combo = list && list.closest(".history-combo");
+  if (!list || !combo) return;
+  if (typeof wireHistoryCombos === "function") wireHistoryCombos();
+  var titles = [
+    "Alpha Route", "Beta Notes", "Gamma Map", "Delta Spec",
+    "Epsilon Draft", "Zeta Review", "Eta Plan", "Selected Board",
+    "Theta Board", "Iota Sketch", "Kappa Outline", "Lambda Copy"
+  ];
+  var active = 7;
+  list.innerHTML = "";
+  titles.forEach(function (title, index) {
+    var li = document.createElement("li");
+    li.className = "history-item";
+    li.setAttribute("role", "option");
+    li.dataset.historyTitle = title;
+    li.dataset.historyKind = "board";
+    li.classList.toggle("is-active", index === active);
+    li.setAttribute("aria-selected", index === active ? "true" : "false");
+    var main = document.createElement("div");
+    main.className = "history-item-main";
+    var top = document.createElement("div");
+    top.className = "history-item-top";
+    var name = document.createElement("span");
+    name.className = "history-item-title";
+    name.textContent = title;
+    top.appendChild(name);
+    main.appendChild(top);
+    li.appendChild(main);
+    list.appendChild(li);
+  });
+  if (empty) empty.hidden = true;
+  if (typeof setHistoryComboFace === "function") {
+    setHistoryComboFace(combo, { title: titles[active] }, "board");
+  }
+}
+
+function applyLocalSignedInPreview() {
+  if (!isLocalDrawerPreview()) return;
+  if (cloudSession && cloudSession.user) return;
+  cloudHideSignInDialog();
+  var signIn = document.getElementById("btnBoardSignIn");
+  var session = document.getElementById("boardSession");
+  var save = document.getElementById("btnBoardSaveCloud");
+  var status = document.getElementById("boardCloudStatus");
+  var chip = document.getElementById("btnBoardAccount");
+  var initialsEl = document.getElementById("boardAccountInitials");
+  var img = document.getElementById("boardAccountAvatarImg");
+  if (signIn) signIn.hidden = true;
+  if (session) session.hidden = false;
+  if (save) save.hidden = true;
+  if (status) {
+    status.hidden = false;
+    status.title = "Synced";
+  }
+  if (chip) chip.title = "Local preview";
+  if (initialsEl) {
+    initialsEl.textContent = "";
+    initialsEl.hidden = true;
+  }
+  if (img) {
+    img.removeAttribute("src");
+    img.hidden = true;
+  }
+  cloudSetHistoryVisible(true);
+  var list = document.getElementById("boardHistoryList");
+  if (!list || !list.children.length) paintLocalHistoryPreview();
+}
+
 function cloudSafeAvatarUrl(raw) {
   try {
     var url = new URL(String(raw || ""));
@@ -193,6 +269,14 @@ function syncCloudSaveChrome() {
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
   var signedIn = !!(cloudSession && cloudSession.user);
+  if (!signedIn && isLocalDrawerPreview()) {
+    save.hidden = true;
+    save.disabled = true;
+    save.title = "";
+    status.hidden = false;
+    status.title = "Synced";
+    return;
+  }
   var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
   if (cloudPlusDraftActive) ownCloud = "";
@@ -262,6 +346,7 @@ function cloudSetAccountUi() {
   }
   cloudSetHistoryVisible(signedIn);
   if (typeof syncShareChrome === "function") syncShareChrome();
+  if (!signedIn) applyLocalSignedInPreview();
 }
 
 function cloudShowHistoryMessage(message) {
@@ -622,7 +707,8 @@ async function loadCloudBoardByHash(raw) {
 
 async function refreshCloudBoardHistory() {
   if (!cloudClient || !cloudSession || !cloudSession.user) {
-    cloudSetHistoryVisible(false);
+    if (isLocalDrawerPreview()) applyLocalSignedInPreview();
+    else cloudSetHistoryVisible(false);
     return;
   }
   var list = document.getElementById("boardHistoryList");

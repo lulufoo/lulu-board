@@ -45,12 +45,8 @@
           </div>
         </div>
         <div class="history-combo" id="boardHistoryCombo">
-          <button type="button" class="history-combo-btn" id="boardHistoryComboBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" disabled>
-            <span class="history-combo-face" id="boardHistoryComboFace">No snapshots yet</span>
-            <span class="history-combo-chevron" aria-hidden="true"></span>
-          </button>
+          <input type="text" class="history-combo-input" id="boardHistoryComboInput" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="boardHistoryList" aria-autocomplete="list" placeholder="No snapshots yet" autocomplete="off" spellcheck="false" disabled>
           <div class="history-pop" hidden>
-            <input type="search" class="history-search" id="board-history-search" placeholder="Search" autocomplete="off" spellcheck="false">
             <ul class="history-list" id="boardHistoryList" role="listbox"></ul>
           </div>
         </div>
@@ -336,11 +332,11 @@
       <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
     </div>
     <button class="board-cloud-status is-pending" id="btnBoardSaveCloud" type="button" hidden>
-      <span class="board-cloud-status-dot" aria-hidden="true"></span>
+      <svg class="board-cloud-status-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.45 12.2h6.85c1.42 0 2.55-1.14 2.55-2.55 0-1.3-.97-2.4-2.24-2.54A3.15 3.15 0 0 0 5.85 4.55 2.7 2.7 0 0 0 2.7 7.3c0 .2.02.39.06.57A2.2 2.2 0 0 0 4.45 12.2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       <span class="board-cloud-status-label">Saved</span>
     </button>
     <div class="board-cloud-status is-current" id="boardCloudStatus" hidden role="status">
-      <span class="board-cloud-status-dot" aria-hidden="true"></span>
+      <svg class="board-cloud-status-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.45 12.2h6.85c1.42 0 2.55-1.14 2.55-2.55 0-1.3-.97-2.4-2.24-2.54A3.15 3.15 0 0 0 5.85 4.55 2.7 2.7 0 0 0 2.7 7.3c0 .2.02.39.06.57A2.2 2.2 0 0 0 4.45 12.2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
       <span class="board-cloud-status-label">Saved</span>
     </div>
     <button class="btn board-account-btn" id="btnShareSync" type="button" hidden>Share sync</button>

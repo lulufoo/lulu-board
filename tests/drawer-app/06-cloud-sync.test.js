@@ -88,12 +88,11 @@ assert.match(cloud, /save\.title = "Not created"/, 'uncreated Saved hints Not cr
 {
   const block = dockCss.match(/\.board-cloud-status\.is-pending\.is-uncreated \{[^}]+\}/);
   assert.ok(block, 'uncreated Saved has a pending rule');
-  assert.match(block[0], /--cloud-dot: transparent/, 'uncreated Saved uses a hollow warn dot');
-  assert.doesNotMatch(block[0], /color:/, 'uncreated Saved text matches the other states');
+  assert.match(block[0], /color:\s*var\(--muted/, 'uncreated Saved uses the muted icon');
 }
-assert.match(dockCss, /\.board-cloud-status\.is-pending \{[\s\S]*?--cloud-dot: var\(--warn\)/, 'unsaved Saved uses the warn dot');
-assert.match(dockCss, /\.board-cloud-status\.is-pending \{[\s\S]*?border: 1px solid var\(--stroke\)/, 'pending Saved has a border');
-assert.match(dockCss, /\.board-cloud-status\.is-current \{[\s\S]*?border: 0/, 'synced Saved has no border');
+assert.match(dockCss, /\.board-cloud-status\.is-pending \{[\s\S]*?color:\s*var\(--warn\)/, 'unsaved Saved uses the warn icon');
+assert.match(dockCss, /\.board-cloud-status\.is-current \{[\s\S]*?color:\s*var\(--ok\)/, 'synced Saved uses the ok icon');
+assert.match(html, /class="board-cloud-status-icon"/, 'Saved chrome is an icon');
 assert.match(cloud, /isShareGuest[\s\S]*forkSharedBoard/, 'Saved on a share creates the guest\'s own copy');
 assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
 assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');

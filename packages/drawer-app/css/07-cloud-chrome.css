@@ -1,10 +1,10 @@
 /* Cloud History sits on the top-right; account chrome sits on the rail foot. */
 html[data-drawer-mode="board"] .top-float #boardHistory {
   margin: 0 0 0 auto;
-  flex: 1 1 160px;
+  flex: 1 1 240px;
   width: auto;
-  max-width: 220px;
-  min-width: 120px;
+  max-width: 320px;
+  min-width: 200px;
   flex-direction: row;
   align-items: center;
   gap: 6px;
@@ -20,24 +20,18 @@ html[data-drawer-mode="board"] .top-float #boardHistory .history-combo {
   flex: 1 1 auto;
   min-width: 0;
 }
-html[data-drawer-mode="board"] .top-float #boardHistory .history-combo-btn {
-  min-height: 32px;
-  height: 32px;
-  padding: 0 10px;
-}
-html[data-drawer-mode="board"] .top-float #boardHistory .history-combo-face .history-kind,
-html[data-drawer-mode="board"] .top-float #boardHistory .history-combo-face .history-item-meta {
-  display: none;
-}
-html[data-drawer-mode="board"] .top-float #boardHistory .history-combo-face .history-item-top {
+html[data-drawer-mode="board"] .top-float #boardHistory .history-combo-input {
   min-width: 0;
+  min-height: 34px;
+  height: 34px;
+  padding: 0 10px;
 }
 html[data-drawer-mode="board"] .top-float #boardHistory .history-pop {
   top: calc(100% + 4px);
   bottom: auto;
   right: 0;
-  left: auto;
-  min-width: 260px;
+  left: 0;
+  min-width: 0;
 }
 html[data-drawer-mode="board"] .top-float #boardHistory .history-empty {
   position: absolute;
@@ -51,7 +45,7 @@ html[data-drawer-mode="board"] .top-float #boardHistory .history-empty {
 }
 
 html[data-drawer-mode="board"] .board-dock-rail {
-  padding-bottom: 88px;
+  padding-bottom: 72px;
 }
 html[data-drawer-mode="board"] .board-account {
   position: absolute;
@@ -113,15 +107,26 @@ html[data-drawer-mode="board"] .board-account .board-account-caret {
 html[data-drawer-mode="board"] .board-account .board-cloud-status {
   width: 32px;
   height: 32px;
+  min-width: 32px;
   padding: 0;
   justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
 }
 html[data-drawer-mode="board"] .board-account .board-account-chip {
-  width: 32px;
-  height: 32px;
-  max-width: 32px;
+  width: 26px;
+  height: 26px;
+  max-width: 26px;
   padding: 0;
   justify-content: center;
+  border-radius: 8px;
+}
+html[data-drawer-mode="board"] .board-account .board-account-avatar {
+  width: 18px;
+  height: 18px;
+  font-size: 8px;
 }
 html[data-drawer-mode="board"] .board-account .board-auth-menu {
   top: auto;
