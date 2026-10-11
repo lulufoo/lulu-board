@@ -322,6 +322,16 @@ if (boardFontSizeSlider) {
     boardFontSizeTimer = setTimeout(function() { applyBoardTypeStep(boardFontSizeSlider.value, true, true); }, 160);
   });
 }
+let boardNodeFontTimer = 0;
+if (boardNodeFontSlider) {
+  boardNodeFontSlider.addEventListener('input', function() {
+    if (typeof commitBoardNodeFont === 'function') commitBoardNodeFont(false, false);
+    clearTimeout(boardNodeFontTimer);
+    boardNodeFontTimer = setTimeout(function() {
+      if (typeof commitBoardNodeFont === 'function') commitBoardNodeFont(true, true);
+    }, 160);
+  });
+}
 
 
 const canvasExportMenu = $('#canvasExportMenu');

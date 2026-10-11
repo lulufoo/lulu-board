@@ -139,6 +139,13 @@
       el.dataset.boardKind = 'item';
       el.dataset.boardType = itemType;
       if (item.cap === 'off' && itemType !== 'icon') el.dataset.boardCap = 'off';
+      const Scale = root.BoardTypeScale;
+      const fz = item.id && Scale && typeof Scale.stepFromStyle === 'function'
+        ? Scale.stepFromStyle(ctx.board && ctx.board.style, item.id)
+        : null;
+      if (fz != null && Scale && typeof Scale.applyItemStep === 'function') {
+        Scale.applyItemStep(el, fz);
+      }
       this.decorate(el, ctx);
       const itemCopy = doc.createElement('span');
       itemCopy.className = 'board-item-copy';

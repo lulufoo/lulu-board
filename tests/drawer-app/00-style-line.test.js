@@ -34,6 +34,9 @@ function b64(obj) {
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
   assert.ok(/Mint without meta or style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
+  const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
+  assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
+  assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
 }

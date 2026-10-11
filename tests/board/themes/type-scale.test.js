@@ -27,4 +27,15 @@ assert.strictEqual(Scale.sizeForCard(1), '14px');
 assert.strictEqual(Scale.sizeForTitle('card', 1), '15px');
 assert.strictEqual(Scale.sizes(0).display, '24px');
 
+assert.strictEqual(Scale.stepFromStyle({ ids: { HERO: { fz: 2 } } }, 'HERO'), 2);
+assert.strictEqual(Scale.stepFromStyle({ ids: { HERO: { fz: 2 } } }, 'LEAF'), null);
+assert.strictEqual(Scale.stepFromStyle({}, 'HERO'), null);
+const itemEl = { style: { map: {}, setProperty: function (k, v) { this.map[k] = v; } } };
+Scale.applyItemStep(itemEl, 1);
+assert.strictEqual(itemEl.style.map['--board-card-size'], '14px');
+const boxEl = { style: { map: {}, setProperty: function (k, v) { this.map[k] = v; } } };
+Scale.applyBoxTitleStep(boxEl, 'card', 1);
+assert.strictEqual(boxEl.style.map['--board-title-size'], '15px');
+assert.ok(!boxEl.style.map['--board-card-size'], 'box override does not set item size');
+
 console.log('ok type-scale');

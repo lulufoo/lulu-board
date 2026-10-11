@@ -1043,7 +1043,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-diamond .box-content { padding: 0; gap: 6px; align-items: stretch; flex: 0 0 auto; width: max-content; max-width: 100%; }
 .board-diamond .box-content > .board-item { width: 100%; box-sizing: border-box; }
 .board-diamond-shape { z-index: 0; }
-.board-diamond .board-zone-title { position: relative; z-index: 1; justify-content: center; width: auto; max-width: none; margin: 0; color: #1e4f86; text-align: center; font-size: 12px; line-height: 1.16; }
+.board-diamond .board-zone-title { position: relative; z-index: 1; justify-content: center; width: auto; max-width: none; margin: 0; color: #1e4f86; text-align: center; font-size: var(--board-title-size, 12px); line-height: 1.16; }
 .board-diamond .board-title-copy { align-items: center; max-width: 100%; text-align: center; overflow: visible; }
 .board-diamond .board-title-name { overflow-wrap: anywhere; }
 .board-diamond .board-item { overflow-wrap: anywhere; }
@@ -1783,6 +1783,9 @@ html[data-persist="hash"] .board-dock-help {
 #boardShapeLabel[hidden] { display: none !important; }
 #boardCapField[hidden],
 #boardCapLabel[hidden] { display: none !important; }
+#boardNodeFontField[hidden],
+#boardNodeFontLabel[hidden] { display: none !important; }
+.props-field:has(#boardNodeFontLabel[hidden]) { display: none !important; }
 .props-field:has(#boardIdLabel[hidden]) { display: none !important; }
 .props-field:has(#boardTypeLabel[hidden]) { display: none !important; }
 .props-field:has(#boardShapeLabel[hidden]) { display: none !important; }
