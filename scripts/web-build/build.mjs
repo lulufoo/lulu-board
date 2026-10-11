@@ -66,4 +66,29 @@ for (const name of ['index.html', 'consent.css', 'consent.js']) {
   console.log('ok .cache/web/oauth/consent/' + name);
 }
 
+const landingSrc = path.join(repo, 'packages/drawer-app/landing');
+const landingOut = path.join(webDir, 'landing');
+mkdirSync(landingOut, { recursive: true });
+mkdirSync(path.join(landingOut, 'fonts'), { recursive: true });
+for (const name of [
+  'index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg',
+  'fonts/instrument-serif-latin-400-normal.woff2', 'fonts/inter-latin-wght-normal.woff2',
+  'fonts/OFL-instrument-serif.txt', 'fonts/OFL-inter.txt',
+]) {
+  const src = path.join(landingSrc, name);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(landingOut, name));
+  console.log('ok .cache/web/landing/' + name);
+}
+// landing screenshots live next to the example boards; they are replaced there, not here
+for (const [from, to] of [
+  ['examples/board-android-mvi/android-mvi-architecture.png', 'android-mvi-architecture.png'],
+  ['examples/board-llm-architecture/llm-architecture.png', 'llm-architecture.png'],
+]) {
+  const src = path.join(repo, from);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(landingOut, to));
+  console.log('ok .cache/web/landing/' + to);
+}
+
 rmSync(path.join(webDir, 'css'), { recursive: true, force: true });
