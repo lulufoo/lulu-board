@@ -65,19 +65,30 @@ assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveBoardToHash/, 'plus draft 
 assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active plus draft');
 
 {
-  const start = tabs.indexOf('function sortBoardRowsByCreatedAt');
+  const start = tabs.indexOf('function sortBoardRowsByGroupOrder');
   const end = tabs.indexOf('function cloudGroupTabsVisible');
   assert.ok(start >= 0 && end > start, 'sort helpers are a closed block');
-  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByCreatedAt, cloudMembersInclude };')();
-  const sorted = helpers.sortBoardRowsByCreatedAt([
-    { board_id: 'b_22222222', created_at: '2026-10-04T12:00:00Z' },
-    { board_id: 'b_11111111', created_at: '2026-10-04T10:00:00Z' },
-  ]);
-  assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
+  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByGroupOrder, cloudMembersInclude };')();
+  const sorted = helpers.sortBoardRowsByGroupOrder(
+    [{ board_id: 'b_11111111' }, { board_id: 'b_22222222' }, { board_id: 'b_33333333' }],
+    [
+      { board_id: 'b_11111111', sort_order: 3 },
+      { board_id: 'b_22222222', sort_order: 1 },
+      { board_id: 'b_33333333', sort_order: 2 },
+    ]
+  );
+  assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_22222222', 'b_33333333', 'b_11111111']);
+  const tied = helpers.sortBoardRowsByGroupOrder(
+    [{ board_id: 'b_bbbbbbbb' }, { board_id: 'b_aaaaaaaa' }],
+    [{ board_id: 'b_bbbbbbbb', sort_order: 1 }, { board_id: 'b_aaaaaaaa', sort_order: 1 }]
+  );
+  assert.deepStrictEqual(tied.map((row) => row.board_id), ['b_aaaaaaaa', 'b_bbbbbbbb'], 'ties break by board_id');
   const members = [{ board_id: 'b_11111111' }, { board_id: 'b_22222222' }];
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
+  assert.match(tabs, /select\("board_id,group_id,sort_order"\)/, 'tabs read the stored order');
+  assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
 console.log('ok cloud-group-tabs');

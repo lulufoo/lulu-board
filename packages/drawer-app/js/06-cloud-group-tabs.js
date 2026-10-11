@@ -1,9 +1,15 @@
 /* drawer-app/06-cloud-group-tabs.js — group tab chrome on the canvas */
-function sortBoardRowsByCreatedAt(rows) {
-  return (rows || []).slice().sort(function (a, b) {
-    var ta = Date.parse(a && a.created_at || "") || 0;
-    var tb = Date.parse(b && b.created_at || "") || 0;
-    if (ta !== tb) return ta - tb;
+function sortBoardRowsByGroupOrder(boardRows, memberships) {
+  var orderOf = {};
+  (memberships || []).forEach(function (row) {
+    if (row && row.board_id) orderOf[row.board_id] = Number(row.sort_order);
+  });
+  function rank(row) {
+    var n = orderOf[row && row.board_id];
+    return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+  }
+  return (boardRows || []).slice().sort(function (a, b) {
+    if (rank(a) !== rank(b)) return rank(a) < rank(b) ? -1 : 1;
     return String(a && a.board_id || "").localeCompare(String(b && b.board_id || ""));
   });
 }
@@ -77,6 +83,7 @@ function renderCloudGroupTabs() {
     btn.className = "group-tab";
     btn.textContent = String(index + 1);
     btn.dataset.boardId = row.board_id;
+    btn.draggable = true;
     btn.setAttribute("aria-label", "Board " + (index + 1));
     btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
@@ -140,7 +147,7 @@ async function refreshCloudGroupMembers(boardId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("group_members").select("board_id,group_id");
+  var members = await cloudClient.from("group_members").select("board_id,group_id,sort_order");
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -167,12 +174,12 @@ async function refreshCloudGroupMembers(boardId) {
   rows.forEach(function (row) {
     if (row && row.group_id === groupId && row.board_id) ids.push(row.board_id);
   });
-  var boards = await cloudClient.from("boards").select("board_id,created_at").in("board_id", ids);
+  var boards = await cloudClient.from("boards").select("board_id").in("board_id", ids);
   if (boards.error) {
     renderCloudGroupTabs();
     return;
   }
-  cloudGroupMembers = sortBoardRowsByCreatedAt(boards.data || []);
+  cloudGroupMembers = sortBoardRowsByGroupOrder(boards.data || [], rows);
   renderCloudGroupTabs();
 }
 

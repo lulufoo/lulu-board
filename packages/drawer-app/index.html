@@ -77,13 +77,13 @@
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <span class="board-dock-tab-label">Properties</span>
       </button>
-      <button type="button" class="board-dock-tab" id="btnDockSource" data-dock="source" data-dock-icon="code" role="tab" aria-selected="false" title="Source">
-        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4.25 2.75 8 6 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 4.25 13.25 8 10 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="board-dock-tab-label" id="sourceDockTabLabel">Source</span>
-      </button>
       <button type="button" class="board-dock-tab" id="btnDockStyle" data-dock="style" data-dock-icon="palette" role="tab" aria-selected="false" title="Style">
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r="0.95" fill="currentColor"/><circle cx="8.35" cy="5.55" r="0.95" fill="currentColor"/><circle cx="10.85" cy="7.4" r="0.95" fill="currentColor"/></svg>
         <span class="board-dock-tab-label">Style</span>
+      </button>
+      <button type="button" class="board-dock-tab" id="btnDockSource" data-dock="source" data-dock-icon="code" role="tab" aria-selected="false" title="Source">
+        <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 4.25 2.75 8 6 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 4.25 13.25 8 10 11.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="board-dock-tab-label" id="sourceDockTabLabel">Source</span>
       </button>
       <button type="button" class="board-dock-tab" id="btnDockShare" data-dock="share" role="tab" aria-selected="false" title="Share">
         <svg class="board-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M9.25 2.75h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.25 2.75 7.75 8.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7.15 3.85H4.75A1.75 1.75 0 0 0 3 5.6v5.65A1.75 1.75 0 0 0 4.75 13h5.65A1.75 1.75 0 0 0 12.15 11.25V8.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -239,6 +239,9 @@
           <pre id="boardError"></pre>
         </div>
       </div>
+      <div class="dock-source-foot">
+        <button type="button" class="btn btn-delete" id="btnBoardDeleteCloud" title="Delete this board" hidden>Delete</button>
+      </div>
     </div>
     <div class="board-dock-panel" id="exportPanel" data-dock-panel="export">
       <div class="props-head">
@@ -335,10 +338,10 @@
       <svg class="board-cloud-status-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12.15 6.15A4.7 4.7 0 0 0 4.4 6.55" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11.15 3.7 12.55 6.2 9.95 7.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.85 9.85A4.7 4.7 0 0 0 11.6 9.45" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4.85 12.3 3.45 9.8 6.05 8.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="board-cloud-status-label">Saved</span>
     </button>
-    <div class="board-cloud-status is-current" id="boardCloudStatus" hidden role="status">
+    <button class="board-cloud-status is-current" id="boardCloudStatus" type="button" hidden>
       <svg class="board-cloud-status-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M12.15 6.15A4.7 4.7 0 0 0 4.4 6.55" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11.15 3.7 12.55 6.2 9.95 7.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.85 9.85A4.7 4.7 0 0 0 11.6 9.45" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4.85 12.3 3.45 9.8 6.05 8.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="board-cloud-status-label">Saved</span>
-    </div>
+    </button>
     <button class="btn board-account-btn" id="btnShareSync" type="button" hidden>Share sync</button>
     <button class="btn board-account-btn" id="btnBoardSaveCopy" type="button" hidden>Save a copy</button>
     <div class="board-session" id="boardSession" hidden>

@@ -272,6 +272,7 @@ function syncCloudSaveChrome() {
   var save = document.getElementById("btnBoardSaveCloud");
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
+  if (typeof syncBoardDeleteChrome === "function") syncBoardDeleteChrome();
   var signedIn = !!(cloudSession && cloudSession.user);
   if (!signedIn && isLocalDrawerPreview()) {
     save.hidden = false;
@@ -299,7 +300,7 @@ function syncCloudSaveChrome() {
   save.disabled = !copy.pending;
   save.title = copy.pending ? copy.title : "";
   status.hidden = !copy.current;
-  status.title = copy.current ? copy.title : "";
+  status.title = copy.current ? "Synced. Click to pull from cloud" : "";
 }
 
 function cloudSetAccountUi() {
