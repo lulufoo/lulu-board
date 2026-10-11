@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-auth="out">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'">
+<title>Lulu Board — AI Native whiteboard for visual collaboration</title>
+<meta name="description" content="One text protocol — AI writes it, Lulu Board draws it, you edit on the canvas.">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" href="../favicon-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml" sizes="any">
+<link rel="stylesheet" href="./landing-base.css">
+<link rel="stylesheet" href="./landing-sections.css">
+</head>
+<body>
+<header class="site-nav">
+  <div class="site-nav-inner">
+    <a class="brand" href="/landing/" aria-label="Lulu Board">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="#db4c84"/><path d="M8 8h7v9h9v7H8z" fill="#f5f5f7"/><rect x="18" y="8" width="6" height="6" rx="1.5" fill="#ffd166"/></svg>
+      <span>Lulu Board</span>
+    </a>
+    <div class="site-actions">
+      <span class="auth-status only-in" id="authStatus" data-state="out"><i class="auth-dot" aria-hidden="true"></i><span id="authStatusText">Not signed in</span></span>
+      <a class="btn btn-primary" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY"><span class="only-out">Start free</span><span class="only-in">Open workspace</span></a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+   <div class="hero-inner">
+    <h1><span>AI Native whiteboard</span> <span>for visual collaboration.</span></h1>
+    <p class="hero-lead">One text protocol — AI writes it, Lulu&nbsp;Board draws it, you edit on the canvas.</p>
+    <div class="cta-row">
+      <a class="btn only-out" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY" data-open-sign-in="github"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12c0 5.303 3.438 9.8 8.205 11.385c.6.113.82-.258.82-.577c0-.285-.01-1.04-.015-2.04c-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729c1.205.084 1.838 1.236 1.838 1.236c1.07 1.835 2.809 1.305 3.495.998c.108-.776.417-1.305.76-1.605c-2.665-.3-5.466-1.332-5.466-5.93c0-1.31.465-2.38 1.235-3.22c-.135-.303-.54-1.523.105-3.176c0 0 1.005-.322 3.3 1.23c.96-.267 1.98-.399 3-.405c1.02.006 2.04.138 3 .405c2.28-1.552 3.285-1.23 3.285-1.23c.645 1.653.24 2.873.12 3.176c.765.84 1.23 1.91 1.23 3.22c0 4.61-2.805 5.625-5.475 5.92c.42.36.81 1.096.81 2.22c0 1.606-.015 2.896-.015 3.286c0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GitHub</a>
+      <a class="btn only-out" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY" data-open-sign-in="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 20q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4h16q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20zM20 8l-7.475 4.675q-.125.075-.262.113t-.263.037t-.262-.037t-.263-.113L4 8v10h16zm-8 3l8-5H4zM4 8v.25v-1.475v.025V6v.8v-.012V8.25zv10z"/></svg>Email</a>
+      <a class="btn btn-primary btn-lg only-in" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY">Open workspace</a>
+    </div>
+   </div>
+  </section>
+
+  <section class="shot" aria-label="Ask your agent, see the board">
+    <figure class="shot-frame">
+      <img src="./android-mvi-architecture.png" width="3024" height="1668" alt="An agent chat on the left: /board, draw an Android MVI architecture diagram. On the right, the generated board with View, Presentation and Model layers.">
+    </figure>
+    <p class="shot-caption">Ask your agent with <code>/board</code> — the board opens right next to the chat.</p>
+  </section>
+
+  <section class="feature" id="features">
+    <div class="feature-copy">
+      <h2>Edit on the canvas</h2>
+      <p>The board is not a picture. Drag boxes, edit text and link them — then hand it back to your agent.</p>
+    </div>
+    <div class="feature-art">
+      <figure class="shot-frame">
+        <img src="./llm-architecture.png" width="2594" height="1408" alt="A structured board with layered cards, items and labelled links on a grid canvas.">
+      </figure>
+    </div>
+  </section>
+
+  <section class="feature feature-flip">
+    <div class="feature-copy">
+      <h2>A compact text protocol</h2>
+      <p>Your agent writes a few readable lines. Lulu Board draws them.</p>
+      <ul class="legend">
+        <li><code>box</code><span>a card</span></li>
+        <li><code>item</code><span>a leaf inside a card</span></li>
+        <li><code>-&gt;</code><span>a link between them</span></li>
+      </ul>
+    </div>
+    <div class="feature-art">
+      <pre class="code-card" aria-label="Protocol example"><span class="code-kw">box</span> VIEW 205 "View"
+  <span class="code-kw">item</span> Render "Collect `State` and render"
+<span class="code-kw">box</span> PRES type container "Presentation"
+  <span class="code-kw">box</span> INTENT 104 "MVI Intent"
+  <span class="code-kw">box</span> STORE 405 "ViewModel"
+  <span class="code-kw">box</span> STATE 309 "State"
+VIEW <span class="code-kw">-&gt;</span> INTENT title "emit"
+INTENT <span class="code-kw">-&gt;</span> STORE title "handle"
+STORE <span class="code-kw">-&gt;</span> STATE title "reduce"
+STATE <span class="code-kw">-&gt;</span> VIEW title "render"</pre>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2>Questions, answered</h2>
+    <details><summary>Do I need an account?</summary><p>No. “Start free” opens a blank board that is saved in the page URL. Sign in only if you want cloud boards and share links.</p></details>
+    <details><summary>Where is my board stored?</summary><p>Local boards are encoded in the URL after the <code>#</code>. Signed-in boards are saved to your account and open with a <code>#b:</code> link.</p></details>
+    <details><summary>Can I share a board?</summary><p>Yes. Save the board to the cloud, then create a share link. Anyone with the link can view it; signed-in people can edit when access is set to Edit.</p></details>
+    <details><summary>Can I use it with my AI agent?</summary><p>Yes. Lulu Board can authorize your agent to read and write your boards through an OAuth consent screen. AI writes the protocol; you keep editing on the canvas.</p></details>
+    <details><summary>Where can I see this page again?</summary><p>From the workspace, use “Product intro” in the side rail. The Onboarding button still opens the example board.</p></details>
+  </section>
+
+  <section class="final-cta">
+    <h2>Efficient <span class="nb">human–AI</span> collaboration.</h2>
+    <div class="cta-row">
+      <a class="btn btn-primary btn-lg" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY"><span class="only-out">Get Started</span><span class="only-in">Open workspace</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <b class="foot-brand">Lulu Board</b>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="#faq">FAQ</a>
+      <a href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY">Open a blank board</a>
+      <a class="only-out" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY" data-open-sign-in>Sign in</a>
+    </nav>
+    <span class="foot-legal">© Lulu Board</span>
+  </div>
+</footer>
+<script src="./landing.js"></script>
+</body>
+</html>
