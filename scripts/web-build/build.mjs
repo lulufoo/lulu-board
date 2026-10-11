@@ -72,6 +72,7 @@ mkdirSync(landingOut, { recursive: true });
 mkdirSync(path.join(landingOut, 'fonts'), { recursive: true });
 for (const name of [
   'index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg',
+  'agent-chat.png',
   'fonts/instrument-serif-latin-400-normal.woff2', 'fonts/inter-latin-wght-normal.woff2',
   'fonts/OFL-instrument-serif.txt', 'fonts/OFL-inter.txt',
 ]) {
@@ -80,9 +81,8 @@ for (const name of [
   copyFileSync(src, path.join(landingOut, name));
   console.log('ok .cache/web/landing/' + name);
 }
-// landing screenshots live next to the example boards; they are replaced there, not here
+// the second landing screenshot still lives next to the example board
 for (const [from, to] of [
-  ['examples/board-android-mvi/android-mvi-architecture.png', 'android-mvi-architecture.png'],
   ['examples/board-llm-architecture/llm-architecture.png', 'llm-architecture.png'],
 ]) {
   const src = path.join(repo, from);

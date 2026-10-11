@@ -17,13 +17,13 @@ for (const m of block.matchAll(/'([^'\n]+\.[a-z0-9]+)'/g)) {
   if (name.startsWith('examples/')) continue; // source half of a [from, to] pair
   shipped.add(name);
 }
-for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg']) {
+for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg', 'agent-chat.png']) {
   assert.ok(shipped.has(required), 'build ships ' + required);
 }
 
-// every shipped file that lives in the package exists there; screenshots exist in examples/
+// every shipped file that lives in the package exists there; the canvas shot still comes from examples/
 const fromExamples = [...block.matchAll(/\['(examples\/[^']+)', '([^']+)'\]/g)];
-assert.strictEqual(fromExamples.length, 2, 'two screenshots are copied from examples/');
+assert.strictEqual(fromExamples.length, 1, 'one screenshot is copied from examples/');
 for (const [, from, to] of fromExamples) {
   assert.ok(fs.existsSync(path.join(root, from)), 'example exists: ' + from);
   shipped.add(to);

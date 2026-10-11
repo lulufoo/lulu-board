@@ -9,6 +9,8 @@ const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFAC
 
 // one blank board address everywhere on the page
 const html = fs.readFileSync(path.join(landingDir, 'index.html'), 'utf8');
+assert.match(html, /src="\.\/agent-chat\.png"/, 'first shot is the agent-chat clip');
+assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.png')), 'agent-chat.png exists');
 const blankLinks = html.match(/href="\/#z:[^"]+"/g) || [];
 assert.ok(blankLinks.length >= 4, 'landing page links to the blank board');
 for (const link of blankLinks) assert.strictEqual(link, 'href="/' + BLANK + '"');
