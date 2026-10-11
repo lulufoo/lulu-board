@@ -17,6 +17,10 @@ for (const link of blankLinks) assert.strictEqual(link, 'href="/' + BLANK + '"')
 assert.match(html, /href="https:\/\/github.com\/lulufoo\/lulu-board"/, 'GitHub opens the repo');
 assert.match(html, /href="mailto:namdamlu@outlook.com"/, 'Email opens a mail to namdamlu');
 assert.doesNotMatch(html, /data-open-sign-in="github"/, 'GitHub is not a sign-in button');
+const heroCta = html.slice(html.indexOf('class="cta-row"'), html.indexOf('class="shot"'));
+assert.match(heroCta, />GitHub</, 'signed-in hero still has GitHub');
+assert.match(heroCta, />Email</, 'signed-in hero still has Email');
+assert.doesNotMatch(heroCta, /Open workspace/, 'hero does not swap in Open workspace');
 
 // CSP is script-src 'self'; style-src 'self'
 assert.ok(!/<style[\s>]/i.test(html), 'no inline <style> (CSP style-src self)');
