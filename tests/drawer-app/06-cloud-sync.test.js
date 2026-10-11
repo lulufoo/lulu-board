@@ -36,7 +36,7 @@ assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions'
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays with the account cluster');
 assert.match(html, /id="boardAccount"[\s\S]*id="btnBoardSignIn"/, 'Sign in lives in the account cluster');
 assert.match(html, /class="float top-float"[\s\S]*id="boardHistory"/, 'signed-in History is on the top-right');
-assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"/, 'Share is dock tab 4');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"/, 'Source is dock tab 3, Share is tab 4');
 assert.match(dockCss, /\.board-dock\[data-open="share"\] \{\s*width:/, 'Share tab expands the dock');
 assert.match(html, /id="btnShareRoleView"/, 'owner can choose view access');
 assert.match(html, /id="btnShareRoleEdit"/, 'owner can choose edit access');

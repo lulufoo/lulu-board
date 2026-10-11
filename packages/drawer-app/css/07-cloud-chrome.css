@@ -168,3 +168,23 @@ html[data-drawer-mode="board"] .board-account #btnBoardSaveCopy:not([hidden]) {
   margin-bottom: 2px;
   border-bottom: 1px solid var(--stroke, #e5e7eb);
 }
+
+.dock-source-foot {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  padding: 0 16px;
+}
+.dock-source-foot[hidden],
+.dock-source-foot .btn[hidden] { display: none !important; }
+.dock-source-foot .btn-delete {
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--danger);
+}
+.dock-source-foot .btn-delete:hover {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--stroke));
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}

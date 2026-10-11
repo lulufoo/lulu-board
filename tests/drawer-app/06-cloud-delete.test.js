@@ -1,0 +1,57 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '../..');
+const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+
+const html = read('packages/drawer-app/index.html');
+const css = read('packages/drawer-app/css/07-cloud-chrome.css');
+const del = read('packages/drawer-app/js/06-cloud-delete.js');
+const sync = read('packages/drawer-app/js/06-cloud-sync.js');
+const appBuild = read('scripts/drawer-app-build/build.mjs');
+
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"/, 'Source is the third dock tab');
+
+const panel = html.slice(html.indexOf('data-dock-panel="source"'), html.indexOf('id="exportPanel"'));
+assert.match(panel, /class="dock-source-foot"[\s\S]*id="btnBoardDeleteCloud"/, 'delete sits in the Source panel footer');
+assert.ok(panel.indexOf('dock-source-body') < panel.indexOf('btnBoardDeleteCloud'), 'delete is below the editor');
+assert.match(html, /id="btnBoardDeleteCloud"[^>]*hidden/, 'delete starts hidden');
+assert.strictEqual((html.match(/id="btnBoardDeleteCloud"/g) || []).length, 1, 'cloud delete id is unique');
+assert.strictEqual((html.match(/id="btnBoardDelete"/g) || []).length, 1, 'node delete id is untouched');
+assert.doesNotMatch(html.slice(html.indexOf('class="board-dock-rail"'), html.indexOf('data-dock-panel="props"')), /btnBoardDeleteCloud/, 'rail has no delete');
+assert.match(css, /\.dock-source-foot \{[^}]*justify-content:\s*flex-end/, 'footer pins delete to the right');
+assert.match(appBuild, /06-cloud-group-order\.js[\s\S]*06-cloud-delete\.js/, 'delete module is built');
+assert.match(sync, /syncBoardDeleteChrome/, 'save chrome refreshes delete visibility');
+
+assert.match(del, /isShareGuest/, 'share guests never see delete');
+assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows for a saved board or the plus draft');
+
+{
+  const start = del.indexOf('function cloudNextBoardAfterDelete');
+  const end = del.indexOf('function cloudDropPlusDraft');
+  const src = del.slice(start, end);
+  const next = (members, id) => new Function('cloudGroupMembers', src + '\nreturn cloudNextBoardAfterDelete;')(members.map((b) => ({ board_id: b })))(id);
+  assert.strictEqual(next(['b_1', 'b_2', 'b_3'], 'b_2'), 'b_3', 'middle opens the next tab');
+  assert.strictEqual(next(['b_1', 'b_2', 'b_3'], 'b_3'), 'b_2', 'last opens the previous tab');
+  assert.strictEqual(next(['b_1', 'b_2'], 'b_1'), 'b_2', 'first opens the next tab');
+  assert.strictEqual(next(['b_1'], 'b_1'), '', 'only board has no next');
+}
+
+const draft = del.slice(del.indexOf('function cloudDropPlusDraft'), del.indexOf('async function cloudDeleteSavedBoard'));
+assert.doesNotMatch(draft, /boardAskConfirm|cloudClient/, 'dropping a draft neither asks nor hits the cloud');
+assert.match(draft, /cloudClearPlusDraftSlot\(\)/, 'dropping a draft clears the memory slot');
+assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.board_id/, 'draft drop returns to the last saved board');
+
+const saved = del.slice(del.indexOf('async function cloudDeleteSavedBoard'), del.indexOf('async function cloudDeleteCurrentBoard'));
+assert.match(saved, /boardAskConfirm\(\{[\s\S]*Delete this board\?/, 'saved board asks first, in English');
+assert.match(saved, /from\("boards"\)\.delete\(\)\.eq\("board_id", boardId\)/, 'deletes the boards row');
+assert.match(saved, /if \(!nextId && groupId\)[\s\S]*from\("groups"\)\.delete\(\)\.eq\("group_id", groupId\)/, 'only the last board deletes the group');
+assert.ok(saved.indexOf('from("boards").delete()') < saved.indexOf('from("groups").delete()'), 'boards go before the group');
+assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');
+assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*from\("boards"\)\.delete/, 'pending autosave is cancelled before delete');
+assert.match(saved, /cloudForgetBoardCache\(\[boardId\]\)/, 'cached row is dropped');
+assert.match(sync.slice(sync.indexOf('async function deleteCloudGroup')), /Delete this group\?/, 'History x still deletes the whole group');
+
+console.log('ok cloud-delete');

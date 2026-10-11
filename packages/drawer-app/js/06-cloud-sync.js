@@ -272,6 +272,7 @@ function syncCloudSaveChrome() {
   var save = document.getElementById("btnBoardSaveCloud");
   var status = document.getElementById("boardCloudStatus");
   if (!save || !status) return;
+  if (typeof syncBoardDeleteChrome === "function") syncBoardDeleteChrome();
   var signedIn = !!(cloudSession && cloudSession.user);
   if (!signedIn && isLocalDrawerPreview()) {
     save.hidden = false;
