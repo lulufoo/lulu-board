@@ -299,7 +299,7 @@ function syncCloudSaveChrome() {
   save.disabled = !copy.pending;
   save.title = copy.pending ? copy.title : "";
   status.hidden = !copy.current;
-  status.title = copy.current ? copy.title : "";
+  status.title = copy.current ? "Synced. Click to pull from cloud" : "";
 }
 
 function cloudSetAccountUi() {

@@ -66,6 +66,7 @@ const domain = [
   '05-export-png.js',
   '06-board-confirm.js',
   '06-cloud-sync.js',
+  '06-cloud-pull.js',
   '06-cloud-group-tabs.js',
   '06-cloud-share.js',
   '07-chrome-boot.js',

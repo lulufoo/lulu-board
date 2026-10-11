@@ -724,7 +724,7 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 .board-cloud-status.is-current {
   color: var(--ok);
   border: 0;
-  cursor: default;
+  cursor: pointer;
 }
 .board-cloud-status.is-pending {
   color: var(--warn);
@@ -738,7 +738,8 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 .board-cloud-status.is-pending.is-uncreated {
   color: var(--muted, #64748b);
 }
-.board-cloud-status.is-pending:active {
+.board-cloud-status.is-pending:active,
+.board-cloud-status.is-current:active {
   transform: scale(.98);
 }
 .board-session {
