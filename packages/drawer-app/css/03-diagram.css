@@ -1361,6 +1361,11 @@ html[data-drawer-mode="board"] .top-float {
   padding: 0.12em 0.38em;
   border-radius: 4px;
 }
+.board-render .board-item-md a {
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
 .board-render .board-item-note,
 .board-render .board-item.board-card.board-item-note,
 .board-render .board-type-card > .box-content > .board-item.board-card.board-item-note:nth-of-type(n),

@@ -67,6 +67,7 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 `chip`, `text`, and `note` share this markdown subset:
 
 - headings (`#`–`###`), ordered and unordered lists, bold, italic, inline code, and `\n`
+- links: `[text](url)` where `url` starts with `http://`, `https://`, or `mailto:`
 
 ## Icons
 
