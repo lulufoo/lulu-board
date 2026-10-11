@@ -35,7 +35,14 @@
   color: var(--accent);
 }
 .group-tab.is-dragging { opacity: .4; }
-.group-tab.is-drop { outline: 2px solid var(--accent); outline-offset: -2px; }
+.group-tab-drop-line {
+  flex: 0 0 2px;
+  height: 2px;
+  margin: 0 4px;
+  border-radius: 1px;
+  background: var(--accent);
+  pointer-events: none;
+}
 .group-tab:disabled {
   opacity: .4;
   cursor: default;

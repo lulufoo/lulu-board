@@ -1,22 +1,27 @@
 /* drawer-app/06-cloud-group-order.js — drag numbered group tabs to reorder, saved by rpc */
 var cloudTabDragId = "";
+var cloudTabDropAfter = false;
+var cloudTabDropId = "";
 
-function moveBoardId(ids, fromId, toId) {
+function moveBoardId(ids, fromId, toId, after) {
   var from = ids.indexOf(fromId);
   var to = ids.indexOf(toId);
-  if (from < 0 || to < 0 || from === to) return ids.slice();
+  if (from < 0 || to < 0) return ids.slice();
+  var dest = to + (after ? 1 : 0);
+  if (from < dest) dest -= 1;
+  if (from === dest) return ids.slice();
   var next = ids.slice();
   next.splice(from, 1);
-  next.splice(to, 0, fromId);
+  next.splice(dest, 0, fromId);
   return next;
 }
 
-async function cloudReorderGroupTabs(fromId, toId) {
+async function cloudReorderGroupTabs(fromId, toId, after) {
   if (!cloudClient || !cloudGroupId) return false;
   var groupId = cloudGroupId;
   var before = cloudGroupMembers.slice();
   var ids = before.map(function (row) { return row.board_id; });
-  var next = moveBoardId(ids, fromId, toId);
+  var next = moveBoardId(ids, fromId, toId, after);
   if (next.join(",") === ids.join(",")) return false;
   var byId = {};
   before.forEach(function (row) { byId[row.board_id] = row; });
@@ -45,10 +50,63 @@ function cloudTabFromEvent(event) {
   return tab || null;
 }
 
+function cloudDropLine(root) {
+  var line = root.querySelector(".group-tab-drop-line");
+  if (line) return line;
+  line = document.createElement("div");
+  line.className = "group-tab-drop-line";
+  line.setAttribute("aria-hidden", "true");
+  return line;
+}
+
+function cloudRemoveDropLine(root) {
+  var line = root.querySelector(".group-tab-drop-line");
+  if (line && line.parentNode) line.parentNode.removeChild(line);
+}
+
 function cloudClearTabDragMarks(root) {
-  root.querySelectorAll(".is-dragging, .is-drop").forEach(function (tab) {
-    tab.classList.remove("is-dragging", "is-drop");
+  root.querySelectorAll(".is-dragging").forEach(function (tab) {
+    tab.classList.remove("is-dragging");
   });
+  cloudRemoveDropLine(root);
+}
+
+function cloudTabDropTarget(root, clientY) {
+  var tabs = root.querySelectorAll(".group-tab[data-board-id]");
+  var i;
+  var box;
+  for (i = 0; i < tabs.length; i += 1) {
+    box = tabs[i].getBoundingClientRect();
+    if (clientY < box.top) return { tab: tabs[i], after: false };
+    if (clientY <= box.bottom) return { tab: tabs[i], after: clientY >= box.top + box.height / 2 };
+  }
+  if (!tabs.length) return null;
+  return { tab: tabs[tabs.length - 1], after: true };
+}
+
+function cloudPlaceDropLine(root, tab, after) {
+  var line = cloudDropLine(root);
+  if (after) root.insertBefore(line, tab.nextSibling);
+  else root.insertBefore(line, tab);
+}
+
+function cloudMarkTabDrop(root, event) {
+  var target = cloudTabDropTarget(root, event.clientY);
+  cloudTabDropId = "";
+  if (!target || !cloudTabDragId) {
+    cloudRemoveDropLine(root);
+    return;
+  }
+  var ids = Array.prototype.map.call(root.querySelectorAll(".group-tab[data-board-id]"), function (tab) {
+    return tab.dataset.boardId;
+  });
+  if (moveBoardId(ids, cloudTabDragId, target.tab.dataset.boardId, target.after).join(",") === ids.join(",")) {
+    cloudRemoveDropLine(root);
+    return;
+  }
+  cloudTabDropId = target.tab.dataset.boardId;
+  cloudTabDropAfter = target.after;
+  cloudPlaceDropLine(root, target.tab, target.after);
 }
 
 (function wireCloudGroupOrder() {
@@ -58,29 +116,31 @@ function cloudClearTabDragMarks(root) {
     var tab = cloudTabFromEvent(event);
     if (!tab) return;
     cloudTabDragId = tab.dataset.boardId;
+    cloudTabDropId = "";
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", cloudTabDragId);
     tab.classList.add("is-dragging");
   });
   root.addEventListener("dragover", function (event) {
-    var tab = cloudTabFromEvent(event);
-    if (!cloudTabDragId || !tab) return;
+    if (!cloudTabDragId) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-    root.querySelectorAll(".is-drop").forEach(function (other) { other.classList.remove("is-drop"); });
-    if (tab.dataset.boardId !== cloudTabDragId) tab.classList.add("is-drop");
+    cloudMarkTabDrop(root, event);
   });
   root.addEventListener("drop", function (event) {
-    var tab = cloudTabFromEvent(event);
     var fromId = cloudTabDragId;
+    var toId = cloudTabDropId;
+    var after = cloudTabDropAfter;
     cloudTabDragId = "";
+    cloudTabDropId = "";
     cloudClearTabDragMarks(root);
-    if (!tab || !fromId) return;
+    if (!fromId || !toId) return;
     event.preventDefault();
-    void cloudReorderGroupTabs(fromId, tab.dataset.boardId);
+    void cloudReorderGroupTabs(fromId, toId, after);
   });
   root.addEventListener("dragend", function () {
     cloudTabDragId = "";
+    cloudTabDropId = "";
     cloudClearTabDragMarks(root);
   });
 })();
