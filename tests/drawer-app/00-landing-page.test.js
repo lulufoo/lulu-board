@@ -14,6 +14,9 @@ assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.png')), 'agent-chat.pn
 const blankLinks = html.match(/href="\/#z:[^"]+"/g) || [];
 assert.ok(blankLinks.length >= 4, 'landing page links to the blank board');
 for (const link of blankLinks) assert.strictEqual(link, 'href="/' + BLANK + '"');
+assert.match(html, /href="https:\/\/github.com\/lulufoo\/lulu-board"/, 'GitHub opens the repo');
+assert.match(html, /href="mailto:namdamlu@outlook.com"/, 'Email opens a mail to namdamlu');
+assert.doesNotMatch(html, /data-open-sign-in="github"/, 'GitHub is not a sign-in button');
 
 // CSP is script-src 'self'; style-src 'self'
 assert.ok(!/<style[\s>]/i.test(html), 'no inline <style> (CSP style-src self)');
