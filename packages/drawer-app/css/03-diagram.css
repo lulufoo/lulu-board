@@ -1608,6 +1608,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 html[data-persist="hash"] .board-dock-help {
   display: flex;
 }
+.board-dock-intro { text-decoration: none; }
 .board-dock-help-glyph {
   display: flex;
   align-items: center;
