@@ -201,8 +201,92 @@ item HERO type text "Hi"
   assert.ok(/id="boardFontSizeSection"/.test(html), 'style has Font Size');
   assert.ok(/id="boardFontSizeSlider"/.test(html), 'font size is a slider');
   assert.ok(/Font Size/.test(html), 'font size label');
+  assert.ok(/id="boardNodeFontSlider"/.test(html), 'props have a node font slider');
   assert.ok(/style <base64>/.test(vocab), 'vocab names style as base64');
   assert.ok(/do not add, decode, or edit it/.test(vocab), 'vocab forbids editing style');
+  assert.ok(!/\bfz\b/.test(vocab), 'vocab does not expose fz');
+}
+
+{
+  const source = src(`
+board Demo
+box HERO "Hi"
+  item LEAF "Leaf"
+`);
+  const next = Render.updateNodeTypeStep(source, 'HERO', 1);
+  const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    ids: { HERO: { fz: 1 } },
+  });
+  const board = Render.parse(next);
+  assert.strictEqual(Render.authoredNodeTypeStep(board, 'HERO'), 1);
+  assert.strictEqual(Render.nodeTypeStep(board, 'HERO'), 1);
+  assert.strictEqual(Render.nodeTypeStep(board, 'LEAF'), 0);
+  const kept = Render.updateStyle(next, { type_step: 1 });
+  const keptToken = kept.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(keptToken, 'base64').toString('utf8')), {
+    type_step: 1,
+    ids: { HERO: { fz: 1 } },
+  });
+  const back = Render.updateNodeTypeStep(kept, 'HERO', 1);
+  assert.ok(/^style /m.test(back), back);
+  const backToken = back.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(backToken, 'base64').toString('utf8')), {
+    type_step: 1,
+  });
+  const onlyNode = Render.updateNodeTypeStep(source, 'LEAF', 2);
+  const reset = Render.updateNodeTypeStep(onlyNode, 'LEAF', 0);
+  assert.ok(!/^style /m.test(reset), reset);
+}
+
+{
+  const source = src(`
+board Demo
+box HERO "Hi"
+  item NEST "Leaf"
+`);
+  const pinned = Render.updateNodeTypeStep(source, 'NEST', -1);
+  const renamed = Render.updateId(pinned, { kind: 'item', id: 'NEST', boxId: 'HERO', index: 0 }, 'NOTE');
+  const token = renamed.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    ids: { NOTE: { fz: -1 } },
+  });
+  const cleared = Render.updateId(renamed, { kind: 'item', id: 'NOTE', boxId: 'HERO', index: 0 }, '');
+  assert.ok(!/^style /m.test(cleared), cleared);
+}
+
+{
+  const source = src(`
+board Demo
+box HERO "Hi"
+  item NEST "Leaf"
+`);
+  const pinned = Render.updateNodeTypeStep(Render.updateNodeTypeStep(source, 'HERO', 2), 'NEST', 1);
+  const dissolved = Render.deleteNode(pinned, { kind: 'box', id: 'HERO' });
+  const dissolvedToken = dissolved.source.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(dissolvedToken, 'base64').toString('utf8')), {
+    ids: { NEST: { fz: 1 } },
+  });
+  const tree = Render.deleteNode(pinned, { kind: 'box', id: 'HERO', scope: 'tree' });
+  assert.ok(!/^style /m.test(tree.source), tree.source);
+}
+
+{
+  const source = src(`
+board Demo
+box HERO "Hi"
+  item "Leaf"
+`);
+  const same = Render.updateNodeTypeStep(source, { kind: 'item', boxId: 'HERO', index: 0 }, 0);
+  assert.strictEqual(same, source);
+  const next = Render.updateNodeTypeStep(source, { kind: 'item', boxId: 'HERO', index: 0 }, 2);
+  assert.ok(/item ITEM1 "Leaf"/.test(next), next);
+  const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    ids: { ITEM1: { fz: 2 } },
+  });
+  const board = Render.parse(next);
+  assert.strictEqual(Render.authoredNodeTypeStep(board, 'ITEM1'), 2);
 }
 
 console.log('ok style-base64');

@@ -105,12 +105,97 @@
     }
     const viewport = authoredViewport(src.viewport || src.view);
     if (viewport) out.viewport = viewport;
+    const ids = authoredIds(src.ids);
+    if (ids) out.ids = ids;
     Object.keys(src).forEach((key) => {
-      if (key === 'theme' || key === 'item_cap' || key === 'link_route' || key === 'type_step' || key === 'view' || key === 'viewport') return;
+      if (key === 'theme' || key === 'item_cap' || key === 'link_route' || key === 'type_step' || key === 'view' || key === 'viewport' || key === 'ids') return;
       if (src[key] == null) return;
       out[key] = src[key];
     });
     return out;
+  }
+  function authoredIds(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+    const out = {};
+    Object.keys(raw).forEach((id) => {
+      const key = String(id || '').trim();
+      if (!key) return;
+      const row = raw[key];
+      if (!row || typeof row !== 'object' || Array.isArray(row)) return;
+      const next = {};
+      if (row.fz != null && row.fz !== '') next.fz = clampTypeStep(row.fz);
+      Object.keys(row).forEach((field) => {
+        if (field === 'fz' || row[field] == null) return;
+        next[field] = row[field];
+      });
+      if (Object.keys(next).length) out[key] = next;
+    });
+    return Object.keys(out).length ? out : undefined;
+  }
+  function styleIdsOf(board) {
+    const ids = board && board.style && board.style.ids;
+    if (!ids || typeof ids !== 'object' || Array.isArray(ids)) return {};
+    return ids;
+  }
+  function setStyleIds(board, ids) {
+    board.style = board.style && typeof board.style === 'object' && !Array.isArray(board.style)
+      ? board.style
+      : {};
+    if (!ids || !Object.keys(ids).length) delete board.style.ids;
+    else board.style.ids = ids;
+  }
+  function forgetStyleId(board, id) {
+    const key = String(id || '').trim();
+    if (!key) return;
+    const ids = Object.assign({}, styleIdsOf(board));
+    if (!Object.prototype.hasOwnProperty.call(ids, key)) return;
+    delete ids[key];
+    setStyleIds(board, ids);
+  }
+  function authoredNodeTypeStep(board, id) {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const row = styleIdsOf(board)[key];
+    if (!row || row.fz == null || row.fz === '') return null;
+    return clampTypeStep(row.fz);
+  }
+  function nodeTypeStep(board, id) {
+    const authored = authoredNodeTypeStep(board, id);
+    return authored == null ? resolveStyle(board).type_step : authored;
+  }
+  function applyNodeTypeStep(board, key, step) {
+    const n = clampTypeStep(step);
+    const global = resolveStyle(board).type_step;
+    const ids = Object.assign({}, styleIdsOf(board));
+    const row = Object.assign({}, ids[key] || {});
+    if (n === global) delete row.fz;
+    else row.fz = n;
+    if (!Object.keys(row).length) delete ids[key];
+    else ids[key] = row;
+    setStyleIds(board, ids);
+  }
+  function nodeForTypeStep(board, target) {
+    if (target && typeof target === 'object') {
+      const node = findNode(board, target);
+      if (!node) fail('selected Board node was not found');
+      return node;
+    }
+    const key = String(target == null ? '' : target).trim();
+    if (!key) fail('node id is required');
+    if (!allNodeIds(board).has(key)) fail("unknown id '" + key + "'");
+    return { id: key };
+  }
+  function updateNodeTypeStep(source, target, step) {
+    const board = parse(source);
+    const node = nodeForTypeStep(board, target);
+    let key = String(node.id || '').trim();
+    if (!key) {
+      if (clampTypeStep(step) === resolveStyle(board).type_step) return source;
+      key = String(ensureKidId(board, node) || '').trim();
+    }
+    if (!key) fail('node id is required');
+    applyNodeTypeStep(board, key, step);
+    return serialize(board);
   }
   function resolveStyle(board) {
     const src = board && board.style && typeof board.style === 'object' && !Array.isArray(board.style)
@@ -1062,6 +1147,13 @@
       layout.boxes[to] = layout.boxes[from];
       delete layout.boxes[from];
     }
+    const ids = styleIdsOf(board);
+    if (Object.prototype.hasOwnProperty.call(ids, from)) {
+      const next = Object.assign({}, ids);
+      next[to] = next[from];
+      delete next[from];
+      setStyleIds(board, next);
+    }
   }
 
   function idIsReferenced(board, idValue) {
@@ -1099,6 +1191,7 @@
       if (selection.boxId == null || selection.boxId === "") fail("top-level item needs an id");
       if (idIsReferenced(board, prev)) fail("cannot clear id used by link or layout");
       node.id = null;
+      forgetStyleId(board, prev);
       return serialize(board);
     }
     if (!/^[A-Za-z]+$/.test(raw)) fail("id must be letters only");
@@ -1300,6 +1393,15 @@
     layout.places = (layout.places || []).map((place) => ({ ...place, targets: (place.targets || []).filter((target) => !removed.has(target)) })).filter((place) => !removed.has(place.source) && place.targets.length);
     layout.aligns = (layout.aligns || []).map((align) => ({ ...align, ids: (align.ids || []).filter((idValue) => !removed.has(idValue)) })).filter((align) => align.ids.length);
     Object.keys(layout.boxes || {}).forEach((idValue) => { if (removed.has(idValue)) delete layout.boxes[idValue]; });
+    const ids = Object.assign({}, styleIdsOf(board));
+    let changed = false;
+    removed.forEach((idValue) => {
+      if (Object.prototype.hasOwnProperty.call(ids, idValue)) {
+        delete ids[idValue];
+        changed = true;
+      }
+    });
+    if (changed) setStyleIds(board, ids);
   }
 
   function parentPinGap(board, id, edge) {
@@ -2259,5 +2361,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
 });

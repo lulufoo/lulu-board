@@ -137,6 +137,13 @@
         } else {
           el.dataset.boardTone = String(ctx.toneSeq.n++);
         }
+        const Scale = root.BoardTypeScale;
+        const fz = Scale && typeof Scale.stepFromStyle === 'function'
+          ? Scale.stepFromStyle(ctx.board && ctx.board.style, box.id)
+          : null;
+        if (fz != null && Scale && typeof Scale.applyBoxTitleStep === 'function') {
+          Scale.applyBoxTitleStep(el, bType, fz);
+        }
       }
       if (nested) {
         el.style.position = 'relative';

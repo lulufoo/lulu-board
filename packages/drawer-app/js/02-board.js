@@ -142,6 +142,7 @@ function showPropsForLinkMode() {
   setBoardIdField(false);
   setBoardShapeField(false);
   setBoardCapField(false);
+  setBoardNodeFontField(false);
   if (propsHint) propsHint.textContent = "Type, arrow, and optional title; then click source / target";
 }
 function showPropsForLinkEdge(title, type, arrow) {
@@ -161,6 +162,7 @@ function showPropsForLinkEdge(title, type, arrow) {
   if (propsHint) propsHint.textContent = "Type, arrow, and title write back to DSL";
   setBoardShapeField(false);
   setBoardCapField(false);
+  setBoardNodeFontField(false);
 }
 function setBoardShapeField(show, shape) {
   var cur = shape === "diamond" ? "diamond" : "rect";
@@ -183,6 +185,81 @@ function setBoardCapField(show, cap) {
   }
   if (boardCapLabel) boardCapLabel.hidden = !show;
   setAuthoredTip(boardCapTip, show, authored);
+}
+function selectedNodeStyleId() {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return "";
+  return String(selectedBoardNode.id || "").trim();
+}
+function selectedNodeFontEl() {
+  var root = document.querySelector(".board-render");
+  if (!root || !selectedBoardNode) return null;
+  var id = selectedNodeStyleId();
+  var el = id ? root.querySelector('[data-board-id="' + id + '"]') : null;
+  if (el) return el;
+  return selectedBoardNode.key ? root.querySelector('[data-board-key="' + selectedBoardNode.key + '"]') : null;
+}
+function setBoardNodeFontField(show, authoredStep, globalStep) {
+  var effective = authoredStep == null ? globalStep : authoredStep;
+  if (boardNodeFontField) boardNodeFontField.hidden = !show;
+  if (boardNodeFontLabel) boardNodeFontLabel.hidden = !show;
+  if (boardNodeFontSlider) {
+    boardNodeFontSlider.hidden = !show;
+    if (show) {
+      boardNodeFontSlider.value = String(effective);
+      if (typeof paintStyleRange === "function") paintStyleRange(boardNodeFontSlider);
+    }
+  }
+  if (boardNodeFontTip) {
+    var inherit = !!show && authoredStep == null;
+    boardNodeFontTip.hidden = !inherit;
+    boardNodeFontTip.textContent = inherit ? "same as global" : "";
+  }
+}
+function previewBoardNodeFont(step) {
+  if (!window.BoardTypeScale) return;
+  var n = BoardTypeScale.clampStep(step);
+  var el = selectedNodeFontEl();
+  if (!el) return;
+  if (selectedBoardNode && selectedBoardNode.kind === "box" && typeof BoardTypeScale.applyBoxTitleStep === "function") {
+    BoardTypeScale.applyBoxTitleStep(el, el.dataset.boardType || "card", n);
+  } else if (typeof BoardTypeScale.applyItemStep === "function") {
+    BoardTypeScale.applyItemStep(el, n);
+  }
+}
+function commitBoardNodeFont(persist, rerender) {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || !boardNodeFontSlider || typeof BoardRender === "undefined" || typeof BoardRender.updateNodeTypeStep !== "function") return;
+  var n = (window.BoardTypeScale && typeof BoardTypeScale.clampStep === "function")
+    ? BoardTypeScale.clampStep(boardNodeFontSlider.value)
+    : Math.min(3, Math.max(-3, Math.round(Number(boardNodeFontSlider.value) || 0)));
+  if (typeof paintStyleRange === "function") paintStyleRange(boardNodeFontSlider);
+  previewBoardNodeFont(n);
+  if (!persist) return;
+  try {
+    var raw = boardSourceEl.value;
+    var meta = null;
+    var body = raw;
+    try {
+      var doc = splitDocument(raw);
+      meta = doc.meta;
+      body = doc.body;
+    } catch (_e) {}
+    var nextBody = BoardRender.updateNodeTypeStep(body, selectedBoardNode, n);
+    var next = meta ? joinDocument(meta, nextBody) : nextBody;
+    if (next !== boardSourceEl.value) {
+      boardSourceEl.value = next;
+      updateBoardChars();
+      if (rerender && typeof renderBoard === "function") renderBoard({ fit: false });
+      scheduleBoardSave();
+    }
+    var board = BoardRender.parse(nextBody);
+    var node = typeof BoardRender.findNode === "function" ? BoardRender.findNode(board, selectedBoardNode) : null;
+    var id = node && node.id ? String(node.id) : selectedNodeStyleId();
+    if (id) {
+      selectedBoardNode = boardSelectionWithId(selectedBoardNode, id);
+      setBoardIdField(true, id);
+    }
+    setBoardNodeFontField(true, id ? BoardRender.authoredNodeTypeStep(board, id) : null, BoardRender.resolveStyle(board).type_step);
+  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
 }
 function setAuthoredTip(el, show, authored) {
   if (!el) return;
@@ -244,6 +321,7 @@ function hidePropsLinkOnlyChrome() {
   setBoardArrowField(false);
   setBoardShapeField(false);
   setBoardCapField(false);
+  setBoardNodeFontField(false);
 }
 function fillBoardIconSec() {
   var Icons = window.BoardIcons;
@@ -708,6 +786,15 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     }
     setBoardShapeField(!!isChipItem, node && node.shape);
     setBoardCapField(!!isMd, node && node.cap);
+    var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
+    var showFont = !isTitle;
+    var authoredFz = (showFont && typeof BoardRender !== "undefined" && typeof BoardRender.authoredNodeTypeStep === "function")
+      ? BoardRender.authoredNodeTypeStep(board, nodeId)
+      : null;
+    var globalStep = (typeof BoardRender !== "undefined" && typeof BoardRender.resolveStyle === "function")
+      ? BoardRender.resolveStyle(board || {}).type_step
+      : 0;
+    setBoardNodeFontField(showFont, authoredFz, globalStep);
     setBoardIconField((isIcon || isBoxIcon) && !isLayoutBox, ((isIcon || isBoxIcon) && !isLayoutBox) ? (node && node.icon) : null);
     if (boardDirEditor) {
       var showDir = !isItem;

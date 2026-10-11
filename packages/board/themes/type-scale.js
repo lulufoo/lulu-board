@@ -54,9 +54,28 @@
       diamondTitle: pxCss('diamondTitle', step),
     };
   }
+  function stepFromStyle(style, id) {
+    const key = String(id || '').trim();
+    if (!key || !style || !style.ids || typeof style.ids !== 'object' || Array.isArray(style.ids)) return null;
+    const row = style.ids[key];
+    if (!row || row.fz == null || row.fz === '') return null;
+    return clampStep(row.fz);
+  }
+  function applyBoxTitleStep(el, typeName, step) {
+    if (!el || step == null) return;
+    el.style.setProperty('--board-title-size', sizeForTitle(typeName, step));
+    el.style.setProperty('--board-card-title-size', sizeForTitle(typeName, step));
+  }
+  function applyItemStep(el, step) {
+    if (!el || step == null) return;
+    const css = sizeForCard(step);
+    el.style.setProperty('--board-card-size', css);
+    el.style.setProperty('--board-card-card-size', css);
+  }
 
   return {
     SCALE, STEP_MIN, STEP_MAX, FACTOR, MIN_PX,
     get, clampStep, factor, px, sizeForTitle, sizeForCard, sizes,
+    stepFromStyle, applyBoxTitleStep, applyItemStep,
   };
 });
