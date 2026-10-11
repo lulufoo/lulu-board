@@ -13,7 +13,8 @@ const appBuild = read('scripts/drawer-app-build/build.mjs');
 
 assert.match(appBuild, /06-cloud-group-tabs\.js[\s\S]*06-cloud-group-order\.js/, 'order module is built after the tabs');
 assert.match(tabCss, /\.group-tab\.is-dragging/, 'dragged tab is dimmed');
-assert.match(tabCss, /\.group-tab\.is-drop/, 'drop target is outlined');
+assert.match(tabCss, /\.group-tab-drop-line \{/, 'drop paints an insert line, not a selected tab');
+assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outlines the whole tab');
 
 {
   const start = order.indexOf('function moveBoardId');
@@ -21,21 +22,50 @@ assert.match(tabCss, /\.group-tab\.is-drop/, 'drop target is outlined');
   assert.ok(start >= 0 && end > start, 'moveBoardId is a closed function');
   const { moveBoardId } = new Function(order.slice(start, end) + '\nreturn { moveBoardId };')();
   const ids = ['b_1', 'b_2', 'b_3'];
-  assert.deepStrictEqual(moveBoardId(ids, 'b_1', 'b_3'), ['b_2', 'b_3', 'b_1'], 'drag first onto last');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_3', 'b_1'), ['b_3', 'b_1', 'b_2'], 'drag last onto first');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_2'), ids, 'same tab is a no-op');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_9', 'b_1'), ids, 'unknown id is a no-op');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_1', false), ['b_2', 'b_1', 'b_3'], 'drag 2 before 1');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_1', true), ids, 'drag 2 after 1 is a no-op');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_1', 'b_3', true), ['b_2', 'b_3', 'b_1'], 'drag 1 after 3');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_1', 'b_3', false), ['b_2', 'b_1', 'b_3'], 'drag 1 before 3');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_3', 'b_1', false), ['b_3', 'b_1', 'b_2'], 'drag 3 before 1');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_2', false), ids, 'same tab before is a no-op');
+  assert.deepStrictEqual(moveBoardId(ids, 'b_9', 'b_1', false), ids, 'unknown id is a no-op');
   assert.deepStrictEqual(ids, ['b_1', 'b_2', 'b_3'], 'input is not mutated');
+}
+
+{
+  const start = order.indexOf('function cloudTabDropTarget');
+  const end = order.indexOf('function cloudMarkTabDrop');
+  assert.ok(start >= 0 && end > start, 'cloudTabDropTarget is a closed function');
+  const { cloudTabDropTarget } = new Function(
+    order.slice(start, end) + '\nreturn { cloudTabDropTarget };'
+  )();
+  const tab = (top, height, id) => ({
+    dataset: { boardId: id },
+    getBoundingClientRect: () => ({ top, height, bottom: top + height }),
+  });
+  const root = { querySelectorAll: () => [tab(0, 32, 'b_1'), tab(36, 32, 'b_2'), tab(72, 32, 'b_3')] };
+  assert.strictEqual(cloudTabDropTarget(root, 10).tab.dataset.boardId, 'b_1', 'top of 1');
+  assert.strictEqual(cloudTabDropTarget(root, 10).after, false, 'top of 1 is before 1');
+  assert.strictEqual(cloudTabDropTarget(root, 20).after, true, 'bottom of 1 is after 1');
+  assert.strictEqual(cloudTabDropTarget(root, 20).tab.dataset.boardId, 'b_1', 'bottom of 1 still names 1');
+  assert.strictEqual(cloudTabDropTarget(root, 40).after, false, 'top of 2 is before 2');
+  assert.strictEqual(cloudTabDropTarget(root, 90).after, true, 'below last tab is after last');
+  assert.strictEqual(cloudTabDropTarget(root, 90).tab.dataset.boardId, 'b_3', 'below last names last');
 }
 
 const reorder = order.slice(order.indexOf('async function cloudReorderGroupTabs'), order.indexOf('function cloudTabFromEvent'));
 assert.match(reorder, /rpc\("reorder_group_boards"/, 'drop saves through the reorder rpc');
 assert.match(reorder, /p_group_id:\s*groupId/, 'rpc carries the group id');
 assert.match(reorder, /p_board_ids:\s*next/, 'rpc carries the full new order');
+assert.match(reorder, /moveBoardId\(ids, fromId, toId, after\)/, 'rpc uses the before\/after slot');
 assert.match(reorder, /cloudGroupMembers = before/, 'a failed save restores the old order');
 assert.match(reorder, /groupId !== cloudGroupId/, 'a group switch mid-save leaves state alone');
 assert.doesNotMatch(reorder, /from\("group_members"\)|\.update\(/, 'order is not written row by row from the browser');
 
+assert.match(order, /cloudPlaceDropLine/, 'dragover inserts a line at the slot');
+assert.match(order, /insertBefore\(line, tab\)/, 'before-slot puts the line in front of the tab');
+assert.match(order, /insertBefore\(line, tab\.nextSibling\)/, 'after-slot puts the line behind the tab');
+assert.match(order, /cloudMarkTabDrop/, 'pointer Y chooses the insert slot');
 assert.match(tabs, /btn\.draggable = true/, 'saved numbered tabs are draggable');
 const plusSlice = tabs.slice(tabs.indexOf('var draft = document.createElement'), tabs.indexOf('function cloudClearGroupTabs'));
 assert.doesNotMatch(plusSlice, /draggable/, 'the plus draft and + are not draggable');
