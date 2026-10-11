@@ -393,6 +393,24 @@ function cloudClearOpenBoard() {
   syncCloudSaveChrome();
 }
 
+// /landing sign-in buttons set this one-shot flag ("github" or "menu"), then open a blank board.
+function cloudOpenSignInFromLanding() {
+  var flag = "lulu-board:open-sign-in";
+  var intent = "";
+  try {
+    intent = sessionStorage.getItem(flag) || "";
+    if (intent) sessionStorage.removeItem(flag);
+  } catch (_e) {
+    return;
+  }
+  if (intent === "github") {
+    void cloudSignIn("github");
+    return;
+  }
+  var signIn = document.getElementById("btnBoardSignIn");
+  if (intent && signIn && !signIn.hidden && !signIn.disabled) signIn.click();
+}
+
 function cloudInit() {
   if (!cloudConfigured()) {
     cloudSetAccountUi();
@@ -422,6 +440,7 @@ function cloudInit() {
       cloudSession = result && result.data ? result.data.session : null;
       cloudSetAccountUi();
       if (cloudSession) void refreshCloudBoardHistory();
+      else cloudOpenSignInFromLanding();
       return cloudSession;
     }).catch(function () {
       cloudSession = null;
