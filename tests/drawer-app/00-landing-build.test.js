@@ -46,4 +46,7 @@ for (const css of ['landing-base.css', 'landing-sections.css']) collect(read(lan
 assert.ok(referenced.size >= 8, 'the page references local assets');
 for (const name of referenced) assert.ok(shipped.has(name), 'referenced asset is shipped: ' + name);
 
+// /landing redirects to /landing/ only with this html handling; do not rely on the default
+assert.match(read('wrangler.toml'), /^html_handling\s*=\s*"auto-trailing-slash"$/m, 'wrangler pins html_handling');
+
 console.log('ok landing-build');
