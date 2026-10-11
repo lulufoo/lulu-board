@@ -13,7 +13,11 @@ const appBuild = read('scripts/drawer-app-build/build.mjs');
 
 assert.match(appBuild, /06-cloud-group-tabs\.js[\s\S]*06-cloud-group-order\.js/, 'order module is built after the tabs');
 assert.match(tabCss, /\.group-tab\.is-dragging/, 'dragged tab is dimmed');
-assert.match(tabCss, /\.group-tab-drop-line \{/, 'drop paints an insert line, not a selected tab');
+assert.match(tabCss, /\.group-tab-drop-line \{/, 'slots live in the tab strip');
+assert.match(tabCss, /background: transparent/, 'idle slots are invisible');
+assert.match(tabCss, /\.group-tab-drop-line\.is-on::after/, 'the chosen slot lights up');
+assert.match(tabCss, /padding:\s*0 4px 8px/, 'no extra pad above the first line');
+assert.doesNotMatch(tabCss, /flex-basis:\s*16px/, 'every line slot is the same height');
 assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outlines the whole tab');
 
 {
@@ -34,7 +38,7 @@ assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outline
 
 {
   const start = order.indexOf('function cloudTabDropTarget');
-  const end = order.indexOf('function cloudMarkTabDrop');
+  const end = order.indexOf('function cloudSlotLine');
   assert.ok(start >= 0 && end > start, 'cloudTabDropTarget is a closed function');
   const { cloudTabDropTarget } = new Function(
     order.slice(start, end) + '\nreturn { cloudTabDropTarget };'
@@ -62,10 +66,13 @@ assert.match(reorder, /cloudGroupMembers = before/, 'a failed save restores the 
 assert.match(reorder, /groupId !== cloudGroupId/, 'a group switch mid-save leaves state alone');
 assert.doesNotMatch(reorder, /from\("group_members"\)|\.update\(/, 'order is not written row by row from the browser');
 
-assert.match(order, /cloudPlaceDropLine/, 'dragover inserts a line at the slot');
-assert.match(order, /insertBefore\(line, tab\)/, 'before-slot puts the line in front of the tab');
-assert.match(order, /insertBefore\(line, tab\.nextSibling\)/, 'after-slot puts the line behind the tab');
+assert.match(order, /cloudSlotLine/, 'dragover lights a pre-rendered slot');
+assert.match(order, /line\.classList\.add\("is-on"\)/, 'the chosen slot is shown');
+assert.doesNotMatch(order, /insertBefore|appendChild|createElement/, 'drag does not insert a new line');
 assert.match(order, /cloudMarkTabDrop/, 'pointer Y chooses the insert slot');
+assert.match(tabs, /function appendGroupDropLine/, 'numbered tabs render idle slots');
+assert.match(tabs, /appendGroupDropLine\(root, "is-start"\)/, 'a slot sits before the first tab');
+assert.match(tabs, /appendGroupDropLine\(root, index === last \? "is-end" : ""\)/, 'a slot sits after every numbered tab');
 assert.match(tabs, /btn\.draggable = true/, 'saved numbered tabs are draggable');
 const plusSlice = tabs.slice(tabs.indexOf('var draft = document.createElement'), tabs.indexOf('function cloudClearGroupTabs'));
 assert.doesNotMatch(plusSlice, /draggable/, 'the plus draft and + are not draggable');

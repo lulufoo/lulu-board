@@ -68,6 +68,13 @@ function cloudParkPlusDraft() {
   cloudPlusDraftActive = false;
 }
 
+function appendGroupDropLine(root, edge) {
+  var line = document.createElement("div");
+  line.className = "group-tab-drop-line" + (edge ? " is-edge " + edge : "");
+  line.setAttribute("aria-hidden", "true");
+  root.appendChild(line);
+}
+
 function renderCloudGroupTabs() {
   var root = document.getElementById("board-group-tabs");
   if (!root) return;
@@ -77,6 +84,8 @@ function renderCloudGroupTabs() {
   if (!show) return;
   var viewingDraft = !!cloudPlusDraftActive;
   var current = viewingDraft ? "" : cloudBoardId();
+  var last = cloudGroupMembers.length - 1;
+  if (last >= 0) appendGroupDropLine(root, "is-start");
   cloudGroupMembers.forEach(function (row, index) {
     var btn = document.createElement("button");
     btn.type = "button";
@@ -89,6 +98,7 @@ function renderCloudGroupTabs() {
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
     btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
     root.appendChild(btn);
+    appendGroupDropLine(root, index === last ? "is-end" : "");
   });
   if (cloudPlusDraft) {
     var draftNo = cloudGroupMembers.length + 1;

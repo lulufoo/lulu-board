@@ -50,25 +50,17 @@ function cloudTabFromEvent(event) {
   return tab || null;
 }
 
-function cloudDropLine(root) {
-  var line = root.querySelector(".group-tab-drop-line");
-  if (line) return line;
-  line = document.createElement("div");
-  line.className = "group-tab-drop-line";
-  line.setAttribute("aria-hidden", "true");
-  return line;
-}
-
-function cloudRemoveDropLine(root) {
-  var line = root.querySelector(".group-tab-drop-line");
-  if (line && line.parentNode) line.parentNode.removeChild(line);
+function cloudClearDropOn(root) {
+  root.querySelectorAll(".group-tab-drop-line.is-on").forEach(function (line) {
+    line.classList.remove("is-on");
+  });
 }
 
 function cloudClearTabDragMarks(root) {
   root.querySelectorAll(".is-dragging").forEach(function (tab) {
     tab.classList.remove("is-dragging");
   });
-  cloudRemoveDropLine(root);
+  cloudClearDropOn(root);
 }
 
 function cloudTabDropTarget(root, clientY) {
@@ -84,29 +76,26 @@ function cloudTabDropTarget(root, clientY) {
   return { tab: tabs[tabs.length - 1], after: true };
 }
 
-function cloudPlaceDropLine(root, tab, after) {
-  var line = cloudDropLine(root);
-  if (after) root.insertBefore(line, tab.nextSibling);
-  else root.insertBefore(line, tab);
+function cloudSlotLine(tab, after) {
+  var line = after ? tab.nextElementSibling : tab.previousElementSibling;
+  if (line && line.classList && line.classList.contains("group-tab-drop-line")) return line;
+  return null;
 }
 
 function cloudMarkTabDrop(root, event) {
   var target = cloudTabDropTarget(root, event.clientY);
   cloudTabDropId = "";
-  if (!target || !cloudTabDragId) {
-    cloudRemoveDropLine(root);
-    return;
-  }
+  cloudClearDropOn(root);
+  if (!target || !cloudTabDragId) return;
   var ids = Array.prototype.map.call(root.querySelectorAll(".group-tab[data-board-id]"), function (tab) {
     return tab.dataset.boardId;
   });
-  if (moveBoardId(ids, cloudTabDragId, target.tab.dataset.boardId, target.after).join(",") === ids.join(",")) {
-    cloudRemoveDropLine(root);
-    return;
-  }
+  if (moveBoardId(ids, cloudTabDragId, target.tab.dataset.boardId, target.after).join(",") === ids.join(",")) return;
+  var line = cloudSlotLine(target.tab, target.after);
+  if (!line) return;
   cloudTabDropId = target.tab.dataset.boardId;
   cloudTabDropAfter = target.after;
-  cloudPlaceDropLine(root, target.tab, target.after);
+  line.classList.add("is-on");
 }
 
 (function wireCloudGroupOrder() {
