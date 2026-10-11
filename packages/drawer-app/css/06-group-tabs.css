@@ -34,6 +34,8 @@
   background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: var(--accent);
 }
+.group-tab.is-dragging { opacity: .4; }
+.group-tab.is-drop { outline: 2px solid var(--accent); outline-offset: -2px; }
 .group-tab:disabled {
   opacity: .4;
   cursor: default;

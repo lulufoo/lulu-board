@@ -68,6 +68,7 @@ const domain = [
   '06-cloud-sync.js',
   '06-cloud-pull.js',
   '06-cloud-group-tabs.js',
+  '06-cloud-group-order.js',
   '06-cloud-share.js',
   '07-chrome-boot.js',
   '08-source-lines.js',

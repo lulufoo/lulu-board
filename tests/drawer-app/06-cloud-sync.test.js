@@ -325,14 +325,14 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
 {
   const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
   const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
-  const start = tabs.indexOf('function sortBoardRowsByCreatedAt');
+  const start = tabs.indexOf('function sortBoardRowsByGroupOrder');
   const end = tabs.indexOf('function cloudGroupTabsVisible');
-  assert.ok(start >= 0 && end > start, 'sortBoardRowsByCreatedAt is a closed function');
-  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByCreatedAt };')();
-  const sorted = helpers.sortBoardRowsByCreatedAt([
-    { board_id: 'b_22222222', created_at: '2026-10-04T12:00:00Z' },
-    { board_id: 'b_11111111', created_at: '2026-10-04T10:00:00Z' },
-  ]);
+  assert.ok(start >= 0 && end > start, 'sortBoardRowsByGroupOrder is a closed function');
+  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByGroupOrder };')();
+  const sorted = helpers.sortBoardRowsByGroupOrder(
+    [{ board_id: 'b_22222222' }, { board_id: 'b_11111111' }],
+    [{ board_id: 'b_22222222', sort_order: 2 }, { board_id: 'b_11111111', sort_order: 1 }]
+  );
   assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
   assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
   assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
