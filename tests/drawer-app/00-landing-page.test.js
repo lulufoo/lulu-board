@@ -9,9 +9,14 @@ const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFAC
 
 // one blank board address everywhere on the page
 const html = fs.readFileSync(path.join(landingDir, 'index.html'), 'utf8');
+assert.match(html, /src="\.\/agent-chat\.png"/, 'first shot is the agent-chat clip');
+assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.png')), 'agent-chat.png exists');
 const blankLinks = html.match(/href="\/#z:[^"]+"/g) || [];
 assert.ok(blankLinks.length >= 4, 'landing page links to the blank board');
 for (const link of blankLinks) assert.strictEqual(link, 'href="/' + BLANK + '"');
+assert.match(html, /href="https:\/\/github.com\/lulufoo\/lulu-board"/, 'GitHub opens the repo');
+assert.match(html, /href="mailto:namdamlu@outlook.com"/, 'Email opens a mail to namdamlu');
+assert.doesNotMatch(html, /data-open-sign-in="github"/, 'GitHub is not a sign-in button');
 
 // CSP is script-src 'self'; style-src 'self'
 assert.ok(!/<style[\s>]/i.test(html), 'no inline <style> (CSP style-src self)');

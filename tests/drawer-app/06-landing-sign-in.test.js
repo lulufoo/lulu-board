@@ -12,8 +12,7 @@ const landingHtml = read('packages/drawer-app/landing/index.html');
 
 // the landing page only writes known intents
 const intents = new Set((landingHtml.match(/data-open-sign-in="[^"]*"/g) || []).map((m) => m.split('"')[1]));
-assert.ok(intents.size > 0, 'landing has sign-in buttons');
-for (const intent of intents) assert.ok(['github', 'menu'].includes(intent), 'known intent: ' + intent);
+assert.deepStrictEqual([...intents], ['menu'], 'only the footer Sign in writes a sign-in flag');
 assert.match(landingJs, /lulu-board:open-sign-in/, 'landing writes the one-shot flag');
 
 // the workspace reads it once, only on the signed-out branch
