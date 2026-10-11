@@ -18,11 +18,23 @@
     return String(value || '')
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function isAllowedHref(href) {
+    const raw = String(href || '').trim();
+    if (!raw || /\s/.test(raw)) return false;
+    return /^(https?:\/\/|mailto:)/i.test(raw);
   }
 
   function inlineFormat(chunk, codes) {
     let text = escapeHtml(chunk);
+    text = text.replace(/(!?)\[([^\]]+)\]\(([^)]+)\)/g, (all, bang, label, href) => {
+      const url = String(href || '').trim();
+      if (bang || !isAllowedHref(url)) return all;
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    });
     text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
     return text.replace(/\u0000C(\d+)\u0000/g, (_, index) => (
