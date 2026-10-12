@@ -67,6 +67,7 @@ const domain = [
   '06-board-confirm.js',
   '06-cloud-sync.js',
   '06-cloud-pull.js',
+  '06-cloud-groups.js',
   '06-cloud-group-tabs.js',
   '06-cloud-group-order.js',
   '06-cloud-delete.js',

@@ -742,15 +742,7 @@ async function refreshCloudBoardHistory() {
   cloudSetHistoryVisible(true);
   if (typeof wireHistoryCombos === "function") wireHistoryCombos();
   try {
-    var result = await cloudClient.from("boards")
-      .select("board_id,title,created_at,updated_at")
-      .order("updated_at", { ascending: false });
-    if (result.error) throw result.error;
-    var memberResult = await cloudClient.from("group_members")
-      .select("board_id,group_id");
-    if (memberResult.error) throw memberResult.error;
-    var rows = result.data || [];
-    var groups = groupBoardRowsByGroup(rows, memberResult.data || []);
+    var groups = await cloudFetchGroupSummaries();
     if (!groups.length) {
       cloudShowHistoryMessage("No cloud boards yet");
       return;
@@ -762,8 +754,8 @@ async function refreshCloudBoardHistory() {
     groups.forEach(function (group) {
       var faceRow = group.members[0];
       if (!faceRow) return;
-      var boardIds = group.members.map(function (row) { return row.board_id; });
-      var inGroup = boardIds.indexOf(current) >= 0;
+      var boardIds = group.boardIds;
+      var inGroup = group.isCurrent;
       var item = {
         id: faceRow.board_id,
         title: faceRow.title,
@@ -775,7 +767,7 @@ async function refreshCloudBoardHistory() {
       li.dataset.historyId = item.id;
       li.dataset.historyTitle = item.title || "Untitled";
       li.dataset.historyKind = "board";
-      li.dataset.historyGroupId = group.group_id;
+      li.dataset.historyGroupId = group.groupId;
       li.classList.toggle("is-active", inGroup);
       li.setAttribute("aria-selected", inGroup ? "true" : "false");
       if (inGroup) activeItem = item;
@@ -815,7 +807,7 @@ async function refreshCloudBoardHistory() {
       del.addEventListener("click", function (event) {
         event.preventDefault();
         event.stopPropagation();
-        void deleteCloudGroup(group.group_id, boardIds);
+        void deleteCloudGroup(group.groupId, boardIds);
       });
       fragment.appendChild(li);
     });
