@@ -517,3 +517,26 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-search-results .shell-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shell-search-results .shell-empty { margin: 10px 8px; }
 .shell-search-results .shell-row.is-picked { background: var(--wash); }
+
+/* Mine: a bounded list; Load more sits under it */
+#shellMineList { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
+.shell-more {
+  display: block; width: 100%; margin-top: 4px; padding: 7px 12px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--ink-soft); font: 500 12px var(--font); text-align: left; cursor: pointer;
+}
+.shell-more:hover { background: var(--wash); color: var(--ink); }
+.shell-more[hidden] { display: none; }
+
+/* drawer account row: Sign in when signed out */
+.shell-drawer-foot button.shell-signin {
+  width: auto; height: 28px; padding: 0 12px; border-radius: 999px;
+  background: var(--brand); color: #fff; font: 600 12px var(--font);
+}
+.shell-drawer-foot button.shell-signin:hover { background: var(--brand); filter: brightness(.95); }
+
+/* LB-303 spacing: rows breathe, and Shared's header keeps clear of its first row */
+.shell-list { display: flex; flex-direction: column; gap: 2px; }
+.shell-shared .shell-sec-head { margin-bottom: 10px; }
+.shell-shared .shell-list { padding-bottom: 4px; }
+.shell-sec + .shell-sec { margin-top: 22px; }
+.shell-sec-head { margin-bottom: 6px; }

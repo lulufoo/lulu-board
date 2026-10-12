@@ -18,6 +18,7 @@ var shellShares = [];
     scrim.hidden = !(on || !pop.hidden);
     if (on) {
       drawer.focus({ preventScroll: true });
+      shellRevealCurrent();
     }
   }
   function setSearch(on) {
@@ -38,6 +39,8 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
+  var more = document.getElementById("shellMineMore");
+  if (more) more.addEventListener("click", function () { shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage(); shellRenderMine(); });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -82,6 +85,13 @@ var shellShares = [];
     closeAll(false);
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
+  // Sign in reuses the rail's sign-in menu, so there is one place that knows the providers.
+  var signIn = document.getElementById("btnShellSignIn");
+  if (signIn) signIn.addEventListener("click", function () {
+    closeAll(false);
+    var rail = document.getElementById("btnBoardSignIn");
+    if (rail && !rail.disabled) rail.click();
+  });
   var newBoard = document.getElementById("shellNewBoard");
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
   var shareBtn = document.getElementById("shellShareBoard");
@@ -101,6 +111,8 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
+  var inn = document.getElementById("btnShellSignIn");
+  if (inn) inn.hidden = !!profile;
 }
 
 function shellWhen(iso) {
@@ -129,6 +141,26 @@ function shellSampleGroups() {
 }
 
 // groups: cloudGroupSummaries() result; omit to repaint the last one (the open board may have changed).
+// Mine shows a page of groups; Load more adds the next page. The open group is always listed.
+// A function, not a var: the first render can run before this file's var initialisers do.
+function shellMinePage() { return 8; }
+var shellMineShown = 0; // 0 = first page
+
+// Pure: which rows to list, and how many are held back.
+function shellMineWindow(rows, shown, isCurrent) {
+  var visible = rows.filter(function (group, index) { return index < shown || isCurrent(group); });
+  return { visible: visible, hidden: rows.length - visible.length };
+}
+
+// Scroll the Mine list (not the page) so the open group is fully visible.
+function shellRevealCurrent() {
+  var list = document.getElementById("shellMineList");
+  var row = list && list.querySelector(".shell-row.is-active");
+  if (!row) return;
+  var over = row.parentNode.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
+  if (over > 0) list.scrollTop += over + 6;
+}
+
 function shellRenderMine(groups) {
   var list = document.getElementById("shellMineList");
   var count = document.getElementById("shellMineCount");
@@ -139,8 +171,10 @@ function shellRenderMine(groups) {
   var preview = typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
   var rows = preview ? shellSampleGroups() : shellGroups;
   var frag = document.createDocumentFragment();
-  rows.forEach(function (group) {
-    var isCurrent = preview ? group.isCurrent : !!current && group.boardIds.indexOf(current) >= 0;
+  function inCurrent(group) { return preview ? !!group.isCurrent : !!current && group.boardIds.indexOf(current) >= 0; }
+  var win = shellMineWindow(rows, shellMineShown || shellMinePage(), inCurrent);
+  win.visible.forEach(function (group) {
+    var isCurrent = inCurrent(group);
     var li = document.createElement("li");
     li.className = "shell-mine-item";
     var row = document.createElement("button");
@@ -175,6 +209,11 @@ function shellRenderMine(groups) {
     frag.appendChild(li);
   });
   list.replaceChildren(frag);
+  var more = document.getElementById("shellMineMore");
+  if (more) {
+    more.hidden = win.hidden <= 0;
+    more.textContent = "Load more (" + win.hidden + ")";
+  }
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();
@@ -211,8 +250,9 @@ function shellSyncShareButton() {
   btn.title = btn.disabled ? "Save this board to the cloud to share it" : "Copy a link to this board";
 }
 
-var SHELL_ARROW_IN = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-var SHELL_ARROW_OUT = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6.5 4.5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+// Functions, not vars: the first render can run before this file's var initialisers do.
+function shellArrowIn() { return '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
+function shellArrowOut() { return '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6.5 4.5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
 
 // Local preview only: sample rows, including the "shared with me" kind that is not built yet.
 function shellSampleShares() {
@@ -251,7 +291,7 @@ function shellRenderShared(shares) {
     var li = document.createElement("li");
     if (item.incoming) {
       li.className = "shell-row shell-row-dir";
-      li.innerHTML = '<i class="shell-dir is-in" title="Shared with you">' + SHELL_ARROW_IN + '</i>';
+      li.innerHTML = '<i class="shell-dir is-in" title="Shared with you">' + shellArrowIn() + '</i>';
       var inMain = document.createElement("span");
       inMain.className = "shell-row-main";
       var inTitle = document.createElement("b");
@@ -269,7 +309,7 @@ function shellRenderShared(shares) {
     var icon = document.createElement("i");
     icon.className = "shell-dir is-out";
     icon.title = "You shared this";
-    icon.innerHTML = SHELL_ARROW_OUT;
+    icon.innerHTML = shellArrowOut();
     var main = document.createElement("div");
     main.className = "shell-row-main";
     var title = document.createElement("b");

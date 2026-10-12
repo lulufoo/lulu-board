@@ -53,3 +53,30 @@ console.log('ok 09-shell-drawer');
   assert.deepEqual(lines.lines.map((l) => l.line), [1, 2], 'source line hits keep line numbers');
   assert.equal(shellSearchMatches('zzz', groups, 'abc').boards.length, 0, 'no match');
 }
+
+// ---- Mine paging (LB-302) ----
+{
+  const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  const start = src.indexOf('function shellMineWindow');
+  const end = src.indexOf('// Scroll the Mine list');
+  const shellMineWindow = new Function(src.slice(start, end) + '\nreturn shellMineWindow;')();
+  const rows = Array.from({ length: 30 }, (_, i) => ({ id: i }));
+  const none = () => false;
+  assert.equal(shellMineWindow(rows, 8, none).visible.length, 8, 'first page');
+  assert.equal(shellMineWindow(rows, 8, none).hidden, 22, 'rest is held back');
+  const withCurrent = shellMineWindow(rows, 8, (g) => g.id === 20);
+  assert.equal(withCurrent.visible.length, 9, 'the open group is listed even past the page');
+  assert.equal(withCurrent.hidden, 21, 'hidden count excludes it');
+  assert.equal(shellMineWindow(rows, 40, none).hidden, 0, 'no Load more when all fit');
+  assert.equal(shellMineWindow([], 8, none).visible.length, 0, 'empty list');
+  assert.match(src, /function shellMinePage\(\)/, 'page size survives the first render running early');
+}
+
+// ---- drawer account row + spacing (LB-303) ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.match(html, /id="btnShellSignIn"[^>]*hidden/, 'Sign in is in the drawer account row, hidden when signed in');
+  assert.match(src, /getElementById\("btnBoardSignIn"\)[\s\S]{0,120}rail\.click\(\)/, 'drawer Sign in opens the existing sign-in menu');
+  assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
+}
