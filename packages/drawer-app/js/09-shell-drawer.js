@@ -85,12 +85,13 @@ var shellShares = [];
     closeAll(false);
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
-  // Sign in reuses the rail's sign-in menu, so there is one place that knows the providers.
-  var signIn = document.getElementById("btnShellSignIn");
-  if (signIn) signIn.addEventListener("click", function () {
+  // Signed out: the account row itself is the sign-in entry and starts the Google flow
+  // directly (GitHub stays in the rail's sign-in menu). Signed in: the row is inert.
+  var account = document.getElementById("btnShellAccount");
+  if (account) account.addEventListener("click", function () {
+    if (!account.classList.contains("is-signin")) return;
     closeAll(false);
-    var rail = document.getElementById("btnBoardSignIn");
-    if (rail && !rail.disabled) rail.click();
+    if (typeof cloudSignIn === "function") void cloudSignIn("google");
   });
   var newBoard = document.getElementById("shellNewBoard");
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
@@ -111,8 +112,12 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
-  var inn = document.getElementById("btnShellSignIn");
-  if (inn) inn.hidden = !!profile;
+  var row = document.getElementById("btnShellAccount");
+  if (row) {
+    row.classList.toggle("is-signin", !profile);
+    row.title = profile ? "" : "Sign in with Google";
+    row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Sign in with Google");
+  }
 }
 
 function shellWhen(iso) {

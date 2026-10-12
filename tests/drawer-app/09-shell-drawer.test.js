@@ -76,7 +76,9 @@ console.log('ok 09-shell-drawer');
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  assert.match(html, /id="btnShellSignIn"[^>]*hidden/, 'Sign in is in the drawer account row, hidden when signed in');
-  assert.match(src, /getElementById\("btnBoardSignIn"\)[\s\S]{0,120}rail\.click\(\)/, 'drawer Sign in opens the existing sign-in menu');
+  assert.doesNotMatch(html, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
+  assert.match(html, /id="btnShellAccount"[\s\S]{0,200}id="shellAccountAvatar"[\s\S]{0,200}id="shellAccountName"/, 'avatar + name live in one clickable account row');
+  assert.match(src, /classList\.contains\("is-signin"\)[\s\S]{0,160}cloudSignIn\("google"\)/, 'signed-out row starts the sign-in flow directly');
+  assert.match(src, /classList\.toggle\("is-signin", !profile\)/, 'row is only interactive while signed out');
   assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
 }

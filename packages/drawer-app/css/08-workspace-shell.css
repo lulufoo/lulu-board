@@ -527,12 +527,19 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-more:hover { background: var(--wash); color: var(--ink); }
 .shell-more[hidden] { display: none; }
 
-/* drawer account row: Sign in when signed out */
-.shell-drawer-foot button.shell-signin {
-  width: auto; height: 28px; padding: 0 12px; border-radius: 999px;
-  background: var(--brand); color: #fff; font: 600 12px var(--font);
+/* drawer account row: the whole avatar + name area; interactive only while signed out */
+.shell-drawer-foot button.shell-account {
+  flex: 1; width: auto; height: auto; min-width: 0;
+  display: flex; align-items: center; gap: 10px;
+  margin: -4px -6px; padding: 4px 6px;
+  text-align: left; cursor: default; border-radius: 10px;
 }
-.shell-drawer-foot button.shell-signin:hover { background: var(--brand); filter: brightness(.95); }
+.shell-drawer-foot button.shell-account:hover { background: transparent; }
+.shell-account-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.shell-drawer-foot button.shell-account.is-signin { cursor: pointer; }
+.shell-drawer-foot button.shell-account.is-signin:hover { background: var(--wash); }
+.shell-drawer-foot button.shell-account.is-signin:active { background: color-mix(in srgb, var(--wash) 80%, var(--ink) 8%); }
+.shell-drawer-foot button.shell-account:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 
 /* LB-303 spacing: rows breathe, and Shared's header keeps clear of its first row */
 .shell-list { display: flex; flex-direction: column; gap: 2px; }
