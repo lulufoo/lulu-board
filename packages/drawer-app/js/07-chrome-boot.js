@@ -465,7 +465,8 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
 }
 
 async function openOnboardingHash() {
-  if (typeof boardPersistMode === "function" && boardPersistMode() !== "hash") return;
+  // On a cloud board, keep it open: the welcome board opens as a local #z: board in a new tab.
+  var inNewTab = typeof boardPersistMode === "function" && boardPersistMode() !== "hash";
   if (typeof encodeBoardHash !== "function") {
     setStatus("Onboarding is unavailable", true);
     return;
@@ -477,6 +478,11 @@ async function openOnboardingHash() {
     if (typeof stripDocumentMeta === "function") text = stripDocumentMeta(text);
     if (!String(text).trim()) throw new Error("Onboarding is unavailable");
     var token = await encodeBoardHash(text, 1);
+    if (inNewTab) {
+      window.open(location.origin + location.pathname + "#" + token, "_blank", "noopener");
+      setStatus("Welcome opened in a new tab");
+      return;
+    }
     var next = "#" + token;
     if (location.hash === next) {
       setStatus("Onboarding");

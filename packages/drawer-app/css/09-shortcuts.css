@@ -1,0 +1,71 @@
+/* drawer-app/09-shortcuts.css — Keyboard shortcuts dialog (shell: .board-sign-in in 06-sign-in.css) */
+.shortcuts-sheet {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 0;
+  border-color: var(--paper-line, var(--stroke));
+  border-radius: 18px;
+  background: #fbf7f0;
+  color: var(--ink, var(--text));
+}
+.shortcuts-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 16px 28px;
+  border-bottom: 1px solid var(--paper-line, var(--stroke));
+}
+.shortcuts-sheet .shortcuts-head h2 { margin: 0; font: 650 17px/1.25 var(--font); color: var(--ink, var(--text)); }
+.shortcuts-close {
+  width: 32px; height: 32px;
+  border: 0; border-radius: 9px;
+  background: transparent;
+  color: var(--ink-soft, var(--muted));
+  font: 400 22px/1 var(--font);
+  cursor: pointer;
+}
+.shortcuts-close:hover { background: var(--fill, rgba(0,0,0,.05)); color: var(--ink, var(--text)); }
+.shortcuts-close:focus-visible { outline: 2px solid var(--brand, var(--accent)); outline-offset: 1px; }
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px 40px;
+  padding: 22px 28px 28px;
+}
+.shortcuts-group h3 {
+  margin: 0 0 10px;
+  font: 600 11.5px/1 var(--font);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-soft, var(--muted));
+}
+.shortcuts-group dl { margin: 0; }
+.shortcuts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+}
+.shortcuts-row dt { font: 500 13.5px/1.3 var(--font); color: var(--ink, var(--text)); }
+.shortcuts-row dd { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; margin: 0; }
+.shortcuts-key {
+  display: inline-flex;
+  align-items: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  justify-content: center;
+  border: 1px solid rgba(120, 80, 40, .22);
+  border-bottom-width: 2px;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink, var(--text));
+  font: 500 12px/1 var(--font);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .shortcuts-grid { grid-template-columns: minmax(0, 1fr); }
+}
