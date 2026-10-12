@@ -6,8 +6,11 @@
   --bf-radius-chip: 8px;
   --bf-ring: #db4c84;
   --bf-ring-soft: rgba(219, 76, 132, .4);
-  --bf-edge: rgba(74, 53, 36, .22); /* card ring and container dash share this depth */
-  --bf-shadow-box: 0 0 0 1px var(--bf-edge), 0 1px 2px rgba(74, 53, 36, .08), 0 6px 18px rgba(74, 53, 36, .09);
+}
+/* Ring colour follows the theme (--bf-rgb is set by the theme pack on the board root). */
+.board-render {
+  --bf-edge: rgba(var(--bf-rgb, 74, 53, 36), .22); /* card ring; the container dash is the same colour at .3 */
+  --bf-shadow-box: 0 0 0 1px var(--bf-edge), 0 1px 2px rgba(var(--bf-rgb, 74, 53, 36), .08), 0 6px 18px rgba(var(--bf-rgb, 74, 53, 36), .09);
 }
 
 /* ---- selection and hover: pink ring on nodes ---- */
@@ -25,11 +28,11 @@
 }
 /* a card inside a card: fill only, one step deeper than its parent, no lift */
 .board-render .board-type-card .box.board-type-card {
-  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
   box-shadow: none;
 }
 .board-render .board-type-card .box.board-type-card:has(> .box-content > .board-item) {
-  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
 }
 .board-render .board-type-card .box.board-type-card > .box-title {
   background: transparent !important;
