@@ -29,6 +29,7 @@ html[data-drawer-mode="board"] .group-tab:hover,
 html[data-drawer-mode="board"] .group-tab.is-active { color: var(--brand); }
 html[data-drawer-mode="board"] .group-tab { color: var(--ink); }
 html[data-drawer-mode="board"] .board-dock .props-head strong,
+html[data-drawer-mode="board"] .board-dock .dock-source-head strong,
 html[data-drawer-mode="board"] .board-dock .style-section-label { color: var(--ink); }
 
 html[data-drawer-mode="board"] .board-edit-tool,
@@ -387,7 +388,8 @@ html[data-drawer-mode="board"] .board-account .board-cloud-status-icon { width: 
 /* panels */
 html[data-drawer-mode="board"] .board-dock-panel { padding: 20px 20px 24px; gap: 14px; }
 html[data-drawer-mode="board"] .board-dock .props-head { border-bottom-color: var(--paper-line); padding-bottom: 14px; }
-html[data-drawer-mode="board"] .board-dock .props-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+html[data-drawer-mode="board"] .board-dock .props-head strong,
+html[data-drawer-mode="board"] .board-dock .dock-source-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
 html[data-drawer-mode="board"] .board-dock .props-label,
 html[data-drawer-mode="board"] .board-dock .style-section-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }
 html[data-drawer-mode="board"] .board-dock .props-empty,
