@@ -26,3 +26,7 @@ assert.doesNotMatch(diagram, /board-type-container > \.box-title[^}]*opacity:\s*
 // chips: borderless, 8px, warm inline code
 assert.match(css, /board-item-type-chip:not\(\.board-item-diamond\)\s*\{[^}]*border:\s*0 !important[^}]*border-radius:\s*var\(--bf-radius-chip\)/);
 assert.match(css, /\.board-item-md code\s*\{[^}]*rgba\(90, 67, 48/);
+
+// diamond chip: no outline; fill follows the parent box like the rect chip
+assert.match(css, /board-item-diamond-face\s*\{[^}]*stroke:\s*none/);
+assert.match(css, /board-type-card > \.box-content > \.board-item-diamond \.board-item-diamond-face/);

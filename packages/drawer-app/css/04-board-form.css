@@ -50,3 +50,15 @@
 .board-render .board-item-md code {
   background: rgba(90, 67, 48, .09);
 }
+
+/* ---- Item · chip (diamond): same fills as the rect chip, no outline, sharp corners kept ---- */
+.board-render .board-item-diamond-face {
+  stroke: none;
+  fill: var(--board-card-bg, #ece3d3);
+}
+.board-render .board-type-card > .box-content > .board-item-diamond .board-item-diamond-face {
+  fill: var(--board-card-item-bg-1, var(--board-item-bg-1, #f3ebdd));
+}
+.board-render .board-type-container > .box-content > .board-item-diamond .board-item-diamond-face {
+  fill: var(--board-container-item-bg-1, var(--board-card-bg, #ece3d3));
+}
