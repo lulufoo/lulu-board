@@ -299,3 +299,10 @@ html[data-drawer-mode="board"] .board-brand {
 
 /* ---- group tabs: static mock shows only when the cloud renderer has not drawn real tabs ---- */
 #board-group-tabs:not([hidden]) + .shell-tabs-mock { display: none; }
+
+/* ---- canvas ground: pale teal dots with a plus every other step (mermaid editor reference) ---- */
+html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='%23d3e4e9'><circle cx='16' cy='16' r='1.7'/><circle cx='48' cy='16' r='1.7'/><circle cx='16' cy='48' r='1.7'/></g><path d='M48 43v10M43 48h10' stroke='%23d3e4e9' stroke-width='2' stroke-linecap='round'/></svg>") !important;
+  background-size: 64px 64px !important;
+}
