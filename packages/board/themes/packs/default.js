@@ -13,7 +13,8 @@
     // Same stack as the site shell (--font), plus CJK fallbacks so Chinese text does not fall to a serif.
     fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
     color: '#4a3524',
-    edgeStroke: '#2563eb',
+    edgeStroke: '#7a5c3c',
+    edgeLabel: '#5a4330',
     edgeEvidence: '#aaaaaa',
     edgeFeedback: '#888888',
     bandBg: '#f5f5f5',
