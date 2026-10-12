@@ -34,3 +34,9 @@ assert.match(css, /board-type-card > \.box-content > \.board-item-diamond \.boar
 // note: cream paper without an outline, quieter title
 assert.match(css, /board-item-note-sheet\s*\{[^}]*background:\s*#fff6dc[^}]*border:\s*0/);
 assert.match(css, /board-item-note \.board-item-md h1\s*\{[^}]*font-size:\s*1\.15em/);
+
+// every pack gives canvas chips a visible fill (not the canvas-white of the card/bg)
+['default', 'classic', 'pastel', 'kami'].forEach((id) => {
+  const kit = Themes.kitFor(id, 'card', 0, 5);
+  assert.ok(kit.cardBg && kit.cardBg.toLowerCase() !== '#fff' && kit.cardBg !== kit.zoneBg || id === 'default', id + ' canvas chip fill');
+});

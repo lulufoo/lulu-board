@@ -23,7 +23,7 @@
     bandBg: '#f5f4ed',
     bandBorder: border,
     swatches: [
-      { bg: ivory, border: border, item: sand, card: ivory },
+      { bg: ivory, border: border, item: sand, card: sand },
     ],
     typePartials: {
       card: { radius: '3px', titleColor: '#141413', titleWeight: '600', cardColor: '#141413' },

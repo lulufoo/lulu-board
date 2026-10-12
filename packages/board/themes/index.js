@@ -75,7 +75,8 @@
       zoneBorder: primary.border,
       panelBg: primary.bg,
       panelHeaderBg: primary.bg,
-      cardBg: primary.card || '#fff',
+      // chip straight on the canvas: needs its own fill (never white on a near-white canvas)
+      cardBg: primary.card || primary.item || primary.bg,
       cardBorder: primary.border,
       cardLeft: '1px solid ' + primary.border,
       itemPalette: items,
