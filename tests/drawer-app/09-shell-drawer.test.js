@@ -82,3 +82,14 @@ console.log('ok 09-shell-drawer');
   assert.match(src, /classList\.toggle\("is-signin", !profile\)/, 'row is only interactive while signed out');
   assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
 }
+
+// ---- properties panel: icon categories are a dropdown, not a grid of blocks ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+  const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
+  assert.match(html, /<select id="boardIconSec"/, 'Icon category is a select');
+  assert.doesNotMatch(html, /id="boardIconSec" role="group"/, 'no block group for categories');
+  assert.match(board, /<option value=/, 'categories are rendered as options');
+  assert.match(boot, /boardIconSec\.addEventListener\("change"/, 'picking a category switches the icon list');
+}

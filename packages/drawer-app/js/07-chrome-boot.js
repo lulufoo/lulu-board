@@ -132,20 +132,8 @@ if (boardIconList) boardIconList.addEventListener("click", function(event) {
   }
   commitBoardIcon(n);
 });
-if (boardIconSec) boardIconSec.addEventListener("click", function(event) {
-  var btn = event.target && event.target.closest ? event.target.closest("[data-sec]") : null;
-  if (!btn) return;
-  var sec = btn.dataset.sec;
-  if (boardIconSecId === sec) {
-    var Icons = window.BoardIcons;
-    var owner = Icons && Icons.sectionOf && boardIconPick != null ? Icons.sectionOf(boardIconPick) : "";
-    boardIconSecId = "";
-    fillBoardIconList();
-    if (selectedBoardNode && selectedBoardNode.kind === "box" && owner === sec) commitBoardIcon(null);
-    else markBoardIconPick(boardIconPick);
-    return;
-  }
-  boardIconSecId = sec;
+if (boardIconSec) boardIconSec.addEventListener("change", function() {
+  boardIconSecId = boardIconSec.value;
   fillBoardIconList();
   markBoardIconPick(boardIconPick);
 });
