@@ -210,30 +210,16 @@ html[data-drawer-mode="board"] .board-brand {
 .shell-dir svg { width: 12px; height: 12px; }
 .shell-dir.is-out { background: var(--accent-soft); color: var(--brand); }
 
-/* shared section: one merged list; fold and tabs are alternates (?shared=fold | ?shared=tabs) */
+/* shared section: one merged list, folded by default */
 .shell-fold {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 0; border: 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
-  cursor: default;
+  cursor: pointer;
 }
-.shell-fold svg { display: none; width: 12px; height: 12px; transition: transform .12s; }
+.shell-fold svg { width: 12px; height: 12px; transform: rotate(90deg); transition: transform .12s; }
 .shell-fold em { margin-left: 6px; }
-html[data-shared="fold"] .shell-fold { cursor: pointer; }
-html[data-shared="fold"] .shell-fold svg { display: block; transform: rotate(90deg); }
-html[data-shared="fold"] .shell-shared.is-folded .shell-fold svg { transform: none; }
-html[data-shared="fold"] .shell-shared.is-folded .shell-list { display: none; }
-.shell-seg { display: none; gap: 2px; margin: 0 0 12px; padding: 3px; border-radius: 11px; background: var(--wash); }
-html[data-shared="tabs"] .shell-seg { display: flex; }
-.shell-seg button {
-  flex: 1; height: 28px; border: 0; border-radius: 8px; background: transparent;
-  color: var(--ink-soft); font: 600 12.5px var(--font); cursor: pointer;
-}
-.shell-seg button.is-on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .12); }
-.shell-seg em { margin-left: 6px; font-style: normal; font-weight: 500; color: var(--brand); }
-html[data-shared="tabs"] .shell-drawer[data-pane="mine"] .shell-shared,
-html[data-shared="tabs"] .shell-drawer[data-pane="shared"] .shell-mine { display: none; }
-html[data-shared="tabs"] .shell-drawer[data-pane="shared"] .shell-shared { margin-top: 0; }
-html[data-shared="tabs"] .shell-shared .shell-fold em { display: none; }
+.shell-shared.is-folded .shell-fold svg { transform: none; }
+.shell-shared.is-folded .shell-list { display: none; }
 .shell-row-acts { display: none; gap: 4px; }
 .shell-row-link:hover .shell-row-acts { display: flex; }
 .shell-row-acts button {
