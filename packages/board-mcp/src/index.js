@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getBoard, createBoard, saveBoard } from "./boards.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
+import { brandResponse, isBrandPath, serverInfo } from "./brand.js";
 
 function toolText(data) {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };
@@ -18,7 +19,7 @@ function toolError(error) {
 }
 
 function createServer(env, identity, token) {
-  const server = new McpServer({ name: "lulu-board", version: "1.0.0" });
+  const server = new McpServer(serverInfo(env));
   server.registerTool("whoami", { description: "Return the authorized Lulu Board account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
@@ -81,6 +82,11 @@ export default {
     }
     if (request.method === "GET" && isMetaPath(url.pathname)) {
       return json(metadataDocument(env, request));
+    }
+    if ((request.method === "GET" || request.method === "HEAD") && isBrandPath(url.pathname)) {
+      const icon = brandResponse(url.pathname);
+      if (request.method === "HEAD") return new Response(null, { status: icon.status, headers: icon.headers });
+      return icon;
     }
     if (url.pathname !== "/mcp") return new Response("Not found", { status: 404 });
     const header = request.headers.get("authorization") || "";

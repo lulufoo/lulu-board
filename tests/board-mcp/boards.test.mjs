@@ -14,6 +14,7 @@ import {
 } from '../../packages/board-mcp/src/boards.js';
 import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
 import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/board-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/05-board-file.js'), 'utf8');
@@ -243,5 +244,35 @@ assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
 assert.match(skill, /group this\s+board id belongs to/, 'skill says group_id is the board group');
 assert.match(skill, /current\s+account/, 'skill joins on the current account');
 assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
+
+const brandDir = path.join(root, 'packages/drawer-app/brand');
+assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
+assert.equal(
+  FAVICON_PNG_BASE64,
+  readFileSync(path.join(brandDir, 'favicon-32.png')).toString('base64'),
+  'MCP png matches drawer brand'
+);
+assert.match(FAVICON_SVG, /fill="#db4c84"/, 'svg uses the landing pink');
+assert.match(FAVICON_SVG, /fill="#ffd166"/, 'svg uses the landing yellow');
+
+const info = serverInfo({ PUBLIC_ORIGIN: 'https://mcp.luluboard.app' });
+assert.equal(info.websiteUrl, 'https://luluboard.app');
+assert.equal(info.icons[0].src, 'https://mcp.luluboard.app/favicon-32.png');
+assert.equal(info.icons[0].mimeType, 'image/png');
+assert.equal(info.icons[1].src, 'https://mcp.luluboard.app/favicon.svg');
+assert.match(worker, /new McpServer\(serverInfo\(env\)\)/, 'initialize carries brand icons');
+assert.match(worker, /isBrandPath\(url\.pathname\)/, 'favicon is served before /mcp auth');
+
+const svgRes = brandResponse('/favicon.svg');
+assert.equal(svgRes.status, 200);
+assert.match(svgRes.headers.get('content-type'), /image\/svg\+xml/);
+assert.equal(await svgRes.text(), FAVICON_SVG);
+const pngRes = brandResponse('/favicon-32.png');
+assert.equal(pngRes.status, 200);
+assert.equal(pngRes.headers.get('content-type'), 'image/png');
+assert.deepEqual(
+  Buffer.from(await pngRes.arrayBuffer()),
+  readFileSync(path.join(brandDir, 'favicon-32.png'))
+);
 
 console.log('ok board-mcp boards');
