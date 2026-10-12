@@ -15,3 +15,10 @@ const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/c
 assert.match(css, /\.box\.board-type-card\s*\{[^}]*border:\s*0 !important/);
 assert.match(css, /\.board-type-card \.box\.board-type-card\s*\{[^}]*box-shadow:\s*none/);
 console.log('ok card-form');
+
+// container keeps the dashed shell but follows the same 12px corner as cards
+const form = css;
+assert.match(form, /board-type-container,[^{]*\{\s*border-radius:\s*var\(--bf-radius-box\) !important/);
+const diagram = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+assert.match(diagram, /border:\s*1\.5px dashed var\(--board-container-zone-border/);
+assert.doesNotMatch(diagram, /board-type-container > \.box-title[^}]*opacity:\s*0\.72/);

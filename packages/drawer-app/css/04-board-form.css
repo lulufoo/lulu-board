@@ -33,3 +33,9 @@
 .board-render .board-type-card .box.board-type-card > .box-title {
   background: transparent !important;
 }
+
+/* ---- Box · container: dashed, transparent, no shadow; selection ring does not recolour the dashes ---- */
+.board-render .box.board-type-container,
+.board-render .board-zone.board-type-container {
+  border-radius: var(--bf-radius-box) !important;
+}
