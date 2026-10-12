@@ -27,6 +27,7 @@ var shellShares = [];
     if (on) { setDrawer(false); scrim.hidden = false; if (input) { input.focus(); input.select(); } shellRenderSearch(); }
   }
   function closeAll(restoreFocus) {
+    if (typeof window.shellCloseAuthMenu === "function") window.shellCloseAuthMenu();
     var wasOpen = !drawer.hidden || !pop.hidden;
     setDrawer(false);
     setSearch(false);
@@ -90,14 +91,31 @@ var shellShares = [];
     closeAll(false);
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
-  // Signed out: the account row itself is the sign-in entry and starts the Google flow
-  // directly (GitHub stays in the rail's sign-in menu). Signed in: the row is inert.
+  // Signed out: the account row is the sign-in entry. It opens a small menu to pick Google or GitHub
+  // (the provider buttons carry data-board-oauth, so 06-cloud-sync starts the flow). Signed in: the row is inert.
   var account = document.getElementById("btnShellAccount");
-  if (account) account.addEventListener("click", function () {
+  var authMenu = document.getElementById("shellAuthMenu");
+  function setAuthMenu(on) {
+    if (!authMenu) return;
+    authMenu.hidden = !on;
+    if (account) account.setAttribute("aria-expanded", on ? "true" : "false");
+    if (on) { var first = authMenu.querySelector("button"); if (first) first.focus({ preventScroll: true }); }
+  }
+  window.shellCloseAuthMenu = function () { setAuthMenu(false); };
+  if (account) account.addEventListener("click", function (event) {
     if (!account.classList.contains("is-signin")) return;
-    closeAll(false);
-    if (typeof cloudSignIn === "function") void cloudSignIn("google");
+    event.stopPropagation();
+    setAuthMenu(!!authMenu && authMenu.hidden);
   });
+  if (authMenu) {
+    authMenu.addEventListener("click", function () { setAuthMenu(false); closeAll(false); });
+    document.addEventListener("click", function (event) {
+      if (!authMenu.hidden && !authMenu.contains(event.target)) setAuthMenu(false);
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !authMenu.hidden) { event.stopPropagation(); setAuthMenu(false); account.focus({ preventScroll: true }); }
+    }, true);
+  }
   var newBoard = document.getElementById("shellNewBoard");
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
   var shareBtn = document.getElementById("shellShareBoard");
@@ -121,8 +139,9 @@ function shellPaintAccount(profile) {
   var row = document.getElementById("btnShellAccount");
   if (row) {
     row.classList.toggle("is-signin", !profile);
-    row.title = profile ? "" : "Sign in with Google";
-    row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Sign in with Google");
+    if (profile && typeof window.shellCloseAuthMenu === "function") window.shellCloseAuthMenu();
+    row.title = profile ? "" : "Sign in";
+    row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Choose how to sign in");
   }
 }
 
