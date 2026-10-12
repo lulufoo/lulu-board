@@ -19,18 +19,6 @@
     edgeRgb: '98, 74, 160',
     // Fills in rotation order (see themes/rotation.js).
     colors: ['#ececff', '#e3dffc', '#f3e5f5', '#ede7f6', '#e8eaf6', '#f5f3ff', '#faf5ff', '#eef2ff'],
-    autoTone: true,
-    ramp: ['#ececff', '#e3dffc', '#d8d0f6', '#cbc1ef', '#bdb0e6', '#ad9fdb', '#9c8cce', '#8a79bf'],
-    swatches: [
-      { bg: '#ececff', border: '#9370db', item: '#e8e4ff' },
-      { bg: '#e3dffc', border: '#7e57c2', item: '#ddd6fe' },
-      { bg: '#f3e5f5', border: '#9c27b0', item: '#f3e8ff' },
-      { bg: '#ede7f6', border: '#5e35b1', item: '#e9d5ff' },
-      { bg: '#e8eaf6', border: '#5c6bc0', item: '#e0e7ff' },
-      { bg: '#f5f3ff', border: '#8b5cf6', item: '#ede9fe' },
-      { bg: '#faf5ff', border: '#a855f7', item: '#f3e8ff' },
-      { bg: '#eef2ff', border: '#6366f1', item: '#e0e7ff' },
-    ],
     typePartials: {
       card: {},
       layout: { shell: 'hollow', pad: '0' },

@@ -513,34 +513,6 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
   color: var(--board-container-card-color, var(--board-card-color));
 }
 
-/* Adjacent item palette — scoped by parent box type */
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+1),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+1) { background: var(--board-card-item-bg-1, var(--board-container-item-bg-1, var(--board-item-bg-1, #e8f1ff))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+2),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+2) { background: var(--board-card-item-bg-2, var(--board-container-item-bg-2, var(--board-item-bg-2, #fef9c3))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+3),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+3) { background: var(--board-card-item-bg-3, var(--board-container-item-bg-3, var(--board-item-bg-3, #dcfce7))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+4),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+4) { background: var(--board-card-item-bg-4, var(--board-container-item-bg-4, var(--board-item-bg-4, #f3e8ff))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+5),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+5) { background: var(--board-card-item-bg-5, var(--board-container-item-bg-5, var(--board-item-bg-5, #ffedd5))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+6),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+6) { background: var(--board-card-item-bg-6, var(--board-container-item-bg-6, var(--board-item-bg-6))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+7),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+7) { background: var(--board-card-item-bg-7, var(--board-container-item-bg-7, var(--board-item-bg-7))) !important; }
-.board-render .board-type-card > .box-content > .board-item.board-card:nth-of-type(8n+8),
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+8) { background: var(--board-card-item-bg-8, var(--board-container-item-bg-8, var(--board-item-bg-8))) !important; }
-
-/* container-specific palette wins when parent is container */
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+1) { background: var(--board-container-item-bg-1, #e8f1ff) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+2) { background: var(--board-container-item-bg-2, #fef9c3) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+3) { background: var(--board-container-item-bg-3, #dcfce7) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+4) { background: var(--board-container-item-bg-4, #f3e8ff) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+5) { background: var(--board-container-item-bg-5, #ffedd5) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+6) { background: var(--board-container-item-bg-6, var(--board-container-item-bg-1)) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+7) { background: var(--board-container-item-bg-7, var(--board-container-item-bg-2)) !important; }
-.board-render .board-type-container > .box-content > .board-item.board-card:nth-of-type(8n+8) { background: var(--board-container-item-bg-8, var(--board-container-item-bg-3)) !important; }
-
 /* Board keeps top-float visible for Source / Diagram theme / Export / UI theme */
 
 
