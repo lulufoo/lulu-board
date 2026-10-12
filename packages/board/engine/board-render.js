@@ -11,7 +11,7 @@
   const View = root.BoardView || (typeof require === 'function' ? require('../view/board-view') : null);
   const Icons = root.BoardIcons || (typeof require === 'function' ? require('../item/icons.js') : null);
   const Themes = root.BoardThemes || null;
-  const Tone = root.BoardTone || (typeof require === 'function' ? require('../themes/tone') : null);
+  const Rotation = root.BoardRotation || (typeof require === 'function' ? require('../themes/rotation') : null);
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
   const DIRECTIONS = new Set(['row', 'column']);
@@ -1874,9 +1874,7 @@
       root,
       elements,
       nested: false,
-      toneSeq: { n: 0 },
-      tones: Tone ? Tone.resolve(board, { auto: !!(Themes && Themes.get(themeId).autoTone) }) : new Map(),
-      toneRamp: (Themes && Themes.get(themeId).ramp) || [],
+      fills: Rotation && Themes ? Rotation.resolve(board, Themes.get(themeId).colors) : new Map(),
       applyFlex,
       propsFor,
       makeBoardSlot: function (dir, fromId, toId) { return makeBoardSlot(board, dir, fromId, toId, doc); },

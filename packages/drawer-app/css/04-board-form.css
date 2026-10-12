@@ -30,13 +30,9 @@
   border-radius: var(--bf-radius-box) !important;
   box-shadow: var(--bf-shadow-box);
 }
-/* a card inside a card: one step deeper than its parent, edge ring only, no lift */
+/* a card inside a card: edge ring only, no lift (its fill comes from the colour rotation) */
 .board-render .board-type-card .box.board-type-card {
-  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
   box-shadow: var(--bf-edge-in);
-}
-.board-render .board-type-card .box.board-type-card:has(> .box-content > .board-item) {
-  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
 }
 .board-render .board-type-card .box.board-type-card > .box-title {
   background: transparent !important;
@@ -66,21 +62,15 @@
   vector-effect: non-scaling-stroke;
   fill: var(--board-card-bg, #ece3d3);
 }
-.board-render .board-type-card > .box-content > .board-item-diamond .board-item-diamond-face {
-  fill: var(--board-card-item-bg-1, var(--board-item-bg-1, #f3ebdd));
-}
-.board-render .board-type-container > .box-content > .board-item-diamond .board-item-diamond-face {
-  fill: var(--board-container-item-bg-1, var(--board-card-bg, #ece3d3));
-}
 
-/* a toned box: the title strip shows the box fill instead of its own */
-.board-render .box[data-bf-tone] > .box-title {
+/* a filled box: the title strip shows the box fill instead of its own */
+.board-render .box[data-bf-fill] > .box-title {
   background: transparent !important;
 }
 
-/* a toned diamond: the face takes the picked fill (rect chips and cards are painted inline) */
-.board-render .board-item-diamond[data-bf-tone] .board-item-diamond-face {
-  fill: var(--bf-tone-fill) !important;
+/* a filled diamond: the face takes its rotation colour (rect chips and cards are painted inline) */
+.board-render .board-item-diamond[data-bf-fill] .board-item-diamond-face {
+  fill: var(--bf-fill) !important;
 }
 
 /* ---- Item · note: warm cream paper, no outline, 4px corners, folded top-right ---- */

@@ -146,7 +146,7 @@
       if (fz != null && Scale && typeof Scale.applyItemStep === 'function') {
         Scale.applyItemStep(el, fz);
       }
-      if (root.BoardTone && ctx.tones) root.BoardTone.paint(el, ctx.toneRamp, ctx.tones.get(item), item.shape === 'diamond');
+      if (root.BoardRotation && ctx.fills) root.BoardRotation.paint(el, ctx.fills.get(item), item.shape === 'diamond');
       this.decorate(el, ctx);
       const itemCopy = doc.createElement('span');
       itemCopy.className = 'board-item-copy';

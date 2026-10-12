@@ -52,38 +52,9 @@
       edgeFeedback: pack.edgeFeedback,
       bandBg: pack.bandBg,
       bandBorder: pack.bandBorder,
-      swatches: pack.swatches,
+      colors: pack.colors,
       edgeRgb: pack.edgeRgb || '74, 53, 36',
-      ramp: pack.ramp || [],
-      autoTone: !!pack.autoTone,
       types,
-    };
-  }
-
-  function kitFromPool(swatches, toneIndex, itemCount) {
-    const n = swatches.length || 1;
-    const start = ((toneIndex % n) + n) % n;
-    const primary = swatches[start];
-    const items = [];
-    const canvasItems = [];
-    const count = Math.max(itemCount || 5, 5);
-    for (let i = 0; i < count; i++) {
-      const sw = swatches[(start + i) % n];
-      items.push(sw.item || sw.bg);
-      canvasItems.push(sw.canvasItem || sw.item || sw.bg);
-    }
-    return {
-      zoneBg: primary.bg,
-      zoneBorder: primary.border,
-      panelBg: primary.bg,
-      panelHeaderBg: primary.bg,
-      // chip straight on the canvas: needs its own fill (never white on a near-white canvas)
-      cardBg: primary.card || primary.item || primary.bg,
-      cardBorder: primary.border,
-      cardLeft: '1px solid ' + primary.border,
-      itemPalette: items,
-      canvasItemPalette: canvasItems,
-      toneIndex: start,
     };
   }
 
@@ -92,7 +63,6 @@
     classic: hydrate(packs.classic),
     pastel: hydrate(packs.pastel),
   };
-  const FALLBACK_SWATCHES = THEMES.default.swatches;
 
   const ORDER = ['default', 'classic', 'pastel'];
   const LEGACY_IDS = { minimal: 'classic', slate: 'pastel' };
@@ -116,11 +86,26 @@
     return (theme.types && theme.types[key]) || theme.types.card;
   }
 
-  /** Build a color kit for one box: theme swatches rotated by toneIndex. */
-  function kitFor(themeOrId, typeName, toneIndex, itemCount) {
+  /**
+   * Chrome tokens for one box type. Fills of filled nodes come from the rotation (themes/rotation.js, painted inline);
+   * the first colour of the list is only the fallback for tokens that no node overrides.
+   */
+  function kitFor(themeOrId, typeName) {
     const theme = typeof themeOrId === 'string' ? get(themeOrId) : themeOrId;
     const chrome = typeChromeOf(theme, typeName);
-    const kit = kitFromPool(theme.swatches || FALLBACK_SWATCHES, toneIndex || 0, itemCount || 8);
+    const fill = theme.colors[0];
+    // same depth in every theme: the pack's edge colour at .3
+    const edge = 'rgba(' + theme.edgeRgb + ', .3)';
+    const kit = {
+      zoneBg: fill,
+      zoneBorder: edge,
+      panelBg: fill,
+      panelHeaderBg: fill,
+      cardBg: fill,
+      cardBorder: edge,
+      cardLeft: '1px solid ' + edge,
+      borderStyle: chrome.borderStyle || 'solid',
+    };
     if (chrome.shell === 'hollow') {
       // Pure layout / invisible chrome
       kit.zoneBg = 'transparent';
@@ -134,10 +119,6 @@
       kit.panelBg = 'transparent';
       kit.panelHeaderBg = 'transparent';
       kit.borderStyle = chrome.borderStyle || 'dashed';
-      // same depth in every theme: the pack's edge colour at .3
-      kit.zoneBorder = 'rgba(' + theme.edgeRgb + ', .3)';
-    } else {
-      kit.borderStyle = chrome.borderStyle || 'solid';
     }
     kit.radius = chrome.radius;
     kit.pad = chrome.pad;
@@ -149,13 +130,6 @@
     kit.cardPad = chrome.cardPad;
     kit.cardSize = chrome.cardSize;
     kit.cardColor = chrome.cardColor;
-    if (chrome.shell === 'hollow' || chrome.shell === 'outline') {
-      const raw = kitFromPool(theme.swatches || FALLBACK_SWATCHES, toneIndex || 0, 8);
-      kit.cardLeft = '1px solid ' + raw.zoneBorder;
-      kit.cardBorder = raw.zoneBorder;
-      kit.itemPalette = raw.canvasItemPalette;
-      if (chrome.shell === 'outline' && !kit.zoneBorder) kit.zoneBorder = raw.zoneBorder;
-    }
     return kit;
   }
 
@@ -171,12 +145,12 @@
     return Scale.clampStep(raw);
   }
 
-  /** Apply theme-level defaults on .board-render root (tone 0 / shared edges). */
+  /** Apply theme-level defaults on .board-render root (first colour / shared edges). */
   function applyTo(el, id) {
     if (!el) return get(id);
     const theme = get(id);
     const step = typeStepOf(el);
-    const base = kitFor(theme, 'card', 0, 8);
+    const base = kitFor(theme, 'card');
     const map = {
       '--board-font': theme.fontFamily,
       '--bf-rgb': theme.edgeRgb,
@@ -207,11 +181,8 @@
       '--board-panel-bg': base.panelBg,
       '--board-panel-header-bg': base.panelHeaderBg,
     };
-    for (let i = 0; i < 8; i++) {
-      map['--board-item-bg-' + (i + 1)] = base.itemPalette[i % base.itemPalette.length];
-    }
-    BOX_TYPES.forEach((typeName, typeIdx) => {
-      const k = kitFor(theme, typeName, typeIdx, 8);
+    BOX_TYPES.forEach((typeName) => {
+      const k = kitFor(theme, typeName);
       const p = typeName + '-';
       map['--board-' + p + 'zone-bg'] = k.zoneBg;
       map['--board-' + p + 'zone-border'] = k.zoneBorder;
@@ -230,84 +201,14 @@
       map['--board-' + p + 'card-left'] = k.cardLeft;
       map['--board-' + p + 'panel-bg'] = k.panelBg;
       map['--board-' + p + 'panel-header-bg'] = k.panelHeaderBg;
-      for (let i = 0; i < 8; i++) {
-        map['--board-' + p + 'item-bg-' + (i + 1)] = k.itemPalette[i % k.itemPalette.length];
-      }
     });
     setVars(el, map);
     el.dataset.boardTheme = theme.id;
     return theme;
   }
 
-  /**
-   * Apply a per-box kit onto a box element (overrides inherited theme vars for this subtree).
-   * toneIndex: stable color set index; typically sibling order among top-level boxes.
-   */
-  function applyBoxTone(el, themeOrId, typeName, toneIndex, itemCount) {
-    if (!el) return null;
-    const theme = typeof themeOrId === 'string' ? get(themeOrId) : (themeOrId || get('default'));
-    const step = typeStepOf(el);
-    const kit = kitFor(theme, typeName, toneIndex || 0, itemCount || 8);
-    const chrome = typeChromeOf(theme, typeName);
-    // Transparent shells (layout hollow / container outline) keep
-    // own zone clear of fill; nested kids still get filled card tokens via fillKit.
-    const transparentHost = chrome.shell === 'hollow' || chrome.shell === 'outline';
-    const fillKit = transparentHost
-      ? kitFor(theme, 'card', toneIndex || 0, itemCount || 8)
-      : kit;
-    const hostZone = transparentHost ? kit : fillKit;
-    const map = {
-      '--board-zone-bg': hostZone.zoneBg,
-      '--board-zone-border': hostZone.zoneBorder,
-      '--board-zone-border-style': kit.borderStyle || 'solid',
-      '--board-zone-radius': fillKit.radius,
-      '--board-zone-pad': transparentHost ? kit.pad : fillKit.pad,
-      '--board-title-color': kit.titleColor,
-      '--board-title-size': Scale.sizeForTitle(typeName, step),
-      '--board-title-weight': kit.titleWeight,
-      '--board-title-margin': kit.titleMargin,
-      '--board-card-bg': fillKit.cardBg,
-      '--board-card-border': fillKit.cardBorder,
-      '--board-card-radius': fillKit.cardRadius,
-      '--board-card-pad': fillKit.cardPad,
-      '--board-card-size': Scale.sizeForCard(step),
-      '--board-card-color': fillKit.cardColor,
-      '--board-card-left': fillKit.cardLeft,
-      '--board-panel-bg': hostZone.panelBg,
-      '--board-panel-header-bg': hostZone.panelHeaderBg,
-      '--board-card-zone-bg': fillKit.zoneBg,
-      '--board-card-zone-border': fillKit.zoneBorder,
-      '--board-card-zone-pad': fillKit.pad,
-      '--board-card-zone-radius': fillKit.radius,
-      '--board-card-card-pad': fillKit.cardPad,
-      '--board-card-card-bg': fillKit.cardBg,
-      '--board-container-card-pad': kit.cardPad,
-      '--board-container-card-bg': kit.cardBg,
-      '--board-container-zone-bg': kit.zoneBg,
-      '--board-container-zone-border': kit.zoneBorder,
-      '--board-container-zone-border-style': kit.borderStyle || 'solid',
-      '--board-container-card-border': kit.cardBorder,
-      '--board-container-card-left': kit.cardLeft,
-      '--board-card-card-border': fillKit.cardBorder,
-      '--board-card-card-left': fillKit.cardLeft,
-      '--board-card-panel-bg': fillKit.panelBg,
-      '--board-card-panel-header-bg': fillKit.panelHeaderBg,
-    };
-    for (let i = 0; i < 8; i++) {
-      const c = fillKit.itemPalette[i % fillKit.itemPalette.length];
-      const cc = kit.itemPalette[i % kit.itemPalette.length];
-      map['--board-item-bg-' + (i + 1)] = c;
-      map['--board-card-item-bg-' + (i + 1)] = c;
-      map['--board-container-item-bg-' + (i + 1)] = cc;
-    }
-    setVars(el, map);
-    el.dataset.boardTone = String(kit.toneIndex);
-    el.classList.add('board-tone-' + (kit.toneIndex % 10));
-    return kit;
-  }
-
   return {
     THEMES, ORDER, BOX_TYPES, LEGACY_IDS,
-    get, list, resolveId, kitFor, kitFromPool, applyTo, applyBoxTone,
+    get, list, resolveId, kitFor, applyTo,
   };
 });
