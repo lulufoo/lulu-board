@@ -11,6 +11,7 @@
     title: '13px',
     body: '12px',
     caption: '10px',
+    label: '11px', // link titles
     diamondTitle: '12px',
   };
   const STEP_MIN = -3;
@@ -44,6 +45,9 @@
   function sizeForCard(n) {
     return pxCss('body', n);
   }
+  function sizeForLabel(n) {
+    return pxCss('label', n);
+  }
   function sizes(n) {
     const step = clampStep(n);
     return {
@@ -51,6 +55,7 @@
       title: pxCss('title', step),
       body: pxCss('body', step),
       caption: pxCss('caption', step),
+      label: pxCss('label', step),
       diamondTitle: pxCss('diamondTitle', step),
     };
   }
@@ -75,7 +80,7 @@
 
   return {
     SCALE, STEP_MIN, STEP_MAX, FACTOR, MIN_PX,
-    get, clampStep, factor, px, sizeForTitle, sizeForCard, sizes,
+    get, clampStep, factor, px, sizeForTitle, sizeForCard, sizeForLabel, sizes,
     stepFromStyle, applyBoxTitleStep, applyItemStep,
   };
 });

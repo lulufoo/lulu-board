@@ -48,6 +48,7 @@
       fontFamily: pack.fontFamily,
       color: pack.color,
       edgeStroke: pack.edgeStroke,
+      edgeLabel: pack.edgeLabel,
       edgeEvidence: pack.edgeEvidence,
       edgeFeedback: pack.edgeFeedback,
       bandBg: pack.bandBg,
@@ -62,19 +63,24 @@
     const start = ((toneIndex % n) + n) % n;
     const primary = swatches[start];
     const items = [];
+    const canvasItems = [];
     const count = Math.max(itemCount || 5, 5);
     for (let i = 0; i < count; i++) {
-      items.push(swatches[(start + i) % n].item || swatches[(start + i) % n].bg);
+      const sw = swatches[(start + i) % n];
+      items.push(sw.item || sw.bg);
+      canvasItems.push(sw.canvasItem || sw.item || sw.bg);
     }
     return {
       zoneBg: primary.bg,
       zoneBorder: primary.border,
       panelBg: primary.bg,
       panelHeaderBg: primary.bg,
-      cardBg: primary.card || '#fff',
+      // chip straight on the canvas: needs its own fill (never white on a near-white canvas)
+      cardBg: primary.card || primary.item || primary.bg,
       cardBorder: primary.border,
       cardLeft: '1px solid ' + primary.border,
       itemPalette: items,
+      canvasItemPalette: canvasItems,
       toneIndex: start,
     };
   }
@@ -144,7 +150,7 @@
       const raw = kitFromPool(theme.swatches || FALLBACK_SWATCHES, toneIndex || 0, 8);
       kit.cardLeft = '1px solid ' + raw.zoneBorder;
       kit.cardBorder = raw.zoneBorder;
-      kit.itemPalette = raw.itemPalette;
+      kit.itemPalette = raw.canvasItemPalette;
       if (chrome.shell === 'outline' && !kit.zoneBorder) kit.zoneBorder = raw.zoneBorder;
     }
     return kit;
@@ -172,6 +178,7 @@
       '--board-font': theme.fontFamily,
       '--board-color': theme.color,
       '--board-edge': theme.edgeStroke,
+      '--board-edge-label': theme.edgeLabel || theme.color,
       '--board-edge-evidence': theme.edgeEvidence,
       '--board-edge-feedback': theme.edgeFeedback,
       '--board-band-bg': theme.bandBg,
@@ -190,6 +197,7 @@
       '--board-card-radius': base.cardRadius,
       '--board-card-pad': base.cardPad,
       '--board-card-size': Scale.sizeForCard(step),
+      '--board-label-size': Scale.sizeForLabel(step),
       '--board-card-color': base.cardColor,
       '--board-card-left': base.cardLeft,
       '--board-panel-bg': base.panelBg,

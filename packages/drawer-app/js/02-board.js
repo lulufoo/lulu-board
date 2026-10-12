@@ -588,6 +588,7 @@ function restoreBoardEdgePaint(el) {
 function restoreBoardEdgeMarker(el) {
   restoreBoardEdgePaint(el);
 }
+var BOARD_EDGE_SELECTED_COLOR = "#db4c84";
 function applyBoardEdgeSelection(root) {
   document.querySelectorAll(".board-edge-selected").forEach(function(el) {
     el.classList.remove("board-edge-selected");
@@ -611,7 +612,7 @@ function applyBoardEdgeSelection(root) {
         el.setAttribute("data-board-sel-style-width", (el.style && el.style.strokeWidth) || "");
       }
       var base = readBoardEdgePaint(el, "stroke") || "#2563eb";
-      var accent = darkenCssColor(base, 0.4);
+      var accent = BOARD_EDGE_SELECTED_COLOR;
       el.setAttribute("stroke", accent);
       el.setAttribute("stroke-width", "2");
       if (el.style) {
@@ -625,7 +626,7 @@ function applyBoardEdgeSelection(root) {
         el.setAttribute("data-board-sel-style-fill", (el.style && el.style.fill) || "");
       }
       var labelBase = readBoardEdgePaint(el, "fill") || readBoardEdgePaint(el, "stroke") || "#2563eb";
-      var labelAccent = darkenCssColor(labelBase, 0.4);
+      var labelAccent = BOARD_EDGE_SELECTED_COLOR;
       el.setAttribute("fill", labelAccent);
       if (el.style) el.style.fill = labelAccent;
     }

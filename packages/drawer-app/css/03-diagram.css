@@ -1,6 +1,6 @@
 /* board diagram surfaces */
-.board-selection { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
-.board-selection-tree { outline: 3px dashed #f59e0b !important; outline-offset: 3px; }
+.board-selection { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+.board-selection-tree { outline: 2px dashed var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
 .board-reorder-caret {
   position: absolute;
@@ -17,7 +17,7 @@
   background: transparent !important;
   background-color: transparent !important;
   border: 1.5px dashed var(--board-container-zone-border, var(--board-zone-border, #888888)) !important;
-  border-radius: 8px;
+  border-radius: var(--bf-radius-box, 12px);
   box-shadow: none !important;
   outline: none;
   /* Inset lives on .box-content via applyFlex; do not double-pad the shell. */
@@ -53,7 +53,7 @@
 }
 .board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection),
 .board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection) {
-  outline: 1px dashed rgba(245, 158, 11, 0.55);
+  outline: 1px dashed var(--bf-ring-soft, rgba(219, 76, 132, .45));
   outline-offset: 3px;
 }
 .board-render .box.board-type-container > .box-content,
@@ -63,22 +63,22 @@
 }
 .board-render .box.board-type-container.board-selection,
 .board-render .board-zone.board-type-container.board-selection {
-  /* Amber selection outline; keep dashed group border visible underneath. */
-  outline: 3px solid #f59e0b !important;
-  outline-offset: 3px;
+  /* Selection ring (brand pink); keep dashed group border visible underneath. */
+  outline: 2px solid var(--bf-ring, #db4c84) !important;
+  outline-offset: 2px;
   background: transparent !important;
 }
 .board-render .box.board-type-layout.board-selection,
 .board-render .board-zone.board-type-layout.board-selection {
-  outline: 3px solid #f59e0b !important;
-  outline-offset: 3px;
+  outline: 2px solid var(--bf-ring, #db4c84) !important;
+  outline-offset: 2px;
   border-color: transparent !important;
   background: transparent !important;
 }
 .board-render .box.board-type-container > .box-title,
 .board-render .board-type-container > .board-zone-title,
 .board-render .board-type-container > .box-title.board-zone-title {
-  opacity: 0.72;
+  opacity: 1; /* hierarchy comes from colour (pack titleColor) and weight 600, not opacity */
   font-weight: 600;
   background: transparent !important;
   /* Match container content inset (28/30 = rect zone 12/14 + content 16). */
@@ -490,10 +490,10 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
 .board-render .board-type-container > .box-content > .box.board-type-card,
 .board-render .board-type-container > .box-content > .board-zone.board-type-card {
   background: var(--board-card-zone-bg, var(--board-zone-bg)) !important;
-  border: 1px solid var(--board-card-zone-border, var(--board-zone-border)) !important;
+  border: 0 !important;
   border-radius: var(--board-card-zone-radius, var(--board-zone-radius));
   padding: var(--board-card-zone-pad, var(--board-zone-pad)) !important;
-  box-shadow: none;
+  box-shadow: var(--bf-shadow-box);
 }
 .board-render .board-type-container > .box-content > .box.board-type-card .board-card,
 .board-render .board-type-container > .box-content > .board-zone.board-type-card .board-card {
@@ -1038,7 +1038,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-diamond { display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: 0; box-shadow: none; overflow: visible; }
 .board-diamond-visual { position: relative; flex: 0 0 auto; }
 .board-diamond.board-selection { outline: none !important; }
-.board-diamond.board-selection > .board-diamond-visual { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
+.board-diamond.board-selection > .board-diamond-visual { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
 .board-diamond-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .board-diamond .box-content { padding: 0; gap: 6px; align-items: stretch; flex: 0 0 auto; width: max-content; max-width: 100%; }
 .board-diamond .box-content > .board-item { width: 100%; box-sizing: border-box; }
@@ -1051,8 +1051,8 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-edge-hit { pointer-events: stroke !important; cursor: pointer; }
 .board-edge-visible { pointer-events: none; stroke-width: 1.2px; }
 .board-edge-visible.board-edge-selected { stroke-width: 2px !important; }
-.board-edge-label { paint-order: stroke; stroke: #fbfcfe; stroke-width: 5px; stroke-linejoin: round; fill: #475569; font-size: var(--board-card-size, 12px); font-weight: 650; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
-.board-edge-label.board-edge-selected { font-weight: 700; }
+.board-edge-label { paint-order: stroke; stroke: #fdfaf5; stroke-width: 5px; stroke-linejoin: round; fill: var(--board-edge-label, #5a4330); font-size: var(--board-label-size, 11px); font-weight: 600; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
+.board-edge-label.board-edge-selected { font-weight: 600; }
 .board-slot {
   position: relative;
   display: block;

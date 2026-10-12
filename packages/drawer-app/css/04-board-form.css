@@ -1,0 +1,80 @@
+/* drawer-app/04-board-form.css — component form for the board canvas (Box / Item / Link).
+   One layer for shape rules shared by every theme: radius, depth, selection. Colour and font stay in the theme packs.
+   Tokens first; per-type rules live below, one section per type. */
+:root {
+  --bf-radius-box: 12px;
+  --bf-radius-chip: 8px;
+  --bf-ring: #db4c84;
+  --bf-ring-soft: rgba(219, 76, 132, .4);
+  --bf-edge: rgba(74, 53, 36, .22); /* card ring and container dash share this depth */
+  --bf-shadow-box: 0 0 0 1px var(--bf-edge), 0 1px 2px rgba(74, 53, 36, .08), 0 6px 18px rgba(74, 53, 36, .09);
+}
+
+/* ---- selection and hover: pink ring on nodes ---- */
+.board-render .board-zone:not(.board-type-layout):hover:not(.board-selection):not(.board-selection-tree):not(:has(.board-zone:hover)):not(:has(.board-item:hover)),
+.board-render .board-item:hover:not(.board-selection):not(.board-selection-tree) {
+  outline: 2px solid var(--bf-ring-soft);
+  outline-offset: 2px;
+}
+
+/* ---- Box · card: no border, soft corners; only the outermost card lifts off the canvas ---- */
+.board-render .box.board-type-card {
+  border: 0 !important;
+  border-radius: var(--bf-radius-box) !important;
+  box-shadow: var(--bf-shadow-box);
+}
+/* a card inside a card: fill only, one step deeper than its parent, no lift */
+.board-render .board-type-card .box.board-type-card {
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+  box-shadow: none;
+}
+.board-render .board-type-card .box.board-type-card:has(> .box-content > .board-item) {
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+}
+.board-render .board-type-card .box.board-type-card > .box-title {
+  background: transparent !important;
+}
+
+/* ---- Box · container: dashed, transparent, no shadow; selection ring does not recolour the dashes ---- */
+.board-render .box.board-type-container,
+.board-render .board-zone.board-type-container {
+  border-radius: var(--bf-radius-box) !important;
+}
+
+/* ---- Item · chip (rect): solid fill only; fills come from the pack (in-card vs on-canvas) ---- */
+.board-render .board-item.board-item-type-chip:not(.board-item-diamond) {
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: var(--bf-radius-chip) !important;
+}
+/* inline code in Markdown: warm tint instead of cold slate */
+.board-render .board-item-md code {
+  background: rgba(90, 67, 48, .09);
+}
+
+/* ---- Item · chip (diamond): same fills as the rect chip, no outline, sharp corners kept ---- */
+.board-render .board-item-diamond-face {
+  stroke: none;
+  fill: var(--board-card-bg, #ece3d3);
+}
+.board-render .board-type-card > .box-content > .board-item-diamond .board-item-diamond-face {
+  fill: var(--board-card-item-bg-1, var(--board-item-bg-1, #f3ebdd));
+}
+.board-render .board-type-container > .box-content > .board-item-diamond .board-item-diamond-face {
+  fill: var(--board-container-item-bg-1, var(--board-card-bg, #ece3d3));
+}
+
+/* ---- Item · note: warm cream paper, no outline, 4px corners, folded top-right ---- */
+.board-render .board-item-note-sheet {
+  background: #fff6dc;
+  border: 0;
+  border-radius: 4px;
+}
+.board-render .board-item-note-fold {
+  background: #f0deaa;
+  border-bottom-left-radius: 4px;
+}
+.board-render .board-item-note .board-item-md h1 {
+  font-size: 1.15em;
+  border-bottom-color: rgba(90, 67, 48, .14);
+}

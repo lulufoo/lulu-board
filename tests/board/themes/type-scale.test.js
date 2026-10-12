@@ -39,3 +39,9 @@ assert.strictEqual(boxEl.style.map['--board-title-size'], '15px');
 assert.ok(!boxEl.style.map['--board-card-size'], 'box override does not set item size');
 
 console.log('ok type-scale');
+
+// link titles sit one rung below body text and follow the same step ladder
+assert.strictEqual(Scale.px('label', 0), 11);
+assert.strictEqual(Scale.sizeForLabel(0), '11px');
+assert.strictEqual(Scale.sizes(0).label, '11px');
+assert.ok(Scale.px('label', 1) > Scale.px('label', 0));

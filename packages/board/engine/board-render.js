@@ -2095,13 +2095,13 @@
 
   function edgeStyle(link) {
     const dashed = linkType(link) === 'dashed';
-    const color = themeStroke('--board-edge', '#2563eb');
+    const color = themeStroke('--board-edge', '#7a5c3c');
     const marker = 'url(#board-arrow)';
     return {
       color: color,
       marker: marker,
       markerStart: linkArrow(link) === 'both' ? marker : '',
-      dash: dashed ? '7 6' : '',
+      dash: dashed ? '5 4' : '',
       evidence: false,
     };
   }
@@ -2184,14 +2184,18 @@
       const m = doc.createElementNS('http://www.w3.org/2000/svg', 'marker');
       m.setAttribute('id', idValue);
       m.setAttribute('viewBox', '0 0 10 10');
-      m.setAttribute('refX', '9');
+      m.setAttribute('refX', '8');
       m.setAttribute('refY', '5');
-      m.setAttribute('markerWidth', '6');
-      m.setAttribute('markerHeight', '6');
+      m.setAttribute('markerWidth', '6.4');
+      m.setAttribute('markerHeight', '6.4');
       m.setAttribute('orient', 'auto-start-reverse');
       const p = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+      // small solid triangle with rounded corners (stroke = fill colour, round join)
+      p.setAttribute('d', 'M 1.6 1.6 L 8.4 5 L 1.6 8.4 z');
       p.setAttribute('fill', color);
+      p.setAttribute('stroke', color);
+      p.setAttribute('stroke-width', '1.4');
+      p.setAttribute('stroke-linejoin', 'round');
       m.appendChild(p);
       defs.appendChild(m);
     };
@@ -2249,7 +2253,7 @@
         text.setAttribute('fill', style.color);
         const Scale = root.BoardTypeScale;
         const step = clampTypeStep(doc.documentElement && doc.documentElement.dataset.boardTypeStep);
-        text.setAttribute('font-size', Scale && typeof Scale.px === 'function' ? String(Scale.px('body', step)) : '12');
+        text.setAttribute('font-size', Scale && typeof Scale.px === 'function' ? String(Scale.px('label', step)) : '11');
         svg.appendChild(text);
         // Stroke (paint-order) is outside getBBox — inflate so short-gap
         // placement does not sit under endpoint boxes (ABCDE half-clip).
