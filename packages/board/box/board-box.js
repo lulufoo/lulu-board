@@ -144,6 +144,7 @@
         if (fz != null && Scale && typeof Scale.applyBoxTitleStep === 'function') {
           Scale.applyBoxTitleStep(el, bType, fz);
         }
+        if (root.BoardTone && ctx.tones) root.BoardTone.paint(el, ctx.toneRamp, ctx.tones.get(box), false);
       }
       if (nested) {
         el.style.position = 'relative';

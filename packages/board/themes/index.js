@@ -53,6 +53,9 @@
       bandBg: pack.bandBg,
       bandBorder: pack.bandBorder,
       swatches: pack.swatches,
+      edgeRgb: pack.edgeRgb || '74, 53, 36',
+      ramp: pack.ramp || [],
+      autoTone: !!pack.autoTone,
       types,
     };
   }
@@ -131,6 +134,8 @@
       kit.panelBg = 'transparent';
       kit.panelHeaderBg = 'transparent';
       kit.borderStyle = chrome.borderStyle || 'dashed';
+      // same depth in every theme: the pack's edge colour at .3
+      kit.zoneBorder = 'rgba(' + theme.edgeRgb + ', .3)';
     } else {
       kit.borderStyle = chrome.borderStyle || 'solid';
     }
@@ -174,6 +179,7 @@
     const base = kitFor(theme, 'card', 0, 8);
     const map = {
       '--board-font': theme.fontFamily,
+      '--bf-rgb': theme.edgeRgb,
       '--board-color': theme.color,
       '--board-edge': theme.edgeStroke,
       '--board-edge-label': theme.edgeLabel || theme.color,

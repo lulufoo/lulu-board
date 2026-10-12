@@ -46,3 +46,22 @@ const dsrc = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/d
 assert.match(dsrc, /function roundedRhombusPath/);
 assert.match(dsrc, /createElementNS\('http:\/\/www\.w3\.org\/2000\/svg', 'path'\)/);
 assert.doesNotMatch(dsrc, /stroke-linejoin', 'miter'/);
+
+// ---- edge colour follows the theme (LB-328) ----
+{
+  const fs = require('fs');
+  const path = require('path');
+  const Themes = require('../../../packages/board/themes');
+  const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/04-board-form.css'), 'utf8');
+  assert.match(css, /\.board-render \{\s*--bf-edge: rgba\(var\(--bf-rgb/, 'ring colour is derived from --bf-rgb on the board root');
+  assert.doesNotMatch(css, /:root \{[^}]*--bf-edge/, 'no theme-blind ring colour left on :root');
+  assert.doesNotMatch(css, /#5a4330\)/, 'nested card mixes with the theme edge colour, not a fixed brown');
+  Themes.ORDER.forEach((id) => {
+    const theme = Themes.get(id);
+    assert.match(theme.edgeRgb, /^\d+, \d+, \d+$/, id + ' has an edge colour');
+    const container = Themes.kitFor(theme, 'container', 0, 8);
+    assert.strictEqual(container.zoneBorder, 'rgba(' + theme.edgeRgb + ', .3)', id + ' container dash is its edge colour at .3');
+  });
+  assert.strictEqual(Themes.get('default').edgeRgb, '74, 53, 36', 'default look is unchanged');
+  assert.strictEqual(Themes.get('classic').autoTone, true, 'classic colours unset nested nodes by its ramp');
+}
