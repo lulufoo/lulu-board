@@ -16,6 +16,7 @@
     edgeFeedback: '#c62828',
     bandBg: '#f5f5f5',
     bandBorder: '#999',
+    ramp: ['#ececff', '#e3dffc', '#d8d0f6', '#cbc1ef', '#bdb0e6', '#ad9fdb', '#9c8cce', '#8a79bf'],
     swatches: [
       { bg: '#ececff', border: '#9370db', item: '#e8e4ff' },
       { bg: '#e3dffc', border: '#7e57c2', item: '#ddd6fe' },

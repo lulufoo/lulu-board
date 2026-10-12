@@ -64,6 +64,16 @@
   fill: var(--board-container-item-bg-1, var(--board-card-bg, #ece3d3));
 }
 
+/* a toned box: the title strip shows the box fill instead of its own */
+.board-render .box[data-bf-tone] > .box-title {
+  background: transparent !important;
+}
+
+/* a toned diamond: the face takes the picked fill (rect chips and cards are painted inline) */
+.board-render .board-item-diamond[data-bf-tone] .board-item-diamond-face {
+  fill: var(--bf-tone-fill) !important;
+}
+
 /* ---- Item · note: warm cream paper, no outline, 4px corners, folded top-right ---- */
 .board-render .board-item-note-sheet {
   background: #fff6dc;
@@ -78,3 +88,16 @@
   font-size: 1.15em;
   border-bottom-color: rgba(90, 67, 48, .14);
 }
+
+/* ---- Fill picker (properties panel): Auto + the theme ramp, light to dark ---- */
+.tone-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tone-swatch {
+  width: 22px; height: 22px; padding: 0; border: 0; border-radius: 7px; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(74, 53, 36, .22);
+  transition: box-shadow .12s, transform .12s;
+}
+.tone-swatch:hover:not(:disabled) { transform: translateY(-1px); }
+.tone-swatch[aria-pressed="true"] { box-shadow: inset 0 0 0 1px rgba(74, 53, 36, .22), 0 0 0 2px var(--bf-ring); }
+.tone-swatch:disabled { opacity: .28; cursor: not-allowed; }
+.tone-swatch:focus-visible { outline: 2px solid var(--bf-ring); outline-offset: 2px; }
+.tone-auto { width: auto; padding: 0 9px; background: transparent; font: 600 11px/22px var(--font); color: var(--ink-soft, #7a6650); }

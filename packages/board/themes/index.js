@@ -53,6 +53,8 @@
       bandBg: pack.bandBg,
       bandBorder: pack.bandBorder,
       swatches: pack.swatches,
+      ramp: pack.ramp || [],
+      autoTone: !!pack.autoTone,
       types,
     };
   }

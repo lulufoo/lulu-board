@@ -198,7 +198,71 @@ function selectedNodeFontEl() {
   if (el) return el;
   return selectedBoardNode.key ? root.querySelector('[data-board-key="' + selectedBoardNode.key + '"]') : null;
 }
+// Fill picker: Auto + the theme ramp (light to dark). Swatches too close to the parent's tone are disabled.
+function setBoardNodeToneField(show, info) {
+  var field = document.getElementById("boardNodeToneField");
+  var row = document.getElementById("boardNodeToneRow");
+  var tip = document.getElementById("boardNodeToneTip");
+  var on = !!show && !!info && info.fillable;
+  if (field) field.hidden = !on;
+  if (!row) return;
+  row.replaceChildren();
+  if (!on) { if (tip) tip.hidden = true; return; }
+  var make = function (label, tone, color, disabled, pressed) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = tone == null ? "tone-swatch tone-auto" : "tone-swatch";
+    b.dataset.tone = tone == null ? "" : String(tone);
+    b.disabled = !!disabled;
+    b.setAttribute("aria-pressed", pressed ? "true" : "false");
+    b.setAttribute("aria-label", label);
+    b.title = label;
+    if (color) b.style.background = color;
+    else b.textContent = "Auto";
+    b.addEventListener("click", function () { commitBoardNodeTone(tone); });
+    row.appendChild(b);
+  };
+  make("Auto", null, "", false, info.explicit == null);
+  info.ramp.forEach(function (color, i) {
+    make("Tone " + (i + 1) + (info.allowed && !info.allowed[i] ? " (too close to parent)" : ""), i, color,
+      info.allowed && !info.allowed[i], info.explicit === i);
+  });
+  if (tip) {
+    tip.hidden = info.parent == null;
+    tip.textContent = info.parent == null ? "" : "keep one tone between this and its parent";
+  }
+}
+function commitBoardNodeTone(tone) {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoardRender === "undefined" || typeof BoardRender.updateNodeTone !== "function") return;
+  try {
+    var raw = boardSourceEl.value;
+    var meta = null;
+    var body = raw;
+    try {
+      var doc = splitDocument(raw);
+      meta = doc.meta;
+      body = doc.body;
+    } catch (_e) {}
+    var nextBody = BoardRender.updateNodeTone(body, selectedBoardNode, tone);
+    var next = meta ? joinDocument(meta, nextBody) : nextBody;
+    if (next !== boardSourceEl.value) {
+      boardSourceEl.value = next;
+      updateBoardChars();
+      if (typeof renderBoard === "function") renderBoard({ fit: false });
+      scheduleBoardSave();
+    }
+    var board = BoardRender.parse(nextBody);
+    var node = typeof BoardRender.findNode === "function" ? BoardRender.findNode(board, selectedBoardNode) : null;
+    var id = node && node.id ? String(node.id) : selectedNodeStyleId();
+    if (id) {
+      selectedBoardNode = boardSelectionWithId(selectedBoardNode, id);
+      setBoardIdField(true, id);
+    }
+    setBoardNodeToneField(true, BoardRender.nodeToneInfo(board, selectedBoardNode));
+  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+}
 function setBoardNodeFontField(show, authoredStep, globalStep) {
+  if (!show) setBoardNodeToneField(false);
   var effective = authoredStep == null ? globalStep : authoredStep;
   if (boardNodeFontField) boardNodeFontField.hidden = !show;
   if (boardNodeFontLabel) boardNodeFontLabel.hidden = !show;
@@ -797,6 +861,9 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
       ? BoardRender.resolveStyle(board || {}).type_step
       : 0;
     setBoardNodeFontField(showFont, authoredFz, globalStep);
+    if (showFont && typeof BoardRender !== "undefined" && typeof BoardRender.nodeToneInfo === "function") {
+      setBoardNodeToneField(true, BoardRender.nodeToneInfo(board, selectedBoardNode));
+    }
     setBoardIconField((isIcon || isBoxIcon) && !isLayoutBox, ((isIcon || isBoxIcon) && !isLayoutBox) ? (node && node.icon) : null);
     if (boardDirEditor) {
       var showDir = !isItem;
