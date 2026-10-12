@@ -105,6 +105,7 @@ if (typeof module === "object" && module.exports) {
 
   var btn = document.getElementById("btnBoardShortcuts");
   if (btn) btn.addEventListener("click", open);
+  wireHelpMenu();
   var x = document.getElementById("btnShortcutsClose");
   if (x) x.addEventListener("click", close);
   var backdrop = document.getElementById("shortcutsBackdrop");
@@ -128,3 +129,58 @@ if (typeof module === "object" && module.exports) {
 
   if (/[?&]shortcuts=open/.test(location.search)) open();
 })();
+
+// One "?" dock entry: a small menu with Welcome and Keyboard shortcuts.
+function wireHelpMenu() {
+  var trigger = document.getElementById("btnBoardHelp");
+  var menu = document.getElementById("boardHelpMenu");
+  if (!trigger || !menu) return;
+  function items() { return Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]')); }
+  function place() {
+    var r = trigger.getBoundingClientRect();
+    menu.style.visibility = "hidden";
+    menu.hidden = false;
+    var h = menu.offsetHeight, w = menu.offsetWidth;
+    menu.style.top = Math.max(8, Math.min(r.top, window.innerHeight - h - 8)) + "px";
+    menu.style.left = Math.max(8, r.left - w - 8) + "px";
+    menu.style.visibility = "";
+  }
+  function setOpen(want, focusFirst) {
+    if (want) {
+      place();
+      trigger.setAttribute("aria-expanded", "true");
+      trigger.classList.add("is-active");
+      if (focusFirst) items()[0].focus({ preventScroll: true });
+    } else if (!menu.hidden) {
+      menu.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.classList.remove("is-active");
+    }
+  }
+  window.helpMenuSetOpen = setOpen;
+  trigger.addEventListener("click", function (event) { setOpen(menu.hidden, event.detail === 0); });
+  trigger.addEventListener("keydown", function (event) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setOpen(true, true); }
+  });
+  items().forEach(function (item) {
+    // close first, then the item's own click handler runs (Welcome / dialog)
+    item.addEventListener("click", function () { setOpen(false); }, true);
+  });
+  menu.addEventListener("keydown", function (event) {
+    var list = items();
+    var i = list.indexOf(document.activeElement);
+    if (event.key === "ArrowDown") { event.preventDefault(); list[(i + 1) % list.length].focus(); }
+    else if (event.key === "ArrowUp") { event.preventDefault(); list[(i - 1 + list.length) % list.length].focus(); }
+    else if (event.key === "Home") { event.preventDefault(); list[0].focus(); }
+    else if (event.key === "End") { event.preventDefault(); list[list.length - 1].focus(); }
+    else if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); setOpen(false); trigger.focus({ preventScroll: true }); }
+    else if (event.key === "Tab") setOpen(false);
+  });
+  document.addEventListener("pointerdown", function (event) {
+    if (menu.hidden || menu.contains(event.target) || trigger.contains(event.target)) return;
+    setOpen(false);
+  }, true);
+  window.addEventListener("resize", function () { if (!menu.hidden) place(); });
+  // review link: ?help=open shows the menu
+  if (/[?&]help=open/.test(location.search)) setOpen(true);
+}

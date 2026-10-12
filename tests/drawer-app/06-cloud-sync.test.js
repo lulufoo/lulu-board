@@ -38,7 +38,7 @@ assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions'
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays with the account cluster');
 assert.match(html, /id="boardAccount"[\s\S]*id="btnBoardSignIn"/, 'Sign in lives in the account cluster');
 assert.match(html, /id="shellMineList"/, 'signed-in groups are listed in the left drawer');
-assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"[\s\S]*id="btnBoardShortcuts"/, 'Source is dock tab 3, Export is tab 4');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardHelp"/, 'Source is dock tab 3, Export is tab 4');
 assert.doesNotMatch(html, /id="btnDockShare"|id="sharePanel"|data-dock-panel="share"/, 'Share left the right dock for the left drawer');
 assert.doesNotMatch(dockCss, /data-open="share"/, 'no dock width rule for a Share tab');
 assert.match(html, /id="shellShareBoard"/, 'the drawer has a Share this board button');
