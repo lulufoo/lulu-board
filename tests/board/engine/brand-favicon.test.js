@@ -6,9 +6,18 @@ const path = require('path');
 const brand = path.join(__dirname, '../../../packages/drawer-app/brand');
 const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
 
-assert.ok(/href="\.\/favicon\.ico"/.test(html), 'page links favicon.ico');
-assert.ok(/href="\.\/favicon-32\.png"/.test(html), 'page links favicon png');
-assert.ok(/href="\.\/favicon\.svg"/.test(html), 'page links favicon svg');
+assert.ok(/href="\.\/favicon\.ico\?v=2"/.test(html), 'page links favicon.ico');
+assert.ok(/href="\.\/favicon-32\.png\?v=2"/.test(html), 'page links favicon png');
+assert.ok(/href="\.\/favicon\.svg\?v=2"/.test(html), 'page links favicon svg');
+const pages = ['landing/index.html', 'oauth/consent/index.html'].map((rel) => (
+  fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app', rel), 'utf8')
+));
+[html].concat(pages).forEach((page) => {
+  const versions = (page.match(/rel="icon" href="[^"]*\?v=(\d+)"/g) || []).map((s) => s.match(/v=(\d+)/)[1]);
+  assert.ok(versions.length > 0, 'every page versions its icon links');
+  assert.ok(versions.every((v) => v === '2'), 'every page uses the same icon version');
+  assert.ok(!/rel="icon" href="[^"?]*"/.test(page), 'no icon link is left without a version');
+});
 assert.ok(!/__FAVICON_PNG__/.test(html), 'no build placeholder');
 assert.ok(/class="board-brand"[\s\S]*class="board-edit-tools"/.test(html), 'brand mark sits before the editing tools');
 assert.ok(/board-brand-mark/.test(html), 'toolbar carries the brand mark');
