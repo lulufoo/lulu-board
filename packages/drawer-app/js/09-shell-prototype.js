@@ -20,6 +20,9 @@
   }
 
   toggle.addEventListener("click", function () { setSearch(false); setDrawer(drawer.hidden); });
+  toggle.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
+  });
   open.addEventListener("click", function () { setSearch(true); });
   scrim.addEventListener("click", function () { setDrawer(false); setSearch(false); });
   drawer.addEventListener("click", function (event) {
@@ -29,8 +32,13 @@
     row.classList.add("is-active");
   });
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
-  var want = /[?&]shell=(drawer|search)/.exec(location.search);
-  if (want) { if (want[1] === "drawer") setDrawer(true); else setSearch(true); }
+  // ?shell=style opens the right dock Style panel.
+  var want = /[?&]shell=(drawer|search|style)/.exec(location.search);
+  if (want) {
+    if (want[1] === "drawer") setDrawer(true);
+    else if (want[1] === "search") setSearch(true);
+    else { var tab = document.getElementById("btnDockStyle"); if (tab) tab.click(); }
+  }
   document.addEventListener("keydown", function (event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
