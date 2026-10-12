@@ -7,10 +7,14 @@
   --bf-ring: #db4c84;
   --bf-ring-soft: rgba(219, 76, 132, .4);
 }
-/* Ring colour follows the theme (--bf-rgb is set by the theme pack on the board root). */
+/* Ring colour follows the theme (--bf-rgb is set by the theme pack on the board root).
+   Edge of every filled card / chip: the theme edge colour at .14 laid over the node's own fill, so the edge is always a
+   little deeper than whatever fill it sits on. Drawn inside (inset) so it never changes the node's size. The container
+   dash is the same colour at .3. */
 .board-render {
-  --bf-edge: rgba(var(--bf-rgb, 74, 53, 36), .22); /* card ring; the container dash is the same colour at .3 */
-  --bf-shadow-box: 0 0 0 1px var(--bf-edge), 0 1px 2px rgba(var(--bf-rgb, 74, 53, 36), .08), 0 6px 18px rgba(var(--bf-rgb, 74, 53, 36), .09);
+  --bf-edge: rgba(var(--bf-rgb, 74, 53, 36), .14);
+  --bf-edge-in: inset 0 0 0 1px var(--bf-edge);
+  --bf-shadow-box: var(--bf-edge-in), 0 1px 2px rgba(var(--bf-rgb, 74, 53, 36), .08), 0 6px 18px rgba(var(--bf-rgb, 74, 53, 36), .09);
 }
 
 /* ---- selection and hover: pink ring on nodes ---- */
@@ -20,16 +24,16 @@
   outline-offset: 2px;
 }
 
-/* ---- Box · card: no border, soft corners; only the outermost card lifts off the canvas ---- */
+/* ---- Box · card: edge ring (deeper than its fill), soft corners; only the outermost card lifts off the canvas ---- */
 .board-render .box.board-type-card {
   border: 0 !important;
   border-radius: var(--bf-radius-box) !important;
   box-shadow: var(--bf-shadow-box);
 }
-/* a card inside a card: fill only, one step deeper than its parent, no lift */
+/* a card inside a card: one step deeper than its parent, edge ring only, no lift */
 .board-render .board-type-card .box.board-type-card {
   background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
-  box-shadow: none;
+  box-shadow: var(--bf-edge-in);
 }
 .board-render .board-type-card .box.board-type-card:has(> .box-content > .board-item) {
   background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, rgb(var(--bf-rgb, 90, 67, 48))) !important;
@@ -44,10 +48,10 @@
   border-radius: var(--bf-radius-box) !important;
 }
 
-/* ---- Item · chip (rect): solid fill only; fills come from the pack (in-card vs on-canvas) ---- */
+/* ---- Item · chip (rect): fill from the pack (in-card vs on-canvas) plus an edge ring deeper than that fill ---- */
 .board-render .board-item.board-item-type-chip:not(.board-item-diamond) {
   border: 0 !important;
-  box-shadow: none !important;
+  box-shadow: var(--bf-edge-in) !important;
   border-radius: var(--bf-radius-chip) !important;
 }
 /* inline code in Markdown: warm tint instead of cold slate */
@@ -55,9 +59,11 @@
   background: rgba(90, 67, 48, .09);
 }
 
-/* ---- Item · chip (diamond): same fills as the rect chip, no outline, sharp corners kept ---- */
+/* ---- Item · chip (diamond): same fills and the same edge as the rect chip, sharp corners kept ---- */
 .board-render .board-item-diamond-face {
-  stroke: none;
+  stroke: var(--bf-edge);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
   fill: var(--board-card-bg, #ece3d3);
 }
 .board-render .board-type-card > .box-content > .board-item-diamond .board-item-diamond-face {
