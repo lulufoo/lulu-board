@@ -85,3 +85,13 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placehol
 .hl-str { color: #5f7f45; }
 .hl-arrow { color: #7a5c3c; font-weight: 700; }
 .hl-blob { color: #b5a58d; }
+
+/* footer: a hairline closes the editor (same inset as the header's), Delete gets room above and below it,
+   and the char count lines up with Delete's right edge. Only shown with Delete, so no empty band without it. */
+html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-foot:has(.btn-delete:not([hidden])) {
+  margin: 0 14px;
+  padding: 0 2px;
+  border-top: 1px solid var(--paper-line);
+}
+html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-foot .btn-delete { margin: 10px 0 16px; }
+html[data-drawer-mode="board"] [data-dock-panel="source"] .source-chars { right: 16px; bottom: 10px; }
