@@ -10,7 +10,6 @@
   return {
     id: 'classic',
     label: 'Classic',
-    fontFamily: '"Trebuchet MS", Verdana, Arial, sans-serif',
     color: '#333',
     edgeStroke: '#9370db',
     edgeEvidence: '#999999',

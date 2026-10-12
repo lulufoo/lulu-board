@@ -110,3 +110,15 @@ console.log('ok 09-shell-drawer');
   assert.match(js, /moreItem\.className = "shell-more-item"[\s\S]*frag\.appendChild\(moreItem\)/, 'Load more is appended to the list rows');
   assert.match(js, /mineList\.addEventListener\("click"[\s\S]*#shellMineMore/, 'click is delegated so re-renders keep it working');
 }
+
+// ---- signed-out nudge on the L mark ----
+{
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+  const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.match(css, /\.board-brand\.is-nudge \.board-brand-mark \{ animation: brand-nudge 1\.4s ease-in-out 2; \}/, 'ring pulses twice');
+  assert.match(css, /@keyframes brand-nudge[\s\S]*rgba\(219, 76, 132/, 'the pulse uses the brand pink ring');
+  assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*is-nudge[\s\S]*animation: none/, 'reduced motion turns it off');
+  assert.match(js, /if \(!profile\) shellNudgeBrand\(\)/, 'only signed-out users get it');
+  assert.match(js, /sessionStorage\.getItem\("board\.brandNudged"\)/, 'once per tab session');
+  assert.match(js, /pointerenter", stop[\s\S]*click", stop/, 'hover or click stops it');
+}
