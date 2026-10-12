@@ -119,7 +119,7 @@ html[data-drawer-mode="board"] .board-brand {
   top: 60px;
   left: 12px;
   bottom: 12px;
-  width: 316px;
+  width: min(421px, calc(100vw - 24px));
   z-index: 55;
   display: flex;
   flex-direction: column;
@@ -501,9 +501,7 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-search-results .shell-empty { margin: 10px 8px; }
 .shell-search-results .shell-row.is-picked { background: var(--wash); }
 
-/* Mine: a bounded, scrolling list; Load more is its last row (only visible at the bottom) */
-/* no overscroll-behavior: contain here: once the list hits its top, the wheel must carry on to the drawer body, or New board / MINE stay out of reach */
-#shellMineList { max-height: min(46vh, 420px); overflow-y: auto; }
+/* Mine: the list fills the drawer and scrolls on its own (layout in 09-shell-tabs.css); Load more is its last row (only visible at the bottom) */
 /* the last row is a state, not a button: blank until it is reached, then "Loading more" + cycling dots */
 .shell-more-item { min-height: 30px; padding: 7px 12px; text-align: center; color: var(--ink-soft); font: 500 12px var(--font); }
 .shell-dots i { font-style: normal; animation: shell-dot 0.9s steps(1, end) infinite; }
