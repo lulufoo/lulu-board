@@ -447,20 +447,39 @@ html[data-drawer-mode="board"] .group-tab-float {
 html[data-drawer-mode="board"] .group-tab:hover { background: var(--wash); }
 html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
 
-/* product intro (landing) lives in the left drawer, above the account row */
-.shell-intro {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 10px 8px;
-  padding: 0 12px;
-  height: 38px;
-  border-radius: 11px;
-  color: var(--ink-soft);
-  font: 600 13px var(--font);
-  text-decoration: none;
+
+/* shared header: the whole free area toggles the fold */
+.shell-shared .shell-sec-head { align-items: stretch; }
+.shell-shared .shell-fold { flex: 1; min-height: 28px; justify-content: flex-start; }
+.shell-shared .shell-ghost { align-self: center; }
+
+/* the shared-by-me row that is the board open now */
+.shell-here {
+  flex: none;
+  font: 600 10.5px/1 var(--font);
+  font-style: normal;
+  letter-spacing: .02em;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--brand);
+  box-shadow: var(--press);
 }
-.shell-intro:hover { background: var(--wash); color: var(--ink); }
-.shell-intro svg { width: 16px; height: 16px; flex: none; }
-.shell-intro span { flex: 1; }
-.shell-intro .shell-intro-out { width: 13px; height: 13px; opacity: .6; }
+.shell-row-link.is-current:hover .shell-here { display: none; }
+.shell-shared.is-folded:has(.is-current) .shell-fold em::after {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  vertical-align: 1px;
+}
+
+/* product intro: an icon at the far right of the account row */
+.shell-foot-icon {
+  width: 30px; height: 30px; display: grid; place-items: center; flex: none;
+  border-radius: 8px; color: var(--ink-soft); text-decoration: none;
+}
+.shell-foot-icon:hover { background: var(--wash); color: var(--ink); }
+.shell-foot-icon svg { width: 16px; height: 16px; }

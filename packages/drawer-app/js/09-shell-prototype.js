@@ -28,15 +28,16 @@
   drawer.addEventListener("click", function (event) {
     var row = event.target.closest && event.target.closest(".shell-row:not(.shell-row-link)");
     if (!row) return;
-    drawer.querySelectorAll(".shell-row.is-active").forEach(function (el) { el.classList.remove("is-active"); });
+    drawer.querySelectorAll(".shell-row.is-active:not(.is-current)").forEach(function (el) { el.classList.remove("is-active"); });
     row.classList.add("is-active");
   });
   // Shared list is folded by default; the header toggles it.
   var shared = document.getElementById("shellShared");
   var fold = document.getElementById("shellFold");
   if (shared && fold) {
-    shared.classList.add("is-folded");
-    fold.setAttribute("aria-expanded", "false");
+    var openShared = /[?&]shared=open/.test(location.search);
+    shared.classList.toggle("is-folded", !openShared);
+    fold.setAttribute("aria-expanded", openShared ? "true" : "false");
     fold.addEventListener("click", function () {
       var folded = shared.classList.toggle("is-folded");
       fold.setAttribute("aria-expanded", folded ? "false" : "true");
