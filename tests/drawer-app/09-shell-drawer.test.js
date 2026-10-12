@@ -101,3 +101,12 @@ console.log('ok 09-shell-drawer');
   assert.match(css, /\.shell-row-link \.shell-row-main > span \{ height: 20px; line-height: 20px; \}/, 'second line is a fixed 20px slot, same height as the buttons');
   assert.match(css, /\.shell-row-link \.shell-row-acts \{ bottom: 8px; \}/, 'actions sit in that slot');
 }
+
+// ---- Mine: Load more is the last row of the scrolling list, not a fixed button ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.doesNotMatch(html, /id="shellMineMore"/, 'no static Load more button outside the list');
+  assert.match(js, /moreItem\.className = "shell-more-item"[\s\S]*frag\.appendChild\(moreItem\)/, 'Load more is appended to the list rows');
+  assert.match(js, /mineList\.addEventListener\("click"[\s\S]*#shellMineMore/, 'click is delegated so re-renders keep it working');
+}

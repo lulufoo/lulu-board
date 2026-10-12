@@ -39,8 +39,13 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
-  var more = document.getElementById("shellMineMore");
-  if (more) more.addEventListener("click", function () { shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage(); shellRenderMine(); });
+  // Load more is the last row of the scrolling list, so it is rebuilt on every render: delegate the click.
+  var mineList = document.getElementById("shellMineList");
+  if (mineList) mineList.addEventListener("click", function (event) {
+    if (!event.target.closest || !event.target.closest("#shellMineMore")) return;
+    shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage();
+    shellRenderMine();
+  });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -213,12 +218,21 @@ function shellRenderMine(groups) {
     li.appendChild(del);
     frag.appendChild(li);
   });
-  list.replaceChildren(frag);
-  var more = document.getElementById("shellMineMore");
-  if (more) {
-    more.hidden = win.hidden <= 0;
+  if (win.hidden > 0) {
+    // Last row of the scrolling list: it only shows once you reach the bottom.
+    var moreItem = document.createElement("li");
+    moreItem.className = "shell-more-item";
+    var more = document.createElement("button");
+    more.type = "button";
+    more.id = "shellMineMore";
+    more.className = "shell-more";
     more.textContent = "Load more (" + win.hidden + ")";
+    moreItem.appendChild(more);
+    frag.appendChild(moreItem);
   }
+  var keepScroll = list.scrollTop;
+  list.replaceChildren(frag);
+  list.scrollTop = keepScroll;
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();

@@ -525,7 +525,7 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-search-results .shell-empty { margin: 10px 8px; }
 .shell-search-results .shell-row.is-picked { background: var(--wash); }
 
-/* Mine: a bounded list; Load more sits under it */
+/* Mine: a bounded, scrolling list; Load more is its last row (only visible at the bottom) */
 #shellMineList { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
 .shell-more {
   display: block; width: 100%; margin-top: 4px; padding: 7px 12px; border: 0; border-radius: 9px;
