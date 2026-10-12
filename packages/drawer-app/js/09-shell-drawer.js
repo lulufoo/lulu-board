@@ -117,12 +117,35 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
+  if (!profile) shellNudgeBrand();
   var row = document.getElementById("btnShellAccount");
   if (row) {
     row.classList.toggle("is-signin", !profile);
     row.title = profile ? "" : "Sign in with Google";
     row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Sign in with Google");
   }
+}
+
+// Signed out: the L mark pulses its pink ring twice, once per tab session, to hint it is clickable.
+function shellNudgeBrand() {
+  var brand = document.getElementById("shellDrawerToggle");
+  if (!brand || document.documentElement.dataset.drawerMode !== "board") return;
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  try {
+    if (sessionStorage.getItem("board.brandNudged")) return;
+    sessionStorage.setItem("board.brandNudged", "1");
+  } catch (_) {}
+  var mark = brand.querySelector(".board-brand-mark");
+  var stop = function () {
+    brand.classList.remove("is-nudge");
+    brand.removeEventListener("pointerenter", stop);
+    brand.removeEventListener("click", stop);
+    if (mark) mark.removeEventListener("animationend", stop);
+  };
+  brand.classList.add("is-nudge");
+  brand.addEventListener("pointerenter", stop);
+  brand.addEventListener("click", stop);
+  if (mark) mark.addEventListener("animationend", stop);
 }
 
 function shellWhen(iso) {
