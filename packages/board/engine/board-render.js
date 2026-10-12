@@ -224,11 +224,10 @@
     const board = typeof source === 'string' ? parse(source) : source;
     const node = findNode(board, target);
     const theme = toneThemeOf(board);
-    const base = (theme && theme.ramp) || [];
-    if (!node || !Tone || !Tone.fillable(node) || !base.length) return { fillable: false, ramp: base };
+    const ramp = (theme && theme.ramp) || [];
+    if (!node || !Tone || !Tone.fillable(node) || !ramp.length) return { fillable: false, ramp };
     const map = Tone.resolve(board, { auto: !!(theme && theme.autoTone) });
-    const info = map.get(node) || { tone: null, explicit: null, parent: null, hue: null };
-    const ramp = Themes && typeof Themes.rampFor === 'function' ? Themes.rampFor(theme, info.hue) : base;
+    const info = map.get(node) || { tone: null, explicit: null, parent: null };
     return { fillable: true, tone: info.tone, explicit: info.explicit, parent: info.parent, allowed: Tone.allowed(info.parent), ramp };
   }
   function updateNodeTone(source, target, tone) {
@@ -1927,7 +1926,7 @@
       nested: false,
       toneSeq: { n: 0 },
       tones: Tone ? Tone.resolve(board, { auto: !!(Themes && Themes.get(themeId).autoTone) }) : new Map(),
-      toneRamp: (info) => (Themes && typeof Themes.rampFor === 'function' ? Themes.rampFor(themeId, info && info.hue) : []),
+      toneRamp: (Themes && Themes.get(themeId).ramp) || [],
       applyFlex,
       propsFor,
       makeBoardSlot: function (dir, fromId, toId) { return makeBoardSlot(board, dir, fromId, toId, doc); },

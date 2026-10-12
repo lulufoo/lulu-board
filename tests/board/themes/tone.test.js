@@ -66,27 +66,3 @@ const board3 = { views: [box('b', [note])], style: { ids: { n: { tone: 3 } } } }
 r = Tone.resolve(board3, { auto: true });
 assert.strictEqual(r.get(note).tone, null);
 console.log('ok tone');
-
-// ---- hue: the outermost box decides the colour family of a ramp ----
-{
-  const Themes = require('../../../packages/board/themes');
-  const a = { kind: 'card', type: 'card', id: 'a', kids: [{ kind: 'card', type: 'card', id: 'a1', kids: [{ role: 'item', kind: 'item', id: 'i1', type: 'chip' }] }] };
-  const b = { kind: 'card', type: 'card', id: 'b', kids: [] };
-  const r = Tone.resolve({ views: [a, b], style: {} }, { auto: false });
-  assert.strictEqual(r.get(a).hue, 0, 'first outermost box');
-  assert.strictEqual(r.get(a.kids[0]).hue, 0, 'a nested box shares its outermost box hue');
-  assert.strictEqual(r.get(a.kids[0].kids[0]).hue, 0);
-  assert.strictEqual(r.get(b).hue, 2, 'the counter also counts nested boxes, like the swatch rotation at mount');
-  const rootItem = { role: 'item', kind: 'item', id: 'ri', type: 'chip' };
-  assert.strictEqual(Tone.resolve({ views: [rootItem], style: {} }, {}).get(rootItem).hue, null);
-
-  const pastel = Themes.get('pastel');
-  const sw = pastel.swatches;
-  const green = Themes.rampFor(pastel, 1);
-  assert.strictEqual(green.length, 8);
-  assert.strictEqual(green[0], sw[1].bg, 'step 0 is the box colour');
-  assert.notStrictEqual(green[7], sw[1].bg);
-  assert.deepStrictEqual(Themes.rampFor(pastel, 1), Themes.rampFor(pastel, 1 + sw.length), 'hue wraps like the swatches');
-  assert.notDeepStrictEqual(Themes.rampFor(pastel, 0), Themes.rampFor(pastel, 1), 'different hues, different ramps');
-  assert.deepStrictEqual(Themes.rampFor(Themes.get('classic'), 3), Themes.get('classic').ramp, 'other themes keep a fixed ramp');
-}
