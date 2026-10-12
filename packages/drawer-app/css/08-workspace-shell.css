@@ -514,3 +514,8 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-shared .shell-list .shell-empty { padding: 4px 12px 8px; }
 .shell-ghost:disabled { opacity: .45; cursor: default; }
 .shell-ghost:disabled:hover { background: transparent; }
+
+.shell-search-results { max-height: min(420px, 60vh); overflow: auto; padding: 0 6px 8px; }
+.shell-search-results .shell-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-search-results .shell-empty { margin: 10px 8px; }
+.shell-search-results .shell-row.is-picked { background: var(--wash); }

@@ -9,7 +9,7 @@ const css = fs.readFileSync(path.join(app, 'css/03-diagram.css'), 'utf8');
 const io = fs.readFileSync(path.join(app, 'js/05-render-io.js'), 'utf8');
 
 // The toolbar History dropdown was replaced by the left drawer (Mine) and search.
-assert.ok(!/id="boardHistoryComboInput"|role="combobox"/.test(html), 'no History combo input');
+assert.ok(!/id="boardHistoryComboInput"/.test(html), 'no History combo input');
 assert.ok(!/id="boardHistory"/.test(html), 'no History block on the canvas chrome');
 assert.ok(!/\.history-list|\.history-pop/.test(css), 'no History list styles');
 assert.ok(!/function (revealHistoryActiveItem|setHistoryComboFace|appendHistoryMetaLine)/.test(io), 'no History combo helpers');
