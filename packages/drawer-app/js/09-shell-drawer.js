@@ -1,8 +1,10 @@
 /* drawer-app/09-shell-drawer.js — the left drawer: open/close, account row, "Mine" group list, "Shared" list, New board.
    The Mine / Shared tabs live in 09-shell-tabs.js.
    Search: ⌘K pop-up, name search over groups and boards plus lines of the open board. */
-var shellGroups = [];
-var shellShares = [];
+// Declared early in 01-shell-state.js, because 06-* runs top-level code that reads them before this file is reached.
+// `x = x || []` keeps whatever was already stored, and still defines them when this file is loaded on its own.
+var shellGroups = shellGroups || [];
+var shellShares = shellShares || [];
 
 (function wireShellDrawer() {
   var toggle = document.getElementById("shellDrawerToggle");
