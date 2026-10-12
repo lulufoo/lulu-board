@@ -32,6 +32,14 @@ const script = fs.readFileSync(path.join(landingDir, 'landing.js'), 'utf8');
 assert.ok(!/createClient|@supabase|supabase\.co/i.test(script), 'landing.js does not load Supabase');
 assert.ok(!/supabase/i.test(html.replace(/<!--[\s\S]*?-->/g, '')), 'landing page does not reference Supabase');
 
+// signed-in mark: a small circle with the email initial, status dot, full address as tooltip; no text label beside the button
+assert.match(html, /id="authAvatar"/, 'mark has an avatar initial');
+assert.ok(!/auth-dot|auth-text|authStatusNote/.test(html) && !/Signed in · /.test(script), 'old pill, dot and text label are gone');
+assert.match(script, /status\.title = label/, 'full address is the tooltip');
+assert.match(script, /avatar\.textContent = \(email \|\| "\?"\)\.charAt\(0\)\.toUpperCase\(\)/, 'avatar shows the email initial');
+const baseCss = fs.readFileSync(path.join(landingDir, 'landing-base.css'), 'utf8');
+assert.match(baseCss, /\.auth-status \{[^}]*width: 40px;[^}]*height: 40px;[^}]*border-radius: 50%;/, 'the mark is a 40px circle');
+
 // the fixed blank address opens as a blank board in the workspace
 Persist.decodeBoardHash(BLANK).then((decoded) => {
   assert.strictEqual(decoded.bmd, 'board "Untitled"\n');
