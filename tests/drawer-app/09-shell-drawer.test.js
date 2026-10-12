@@ -129,7 +129,43 @@ console.log('ok 09-shell-drawer');
   assert.match(css, /\.board-brand\.is-nudge \.board-brand-mark \{ animation: brand-nudge 1\.4s ease-in-out 2; \}/, 'ring pulses twice');
   assert.match(css, /@keyframes brand-nudge[\s\S]*rgba\(219, 76, 132/, 'the pulse uses the brand pink ring');
   assert.match(css, /prefers-reduced-motion: reduce\)[\s\S]*is-nudge[\s\S]*animation: none/, 'reduced motion turns it off');
-  assert.match(js, /if \(!profile\) shellNudgeBrand\(\)/, 'only signed-out users get it');
-  assert.match(js, /sessionStorage\.getItem\("board\.brandNudged"\)/, 'once per tab session');
+  assert.match(js, /if \(initial && !profile\) shellNudgeBrand\(\)/, 'only a signed-out initial load gets it');
+  assert.match(js, /localStorage\.getItem\("board\.brandNudged"\)/, 'one persistent flag');
+  assert.match(js, /localStorage\.setItem\("board\.brandNudged", "1"\)/, 'flag is set when it starts');
+  assert.doesNotMatch(js, /sessionStorage[^\n]*brandNudged/, 'no per-tab flag');
+  assert.doesNotMatch(sync, /brandNudged/, 'sign-out never clears the flag');
+  // behaviour: run shellPaintAccount/shellNudgeBrand against a tiny fake DOM
+  (function () {
+    const vm = require('vm');
+    const src = js.slice(js.indexOf('var shellAccountResolved'), js.indexOf('function shellWhen'));
+    function run(paints, stored) {
+      const store = Object.assign({}, stored || {});
+      const classes = new Set();
+      const brand = { classList: { add: (c) => classes.add(c), remove: (c) => classes.delete(c) }, addEventListener() {}, removeEventListener() {}, querySelector: () => null };
+      const ctx = {
+        document: { documentElement: { dataset: { drawerMode: 'board' } }, getElementById: (id) => (id === 'shellDrawerToggle' ? brand : null) },
+        window: { matchMedia: () => ({ matches: false }) },
+        localStorage: { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); } },
+      };
+      vm.createContext(ctx);
+      vm.runInContext(src, ctx);
+      const seen = [];
+      paints.forEach((p) => { classes.delete('is-nudge'); ctx.shellPaintAccount(p); seen.push(classes.has('is-nudge')); });
+      return { seen, store };
+    }
+    const user = { name: 'A', email: 'a@x', initials: 'A' };
+    let r = run([null]);
+    assert.deepStrictEqual(r.seen, [true], 'signed-out load nudges');
+    assert.strictEqual(r.store['board.brandNudged'], '1', 'flag stored in localStorage');
+    r = run([null], { 'board.brandNudged': '1' });
+    assert.deepStrictEqual(r.seen, [false], 'flag already set: no nudge on later loads');
+    r = run([user]);
+    assert.deepStrictEqual(r.seen, [false], 'signed-in load does not nudge');
+    r = run([user, null]);
+    assert.deepStrictEqual(r.seen, [false, false], 'sign-out transition does not nudge');
+    assert.strictEqual(r.store['board.brandNudged'], undefined, 'sign-out leaves the flag alone');
+    r = run([null, null]);
+    assert.deepStrictEqual(r.seen, [true, false], 'repeat signed-out paints in one load nudge once');
+  })();
   assert.match(js, /pointerenter", stop[\s\S]*click", stop/, 'hover or click stops it');
 }

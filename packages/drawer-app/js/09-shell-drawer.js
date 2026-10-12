@@ -110,6 +110,9 @@ var shellShares = shellShares || [];
 })();
 
 // Account row. profile: { name, email, initials } or null when signed out.
+// The first account paint of a page load is the initial auth resolution; later paints (sign-in, sign-out) are transitions.
+var shellAccountResolved = false;
+
 function shellPaintAccount(profile) {
   var name = document.getElementById("shellAccountName");
   var email = document.getElementById("shellAccountEmail");
@@ -119,7 +122,9 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
-  if (!profile) shellNudgeBrand();
+  var initial = !shellAccountResolved;
+  shellAccountResolved = true;
+  if (initial && !profile) shellNudgeBrand();
   var row = document.getElementById("btnShellAccount");
   if (row) {
     row.classList.toggle("is-signin", !profile);
@@ -129,14 +134,15 @@ function shellPaintAccount(profile) {
   }
 }
 
-// Signed out: the L mark pulses its pink ring twice, once per tab session, to hint it is clickable.
+// Signed-out page load: the L mark pulses its pink ring twice to hint it is clickable.
+// Once per browser: the localStorage flag persists (sign-out never clears it) and is set when the nudge starts.
 function shellNudgeBrand() {
   var brand = document.getElementById("shellDrawerToggle");
   if (!brand || document.documentElement.dataset.drawerMode !== "board") return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   try {
-    if (sessionStorage.getItem("board.brandNudged")) return;
-    sessionStorage.setItem("board.brandNudged", "1");
+    if (localStorage.getItem("board.brandNudged")) return;
+    localStorage.setItem("board.brandNudged", "1");
   } catch (_) {}
   var mark = brand.querySelector(".board-brand-mark");
   var stop = function () {
