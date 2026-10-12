@@ -31,6 +31,30 @@
     drawer.querySelectorAll(".shell-row.is-active").forEach(function (el) { el.classList.remove("is-active"); });
     row.classList.add("is-active");
   });
+  // Shared section layout: default merged list; ?shared=fold or ?shared=tabs for the alternates.
+  var layout = /[?&]shared=(fold|tabs)/.exec(location.search);
+  if (layout) document.documentElement.setAttribute("data-shared", layout[1]);
+  var shared = document.getElementById("shellShared");
+  var fold = document.getElementById("shellFold");
+  if (shared && fold) {
+    if (layout && layout[1] === "fold") { shared.classList.add("is-folded"); fold.setAttribute("aria-expanded", "false"); }
+    fold.addEventListener("click", function () {
+      if (document.documentElement.getAttribute("data-shared") !== "fold") return;
+      var folded = shared.classList.toggle("is-folded");
+      fold.setAttribute("aria-expanded", folded ? "false" : "true");
+    });
+  }
+  var seg = document.getElementById("shellSeg");
+  if (/[?&]pane=shared/.test(location.search)) {
+    drawer.setAttribute("data-pane", "shared");
+    if (seg) seg.querySelectorAll("button").forEach(function (el) { el.classList.toggle("is-on", el.dataset.pane === "shared"); });
+  }
+  if (seg) seg.addEventListener("click", function (event) {
+    var btn = event.target.closest && event.target.closest("button[data-pane]");
+    if (!btn) return;
+    seg.querySelectorAll("button").forEach(function (el) { el.classList.toggle("is-on", el === btn); });
+    drawer.setAttribute("data-pane", btn.dataset.pane);
+  });
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
   // ?shell=style opens the right dock Style panel.
   var want = /[?&]shell=(drawer|search|style)/.exec(location.search);

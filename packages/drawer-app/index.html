@@ -21,13 +21,17 @@
     <kbd>⌘K</kbd>
   </button>
   <div class="shell-scrim" id="shellScrim" hidden></div>
-  <aside class="shell-drawer" id="shellDrawer" aria-label="Your boards" hidden>
+  <aside class="shell-drawer" id="shellDrawer" aria-label="Your boards" data-pane="mine" hidden>
     <div class="shell-drawer-body">
-      <button class="shell-new" type="button">
+      <div class="shell-seg" id="shellSeg" role="tablist" aria-label="Boards">
+        <button type="button" class="is-on" data-pane="mine" role="tab">Mine</button>
+        <button type="button" data-pane="shared" role="tab">Shared<em>4</em></button>
+      </div>
+      <button class="shell-new shell-mine" type="button">
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         New board
       </button>
-      <section class="shell-sec" aria-label="Mine">
+      <section class="shell-sec shell-mine" aria-label="Mine">
         <h2 class="shell-sec-head"><span>Mine</span><em>5 groups</em></h2>
         <ul class="shell-list">
           <li><button class="shell-row is-active" type="button"><b>LLM architecture</b><span>3 boards · edited just now</span></button></li>
@@ -37,18 +41,13 @@
           <li><button class="shell-row" type="button"><b>Q3 planning</b><span>2 boards · Sep 28</span></button></li>
         </ul>
       </section>
-      <section class="shell-sec" aria-label="Shared with me">
-        <h2 class="shell-sec-head"><span>Shared with me</span><em>2 for you</em></h2>
+      <section class="shell-sec shell-shared" id="shellShared" aria-label="Shared">
+        <h2 class="shell-sec-head"><button class="shell-fold" id="shellFold" type="button" aria-expanded="true"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Shared</span><em>4</em></button><button class="shell-ghost" type="button">Share this board</button></h2>
         <ul class="shell-list">
-          <li><button class="shell-row" type="button"><b>Search ranking v2</b><span>from Chen Yu · can view</span></button></li>
-          <li><button class="shell-row" type="button"><b>Release checklist</b><span>from Mia · can edit</span></button></li>
-        </ul>
-      </section>
-      <section class="shell-sec" aria-label="Shared by me">
-        <h2 class="shell-sec-head"><span>Shared by me</span><button class="shell-ghost" type="button">Share this board</button></h2>
-        <ul class="shell-list">
-          <li class="shell-row shell-row-link"><div><b>LLM architecture</b><span>anyone with the link · view</span></div><div class="shell-row-acts"><button type="button">Copy</button><button type="button">Stop</button></div></li>
-          <li class="shell-row shell-row-link"><div><b>Android MVI</b><span>anyone with the link · edit</span></div><div class="shell-row-acts"><button type="button">Copy</button><button type="button">Stop</button></div></li>
+          <li><button class="shell-row shell-row-dir" type="button"><i class="shell-dir is-in" title="Shared with you"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span class="shell-row-main"><b>Search ranking v2</b><span>from Chen Yu · can view</span></span></button></li>
+          <li><button class="shell-row shell-row-dir" type="button"><i class="shell-dir is-in" title="Shared with you"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span class="shell-row-main"><b>Release checklist</b><span>from Mia · can edit</span></span></button></li>
+          <li class="shell-row shell-row-dir shell-row-link"><i class="shell-dir is-out" title="You shared this"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6.5 4.5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div class="shell-row-main"><b>LLM architecture</b><span>anyone with the link · view</span></div><div class="shell-row-acts"><button type="button">Copy</button><button type="button">Stop</button></div></li>
+          <li class="shell-row shell-row-dir shell-row-link"><i class="shell-dir is-out" title="You shared this"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6.5 4.5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><div class="shell-row-main"><b>Android MVI</b><span>anyone with the link · edit</span></div><div class="shell-row-acts"><button type="button">Copy</button><button type="button">Stop</button></div></li>
         </ul>
       </section>
     </div>
