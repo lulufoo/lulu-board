@@ -125,9 +125,8 @@
     polygon.classList.add('board-item-diamond-face');
     const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.diagramTheme) || 'default';
     const theme = root.BoardThemes && root.BoardThemes.get ? root.BoardThemes.get(themeId) : null;
-    const kit = root.BoardThemes && root.BoardThemes.kitFor ? root.BoardThemes.kitFor(themeId, 'card', 0, 1) : null;
-    polygon.setAttribute('fill', (kit && kit.cardBg) || '#fff');
-    polygon.setAttribute('stroke', (kit && kit.cardBorder) || (theme && theme.edgeStroke) || '#9370db');
+    polygon.setAttribute('fill', (theme && theme.colors && theme.colors[0]) || '#fff');
+    polygon.setAttribute('stroke', (theme && theme.edgeStroke) || '#9370db');
     polygon.setAttribute('stroke-width', '1.5');
     polygon.setAttribute('stroke-linejoin', 'round');
     polygon.setAttribute('vector-effect', 'non-scaling-stroke');

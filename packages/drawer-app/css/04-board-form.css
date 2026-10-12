@@ -78,6 +78,16 @@
   background: transparent !important;
 }
 
+/* a filled box: the title strip shows the box fill instead of its own */
+.board-render .box[data-bf-fill] > .box-title {
+  background: transparent !important;
+}
+
+/* a filled diamond: the face takes its rotation colour (rect chips and cards are painted inline) */
+.board-render .board-item-diamond[data-bf-fill] .board-item-diamond-face {
+  fill: var(--bf-fill) !important;
+}
+
 /* a toned diamond: the face takes the picked fill (rect chips and cards are painted inline) */
 .board-render .board-item-diamond[data-bf-tone] .board-item-diamond-face {
   fill: var(--bf-tone-fill) !important;

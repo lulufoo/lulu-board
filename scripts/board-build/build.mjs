@@ -16,6 +16,7 @@ const iconPathsFile = path.join(srcDir, 'item/icon-paths.json');
 const SCRIPTS = [
   'themes/type-scale.js',
   'themes/tone.js',
+  'themes/rotation.js',
   'themes/packs/default.js',
   'themes/packs/classic.js',
   'themes/packs/pastel.js',

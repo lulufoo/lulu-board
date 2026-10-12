@@ -126,17 +126,7 @@
       const titleOnly = !(box.items && box.items.length) && !(box.boxes && box.boxes.length);
       const el = doc.createElement('article');
       el.className = `box board-zone board-type-${bType}${nested ? ' board-nested' : ''}${titleOnly ? ' board-title-only' : ''}`;
-      // Apply tone on every box (including nested) so hollow parents cannot wash out children.
       {
-        const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.diagramTheme)
-          || (ctx.root && ctx.root.dataset && ctx.root.dataset.boardTheme)
-          || 'default';
-        const itemN = (box.items && box.items.length) || 8;
-        if (typeof root.BoardThemes !== 'undefined' && root.BoardThemes.applyBoxTone) {
-          root.BoardThemes.applyBoxTone(el, themeId, bType, ctx.toneSeq.n++, itemN);
-        } else {
-          el.dataset.boardTone = String(ctx.toneSeq.n++);
-        }
         const Scale = root.BoardTypeScale;
         const fz = Scale && typeof Scale.stepFromStyle === 'function'
           ? Scale.stepFromStyle(ctx.board && ctx.board.style, box.id)
@@ -144,7 +134,7 @@
         if (fz != null && Scale && typeof Scale.applyBoxTitleStep === 'function') {
           Scale.applyBoxTitleStep(el, bType, fz);
         }
-        if (root.BoardTone && ctx.tones) root.BoardTone.paint(el, ctx.toneRamp, ctx.tones.get(box), false);
+        if (root.BoardRotation && ctx.fills) root.BoardRotation.paint(el, ctx.fills.get(box), false);
       }
       if (nested) {
         el.style.position = 'relative';

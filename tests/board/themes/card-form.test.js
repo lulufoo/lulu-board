@@ -30,6 +30,8 @@ assert.match(css, /\.board-item-md code\s*\{[^}]*rgba\(90, 67, 48/);
 // diamond chip: the same edge as the rect chip; fill follows the parent box like the rect chip
 assert.match(css, /board-item-diamond-face\s*\{[^}]*stroke:\s*var\(--bf-edge\)/);
 assert.match(css, /board-type-card > \.box-content > \.board-item-diamond \.board-item-diamond-face/);
+assert.match(css, /board-item-diamond\[data-bf-fill\] \.board-item-diamond-face\s*\{[^}]*fill:\s*var\(--bf-fill\) !important/, 'a diamond takes its rotation colour');
+assert.match(css, /\.box\[data-bf-fill\] > \.box-title\s*\{[^}]*background:\s*transparent/, 'a filled box shows its fill under the title');
 
 // note: cream paper without an outline, quieter title
 assert.match(css, /board-item-note-sheet\s*\{[^}]*background:\s*#fff6dc[^}]*border:\s*0/);
