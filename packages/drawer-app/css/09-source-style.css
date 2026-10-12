@@ -1,7 +1,6 @@
 /* drawer-app/09-source-style.css — Source panel as a code editor in this project's warm palette:
-   tissue header band, paper body, tan line numbers, pink for keywords. */
+   paper body, tan line numbers, pink for keywords. */
 [data-theme="light"] {
-  --src-band: #f1e9db;
   --src-paper: #fffdf9;
   --src-ink: #4a3524;
   --src-num: #b09b7e;
@@ -14,42 +13,18 @@ html[data-drawer-mode="board"] .board-dock[data-open="source"] [data-dock-panel=
   background: var(--src-paper);
 }
 
-/* header band */
+/* header: same rhythm as the Style / Export panels (title + hairline); typography comes from 08 */
 html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-head {
-  height: 56px;
-  min-height: 56px;
-  padding: 0 8px 0 20px;
-  border: 0;
-  background: var(--src-band);
-  color: var(--src-ink);
-}
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-identity { align-items: center; gap: 10px; }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-identity::before {
-  content: "";
+  box-sizing: border-box;
   flex: none;
-  width: 22px;
-  height: 22px;
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a3524' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m8 7-5 5 5 5M16 7l5 5-5 5M14 5l-4 14'/></svg>") center / contain no-repeat;
-}
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-head strong {
-  font: 500 14px/20px var(--src-mono);
-  letter-spacing: 0;
-  color: var(--src-ink);
-}
-html[data-drawer-mode="board"] [data-dock-panel="source"] .doc-ver { background: rgba(74, 53, 36, .08); color: var(--src-ink); font-family: var(--src-mono); }
-html[data-drawer-mode="board"] .board-dock [data-dock-panel="source"] .dock-source-actions { gap: 0; }
-html[data-drawer-mode="board"] .board-dock [data-dock-panel="source"] .dock-source-actions .btn {
-  height: 28px;
-  min-height: 28px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 0;
+  height: 47px;
+  min-height: 0;
+  margin: 0 14px;
+  padding: 3px 0 0;
+  border-bottom: 1px solid var(--paper-line);
   background: transparent;
-  color: var(--src-ink);
-  font: 500 12px var(--src-mono);
 }
-html[data-drawer-mode="board"] .board-dock [data-dock-panel="source"] .dock-source-actions .btn + .btn { border-left: 1px solid rgba(74, 53, 36, .16); }
-html[data-drawer-mode="board"] .board-dock [data-dock-panel="source"] .dock-source-actions .btn:hover { background: rgba(74, 53, 36, .06); }
+html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-identity { align-items: center; }
 
 /* body */
 html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-body { background: var(--src-paper); }
