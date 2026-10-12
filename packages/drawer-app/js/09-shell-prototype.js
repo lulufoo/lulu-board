@@ -42,6 +42,8 @@
       fold.setAttribute("aria-expanded", folded ? "false" : "true");
     });
   }
+  var bar = /[?&]bar=(strip|fade)/.exec(location.search);
+  if (bar) document.documentElement.setAttribute("data-bar", bar[1]);
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
   // ?shell=style opens the right dock Style panel.
   var want = /[?&]shell=(drawer|search|style)/.exec(location.search);

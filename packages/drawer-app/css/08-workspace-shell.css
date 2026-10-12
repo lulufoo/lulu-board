@@ -295,3 +295,19 @@ html[data-drawer-mode="board"] .board-brand {
 
 /* ---- group tabs: static mock shows only when the cloud renderer has not drawn real tabs ---- */
 #board-group-tabs:not([hidden]) + .shell-tabs-mock { display: none; }
+
+/* ---- top bar ground: none by default; ?bar=strip | ?bar=fade for the alternates ---- */
+.shell-bar { display: none; position: absolute; top: 0; left: 0; right: 40px; z-index: 3; pointer-events: none; }
+html[data-bar="strip"] .shell-bar {
+  display: block;
+  height: 64px;
+  background: rgba(253, 250, 244, .88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--paper-line);
+}
+html[data-bar="fade"] .shell-bar {
+  display: block;
+  height: 76px;
+  background: linear-gradient(180deg, rgba(253, 250, 244, .96) 0, rgba(253, 250, 244, .86) 55%, rgba(253, 250, 244, 0) 100%);
+}
+html[data-bar] .app:has(.board-dock:not([data-open=""])) .shell-bar { right: var(--dock-open-width, 400px); }
