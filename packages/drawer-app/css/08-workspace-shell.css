@@ -215,16 +215,7 @@ html[data-drawer-mode="board"] .board-brand {
 .shell-dir svg { width: 12px; height: 12px; }
 .shell-dir.is-out { background: var(--accent-soft); color: var(--brand); }
 
-/* shared section: one merged list, folded by default */
-.shell-fold {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 0; border: 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit;
-  cursor: pointer;
-}
-.shell-fold svg { width: 12px; height: 12px; transform: rotate(90deg); transition: transform .12s; }
-.shell-fold em { margin-left: 6px; }
-.shell-shared.is-folded .shell-fold svg { transform: none; }
-.shell-shared.is-folded .shell-list { display: none; }
+/* shared section: the list of boards I shared (a tab, see 09-shell-tabs.css) */
 .shell-row-acts { display: none; gap: 4px; }
 .shell-row-link:hover .shell-row-acts { display: flex; }
 .shell-row-acts button {
@@ -455,11 +446,6 @@ html[data-drawer-mode="board"] .group-tab:hover { background: var(--wash); }
 html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
 
 
-/* shared header: the whole free area toggles the fold */
-.shell-shared .shell-sec-head { align-items: stretch; }
-.shell-shared .shell-fold { flex: 1; min-height: 28px; justify-content: flex-start; }
-.shell-shared .shell-ghost { align-self: center; }
-
 /* the shared-by-me row that is the board open now */
 .shell-here {
   flex: none;
@@ -473,15 +459,6 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
   box-shadow: var(--press);
 }
 .shell-row-link.is-current:hover .shell-here { display: none; }
-.shell-shared.is-folded:has(.is-current) .shell-fold em::after {
-  content: "";
-  display: inline-block;
-  width: 6px; height: 6px;
-  margin-left: 6px;
-  border-radius: 50%;
-  background: var(--brand);
-  vertical-align: 1px;
-}
 
 /* product intro: an icon at the far right of the account row */
 .shell-foot-icon {
