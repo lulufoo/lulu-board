@@ -12,7 +12,7 @@ const del = read('packages/drawer-app/js/06-cloud-delete.js');
 const sync = read('packages/drawer-app/js/06-cloud-sync.js');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
 
-assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"/, 'Source is the third dock tab');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"/, 'Source is the third dock tab');
 
 const panel = html.slice(html.indexOf('data-dock-panel="source"'), html.indexOf('id="exportPanel"'));
 assert.match(panel, /class="dock-source-foot"[\s\S]*id="btnBoardDeleteCloud"/, 'delete sits in the Source panel footer');

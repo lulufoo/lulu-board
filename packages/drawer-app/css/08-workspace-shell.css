@@ -44,9 +44,6 @@ html[data-drawer-mode="board"] .board-edit-tool:disabled { opacity: .5; }
 html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
 html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
-/* the shell prototype replaces the old toolbar History and the Share tab */
-#btnDockShare { display: none !important; }
-
 /* ---- canvas ground: white with faint dots ---- */
 html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
   background-color: #fff !important;
@@ -498,3 +495,22 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-empty { margin: 8px 12px; font: 12.5px/1.4 var(--font); color: var(--ink-soft); }
 .shell-drawer:focus { outline: none; }
 .shell-drawer-foot button[hidden] { display: none; }
+
+.shell-row-acts button.is-danger { color: var(--danger); }
+.shell-shared .shell-list .shell-empty { padding: 4px 12px 8px; }
+.shell-ghost:disabled { opacity: .45; cursor: default; }
+.shell-ghost:disabled:hover { background: transparent; }
+
+/* hover actions take the place of the second line, so the row never changes height */
+.shell-row-link .shell-row-main b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-row-link .shell-row-acts {
+  position: absolute; left: 44px; right: 8px; bottom: 6px;
+  gap: 4px;
+}
+.shell-row-link .shell-row-acts button { height: 20px; padding: 0 7px; font-size: 11px; }
+.shell-row-link:hover .shell-row-main > span { visibility: hidden; }
+.shell-row-acts button:last-child { color: var(--ink); }
+.shell-row-acts button.is-danger { color: var(--danger); }
+.shell-shared .shell-list .shell-empty { padding: 4px 12px 8px; }
+.shell-ghost:disabled { opacity: .45; cursor: default; }
+.shell-ghost:disabled:hover { background: transparent; }

@@ -452,7 +452,7 @@ function restoreDrawerMode() {
   setMode("board", { restore: true, persist: false });
   try {
     var tab = ui.dockTab || "";
-    if (tab === "export" || tab === "style" || tab === "share" || tab === "source" || tab === "props" || tab === "layout") {
+    if (tab === "export" || tab === "style" || tab === "source" || tab === "props" || tab === "layout") {
       openDock(tab);
     }
   } catch (_e) {}

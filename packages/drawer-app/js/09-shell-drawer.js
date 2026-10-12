@@ -1,6 +1,7 @@
 /* drawer-app/09-shell-drawer.js — the left drawer: open/close, account row, "Mine" group list, New board.
    The search pop-up here is still the LB-289 mock (real search is LB-294). */
 var shellGroups = [];
+var shellShares = [];
 
 (function wireShellDrawer() {
   var toggle = document.getElementById("shellDrawerToggle");
@@ -38,13 +39,6 @@ var shellGroups = [];
   });
   open.addEventListener("click", function () { setSearch(true); });
   scrim.addEventListener("click", function () { closeAll(false); });
-  // Static rows (the mock Shared list) still highlight on click until LB-293 wires them.
-  drawer.addEventListener("click", function (event) {
-    var row = event.target.closest && event.target.closest("#shellShared .shell-row:not(.shell-row-link)");
-    if (!row) return;
-    drawer.querySelectorAll("#shellShared .shell-row.is-active:not(.is-current)").forEach(function (el) { el.classList.remove("is-active"); });
-    row.classList.add("is-active");
-  });
   // Shared list is folded by default; the header toggles it.
   var shared = document.getElementById("shellShared");
   var fold = document.getElementById("shellFold");
@@ -81,7 +75,11 @@ var shellGroups = [];
   });
   var newBoard = document.getElementById("shellNewBoard");
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
-  window.addEventListener("hashchange", function () { shellRenderMine(); });
+  var shareBtn = document.getElementById("shellShareBoard");
+  if (shareBtn) shareBtn.addEventListener("click", function () {
+    if (typeof cloudShareOpenBoard === "function") void cloudShareOpenBoard();
+  });
+  window.addEventListener("hashchange", function () { shellRenderMine(); shellRenderShared(); });
 })();
 
 // Account row. profile: { name, email, initials } or null when signed out.
@@ -170,9 +168,7 @@ function shellRenderMine(groups) {
   list.replaceChildren(frag);
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
-  // Until LB-293 wires Shared, only the local preview shows the mock list.
-  var shared = document.getElementById("shellShared");
-  if (shared) shared.hidden = !preview;
+  shellRenderShared();
 }
 
 // New board: a blank, unsaved board. The first save creates its group.
@@ -190,4 +186,133 @@ async function shellNewBlankBoard() {
   if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
+}
+
+function shellIsPreview() {
+  return typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
+}
+
+// "Share this board" works for a saved cloud board you own.
+function shellSyncShareButton() {
+  var btn = document.getElementById("shellShareBoard");
+  if (!btn) return;
+  var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
+  var own = typeof cloudBoardId === "function" && !!cloudBoardId() && !(typeof isShareGuest === "function" && isShareGuest());
+  btn.disabled = !(signedIn && own) && !shellIsPreview();
+  btn.title = btn.disabled ? "Save this board to the cloud to share it" : "Copy a link to this board";
+}
+
+var SHELL_ARROW_IN = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var SHELL_ARROW_OUT = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4.5 11.5l7-7M6.5 4.5h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// Local preview only: sample rows, including the "shared with me" kind that is not built yet.
+function shellSampleShares() {
+  return [
+    { incoming: true, title: "Search ranking v2", note: "from Chen Yu · can view" },
+    { incoming: true, title: "Release checklist", note: "from Mia · can edit" },
+    { boardId: "x1", shareId: "x1", title: "LLM architecture", role: "view", isCurrent: true },
+    { boardId: "x2", shareId: "x2", title: "Android MVI", role: "edit", isCurrent: false },
+  ];
+}
+
+function shellShareAction(label, title, handler) {
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.textContent = label;
+  if (title) btn.title = title;
+  btn.addEventListener("click", function (event) { event.stopPropagation(); handler(); });
+  return btn;
+}
+
+// shares: cloudShareSummaries() result; omit to repaint the last one (the open board may have changed).
+function shellRenderShared(shares) {
+  var section = document.getElementById("shellShared");
+  var list = document.getElementById("shellSharedList");
+  var count = document.getElementById("shellSharedCount");
+  if (!section || !list) return;
+  if (shares) shellShares = shares;
+  var preview = shellIsPreview();
+  var signedIn = !!(cloudSession && cloudSession.user);
+  section.hidden = !(signedIn || preview);
+  shellSyncShareButton();
+  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var rows = preview ? shellSampleShares() : shellShares;
+  var frag = document.createDocumentFragment();
+  rows.forEach(function (item) {
+    var li = document.createElement("li");
+    if (item.incoming) {
+      li.className = "shell-row shell-row-dir";
+      li.innerHTML = '<i class="shell-dir is-in" title="Shared with you">' + SHELL_ARROW_IN + '</i>';
+      var inMain = document.createElement("span");
+      inMain.className = "shell-row-main";
+      var inTitle = document.createElement("b");
+      inTitle.textContent = item.title;
+      var inNote = document.createElement("span");
+      inNote.textContent = item.note;
+      inMain.appendChild(inTitle);
+      inMain.appendChild(inNote);
+      li.appendChild(inMain);
+      frag.appendChild(li);
+      return;
+    }
+    var isCurrent = preview ? item.isCurrent : !!current && item.boardId === current;
+    li.className = "shell-row shell-row-dir shell-row-link" + (isCurrent ? " is-active is-current" : "");
+    var icon = document.createElement("i");
+    icon.className = "shell-dir is-out";
+    icon.title = "You shared this";
+    icon.innerHTML = SHELL_ARROW_OUT;
+    var main = document.createElement("div");
+    main.className = "shell-row-main";
+    var title = document.createElement("b");
+    title.textContent = item.title || "Untitled";
+    var note = document.createElement("span");
+    note.textContent = "anyone with the link · " + item.role;
+    main.appendChild(title);
+    main.appendChild(note);
+    li.appendChild(icon);
+    li.appendChild(main);
+    if (isCurrent) {
+      var here = document.createElement("em");
+      here.className = "shell-here";
+      here.textContent = "Current";
+      li.appendChild(here);
+    }
+    var acts = document.createElement("div");
+    acts.className = "shell-row-acts";
+    var live = !preview && typeof cloudShareMutate === "function";
+    acts.appendChild(shellShareAction("Copy", "Copy the link", function () { if (live) void cloudShareCopyLink(item.shareId); }));
+    acts.appendChild(shellShareAction(item.role === "edit" ? "Edit" : "View", item.role === "edit" ? "Anyone with the link can edit. Click to make it view only." : "Anyone with the link can view. Click to allow editing.", function () {
+      if (live) void cloudShareMutate(item.boardId, "set_share_role", { p_role: item.role === "edit" ? "view" : "edit" }, item.role === "edit" ? "Link is view only" : "Link can edit");
+    }));
+    acts.appendChild(shellShareAction("New link", "Replace the link; the old one stops working", function () {
+      if (live) void cloudShareMutate(item.boardId, "rotate_share", null, "Share link replaced");
+    }));
+    var stop = shellShareAction("Stop", "Stop sharing this board", async function () {
+      if (!live) return;
+      if (typeof boardAskConfirm === "function" && !(await boardAskConfirm({
+        title: "Stop sharing this board?",
+        copy: "Anyone with the link will lose access.",
+        ok: "Stop sharing",
+        cancel: "Cancel",
+      }))) return;
+      void cloudShareMutate(item.boardId, "unshare", null, "Stopped sharing");
+    });
+    stop.className = "is-danger";
+    acts.appendChild(stop);
+    li.appendChild(acts);
+    li.addEventListener("click", function () {
+      if (!live || isCurrent) return;
+      if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
+      if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(item.boardId);
+    });
+    frag.appendChild(li);
+  });
+  if (!rows.length) {
+    var none = document.createElement("li");
+    none.className = "shell-empty";
+    none.textContent = "Nothing shared yet";
+    frag.appendChild(none);
+  }
+  list.replaceChildren(frag);
+  if (count) count.textContent = rows.length ? String(rows.length) : "";
 }

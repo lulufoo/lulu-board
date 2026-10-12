@@ -1,14 +1,10 @@
-/* drawer-app/06-cloud-share.js — share rpc, access role, dock panel */
+/* drawer-app/06-cloud-share.js — share rpc helpers and guest-share chrome (the share list lives in the left drawer) */
 var ownerShareId = "";
 var ownerShareRole = "view";
 
 function isShareView() { return document.documentElement.dataset.shareView === "on"; }
 function isShareEdit() { return document.documentElement.dataset.shareEdit === "on"; }
 function isShareGuest() { return isShareView() || isShareEdit(); }
-function shareGuestHint(signedIn, foreign) {
-  if (!signedIn) return "Sign in and save this board to share.";
-  return foreign ? "Only the owner can share this board." : "Save this board to share.";
-}
 function setShareEdit(on) {
   if (on) document.documentElement.dataset.shareEdit = "on";
   else delete document.documentElement.dataset.shareEdit;
@@ -20,9 +16,6 @@ function setShareView(on) {
   if (on) document.documentElement.dataset.shareView = "on";
   else delete document.documentElement.dataset.shareView;
   if (boardSourceEl) boardSourceEl.readOnly = false;
-  if (on && typeof currentDockTab === "function" && typeof openDock === "function" && currentDockTab() === "share") {
-    openDock("");
-  }
   if (on) setShareEdit(false);
   syncShareChrome();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
@@ -31,10 +24,6 @@ function rememberOwnerShareId(shareId) {
   ownerShareId = String(shareId || "");
   if (!ownerShareId) ownerShareRole = "view";
   if (!isShareView()) syncShareChrome();
-}
-function currentShareUrl() {
-  if (!ownerShareId || typeof cloudShareHash !== "function") return "";
-  return location.origin + location.pathname + location.search + cloudShareHash(ownerShareId);
 }
 function shareRpcError(error, fallback) {
   return error && error.message ? error.message : fallback;
@@ -135,69 +124,6 @@ async function refreshOwnShareState() {
     rememberOwnerShareId(row.share_id || "");
   } catch (_error) {}
 }
-async function mutateOwnShare(name, args, after) {
-  var boardId = typeof cloudBoardId === "function" ? cloudBoardId() : "";
-  if (!boardId) return;
-  try {
-    var row = await runShareRpc(name, Object.assign({ p_board_id: boardId }, args || {}));
-    if (!row && name !== "unshare") return;
-    if (after) await after(row);
-    applyShareVersion(row);
-  } catch (error) {
-    setStatus(shareRpcError(error, "Share failed"), true);
-  }
-}
-
-function openBoardShare() {
-  return mutateOwnShare("open_share", null, function (row) {
-    ownerShareRole = "view";
-    rememberOwnerShareId(row.share_id);
-    setStatus("Share link ready");
-  });
-}
-
-function setBoardShareRole(role) {
-  return mutateOwnShare("set_share_role", { p_role: role }, function (row) {
-    ownerShareRole = row.role === "edit" ? "edit" : "view";
-    rememberOwnerShareId(row.share_id);
-    setStatus(ownerShareRole === "edit" ? "Link can edit" : "Link is view only");
-  });
-}
-
-function rotateBoardShare() {
-  return mutateOwnShare("rotate_share", null, function (row) {
-    rememberOwnerShareId(row.share_id);
-    setStatus("Share link replaced");
-    return refreshOwnShareState();
-  });
-}
-
-function closeBoardShare() {
-  return mutateOwnShare("unshare", null, function () {
-    ownerShareRole = "view";
-    rememberOwnerShareId("");
-    setStatus("Stopped sharing");
-  });
-}
-
-async function copyBoardShareLink() {
-  var url = currentShareUrl();
-  if (!url) {
-    await openBoardShare();
-    url = currentShareUrl();
-  }
-  if (!url) return;
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(url);
-    }
-    if (typeof showCopyTip === "function") showCopyTip("Share link copied");
-    else setStatus("Share link copied");
-  } catch (error) {
-    setStatus(shareRpcError(error, "Could not copy link"), true);
-  }
-}
-
 async function saveSharedBoard(opts) {
   opts = opts || {};
   var shareId = typeof cloudShareIdFromHash === "function" ? cloudShareIdFromHash(location.hash) : "";
@@ -269,47 +195,19 @@ function syncSharedOriginal() {
 }
 
 function syncShareChrome() {
-  var signedOut = document.getElementById("shareSignedOut");
-  var owner = document.getElementById("shareOwner");
-  var createBtn = document.getElementById("btnShareCreate");
-  var copyBtn = document.getElementById("btnShareCopy");
-  var rotateBtn = document.getElementById("btnShareRotate");
-  var stopBtn = document.getElementById("btnShareStop");
-  var viewBtn = document.getElementById("btnShareRoleView");
-  var editBtn = document.getElementById("btnShareRoleEdit");
   var saveCopy = document.getElementById("btnBoardSaveCopy");
   var shareSync = document.getElementById("btnShareSync");
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
-  var ownCloud = typeof cloudBoardId === "function" && !!cloudBoardId();
-  var viewing = isShareView();
-  var showOwner = signedIn && ownCloud && !viewing && !isShareEdit();
-  if (signedOut) {
-    signedOut.hidden = showOwner;
-    if (!showOwner) signedOut.textContent = shareGuestHint(signedIn, viewing || isShareEdit());
-  }
-  if (owner) owner.hidden = !showOwner;
-  if (createBtn) createBtn.hidden = !!ownerShareId;
-  if (copyBtn) copyBtn.hidden = !ownerShareId;
-  if (rotateBtn) rotateBtn.hidden = !ownerShareId;
-  if (stopBtn) stopBtn.hidden = !ownerShareId;
-  if (viewBtn) viewBtn.setAttribute("aria-pressed", ownerShareRole !== "edit" ? "true" : "false");
-  if (editBtn) editBtn.setAttribute("aria-pressed", ownerShareRole === "edit" ? "true" : "false");
   if (saveCopy) saveCopy.hidden = true;
   if (shareSync) shareSync.hidden = !(signedIn && isShareEdit());
+  if (typeof shellSyncShareButton === "function") shellSyncShareButton();
 }
 
-function closeShareMenu() {}
 function onShareClick(id, fn) {
   var el = document.getElementById(id);
   if (el) el.addEventListener("click", fn);
 }
 
-onShareClick("btnShareCreate", function () { void openBoardShare(); });
-onShareClick("btnShareCopy", function () { void copyBoardShareLink(); });
-onShareClick("btnShareRotate", function () { void rotateBoardShare(); });
-onShareClick("btnShareStop", function () { void closeBoardShare(); });
-onShareClick("btnShareRoleView", function () { void setBoardShareRole("view"); });
-onShareClick("btnShareRoleEdit", function () { void setBoardShareRole("edit"); });
 onShareClick("btnBoardSaveCopy", function () { void forkSharedBoard(); });
 onShareClick("btnShareSync", function () { void syncSharedOriginal(); });
 syncShareChrome();
