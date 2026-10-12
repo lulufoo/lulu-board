@@ -90,15 +90,3 @@ console.log('ok tone');
   assert.notDeepStrictEqual(Themes.rampFor(pastel, 0), Themes.rampFor(pastel, 1), 'different hues, different ramps');
   assert.deepStrictEqual(Themes.rampFor(Themes.get('classic'), 3), Themes.get('classic').ramp, 'other themes keep a fixed ramp');
 }
-
-// ---- autoBoxes: boxes follow the ramp by default, items keep the theme colours ----
-{
-  const item = { role: 'item', kind: 'item', id: 'c', type: 'chip' };
-  const inner = { kind: 'card', type: 'card', id: 'in', kids: [item] };
-  const top = { kind: 'card', type: 'card', id: 'top', kids: [inner] };
-  const r = Tone.resolve({ views: [top], style: {} }, { autoBoxes: true });
-  assert.strictEqual(r.get(top).tone, 0);
-  assert.strictEqual(r.get(inner).tone, 2, 'a nested box defaults two steps deeper');
-  assert.strictEqual(r.get(item).tone, null, 'items keep the theme colours');
-  assert.strictEqual(require('../../../packages/board/themes').get('pastel').autoBoxTone, true);
-}

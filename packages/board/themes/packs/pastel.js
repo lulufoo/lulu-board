@@ -17,7 +17,6 @@
     bandBg: '#f8fafc',
     bandBorder: '#cbd5e1',
     edgeRgb: '71, 85, 105',
-    autoBoxTone: true, // a nested box defaults to a deeper step of its outermost box's colour; chips keep the pastel rotation
     hueRamp: true, // the Fill ramp follows the outermost box's colour (see themes/index.js rampFor)
     ramp: ['#f8fafc', '#eef2f7', '#e2e8f0', '#d5dde8', '#c6d1e0', '#b5c3d6', '#a3b3c9', '#90a2bb'],
     swatches: [

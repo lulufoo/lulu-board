@@ -56,7 +56,6 @@
       edgeRgb: pack.edgeRgb || '74, 53, 36',
       ramp: pack.ramp || [],
       hueRamp: !!pack.hueRamp,
-      autoBoxTone: !!pack.autoBoxTone,
       autoTone: !!pack.autoTone,
       types,
     };
