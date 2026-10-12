@@ -526,3 +526,17 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 }
 .shell-more:hover { background: var(--wash); color: var(--ink); }
 .shell-more[hidden] { display: none; }
+
+/* drawer account row: Sign in when signed out */
+.shell-drawer-foot button.shell-signin {
+  width: auto; height: 28px; padding: 0 12px; border-radius: 999px;
+  background: var(--brand); color: #fff; font: 600 12px var(--font);
+}
+.shell-drawer-foot button.shell-signin:hover { background: var(--brand); filter: brightness(.95); }
+
+/* LB-303 spacing: rows breathe, and Shared's header keeps clear of its first row */
+.shell-list { display: flex; flex-direction: column; gap: 2px; }
+.shell-shared .shell-sec-head { margin-bottom: 10px; }
+.shell-shared .shell-list { padding-bottom: 4px; }
+.shell-sec + .shell-sec { margin-top: 22px; }
+.shell-sec-head { margin-bottom: 6px; }

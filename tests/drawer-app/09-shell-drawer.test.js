@@ -69,5 +69,14 @@ console.log('ok 09-shell-drawer');
   assert.equal(withCurrent.hidden, 21, 'hidden count excludes it');
   assert.equal(shellMineWindow(rows, 40, none).hidden, 0, 'no Load more when all fit');
   assert.equal(shellMineWindow([], 8, none).visible.length, 0, 'empty list');
-  assert.match(src, /SHELL_MINE_PAGE/, 'page size constant');
+  assert.match(src, /function shellMinePage\(\)/, 'page size survives the first render running early');
+}
+
+// ---- drawer account row + spacing (LB-303) ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.match(html, /id="btnShellSignIn"[^>]*hidden/, 'Sign in is in the drawer account row, hidden when signed in');
+  assert.match(src, /getElementById\("btnBoardSignIn"\)[\s\S]{0,120}rail\.click\(\)/, 'drawer Sign in opens the existing sign-in menu');
+  assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
 }
