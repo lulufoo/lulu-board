@@ -39,8 +39,13 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
-  var more = document.getElementById("shellMineMore");
-  if (more) more.addEventListener("click", function () { shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage(); shellRenderMine(); });
+  // Load more is the last row of the scrolling list, so it is rebuilt on every render: delegate the click.
+  var mineList = document.getElementById("shellMineList");
+  if (mineList) mineList.addEventListener("click", function (event) {
+    if (!event.target.closest || !event.target.closest("#shellMineMore")) return;
+    shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage();
+    shellRenderMine();
+  });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -85,12 +90,13 @@ var shellShares = [];
     closeAll(false);
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
-  // Sign in reuses the rail's sign-in menu, so there is one place that knows the providers.
-  var signIn = document.getElementById("btnShellSignIn");
-  if (signIn) signIn.addEventListener("click", function () {
+  // Signed out: the account row itself is the sign-in entry and starts the Google flow
+  // directly (GitHub stays in the rail's sign-in menu). Signed in: the row is inert.
+  var account = document.getElementById("btnShellAccount");
+  if (account) account.addEventListener("click", function () {
+    if (!account.classList.contains("is-signin")) return;
     closeAll(false);
-    var rail = document.getElementById("btnBoardSignIn");
-    if (rail && !rail.disabled) rail.click();
+    if (typeof cloudSignIn === "function") void cloudSignIn("google");
   });
   var newBoard = document.getElementById("shellNewBoard");
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
@@ -111,8 +117,12 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
-  var inn = document.getElementById("btnShellSignIn");
-  if (inn) inn.hidden = !!profile;
+  var row = document.getElementById("btnShellAccount");
+  if (row) {
+    row.classList.toggle("is-signin", !profile);
+    row.title = profile ? "" : "Sign in with Google";
+    row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Sign in with Google");
+  }
 }
 
 function shellWhen(iso) {
@@ -208,12 +218,21 @@ function shellRenderMine(groups) {
     li.appendChild(del);
     frag.appendChild(li);
   });
-  list.replaceChildren(frag);
-  var more = document.getElementById("shellMineMore");
-  if (more) {
-    more.hidden = win.hidden <= 0;
+  if (win.hidden > 0) {
+    // Last row of the scrolling list: it only shows once you reach the bottom.
+    var moreItem = document.createElement("li");
+    moreItem.className = "shell-more-item";
+    var more = document.createElement("button");
+    more.type = "button";
+    more.id = "shellMineMore";
+    more.className = "shell-more";
     more.textContent = "Load more (" + win.hidden + ")";
+    moreItem.appendChild(more);
+    frag.appendChild(moreItem);
   }
+  var keepScroll = list.scrollTop;
+  list.replaceChildren(frag);
+  list.scrollTop = keepScroll;
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();

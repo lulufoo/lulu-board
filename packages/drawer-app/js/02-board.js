@@ -326,10 +326,11 @@ function hidePropsLinkOnlyChrome() {
 function fillBoardIconSec() {
   var Icons = window.BoardIcons;
   if (!boardIconSec || !Icons || !Icons.sections) return;
+  // One category at a time, picked from a dropdown.
   boardIconSec.innerHTML = Icons.sections.map(function(sec) {
-    var on = sec.id === boardIconSecId;
-    return "<button type=\"button\" class=\"props-seg-btn\" data-sec=\"" + sec.id + "\" aria-pressed=\"" + (on ? "true" : "false") + "\">" + sec.label + "</button>";
+    return "<option value=\"" + sec.id + "\"" + (sec.id === boardIconSecId ? " selected" : "") + ">" + sec.label + "</option>";
   }).join("");
+  if (boardIconSecId) boardIconSec.value = boardIconSecId;
 }
 function fillBoardIconList() {
   var Icons = window.BoardIcons;

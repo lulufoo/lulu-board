@@ -389,6 +389,7 @@ html[data-drawer-mode="board"] .style-block + .style-block { border-top-color: v
 html[data-drawer-mode="board"] .board-dock #boardTypeEditor,
 html[data-drawer-mode="board"] .board-dock #boardTitleEditor,
 html[data-drawer-mode="board"] .board-dock #boardDirEditor,
+html[data-drawer-mode="board"] .board-dock #boardIconSec,
 html[data-drawer-mode="board"] .board-dock #boardAlignEditor,
 html[data-drawer-mode="board"] .board-dock #boardJustifyEditor,
 html[data-drawer-mode="board"] .board-dock #boardArrowEditor,
@@ -400,6 +401,7 @@ html[data-drawer-mode="board"] .board-dock #boardIdEditor {
 html[data-drawer-mode="board"] .board-dock #boardTypeEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardTitleEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardDirEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardIconSec:focus,
 html[data-drawer-mode="board"] .board-dock #boardAlignEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardJustifyEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardArrowEditor:focus,
@@ -506,6 +508,11 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
   gap: 4px;
 }
 .shell-row-link .shell-row-acts button { height: 20px; padding: 0 7px; font-size: 11px; }
+/* Shared rows: the second line is a fixed 20px slot (note text, or the action buttons on hover),
+   with a real gap under the title, so the buttons never crowd it and the row never jumps. */
+.shell-row-link .shell-row-main { gap: 6px; }
+.shell-row-link .shell-row-main > span { height: 20px; line-height: 20px; }
+.shell-row-link .shell-row-acts { bottom: 8px; }
 .shell-row-link:hover .shell-row-main > span { visibility: hidden; }
 .shell-row-acts button:last-child { color: var(--ink); }
 .shell-row-acts button.is-danger { color: var(--danger); }
@@ -518,7 +525,7 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-search-results .shell-empty { margin: 10px 8px; }
 .shell-search-results .shell-row.is-picked { background: var(--wash); }
 
-/* Mine: a bounded list; Load more sits under it */
+/* Mine: a bounded, scrolling list; Load more is its last row (only visible at the bottom) */
 #shellMineList { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
 .shell-more {
   display: block; width: 100%; margin-top: 4px; padding: 7px 12px; border: 0; border-radius: 9px;
@@ -527,12 +534,19 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-more:hover { background: var(--wash); color: var(--ink); }
 .shell-more[hidden] { display: none; }
 
-/* drawer account row: Sign in when signed out */
-.shell-drawer-foot button.shell-signin {
-  width: auto; height: 28px; padding: 0 12px; border-radius: 999px;
-  background: var(--brand); color: #fff; font: 600 12px var(--font);
+/* drawer account row: the whole avatar + name area; interactive only while signed out */
+.shell-drawer-foot button.shell-account {
+  flex: 1; width: auto; height: auto; min-width: 0;
+  display: flex; align-items: center; gap: 10px;
+  margin: -4px -6px; padding: 4px 6px;
+  text-align: left; cursor: default; border-radius: 10px;
 }
-.shell-drawer-foot button.shell-signin:hover { background: var(--brand); filter: brightness(.95); }
+.shell-drawer-foot button.shell-account:hover { background: transparent; }
+.shell-account-text { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.shell-drawer-foot button.shell-account.is-signin { cursor: pointer; }
+.shell-drawer-foot button.shell-account.is-signin:hover { background: var(--wash); }
+.shell-drawer-foot button.shell-account.is-signin:active { background: color-mix(in srgb, var(--wash) 80%, var(--ink) 8%); }
+.shell-drawer-foot button.shell-account:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 
 /* LB-303 spacing: rows breathe, and Shared's header keeps clear of its first row */
 .shell-list { display: flex; flex-direction: column; gap: 2px; }

@@ -76,7 +76,37 @@ console.log('ok 09-shell-drawer');
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  assert.match(html, /id="btnShellSignIn"[^>]*hidden/, 'Sign in is in the drawer account row, hidden when signed in');
-  assert.match(src, /getElementById\("btnBoardSignIn"\)[\s\S]{0,120}rail\.click\(\)/, 'drawer Sign in opens the existing sign-in menu');
+  assert.doesNotMatch(html, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
+  assert.match(html, /id="btnShellAccount"[\s\S]{0,200}id="shellAccountAvatar"[\s\S]{0,200}id="shellAccountName"/, 'avatar + name live in one clickable account row');
+  assert.match(src, /classList\.contains\("is-signin"\)[\s\S]{0,160}cloudSignIn\("google"\)/, 'signed-out row starts the sign-in flow directly');
+  assert.match(src, /classList\.toggle\("is-signin", !profile\)/, 'row is only interactive while signed out');
   assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
+}
+
+// ---- properties panel: icon categories are a dropdown, not a grid of blocks ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+  const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
+  assert.match(html, /<select id="boardIconSec"/, 'Icon category is a select');
+  assert.doesNotMatch(html, /id="boardIconSec" role="group"/, 'no block group for categories');
+  assert.match(board, /<option value=/, 'categories are rendered as options');
+  assert.match(boot, /boardIconSec\.addEventListener\("change"/, 'picking a category switches the icon list');
+}
+
+// ---- shared rows: a real gap between the title and the hover actions ----
+{
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+  assert.match(css, /\.shell-row-link \.shell-row-main \{ gap: 6px; \}/, 'title keeps 6px from the second line');
+  assert.match(css, /\.shell-row-link \.shell-row-main > span \{ height: 20px; line-height: 20px; \}/, 'second line is a fixed 20px slot, same height as the buttons');
+  assert.match(css, /\.shell-row-link \.shell-row-acts \{ bottom: 8px; \}/, 'actions sit in that slot');
+}
+
+// ---- Mine: Load more is the last row of the scrolling list, not a fixed button ----
+{
+  const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+  const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.doesNotMatch(html, /id="shellMineMore"/, 'no static Load more button outside the list');
+  assert.match(js, /moreItem\.className = "shell-more-item"[\s\S]*frag\.appendChild\(moreItem\)/, 'Load more is appended to the list rows');
+  assert.match(js, /mineList\.addEventListener\("click"[\s\S]*#shellMineMore/, 'click is delegated so re-renders keep it working');
 }
