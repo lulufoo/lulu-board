@@ -52,6 +52,7 @@
       edgeFeedback: pack.edgeFeedback,
       bandBg: pack.bandBg,
       bandBorder: pack.bandBorder,
+      colors: pack.colors,
       swatches: pack.swatches,
       edgeRgb: pack.edgeRgb || '74, 53, 36',
       ramp: pack.ramp || [],

@@ -17,6 +17,8 @@
     bandBg: '#f8fafc',
     bandBorder: '#cbd5e1',
     edgeRgb: '71, 85, 105',
+    // Fills in rotation order (see themes/rotation.js).
+    colors: ['#eff6ff', '#ecfdf5', '#fffbeb', '#faf5ff', '#fff7ed', '#fdf2f8', '#f0fdfa', '#f8fafc'],
     ramp: ['#f8fafc', '#eef2f7', '#e2e8f0', '#d5dde8', '#c6d1e0', '#b5c3d6', '#a3b3c9', '#90a2bb'],
     swatches: [
       { bg: '#eff6ff', border: '#60a5fa', item: '#dbeafe' },
