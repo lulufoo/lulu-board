@@ -80,6 +80,8 @@ A signed-in owner can share a saved cloud board from the Share dock. The first a
 
 In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://luluboard.app/#b:…` instead of `#z:`.
 
+Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
+
 ## Examples
 
 Click a preview to open the source.
