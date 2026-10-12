@@ -1,71 +1,59 @@
-/* drawer-app/08-workspace-shell.css — shell-align prototype: tissue tool surfaces, left drawer, search.
-   Static mock only. Palette follows landing (tissue #f4e8d6, brand #db4c84). The canvas stays neutral. */
+/* drawer-app/08-workspace-shell.css — shell-align prototype: warm-white tool surfaces, left drawer, search.
+   Static mock only. Light on purpose: hairlines instead of embossing, pink only for active state. */
 [data-theme="light"] {
   --accent: #db4c84;
   --accent-soft: rgba(219, 76, 132, .1);
-  --tissue: #f4e8d6;
   --ink: #4a3524;
   --ink-soft: #8b7358;
-  --paper-line: rgba(120, 80, 40, .16);
   --brand: #db4c84;
-  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45 0 0 0 0 .3 0 0 0 0 .15 0 0 0 .1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  --leaf: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='34' viewBox='0 0 56 34' fill='none'><g stroke-linecap='round' stroke-dasharray='1.5 3' stroke-width='1.3'><g transform='translate(1.2 1.2)' stroke='white' stroke-opacity='.85'><path d='M4 28C5 13 17 4 36 4c0 15-12 25-32 24Z'/><path d='M4 28c10-8 19-14 27-20'/></g><g stroke='%23a67c52' stroke-opacity='.4'><path d='M4 28C5 13 17 4 36 4c0 15-12 25-32 24Z'/><path d='M4 28c10-8 19-14 27-20'/></g></g></svg>");
-  --petal: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='-15 -15 30 30'><g fill='%23ee8d9f' fill-opacity='.62'><ellipse cx='0' cy='-6.2' rx='3.7' ry='5.8'/><ellipse cx='0' cy='-6.2' rx='3.7' ry='5.8' transform='rotate(72)'/><ellipse cx='0' cy='-6.2' rx='3.7' ry='5.8' transform='rotate(144)'/><ellipse cx='0' cy='-6.2' rx='3.7' ry='5.8' transform='rotate(216)'/><ellipse cx='0' cy='-6.2' rx='3.7' ry='5.8' transform='rotate(288)'/></g><circle r='1.6' fill='%23fff4e4' fill-opacity='.8'/></svg>");
-  --paper: var(--grain), linear-gradient(180deg, #f8eddd 0%, #f2e4cf 100%);
-  --press: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 -1px 0 var(--paper-line);
+  --paper: rgba(255, 253, 249, .92);
+  --dock: #fdfaf4;
+  --paper-line: rgba(120, 80, 40, .1);
+  --press: 0 1px 2px rgba(120, 80, 40, .08);
+  --wash: rgba(80, 55, 30, .05);
 }
 
-/* ---- tool surfaces: right dock, toolbar, tabs, zoom — one tissue family ---- */
+/* ---- tool surfaces: right dock, toolbar, tabs, zoom ---- */
 html[data-drawer-mode="board"] .board-dock {
-  background: var(--paper);
+  background: var(--dock);
   border-left-color: var(--paper-line);
 }
-html[data-drawer-mode="board"] .board-dock:not([data-open=""]) {
-  background:
-    var(--petal) no-repeat right 70px bottom 62px / 22px 22px,
-    var(--leaf) no-repeat right 108px bottom 56px / 56px 34px,
-    var(--paper);
-  box-shadow: -14px 0 34px rgba(120, 80, 40, .1);
-}
-html[data-drawer-mode="board"] .board-dock-rail {
-  background: linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(120, 80, 40, .05));
-  border-left-color: var(--paper-line);
-  box-shadow: inset 1px 0 0 rgba(255, 255, 255, .6);
-}
-html[data-drawer-mode="board"] .board-dock-tab.is-active {
-  background: rgba(255, 255, 255, .62);
-  box-shadow: inset 0 1px 2px rgba(120, 80, 40, .2), 0 1px 0 rgba(255, 255, 255, .8);
-}
-html[data-drawer-mode="board"] .board-dock-tab:hover:not(.is-active) { background: rgba(255, 255, 255, .4); }
+html[data-drawer-mode="board"] .board-dock:not([data-open=""]) { box-shadow: -10px 0 28px rgba(80, 55, 30, .06); }
+html[data-drawer-mode="board"] .board-dock-rail { background: transparent; border-left-color: var(--paper-line); }
+html[data-drawer-mode="board"] .board-dock-tab.is-active,
+html[data-drawer-mode="board"] .group-tab.is-active,
+.shell-row.is-active { background: var(--accent-soft); }
+html[data-drawer-mode="board"] .board-dock-tab:hover:not(.is-active),
+html[data-drawer-mode="board"] .group-tab:hover,
+.shell-row:hover:not(.is-active) { background: var(--wash); }
+html[data-drawer-mode="board"] .group-tab.is-active { color: var(--brand); }
+html[data-drawer-mode="board"] .group-tab { color: var(--ink); }
 html[data-drawer-mode="board"] .board-dock .props-head strong,
-html[data-drawer-mode="board"] .board-dock .style-section-label {
-  color: var(--ink);
-}
-html[data-drawer-mode="board"] .board-dock .props-head strong { text-shadow: 0 1px 0 rgba(255, 255, 255, .8); }
+html[data-drawer-mode="board"] .board-dock .style-section-label { color: var(--ink); }
 
 html[data-drawer-mode="board"] .board-edit-tool,
 html[data-drawer-mode="board"] .zoom-float,
 html[data-drawer-mode="board"] .group-tab-float {
   background: var(--paper) !important;
   border-color: var(--paper-line) !important;
-  box-shadow: var(--press), 0 2px 8px rgba(120, 80, 40, .1);
+  box-shadow: var(--press);
   color: var(--ink);
 }
-html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled) { background: linear-gradient(rgba(255, 255, 255, .5), rgba(255, 255, 255, .5)), var(--paper) !important; }
+html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled) { background: #fff !important; }
 html[data-drawer-mode="board"] .board-edit-tool:disabled { opacity: .5; }
 html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
-html[data-drawer-mode="board"] .group-tab { color: var(--ink); }
-html[data-drawer-mode="board"] .group-tab:hover { background: rgba(255, 255, 255, .5); }
-html[data-drawer-mode="board"] .group-tab.is-active {
-  background: rgba(255, 255, 255, .7);
-  color: var(--brand);
-  box-shadow: inset 0 1px 2px rgba(120, 80, 40, .22), 0 1px 0 rgba(255, 255, 255, .85);
-}
 html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
 /* the shell prototype replaces the old toolbar History and the Share tab */
 html[data-drawer-mode="board"] .top-float #boardHistory { display: none !important; }
 #btnDockShare { display: none !important; }
+
+/* ---- canvas ground: white with faint dots ---- */
+html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
+  background-size: 24px 24px !important;
+}
 
 /* ---- brand mark = drawer trigger (top-left, where it already sits) ---- */
 html[data-drawer-mode="board"] .board-brand {
@@ -73,7 +61,7 @@ html[data-drawer-mode="board"] .board-brand {
   cursor: pointer;
   border-right-color: var(--paper-line);
 }
-.board-brand .board-brand-mark { transition: box-shadow .15s, transform .15s; }
+.board-brand .board-brand-mark { transition: box-shadow .15s; }
 .board-brand:hover .board-brand-mark,
 .board-brand[aria-expanded="true"] .board-brand-mark {
   box-shadow: 0 0 0 3px rgba(219, 76, 132, .22), var(--shadow-soft);
@@ -98,10 +86,10 @@ html[data-drawer-mode="board"] .board-brand {
   color: var(--ink-soft);
   font: 13px var(--font);
   cursor: pointer;
-  box-shadow: var(--press), 0 2px 8px rgba(120, 80, 40, .1);
+  box-shadow: var(--press);
 }
 .app:has(.board-dock:not([data-open=""])) .shell-search { right: calc(var(--dock-open-width, 400px) + 12px); }
-.shell-search:hover { background: linear-gradient(rgba(255, 255, 255, .5), rgba(255, 255, 255, .5)), var(--paper); }
+.shell-search:hover { background: #fff; }
 .shell-search svg { width: 14px; height: 14px; flex: none; }
 .shell-search span { flex: 1; text-align: left; }
 .shell-search kbd,
@@ -111,8 +99,7 @@ html[data-drawer-mode="board"] .board-brand {
   border: 0;
   border-radius: 6px;
   color: var(--ink-soft);
-  background: rgba(255, 255, 255, .7);
-  box-shadow: 0 1px 0 rgba(120, 80, 40, .22);
+  background: rgba(80, 55, 30, .06);
 }
 
 /* ---- left drawer: a floating card summoned from the brand mark ---- */
@@ -120,7 +107,7 @@ html[data-drawer-mode="board"] .board-brand {
   position: absolute;
   inset: 0;
   z-index: 54;
-  background: rgba(70, 45, 20, .08);
+  background: rgba(70, 45, 20, .06);
 }
 .shell-drawer {
   position: absolute;
@@ -134,11 +121,8 @@ html[data-drawer-mode="board"] .board-brand {
   overflow: hidden;
   border: 1px solid var(--paper-line);
   border-radius: 16px;
-  background:
-    var(--leaf) no-repeat right 84px bottom 18px / 56px 34px,
-    var(--petal) no-repeat right 46px bottom 24px / 22px 22px,
-    var(--paper);
-  box-shadow: var(--press), 0 22px 50px rgba(90, 60, 30, .22);
+  background: var(--dock);
+  box-shadow: 0 18px 44px rgba(90, 60, 30, .16);
   animation: shell-in .16s ease-out;
 }
 .shell-drawer[hidden], .shell-scrim[hidden], .shell-search-pop[hidden] { display: none !important; }
@@ -158,7 +142,6 @@ html[data-drawer-mode="board"] .board-brand {
   font: 600 14px var(--font);
   letter-spacing: .02em;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(120, 30, 60, .22), inset 0 1px 0 rgba(255, 255, 255, .25);
 }
 .shell-new:hover { background: #c43e72; }
 .shell-new svg { width: 15px; height: 15px; }
@@ -173,23 +156,21 @@ html[data-drawer-mode="board"] .board-brand {
   letter-spacing: .09em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .7);
 }
-.shell-sec-head em { font-style: normal; font-weight: 500; letter-spacing: 0; text-transform: none; opacity: .75; text-shadow: none; }
+.shell-sec-head em { font-style: normal; font-weight: 500; letter-spacing: 0; text-transform: none; opacity: .75; }
 .shell-ghost {
   height: 24px;
   padding: 0 9px;
   border: 1px solid var(--paper-line);
   border-radius: 7px;
-  background: rgba(255, 255, 255, .5);
+  background: transparent;
   color: var(--brand);
   font: 600 11.5px var(--font);
   letter-spacing: 0;
   text-transform: none;
-  text-shadow: none;
   cursor: pointer;
 }
-.shell-ghost:hover { background: rgba(255, 255, 255, .85); }
+.shell-ghost:hover { background: var(--accent-soft); }
 .shell-list { margin: 0; padding: 0; list-style: none; }
 .shell-row {
   width: 100%;
@@ -207,11 +188,6 @@ html[data-drawer-mode="board"] .board-brand {
 }
 .shell-row b { font: 600 13.5px/1.25 var(--font); }
 .shell-row span { font: 12px/1.3 var(--font); color: var(--ink-soft); }
-.shell-row:hover { background: rgba(255, 255, 255, .45); }
-.shell-row.is-active {
-  background: rgba(255, 255, 255, .7);
-  box-shadow: inset 0 1px 2px rgba(120, 80, 40, .16), 0 1px 0 rgba(255, 255, 255, .8);
-}
 .shell-row.is-active::before {
   content: "";
   position: absolute;
@@ -229,7 +205,7 @@ html[data-drawer-mode="board"] .board-brand {
   padding: 0 8px;
   border: 1px solid var(--paper-line);
   border-radius: 7px;
-  background: rgba(255, 255, 255, .8);
+  background: #fff;
   color: var(--ink);
   font: 600 11.5px var(--font);
   cursor: pointer;
@@ -241,7 +217,6 @@ html[data-drawer-mode="board"] .board-brand {
   gap: 10px;
   padding: 10px 14px;
   border-top: 1px solid var(--paper-line);
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, .6);
 }
 .shell-avatar {
   width: 30px; height: 30px; border-radius: 50%;
@@ -255,7 +230,7 @@ html[data-drawer-mode="board"] .board-brand {
   width: 30px; height: 30px; display: grid; place-items: center;
   border: 0; border-radius: 8px; background: transparent; color: var(--ink-soft); cursor: pointer;
 }
-.shell-drawer-foot button:hover { background: rgba(255, 255, 255, .5); }
+.shell-drawer-foot button:hover { background: var(--wash); }
 .shell-drawer-foot svg { width: 16px; height: 16px; }
 
 /* ---- search overlay: from the pill or ⌘K ---- */
@@ -269,8 +244,8 @@ html[data-drawer-mode="board"] .board-brand {
   padding: 10px 10px 12px;
   border: 1px solid var(--paper-line);
   border-radius: 16px;
-  background: var(--paper);
-  box-shadow: var(--press), 0 28px 70px rgba(70, 45, 20, .26);
+  background: var(--dock);
+  box-shadow: 0 24px 60px rgba(70, 45, 20, .2);
 }
 .shell-search-box {
   display: flex;
@@ -279,8 +254,7 @@ html[data-drawer-mode="board"] .board-brand {
   height: 46px;
   padding: 0 12px;
   border-radius: 11px;
-  background: rgba(255, 255, 255, .55);
-  box-shadow: inset 0 1px 2px rgba(120, 80, 40, .2), 0 1px 0 rgba(255, 255, 255, .9);
+  background: var(--wash);
   color: var(--ink-soft);
 }
 .shell-search-box svg { width: 17px; height: 17px; flex: none; }
@@ -299,57 +273,3 @@ html[data-drawer-mode="board"] .board-brand {
 
 /* ---- group tabs: static mock shows only when the cloud renderer has not drawn real tabs ---- */
 #board-group-tabs:not([hidden]) + .shell-tabs-mock { display: none; }
-
-/* ---- canvas ground: pale teal dots with a plus every other step (mermaid editor reference) ---- */
-html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
-  background-color: #fff !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='%23d3e4e9'><circle cx='16' cy='16' r='1.7'/><circle cx='48' cy='16' r='1.7'/><circle cx='16' cy='48' r='1.7'/></g><path d='M48 43v10M43 48h10' stroke='%23d3e4e9' stroke-width='2' stroke-linecap='round'/></svg>") !important;
-  background-size: 64px 64px !important;
-}
-
-/* ======== lighter looks, compared via ?look=a|b|c (no param = the heavier first version) ========
-   a: whisper — warm white surfaces, hairlines, dots only
-   b: paper   — flat tissue tint on tools, warm-white ground with faint dots
-   c: air     — white surfaces, flat ground, color only on the active state */
-html[data-look="a"] { --paper: rgba(255, 253, 249, .92); --dock: #fdfaf4; --press: 0 1px 2px rgba(120, 80, 40, .08); --paper-line: rgba(120, 80, 40, .1); }
-html[data-look="b"] { --paper: #f6ecdc; --dock: #f8f0e3; --press: inset 0 1px 0 rgba(255, 255, 255, .55); --paper-line: rgba(120, 80, 40, .12); }
-html[data-look="c"] { --paper: #ffffff; --dock: #ffffff; --press: 0 1px 3px rgba(60, 40, 20, .09); --paper-line: rgba(60, 40, 20, .08); }
-
-html[data-look] .board-dock,
-html[data-look] .board-dock:not([data-open=""]) { background: var(--dock); box-shadow: none; }
-html[data-look] .board-dock:not([data-open=""]) { box-shadow: -10px 0 28px rgba(80, 55, 30, .06); }
-html[data-look] .board-dock-rail { background: transparent; box-shadow: none; }
-html[data-look] .board-dock-tab.is-active,
-html[data-look] .group-tab.is-active,
-html[data-look] .shell-row.is-active { background: var(--accent-soft); box-shadow: none; }
-html[data-look] .board-dock-tab:hover:not(.is-active),
-html[data-look] .group-tab:hover,
-html[data-look] .shell-row:hover { background: rgba(80, 55, 30, .05); }
-html[data-look] .board-dock .props-head strong { text-shadow: none; }
-html[data-look] .shell-sec-head,
-html[data-look] .shell-sec-head em { text-shadow: none; }
-html[data-look] .shell-drawer { background: var(--dock); }
-html[data-look] .shell-search-pop { background: var(--dock); }
-html[data-look] .shell-search-box { background: rgba(80, 55, 30, .05); box-shadow: none; }
-html[data-look] .shell-search kbd,
-html[data-look] .shell-search-box kbd { background: rgba(80, 55, 30, .06); box-shadow: none; }
-html[data-look] .shell-drawer-foot { box-shadow: none; }
-html[data-look] .board-edit-tool,
-html[data-look] .zoom-float,
-html[data-look] .group-tab-float,
-html[data-look] .shell-search { box-shadow: var(--press); }
-
-html[data-look="a"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
-  background-color: #fff !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
-  background-size: 24px 24px !important;
-}
-html[data-look="b"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
-  background-color: #fcfaf6 !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23e6dccd'/></svg>") !important;
-  background-size: 24px 24px !important;
-}
-html[data-look="c"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
-  background-color: #fbfaf8 !important;
-  background-image: none !important;
-}

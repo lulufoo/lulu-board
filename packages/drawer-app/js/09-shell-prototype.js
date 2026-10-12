@@ -31,8 +31,6 @@
     drawer.querySelectorAll(".shell-row.is-active").forEach(function (el) { el.classList.remove("is-active"); });
     row.classList.add("is-active");
   });
-  var look = /[?&]look=([abc])/.exec(location.search);
-  if (look) document.documentElement.setAttribute("data-look", look[1]);
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
   // ?shell=style opens the right dock Style panel.
   var want = /[?&]shell=(drawer|search|style)/.exec(location.search);
