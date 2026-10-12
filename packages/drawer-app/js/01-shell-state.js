@@ -92,6 +92,10 @@ const boardIdField = $("#boardIdField");
 const boardIdEditor = $("#boardIdEditor");
 const boardIdCopy = $("#boardIdCopy");
 const boardIdDup = $("#boardIdDup");
+// Drawer lists. Top-level code in 06-* (e.g. syncShareChrome) reads them before 09-shell-drawer.js runs,
+// and a `var` is hoisted but not yet assigned, so they are initialised here, at the front of the bundle.
+var shellGroups = [];
+var shellShares = [];
 var boardIdCopiedTimer = 0;
 const boardDirEditor = $("#boardDirEditor");
 const boardDirLabel = $("#boardDirLabel");
