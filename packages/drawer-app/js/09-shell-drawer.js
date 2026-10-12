@@ -18,6 +18,7 @@ var shellShares = [];
     scrim.hidden = !(on || !pop.hidden);
     if (on) {
       drawer.focus({ preventScroll: true });
+      shellRevealCurrent();
     }
   }
   function setSearch(on) {
@@ -38,6 +39,8 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
+  var more = document.getElementById("shellMineMore");
+  if (more) more.addEventListener("click", function () { shellMineShown += SHELL_MINE_PAGE; shellRenderMine(); });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -129,6 +132,25 @@ function shellSampleGroups() {
 }
 
 // groups: cloudGroupSummaries() result; omit to repaint the last one (the open board may have changed).
+// Mine shows a page of groups; Load more adds the next page. The open group is always listed.
+var SHELL_MINE_PAGE = 8;
+var shellMineShown = SHELL_MINE_PAGE;
+
+// Pure: which rows to list, and how many are held back.
+function shellMineWindow(rows, shown, isCurrent) {
+  var visible = rows.filter(function (group, index) { return index < shown || isCurrent(group); });
+  return { visible: visible, hidden: rows.length - visible.length };
+}
+
+// Scroll the Mine list (not the page) so the open group is fully visible.
+function shellRevealCurrent() {
+  var list = document.getElementById("shellMineList");
+  var row = list && list.querySelector(".shell-row.is-active");
+  if (!row) return;
+  var over = row.parentNode.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
+  if (over > 0) list.scrollTop += over + 6;
+}
+
 function shellRenderMine(groups) {
   var list = document.getElementById("shellMineList");
   var count = document.getElementById("shellMineCount");
@@ -139,8 +161,10 @@ function shellRenderMine(groups) {
   var preview = typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
   var rows = preview ? shellSampleGroups() : shellGroups;
   var frag = document.createDocumentFragment();
-  rows.forEach(function (group) {
-    var isCurrent = preview ? group.isCurrent : !!current && group.boardIds.indexOf(current) >= 0;
+  function inCurrent(group) { return preview ? !!group.isCurrent : !!current && group.boardIds.indexOf(current) >= 0; }
+  var win = shellMineWindow(rows, shellMineShown, inCurrent);
+  win.visible.forEach(function (group) {
+    var isCurrent = inCurrent(group);
     var li = document.createElement("li");
     li.className = "shell-mine-item";
     var row = document.createElement("button");
@@ -175,6 +199,11 @@ function shellRenderMine(groups) {
     frag.appendChild(li);
   });
   list.replaceChildren(frag);
+  var more = document.getElementById("shellMineMore");
+  if (more) {
+    more.hidden = win.hidden <= 0;
+    more.textContent = "Load more (" + win.hidden + ")";
+  }
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();

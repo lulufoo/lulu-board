@@ -517,3 +517,12 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-search-results .shell-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .shell-search-results .shell-empty { margin: 10px 8px; }
 .shell-search-results .shell-row.is-picked { background: var(--wash); }
+
+/* Mine: a bounded list; Load more sits under it */
+#shellMineList { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
+.shell-more {
+  display: block; width: 100%; margin-top: 4px; padding: 7px 12px; border: 0; border-radius: 9px;
+  background: transparent; color: var(--ink-soft); font: 500 12px var(--font); text-align: left; cursor: pointer;
+}
+.shell-more:hover { background: var(--wash); color: var(--ink); }
+.shell-more[hidden] { display: none; }
