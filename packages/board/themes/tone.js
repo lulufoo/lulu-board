@@ -1,6 +1,6 @@
-/* Board tone — one shade ramp per theme, and the rule that keeps a nested Box / Item apart from its parent.
-   A tone is an index into the theme ramp (0 = lightest). A nested node must sit at least GAP steps away from its
-   parent's tone (one tone left empty between them). Top-level nodes are not constrained. */
+/* Board tone — one shade ramp per theme, and the automatic rule that keeps a nested Box / Item apart from its parent.
+   A tone is an index into the theme ramp (0 = lightest). A nested node sits GAP steps from its parent's tone
+   (one tone left empty between them). Colours are chosen by this rule only; there is no manual picker. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -11,44 +11,9 @@
   const SIZE = 8;
   const GAP = 2;
 
-  function clamp(n) {
-    const v = Math.round(Number(n));
-    if (!Number.isFinite(v)) return null;
-    return Math.min(SIZE - 1, Math.max(0, v));
-  }
-  function ok(tone, parent) {
-    return parent == null || Math.abs(tone - parent) >= GAP;
-  }
-  // Nearest tone that keeps the gap to the parent; ties go to the darker one.
-  function fix(tone, parent) {
-    const t = clamp(tone);
-    if (t == null || ok(t, parent)) return t;
-    let best = null;
-    for (let c = 0; c < SIZE; c++) {
-      if (!ok(c, parent)) continue;
-      if (best == null) { best = c; continue; }
-      const d = Math.abs(c - t);
-      const bd = Math.abs(best - t);
-      if (d < bd || (d === bd && c > best)) best = c;
-    }
-    return best;
-  }
   // Default for a nested node: two steps darker than its parent, or two steps lighter at the bottom of the ramp.
   function auto(parent) {
     return parent + GAP <= SIZE - 1 ? parent + GAP : parent - GAP;
-  }
-  /** For the picker: which tones are allowed under this parent tone. */
-  function allowed(parent) {
-    const out = [];
-    for (let c = 0; c < SIZE; c++) out.push(ok(c, parent));
-    return out;
-  }
-
-  function explicitOf(board, id) {
-    const ids = board && board.style && board.style.ids;
-    const row = id && ids && ids[id];
-    if (!row || row.tone == null || row.tone === '') return null;
-    return clamp(row.tone);
   }
   function isItem(node) { return !!(node && (node.role === 'item' || node.kind === 'item')); }
   function typeOf(node) { return String((node && (node.type || node.kind)) || (isItem(node) ? 'chip' : 'card')); }
@@ -59,28 +24,19 @@
   }
 
   /**
-   * Resolve the tone of every node: Map(node -> { tone, explicit, parent }).
-   * tone: effective index or null (= theme default look). parent: tone of the nearest filled ancestor or null.
-   * auto: when true (theme.autoTone), unset nested nodes get parent + GAP; otherwise they keep the theme look.
+   * Resolve the automatic tone of every node: Map(node -> { tone, parent }).
+   * tone: index into the ramp or null (= theme default look). parent: tone of the nearest filled ancestor or null.
+   * auto: when true (theme.autoTone), a top-level node is tone 0 and each nested one is parent + GAP;
+   * otherwise nodes keep the theme look.
    */
   function resolve(board, opts) {
     const autoOn = !!(opts && opts.auto);
     const out = new Map();
     function visit(node, parentTone) {
       const fills = fillable(node);
-      const explicit = fills ? explicitOf(board, node.id) : null;
       let tone = null;
-      if (fills) {
-        if (parentTone != null) {
-          if (explicit != null) tone = fix(explicit, parentTone);
-          else if (autoOn) tone = auto(parentTone);
-        } else if (explicit != null) {
-          tone = explicit;
-        } else if (autoOn) {
-          tone = 0;
-        }
-      }
-      out.set(node, { tone, explicit, parent: parentTone });
+      if (fills && autoOn) tone = parentTone != null ? auto(parentTone) : 0;
+      out.set(node, { tone, parent: parentTone });
       const below = fills ? tone : parentTone;
       const kids = Array.isArray(node.kids) ? node.kids : (node.items || []).concat(node.boxes || []);
       kids.forEach((kid) => visit(kid, below));
@@ -90,13 +46,13 @@
   }
 
   /**
-   * Paint a mounted node with its tone. Top-level nodes that were never given a tone keep the theme look.
+   * Paint a mounted node with its automatic tone. Top-level nodes keep the theme look; only nested ones are toned.
    * Rect fills go inline with !important (they must beat the per-type nth-of-type rules); a diamond face is an SVG
    * path, so it gets a CSS variable that 04-board-form.css reads.
    */
   function paint(el, ramp, info, diamond) {
     if (!el || !info || info.tone == null || !ramp) return;
-    if (info.explicit == null && info.parent == null) return;
+    if (info.parent == null) return;
     const color = ramp[info.tone];
     if (!color) return;
     el.dataset.bfTone = String(info.tone);
@@ -104,5 +60,5 @@
     else el.style.setProperty('background', color, 'important');
   }
 
-  return { SIZE, GAP, paint, clamp, ok, fix, auto, allowed, explicitOf, fillable, resolve };
+  return { SIZE, GAP, paint, auto, fillable, resolve };
 });
