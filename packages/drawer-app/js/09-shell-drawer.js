@@ -1,5 +1,5 @@
 /* drawer-app/09-shell-drawer.js — the left drawer: open/close, account row, "Mine" group list, New board.
-   The search pop-up here is still the LB-289 mock (real search is LB-294). */
+   Search: ⌘K pop-up, name search over groups and boards plus lines of the open board. */
 var shellGroups = [];
 var shellShares = [];
 
@@ -23,7 +23,7 @@ var shellShares = [];
   function setSearch(on) {
     pop.hidden = !on;
     scrim.hidden = !(on || !drawer.hidden);
-    if (on) { setDrawer(false); scrim.hidden = false; if (input) { input.focus(); input.select(); } }
+    if (on) { setDrawer(false); scrim.hidden = false; if (input) { input.focus(); input.select(); } shellRenderSearch(); }
   }
   function closeAll(restoreFocus) {
     var wasOpen = !drawer.hidden || !pop.hidden;
@@ -38,6 +38,15 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
+  window.shellCloseSearch = function () { setSearch(false); };
+  if (input) {
+    input.addEventListener("input", function () { shellRenderSearch(); });
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "ArrowDown") { event.preventDefault(); shellMoveSearch(1); }
+      else if (event.key === "ArrowUp") { event.preventDefault(); shellMoveSearch(-1); }
+      else if (event.key === "Enter") { event.preventDefault(); shellPickSearch(); }
+    });
+  }
   scrim.addEventListener("click", function () { closeAll(false); });
   // Shared list is folded by default; the header toggles it.
   var shared = document.getElementById("shellShared");
@@ -315,4 +324,126 @@ function shellRenderShared(shares) {
   }
   list.replaceChildren(frag);
   if (count) count.textContent = rows.length ? String(rows.length) : "";
+}
+
+// ---- search ----
+var shellSearchHits = [];
+var shellSearchIndex = 0;
+
+// Case-insensitive substring search. groups: cloudGroupSummaries() shape (members carry board titles).
+// Empty query: the most recently edited groups. Lines: matching lines of the open board's source.
+function shellSearchMatches(query, groups, source) {
+  var q = String(query || "").trim().toLowerCase();
+  var boards = [];
+  (groups || []).forEach(function (group) {
+    var members = group.members && group.members.length ? group.members : [{ board_id: group.faceBoardId, title: group.title }];
+    if (!q) {
+      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + (group.boardCount === 1 ? " board" : " boards"), boardId: group.faceBoardId });
+      return;
+    }
+    var groupHit = String(group.title || "").toLowerCase().indexOf(q) >= 0;
+    var boardHit = members.filter(function (m) { return String(m.title || "").toLowerCase().indexOf(q) >= 0; })[0];
+    if (!groupHit && !boardHit) return;
+    var viaBoard = !groupHit && boardHit;
+    boards.push({
+      groupId: group.groupId,
+      title: group.title,
+      note: viaBoard ? "board · " + boardHit.title : group.boardCount + (group.boardCount === 1 ? " board" : " boards"),
+      boardId: viaBoard ? boardHit.board_id : group.faceBoardId,
+    });
+  });
+  var lines = [];
+  if (q) {
+    String(source || "").split("\n").forEach(function (text, index) {
+      if (lines.length >= 6) return;
+      if (text.toLowerCase().indexOf(q) >= 0) lines.push({ line: index, text: text.trim() });
+    });
+  }
+  return { boards: boards.slice(0, q ? 20 : 5), lines: lines };
+}
+
+function shellSearchGroups() {
+  if (shellIsPreview()) {
+    return shellSampleGroups().map(function (g) {
+      return { groupId: g.groupId, title: g.title, boardCount: g.boardCount, faceBoardId: "", members: [{ board_id: "", title: g.title }] };
+    });
+  }
+  return shellGroups;
+}
+
+function shellRenderSearch() {
+  var box = document.getElementById("shellSearchResults");
+  var input = document.getElementById("shellSearchInput");
+  if (!box || !input) return;
+  var query = input.value;
+  var source = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl.value : "";
+  var found = shellSearchMatches(query, shellSearchGroups(), source);
+  shellSearchHits = [];
+  var frag = document.createDocumentFragment();
+  function section(label, items, kind) {
+    if (!items.length) return;
+    var p = document.createElement("p");
+    p.className = "shell-search-label";
+    p.textContent = label;
+    frag.appendChild(p);
+    items.forEach(function (item) {
+      var row = document.createElement("button");
+      row.type = "button";
+      row.className = "shell-row";
+      row.setAttribute("role", "option");
+      var title = document.createElement("b");
+      var note = document.createElement("span");
+      if (kind === "line") { title.textContent = item.text; note.textContent = "line " + (item.line + 1) + " of this board"; }
+      else { title.textContent = item.title || "Untitled"; note.textContent = item.note; }
+      row.appendChild(title);
+      row.appendChild(note);
+      var hit = { kind: kind, item: item, el: row };
+      row.addEventListener("click", function () { shellSearchIndex = shellSearchHits.indexOf(hit); shellPickSearch(); });
+      shellSearchHits.push(hit);
+      frag.appendChild(row);
+    });
+  }
+  section(String(query).trim() ? "Boards" : "Recent", found.boards, "board");
+  section("In this board", found.lines, "line");
+  if (!shellSearchHits.length) {
+    var none = document.createElement("p");
+    none.className = "shell-empty";
+    none.textContent = "No match";
+    frag.appendChild(none);
+  }
+  box.replaceChildren(frag);
+  shellSearchIndex = 0;
+  shellPaintSearchActive();
+}
+
+function shellPaintSearchActive() {
+  shellSearchHits.forEach(function (hit, index) {
+    hit.el.classList.toggle("is-picked", index === shellSearchIndex);
+    if (index === shellSearchIndex && hit.el.scrollIntoView) hit.el.scrollIntoView({ block: "nearest" });
+  });
+}
+
+function shellMoveSearch(step) {
+  if (!shellSearchHits.length) return;
+  shellSearchIndex = (shellSearchIndex + step + shellSearchHits.length) % shellSearchHits.length;
+  shellPaintSearchActive();
+}
+
+function shellPickSearch() {
+  var hit = shellSearchHits[shellSearchIndex];
+  if (!hit) return;
+  if (typeof window.shellCloseSearch === "function") window.shellCloseSearch();
+  if (shellIsPreview()) return;
+  if (hit.kind === "board") {
+    if (hit.item.boardId && typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(hit.item.boardId);
+    return;
+  }
+  // A line of the open board: show it in Source and select it.
+  if (typeof openDock === "function") openDock("source");
+  if (typeof boardSourceEl === "undefined" || !boardSourceEl) return;
+  var lines = boardSourceEl.value.split("\n");
+  var start = 0;
+  for (var i = 0; i < hit.item.line; i++) start += lines[i].length + 1;
+  boardSourceEl.focus();
+  boardSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
 }

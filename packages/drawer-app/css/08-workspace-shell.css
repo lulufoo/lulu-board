@@ -1,5 +1,5 @@
-/* drawer-app/08-workspace-shell.css — shell-align prototype: warm-white tool surfaces, left drawer, search.
-   Static mock only. Light on purpose: hairlines instead of embossing, pink only for active state. */
+/* drawer-app/08-workspace-shell.css — warm-white tool surfaces, left drawer, search.
+   Light on purpose: hairlines instead of embossing, pink only for active state. */
 [data-theme="light"] {
   --accent: #db4c84;
   --accent-soft: rgba(219, 76, 132, .1);
@@ -288,8 +288,6 @@ html[data-drawer-mode="board"] .board-brand {
   color: var(--ink-soft);
 }
 
-/* ---- group tabs: static mock shows only when the cloud renderer has not drawn real tabs ---- */
-#board-group-tabs:not([hidden]) + .shell-tabs-mock { display: none; }
 
 /* ---- top row and canvas floats: bigger, borderless solid fill (no bar behind them) ---- */
 [data-theme="light"] { --fill: #f3ede2; --fill-hover: #ebe3d4; }
@@ -514,3 +512,8 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-shared .shell-list .shell-empty { padding: 4px 12px 8px; }
 .shell-ghost:disabled { opacity: .45; cursor: default; }
 .shell-ghost:disabled:hover { background: transparent; }
+
+.shell-search-results { max-height: min(420px, 60vh); overflow: auto; padding: 0 6px 8px; }
+.shell-search-results .shell-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shell-search-results .shell-empty { margin: 10px 8px; }
+.shell-search-results .shell-row.is-picked { background: var(--wash); }

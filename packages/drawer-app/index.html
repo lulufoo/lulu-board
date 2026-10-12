@@ -14,7 +14,7 @@
 </head>
 <body>
 <div class="app sheet-collapsed" id="app">
-  <!-- LB shell-align prototype: static header, left drawer and search; mock data only, not wired to cloud -->
+  <!-- Workspace shell: header, left drawer (Mine / Shared) and search -->
   <button class="shell-search" id="shellSearchOpen" type="button" aria-haspopup="dialog" title="Search boards">
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     <span>Search</span>
@@ -47,18 +47,10 @@
   <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search boards" hidden>
     <div class="shell-search-box">
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input id="shellSearchInput" type="text" placeholder="Search boards and what is inside them" autocomplete="off" spellcheck="false" value="retry">
+      <input id="shellSearchInput" type="text" placeholder="Search your boards" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="shellSearchResults">
       <kbd>esc</kbd>
     </div>
-    <p class="shell-search-label">Boards</p>
-    <ul class="shell-list">
-      <li><button class="shell-row is-active" type="button"><b>Payments retry flow</b><span>group · 4 boards</span></button></li>
-    </ul>
-    <p class="shell-search-label">Inside boards</p>
-    <ul class="shell-list">
-      <li><button class="shell-row" type="button"><b>Retry with backoff</b><span>Payments retry flow · board 2</span></button></li>
-      <li><button class="shell-row" type="button"><b>Request retry</b><span>LLM architecture · Orchestration Layer</span></button></li>
-    </ul>
+    <div class="shell-search-results" id="shellSearchResults" role="listbox" aria-label="Search results"></div>
   </div>
   <aside class="sheet" id="sheet">
     <div class="sheet-top">
@@ -92,16 +84,6 @@
     </div>
 
     <nav class="group-tab-float" id="board-group-tabs" hidden aria-label="Boards in this group"></nav>
-    <nav class="group-tab-float shell-tabs-mock" id="shellTabsMock" aria-hidden="true">
-      <div class="group-tab-drop-line is-edge is-start"></div>
-      <button class="group-tab is-active" type="button" tabindex="-1" data-board-id="mock-1">1</button>
-      <div class="group-tab-drop-line"></div>
-      <button class="group-tab" type="button" tabindex="-1" data-board-id="mock-2">2</button>
-      <div class="group-tab-drop-line"></div>
-      <button class="group-tab" type="button" tabindex="-1" data-board-id="mock-3">3</button>
-      <div class="group-tab-drop-line is-edge is-end"></div>
-      <button class="group-tab group-tab-plus" type="button" tabindex="-1">+</button>
-    </nav>
     <div class="float zoom-float">
       <button class="btn" id="btnZoomOut">−</button>
       <button class="btn" id="btnZoomReset">90%</button>
