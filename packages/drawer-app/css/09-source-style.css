@@ -1,11 +1,10 @@
 /* drawer-app/09-source-style.css — Source panel in the mermaid code-editor look:
-   cool header band, white body, teal line numbers, syntax colours, indent guides. */
+   cool header band, white body, teal line numbers, syntax colours. */
 [data-theme="light"] {
   --src-band: #dfebf0;
   --src-ink: #232b3b;
   --src-num: #3f6f87;
   --src-num-on: #14245e;
-  --src-guide: #c3ccd1;
   --src-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 }
 html[data-drawer-mode="board"] .board-dock[data-open="source"] [data-dock-panel="source"] {
@@ -98,10 +97,6 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placehol
 }
 .hl-line { display: block; }
 .hl-line.is-current { background: rgba(35, 43, 59, .035); box-shadow: inset 0 1px 0 rgba(35, 43, 59, .08), inset 0 -1px 0 rgba(35, 43, 59, .08); }
-.hl-line.ind-1 { background-image: linear-gradient(var(--src-guide), var(--src-guide)); background-size: 1px 100%; background-repeat: no-repeat; background-position: .5ch 0; }
-.hl-line.ind-2 { background-image: linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)); background-size: 1px 100%; background-repeat: no-repeat; background-position: .5ch 0, 2.5ch 0; }
-.hl-line.ind-3 { background-image: linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)); background-size: 1px 100%; background-repeat: no-repeat; background-position: .5ch 0, 2.5ch 0, 4.5ch 0; }
-.hl-line.ind-4 { background-image: linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)), linear-gradient(var(--src-guide), var(--src-guide)); background-size: 1px 100%; background-repeat: no-repeat; background-position: .5ch 0, 2.5ch 0, 4.5ch 0, 6.5ch 0; }
 .hl-kw { color: #8a43c4; font-weight: 700; }
 .hl-key { color: #5f939c; }
 .hl-id { color: #a02a7c; }

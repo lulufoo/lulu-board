@@ -1,4 +1,4 @@
-/* drawer-app/10-source-style.js — Source panel look: syntax colours, indent guides, current line.
+/* drawer-app/10-source-style.js — Source panel look: syntax colours, current line.
    A highlighted <pre> sits behind the transparent #boardSource; the textarea stays the editor. */
 (function wireSourceStyle() {
   var ta = document.getElementById("boardSource");
@@ -71,8 +71,6 @@
     String(ta.value).split("\n").forEach(function (text) {
       var line = document.createElement("span");
       line.className = "hl-line";
-      var ind = Math.min(4, Math.floor((/^ */.exec(text)[0].length) / 2));
-      if (ind > 0) line.classList.add("ind-" + ind);
       tokenizeLine(text, line);
       frag.appendChild(line);
     });
