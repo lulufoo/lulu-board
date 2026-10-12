@@ -306,3 +306,50 @@ html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='%23d3e4e9'><circle cx='16' cy='16' r='1.7'/><circle cx='48' cy='16' r='1.7'/><circle cx='16' cy='48' r='1.7'/></g><path d='M48 43v10M43 48h10' stroke='%23d3e4e9' stroke-width='2' stroke-linecap='round'/></svg>") !important;
   background-size: 64px 64px !important;
 }
+
+/* ======== lighter looks, compared via ?look=a|b|c (no param = the heavier first version) ========
+   a: whisper — warm white surfaces, hairlines, dots only
+   b: paper   — flat tissue tint on tools, warm-white ground with faint dots
+   c: air     — white surfaces, flat ground, color only on the active state */
+html[data-look="a"] { --paper: rgba(255, 253, 249, .92); --dock: #fdfaf4; --press: 0 1px 2px rgba(120, 80, 40, .08); --paper-line: rgba(120, 80, 40, .1); }
+html[data-look="b"] { --paper: #f6ecdc; --dock: #f8f0e3; --press: inset 0 1px 0 rgba(255, 255, 255, .55); --paper-line: rgba(120, 80, 40, .12); }
+html[data-look="c"] { --paper: #ffffff; --dock: #ffffff; --press: 0 1px 3px rgba(60, 40, 20, .09); --paper-line: rgba(60, 40, 20, .08); }
+
+html[data-look] .board-dock,
+html[data-look] .board-dock:not([data-open=""]) { background: var(--dock); box-shadow: none; }
+html[data-look] .board-dock:not([data-open=""]) { box-shadow: -10px 0 28px rgba(80, 55, 30, .06); }
+html[data-look] .board-dock-rail { background: transparent; box-shadow: none; }
+html[data-look] .board-dock-tab.is-active,
+html[data-look] .group-tab.is-active,
+html[data-look] .shell-row.is-active { background: var(--accent-soft); box-shadow: none; }
+html[data-look] .board-dock-tab:hover:not(.is-active),
+html[data-look] .group-tab:hover,
+html[data-look] .shell-row:hover { background: rgba(80, 55, 30, .05); }
+html[data-look] .board-dock .props-head strong { text-shadow: none; }
+html[data-look] .shell-sec-head,
+html[data-look] .shell-sec-head em { text-shadow: none; }
+html[data-look] .shell-drawer { background: var(--dock); }
+html[data-look] .shell-search-pop { background: var(--dock); }
+html[data-look] .shell-search-box { background: rgba(80, 55, 30, .05); box-shadow: none; }
+html[data-look] .shell-search kbd,
+html[data-look] .shell-search-box kbd { background: rgba(80, 55, 30, .06); box-shadow: none; }
+html[data-look] .shell-drawer-foot { box-shadow: none; }
+html[data-look] .board-edit-tool,
+html[data-look] .zoom-float,
+html[data-look] .group-tab-float,
+html[data-look] .shell-search { box-shadow: var(--press); }
+
+html[data-look="a"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
+  background-size: 24px 24px !important;
+}
+html[data-look="b"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+  background-color: #fcfaf6 !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23e6dccd'/></svg>") !important;
+  background-size: 24px 24px !important;
+}
+html[data-look="c"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+  background-color: #fbfaf8 !important;
+  background-image: none !important;
+}
