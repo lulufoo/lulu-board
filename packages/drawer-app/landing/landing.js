@@ -21,11 +21,15 @@
     var signedIn = !!session;
     document.documentElement.setAttribute("data-auth", signedIn ? "in" : "out");
     var status = document.getElementById("authStatus");
-    var text = document.getElementById("authStatusText");
-    if (!status || !text) return;
+    var avatar = document.getElementById("authAvatar");
+    if (!status) return;
     status.setAttribute("data-state", signedIn ? "in" : "out");
+    // a small circle: the email's first letter; the full address is the tooltip / accessible name
     var email = session && session.user && session.user.email;
-    text.textContent = signedIn ? (email ? "Signed in · " + email : "Signed in") : "Not signed in";
+    var label = signedIn ? (email ? "Signed in as " + email : "Signed in") : "Not signed in";
+    status.title = label;
+    status.setAttribute("aria-label", label);
+    if (avatar) avatar.textContent = (email || "?").charAt(0).toUpperCase();
   }
 
   // "github" starts GitHub sign-in on the workspace; anything else opens its sign-in menu.
