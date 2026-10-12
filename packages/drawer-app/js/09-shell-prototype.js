@@ -43,12 +43,12 @@
     });
   }
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
-  // ?shell=style opens the right dock Style panel.
-  var want = /[?&]shell=(drawer|search|style)/.exec(location.search);
+  // ?shell=props|style|source|export opens that right-dock panel.
+  var want = /[?&]shell=(drawer|search|props|style|source|export)/.exec(location.search);
   if (want) {
     if (want[1] === "drawer") setDrawer(true);
     else if (want[1] === "search") setSearch(true);
-    else { var tab = document.getElementById("btnDockStyle"); if (tab) tab.click(); }
+    else { var tab = document.getElementById("btnDock" + want[1].charAt(0).toUpperCase() + want[1].slice(1)); if (tab) tab.click(); }
   }
   document.addEventListener("keydown", function (event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {

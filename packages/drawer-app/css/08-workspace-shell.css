@@ -72,7 +72,7 @@ html[data-drawer-mode="board"] .board-brand {
 .shell-search {
   position: absolute;
   top: 16px;
-  right: 52px;
+  right: calc(var(--rail-w, 56px) + 12px);
   z-index: 46;
   width: 220px;
   height: 32px;
@@ -346,3 +346,95 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 html[data-drawer-mode="board"] .zoom-float .btn { height: 32px; min-width: 32px; font-size: 13px; }
 html[data-drawer-mode="board"] .zoom-float .btn:hover { background: var(--fill-hover); }
 .shell-drawer { top: 64px; }
+
+/* ---- right dock in the same language: wider rail, borderless fills, bigger controls ---- */
+[data-theme="light"] { --rail-w: 56px; }
+html[data-drawer-mode="board"] .board-dock[data-open=""] { width: var(--rail-w); }
+html[data-drawer-mode="board"] .board-dock-rail {
+  flex: 0 0 var(--rail-w);
+  width: var(--rail-w);
+  gap: 6px;
+  padding: 12px 0 104px;
+}
+html[data-drawer-mode="board"] .board-dock-tab {
+  width: 40px; height: 40px; min-height: 40px; max-height: 40px;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink-soft);
+}
+html[data-drawer-mode="board"] .board-dock-tab:hover:not(.is-active) { background: var(--fill-hover); color: var(--ink); }
+html[data-drawer-mode="board"] .board-dock-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); box-shadow: none; }
+html[data-drawer-mode="board"] .board-dock-tab.is-active::before { display: none; }
+html[data-drawer-mode="board"] .board-dock-tab-icon { width: 20px; height: 20px; }
+html[data-drawer-mode="board"] .board-dock-help-glyph { font-size: 16px; }
+html[data-drawer-mode="board"] .group-tab-float { right: calc(var(--rail-w) + 8px); }
+html[data-drawer-mode="board"] .board-account { right: 8px; width: 40px; bottom: 12px; gap: 6px; }
+html[data-drawer-mode="board"] .board-account .board-cloud-status,
+html[data-drawer-mode="board"] .board-account .board-account-btn,
+html[data-drawer-mode="board"] .board-account #btnBoardSignIn {
+  width: 40px; height: 40px; min-width: 40px; border: 0; border-radius: 12px;
+  background: var(--fill); box-shadow: none;
+}
+html[data-drawer-mode="board"] .board-account .board-cloud-status:hover,
+html[data-drawer-mode="board"] .board-account .board-account-btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="board"] .board-account .board-account-chip { width: 40px; height: 40px; max-width: 40px; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="board"] .board-account .board-account-avatar { width: 26px; height: 26px; font-size: 11px; }
+html[data-drawer-mode="board"] .board-account .board-account-sign-icon { width: 17px; height: 17px; }
+html[data-drawer-mode="board"] .board-account .board-cloud-status-icon { width: 18px; height: 18px; }
+
+/* panels */
+html[data-drawer-mode="board"] .board-dock-panel { padding: 20px 20px 24px; gap: 14px; }
+html[data-drawer-mode="board"] .board-dock .props-head { border-bottom-color: var(--paper-line); padding-bottom: 14px; }
+html[data-drawer-mode="board"] .board-dock .props-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+html[data-drawer-mode="board"] .board-dock .props-label,
+html[data-drawer-mode="board"] .board-dock .style-section-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }
+html[data-drawer-mode="board"] .board-dock .props-empty,
+html[data-drawer-mode="board"] .board-dock .style-hint,
+html[data-drawer-mode="board"] .board-dock .export-type-hint { font-size: 12px; color: var(--ink-soft); }
+html[data-drawer-mode="board"] .style-block + .style-block { border-top-color: var(--paper-line); }
+
+html[data-drawer-mode="board"] .board-dock #boardTypeEditor,
+html[data-drawer-mode="board"] .board-dock #boardTitleEditor,
+html[data-drawer-mode="board"] .board-dock #boardDirEditor,
+html[data-drawer-mode="board"] .board-dock #boardAlignEditor,
+html[data-drawer-mode="board"] .board-dock #boardJustifyEditor,
+html[data-drawer-mode="board"] .board-dock #boardArrowEditor,
+html[data-drawer-mode="board"] .board-dock #boardCapEditor,
+html[data-drawer-mode="board"] .board-dock #boardIdEditor {
+  border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
+  background: var(--fill); color: var(--ink); font-size: 14px;
+}
+html[data-drawer-mode="board"] .board-dock #boardTypeEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardTitleEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardDirEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardAlignEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardJustifyEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardArrowEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardCapEditor:focus,
+html[data-drawer-mode="board"] .board-dock #boardIdEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="board"] .board-dock .props-arrow-reverse,
+html[data-drawer-mode="board"] .board-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
+
+html[data-drawer-mode="board"] .board-dock .btn,
+html[data-drawer-mode="board"] .board-dock .props-seg-btn {
+  border: 0; border-radius: 12px; background: var(--fill); color: var(--ink);
+  font: 600 13.5px var(--font); box-shadow: none;
+}
+html[data-drawer-mode="board"] .board-dock .btn:hover,
+html[data-drawer-mode="board"] .board-dock .props-seg-btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="board"] .board-dock .props-seg-btn { height: 40px; }
+html[data-drawer-mode="board"] .board-dock .props-seg-btn[aria-pressed="true"],
+html[data-drawer-mode="board"] .board-dock .style-theme-btn.is-active {
+  background: rgba(219, 76, 132, .14); color: var(--brand); font-weight: 650;
+}
+html[data-drawer-mode="board"] .style-theme-list .style-theme-btn { min-height: 40px; border-radius: 12px; }
+html[data-drawer-mode="board"] #stylePanel .props-seg-btn { height: 40px; border-radius: 12px; }
+html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
+html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
+html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn + .props-seg-btn { box-shadow: none; }
+html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .14); }
+html[data-drawer-mode="board"] .export-actions .btn { height: 40px; }
+html[data-drawer-mode="board"] .export-type-row { border: 0; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="board"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }
+html[data-drawer-mode="board"] .board-editor-wrap { border: 0; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="board"] .dock-source-foot .btn-delete { height: 34px; color: var(--danger); }
