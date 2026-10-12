@@ -1,5 +1,5 @@
 board "Lulu Board"
-style eyJ0aGVtZSI6ImNsYXNzaWMiLCJ2aWV3cG9ydCI6eyJzY2FsZSI6MC45NzUxMTQ4Njk1NTA4MjMyLCJjeCI6NTAyLCJjeSI6MjkzfX0=
+style eyJ0eXBlX3N0ZXAiOjEsInZpZXdwb3J0Ijp7InNjYWxlIjowLjk3NTExNDg2OTU1MDgyMzIsImN4Ijo1MDIsImN5IjoyOTN9fQ==
 box HERO type layout
   item type icon 515
   box COPY type layout

@@ -14,7 +14,7 @@ const pack = read('scripts/examples-templates-build/build.mjs');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 const src = read('packages/drawer-app/onboarding.bmd');
 
-assert.match(html, /id="btnBoardOnboarding"/, 'dock rail exposes onboarding help');
+assert.match(html, /id="btnBoardOnboarding"/, 'dock rail exposes the welcome board');
 assert.match(html, /board-dock-help/, 'onboarding help sits on the dock rail');
 assert.match(appBuild, /onboarding\.bmd/, 'drawer app build copies onboarding');
 assert.match(webBuild, /onboarding\.bmd/, 'web build requires onboarding in .cache/web');

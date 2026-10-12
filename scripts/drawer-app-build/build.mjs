@@ -78,6 +78,7 @@ const domain = [
   '09-shell-drawer.js',
   '09-share-dialog.js',
   '09-shell-tabs.js',
+  '09-shortcuts.js',
   '10-source-style.js',
 ];
 const parts = domain.map((f) => {

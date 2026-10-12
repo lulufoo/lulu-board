@@ -1531,10 +1531,6 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   background: var(--accent);
 }
 .board-dock-tab-icon { width: 18px; height: 18px; display: block; }
-.board-dock-help { display: none; }
-html[data-persist="hash"] .board-dock-help {
-  display: flex;
-}
 .board-dock-intro { text-decoration: none; }
 .board-dock-help-glyph {
   display: flex;
