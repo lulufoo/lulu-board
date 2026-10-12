@@ -115,6 +115,8 @@ console.log('ok 09-shell-drawer');
   assert.doesNotMatch(js, /createElement\("button"\);\s*more\.type/, 'it is not a button any more');
   assert.match(js, /new IntersectionObserver[\s\S]*root: list/, 'reaching the bottom of the list triggers loading');
   assert.match(js, /"Load more"[\s\S]*shell-dots/, 'loading shows Load more with the dots');
+  assert.match(css, /#shellMineList \{ max-height: min\(46vh, 420px\); overflow-y: auto; \}/, 'Mine list scrolls on its own');
+  assert.doesNotMatch(css, /#shellMineList \{[^}]*overscroll-behavior/, 'the list does not trap the wheel: the drawer body above it stays reachable');
   assert.match(css, /@keyframes shell-dot-1[\s\S]*@keyframes shell-dot-3/, 'dots cycle . .. ...');
   assert.match(css, /prefers-reduced-motion: reduce\) \{ \.shell-dots i \{ animation: none/, 'reduced motion shows static dots');
 }
