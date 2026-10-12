@@ -102,13 +102,18 @@ console.log('ok 09-shell-drawer');
   assert.match(css, /\.shell-row-link \.shell-row-acts \{ bottom: 8px; \}/, 'actions sit in that slot');
 }
 
-// ---- Mine: Load more is the last row of the scrolling list, not a fixed button ----
+// ---- Mine: Load more is a state at the end of the list (auto-loads on reaching it), not a button ----
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
   assert.doesNotMatch(html, /id="shellMineMore"/, 'no static Load more button outside the list');
-  assert.match(js, /moreItem\.className = "shell-more-item"[\s\S]*frag\.appendChild\(moreItem\)/, 'Load more is appended to the list rows');
-  assert.match(js, /mineList\.addEventListener\("click"[\s\S]*#shellMineMore/, 'click is delegated so re-renders keep it working');
+  assert.match(js, /sentinel\.className = "shell-more-item"[\s\S]*frag\.appendChild\(sentinel\)/, 'the state row is appended to the list rows');
+  assert.doesNotMatch(js, /createElement\("button"\);\s*more\.type/, 'it is not a button any more');
+  assert.match(js, /new IntersectionObserver[\s\S]*root: list/, 'reaching the bottom of the list triggers loading');
+  assert.match(js, /"Load more"[\s\S]*shell-dots/, 'loading shows Load more with the dots');
+  assert.match(css, /@keyframes shell-dot-1[\s\S]*@keyframes shell-dot-3/, 'dots cycle . .. ...');
+  assert.match(css, /prefers-reduced-motion: reduce\) \{ \.shell-dots i \{ animation: none/, 'reduced motion shows static dots');
 }
 
 // ---- signed-out nudge on the L mark ----

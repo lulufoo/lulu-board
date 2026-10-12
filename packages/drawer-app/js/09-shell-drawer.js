@@ -39,13 +39,6 @@ var shellShares = [];
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
   open.addEventListener("click", function () { setSearch(true); });
-  // Load more is the last row of the scrolling list, so it is rebuilt on every render: delegate the click.
-  var mineList = document.getElementById("shellMineList");
-  if (mineList) mineList.addEventListener("click", function (event) {
-    if (!event.target.closest || !event.target.closest("#shellMineMore")) return;
-    shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage();
-    shellRenderMine();
-  });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -170,7 +163,10 @@ function shellSampleGroups() {
     { groupId: "s3", title: "Onboarding", boardCount: 1, updatedAt: ago(3), boardIds: ["s3"], faceBoardId: "", isCurrent: false },
     { groupId: "s4", title: "Payments retry flow", boardCount: 4, updatedAt: ago(9), boardIds: ["s4"], faceBoardId: "", isCurrent: false },
     { groupId: "s5", title: "Q3 planning", boardCount: 2, updatedAt: ago(14), boardIds: ["s5"], faceBoardId: "", isCurrent: false },
-  ];
+  ].concat(Array.from({ length: 19 }, function (_, i) {
+    var titles = ["Roadmap", "Retro notes", "Search ranking", "Billing", "Design review", "Infra costs", "Hiring loop"];
+    return { groupId: "s" + (i + 6), title: titles[i % titles.length] + (i >= titles.length ? " " + (Math.floor(i / titles.length) + 1) : ""), boardCount: 1 + (i % 3), updatedAt: ago(16 + i * 3), boardIds: ["s" + (i + 6)], faceBoardId: "", isCurrent: false };
+  }));
 }
 
 // groups: cloudGroupSummaries() result; omit to repaint the last one (the open board may have changed).
@@ -192,6 +188,35 @@ function shellRevealCurrent() {
   if (!row) return;
   var over = row.parentNode.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom;
   if (over > 0) list.scrollTop += over + 6;
+}
+
+// Mine pages in by itself: when the last row scrolls into view it shows "Load more" with cycling dots,
+// then adds the next page. The data is already in memory; the short pause only makes the state visible.
+function shellMineLoadDelay() { return 900; }
+var shellMineWatcher = null;
+var shellMineLoading = false;
+
+function shellWatchMore(list, sentinel) {
+  if (shellMineWatcher) shellMineWatcher.disconnect();
+  shellMineWatcher = null;
+  if (!sentinel || typeof IntersectionObserver !== "function") return;
+  shellMineWatcher = new IntersectionObserver(function (entries) {
+    if (shellMineLoading || !entries.some(function (entry) { return entry.isIntersecting; })) return;
+    shellMineLoading = true;
+    sentinel.classList.add("is-loading");
+    sentinel.appendChild(document.createTextNode("Load more"));
+    var dots = document.createElement("span");
+    dots.className = "shell-dots";
+    dots.setAttribute("aria-hidden", "true");
+    dots.innerHTML = "<i>.</i><i>.</i><i>.</i>";
+    sentinel.appendChild(dots);
+    setTimeout(function () {
+      shellMineLoading = false;
+      shellMineShown = (shellMineShown || shellMinePage()) + shellMinePage();
+      shellRenderMine();
+    }, shellMineLoadDelay());
+  }, { root: list, threshold: 0.6 });
+  shellMineWatcher.observe(sentinel);
 }
 
 function shellRenderMine(groups) {
@@ -241,21 +266,19 @@ function shellRenderMine(groups) {
     li.appendChild(del);
     frag.appendChild(li);
   });
+  var sentinel = null;
   if (win.hidden > 0) {
-    // Last row of the scrolling list: it only shows once you reach the bottom.
-    var moreItem = document.createElement("li");
-    moreItem.className = "shell-more-item";
-    var more = document.createElement("button");
-    more.type = "button";
-    more.id = "shellMineMore";
-    more.className = "shell-more";
-    more.textContent = "Load more (" + win.hidden + ")";
-    moreItem.appendChild(more);
-    frag.appendChild(moreItem);
+    // Last row of the scrolling list. Not a button: reaching it loads the next page.
+    sentinel = document.createElement("li");
+    sentinel.className = "shell-more-item";
+    sentinel.id = "shellMineMore";
+    sentinel.setAttribute("role", "status");
+    frag.appendChild(sentinel);
   }
   var keepScroll = list.scrollTop;
   list.replaceChildren(frag);
   list.scrollTop = keepScroll;
+  shellWatchMore(list, sentinel);
   if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();
