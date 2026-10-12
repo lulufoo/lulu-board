@@ -2249,7 +2249,7 @@
         text.setAttribute('fill', style.color);
         const Scale = root.BoardTypeScale;
         const step = clampTypeStep(doc.documentElement && doc.documentElement.dataset.boardTypeStep);
-        text.setAttribute('font-size', Scale && typeof Scale.px === 'function' ? String(Scale.px('body', step)) : '12');
+        text.setAttribute('font-size', Scale && typeof Scale.px === 'function' ? String(Scale.px('label', step)) : '11');
         svg.appendChild(text);
         // Stroke (paint-order) is outside getBBox — inflate so short-gap
         // placement does not sit under endpoint boxes (ABCDE half-clip).

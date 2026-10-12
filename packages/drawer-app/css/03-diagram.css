@@ -1051,7 +1051,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-edge-hit { pointer-events: stroke !important; cursor: pointer; }
 .board-edge-visible { pointer-events: none; stroke-width: 1.2px; }
 .board-edge-visible.board-edge-selected { stroke-width: 2px !important; }
-.board-edge-label { paint-order: stroke; stroke: #fbfcfe; stroke-width: 5px; stroke-linejoin: round; fill: #475569; font-size: var(--board-card-size, 12px); font-weight: 650; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
+.board-edge-label { paint-order: stroke; stroke: #fbfcfe; stroke-width: 5px; stroke-linejoin: round; fill: #475569; font-size: var(--board-label-size, 11px); font-weight: 650; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
 .board-edge-label.board-edge-selected { font-weight: 700; }
 .board-slot {
   position: relative;

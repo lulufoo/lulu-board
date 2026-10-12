@@ -190,6 +190,7 @@
       '--board-card-radius': base.cardRadius,
       '--board-card-pad': base.cardPad,
       '--board-card-size': Scale.sizeForCard(step),
+      '--board-label-size': Scale.sizeForLabel(step),
       '--board-card-color': base.cardColor,
       '--board-card-left': base.cardLeft,
       '--board-panel-bg': base.panelBg,
