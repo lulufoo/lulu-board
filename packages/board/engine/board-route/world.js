@@ -136,15 +136,49 @@
     return compact;
   };
   const svgNumber = (value) => String(normalizeCoord(value));
+  // Bends of an orthogonal route are rounded with a quadratic arc. The radius is
+  // clamped to half of each adjoining segment, so the first/last segment keeps a
+  // straight run into the endpoint (arrow orientation stays correct).
+  const LINK_CORNER_RADIUS = 8;
   const routePath = (points) => {
     if (!points || !points.length) return '';
     let d = 'M ' + svgNumber(points[0].x) + ' ' + svgNumber(points[0].y);
+    const axisOf = (a, b) => {
+      if (Math.abs(a.x - b.x) < ROUTE_EPSILON) return 'v';
+      if (Math.abs(a.y - b.y) < ROUTE_EPSILON) return 'h';
+      return '';
+    };
+    const lineTo = (before, current) => {
+      const axis = axisOf(before, current);
+      if (axis === 'v') return ' V ' + svgNumber(current.y);
+      if (axis === 'h') return ' H ' + svgNumber(current.x);
+      return ' L ' + svgNumber(current.x) + ' ' + svgNumber(current.y);
+    };
+    let cursor = points[0];
     for (let index = 1; index < points.length; index += 1) {
-      const before = points[index - 1];
       const current = points[index];
-      if (Math.abs(before.x - current.x) < ROUTE_EPSILON) d += ' V ' + svgNumber(current.y);
-      else if (Math.abs(before.y - current.y) < ROUTE_EPSILON) d += ' H ' + svgNumber(current.x);
-      else d += ' L ' + svgNumber(current.x) + ' ' + svgNumber(current.y);
+      const after = points[index + 1];
+      const inAxis = axisOf(cursor, current);
+      const outAxis = after ? axisOf(current, after) : '';
+      if (after && inAxis && outAxis && inAxis !== outAxis) {
+        const inLen = Math.abs(current.x - cursor.x) + Math.abs(current.y - cursor.y);
+        const outLen = Math.abs(after.x - current.x) + Math.abs(after.y - current.y);
+        const r = Math.min(LINK_CORNER_RADIUS, inLen / 2, outLen / 2);
+        if (r > 0.5) {
+          const sx = Math.sign(current.x - cursor.x);
+          const sy = Math.sign(current.y - cursor.y);
+          const ex = Math.sign(after.x - current.x);
+          const ey = Math.sign(after.y - current.y);
+          const start = { x: current.x - sx * r, y: current.y - sy * r };
+          const end = { x: current.x + ex * r, y: current.y + ey * r };
+          d += lineTo(cursor, start);
+          d += ' Q ' + svgNumber(current.x) + ' ' + svgNumber(current.y) + ' ' + svgNumber(end.x) + ' ' + svgNumber(end.y);
+          cursor = end;
+          continue;
+        }
+      }
+      d += lineTo(cursor, current);
+      cursor = current;
     }
     return d;
   };
