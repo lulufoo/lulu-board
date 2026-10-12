@@ -2101,7 +2101,7 @@
       color: color,
       marker: marker,
       markerStart: linkArrow(link) === 'both' ? marker : '',
-      dash: dashed ? '7 6' : '',
+      dash: dashed ? '5 4' : '',
       evidence: false,
     };
   }

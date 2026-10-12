@@ -21,3 +21,7 @@ const css = read('packages/drawer-app/css/03-diagram.css');
 assert.match(css, /\.board-edge-label \{[^}]*font-weight: 600/);
 assert.match(css, /\.board-edge-label \{[^}]*fill: var\(--board-edge-label, #5a4330\)/);
 console.log('ok link-form');
+
+// dashed links: 5/4 round-capped strokes, arrow stays solid (markers ignore dasharray)
+assert.match(render, /dash: dashed \? '5 4' : ''/);
+assert.match(render, /path\.setAttribute\('stroke-linecap', 'round'\)/);
