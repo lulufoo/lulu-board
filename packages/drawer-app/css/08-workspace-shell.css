@@ -536,12 +536,17 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 
 /* Mine: a bounded, scrolling list; Load more is its last row (only visible at the bottom) */
 #shellMineList { max-height: min(46vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
-.shell-more {
-  display: block; width: 100%; margin-top: 4px; padding: 7px 12px; border: 0; border-radius: 9px;
-  background: transparent; color: var(--ink-soft); font: 500 12px var(--font); text-align: left; cursor: pointer;
-}
-.shell-more:hover { background: var(--wash); color: var(--ink); }
-.shell-more[hidden] { display: none; }
+/* the last row is a state, not a button: blank until it is reached, then "Load more" + cycling dots */
+.shell-more-item { min-height: 30px; padding: 7px 12px; text-align: center; color: var(--ink-soft); font: 500 12px var(--font); }
+.shell-dots i { font-style: normal; animation: shell-dot 0.9s steps(1, end) infinite; }
+.shell-dots i:nth-child(1) { animation-name: shell-dot-1; }
+.shell-dots i:nth-child(2) { animation-name: shell-dot-2; }
+.shell-dots i:nth-child(3) { animation-name: shell-dot-3; }
+/* each dot is always laid out (fixed width) and only its opacity changes, so the text never shifts */
+@keyframes shell-dot-1 { 0% { opacity: 1; } }
+@keyframes shell-dot-2 { 0% { opacity: 0; } 33.3% { opacity: 1; } }
+@keyframes shell-dot-3 { 0% { opacity: 0; } 66.6% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .shell-dots i { animation: none !important; opacity: 1 !important; } }
 
 /* sign-in choice: a small menu above the account row (outside the footer, whose button rules are for icons) */
 .shell-auth-menu {
