@@ -483,3 +483,19 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 }
 .shell-foot-icon:hover { background: var(--wash); color: var(--ink); }
 .shell-foot-icon svg { width: 16px; height: 16px; }
+
+/* Mine: per-row delete, revealed on hover/focus */
+.shell-mine-item { position: relative; }
+.shell-mine-del {
+  display: none;
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 24px; height: 24px;
+  border: 0; border-radius: 7px; background: transparent;
+  color: var(--ink-soft); font: 400 16px/1 var(--font); cursor: pointer;
+}
+.shell-mine-item:hover .shell-mine-del,
+.shell-mine-item:focus-within .shell-mine-del { display: block; }
+.shell-mine-del:hover { background: var(--wash); color: var(--danger); }
+.shell-empty { margin: 8px 12px; font: 12.5px/1.4 var(--font); color: var(--ink-soft); }
+.shell-drawer:focus { outline: none; }
+.shell-drawer-foot button[hidden] { display: none; }

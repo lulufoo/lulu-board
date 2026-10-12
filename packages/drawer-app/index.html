@@ -21,23 +21,18 @@
     <kbd>⌘K</kbd>
   </button>
   <div class="shell-scrim" id="shellScrim" hidden></div>
-  <aside class="shell-drawer" id="shellDrawer" aria-label="Your boards" hidden>
+  <aside class="shell-drawer" id="shellDrawer" aria-label="Your boards" tabindex="-1" hidden>
     <div class="shell-drawer-body">
-      <button class="shell-new" type="button">
+      <button class="shell-new" id="shellNewBoard" type="button">
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         New board
       </button>
       <section class="shell-sec" aria-label="Mine">
-        <h2 class="shell-sec-head"><span>Mine</span><em>5 groups</em></h2>
-        <ul class="shell-list">
-          <li><button class="shell-row is-active" type="button"><b>LLM architecture</b><span>3 boards · edited just now</span></button></li>
-          <li><button class="shell-row" type="button"><b>Android MVI</b><span>2 boards · yesterday</span></button></li>
-          <li><button class="shell-row" type="button"><b>Onboarding</b><span>1 board · Monday</span></button></li>
-          <li><button class="shell-row" type="button"><b>Payments retry flow</b><span>4 boards · Oct 3</span></button></li>
-          <li><button class="shell-row" type="button"><b>Q3 planning</b><span>2 boards · Sep 28</span></button></li>
-        </ul>
+        <h2 class="shell-sec-head"><span>Mine</span><em id="shellMineCount"></em></h2>
+        <ul class="shell-list" id="shellMineList"></ul>
+        <p class="shell-empty" id="shellMineEmpty" hidden>No boards yet</p>
       </section>
-      <section class="shell-sec shell-shared" id="shellShared" aria-label="Shared">
+      <section class="shell-sec shell-shared" id="shellShared" aria-label="Shared" hidden>
         <h2 class="shell-sec-head"><button class="shell-fold" id="shellFold" type="button" aria-expanded="true"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Shared</span><em>4</em></button><button class="shell-ghost" type="button">Share this board</button></h2>
         <ul class="shell-list">
           <li><button class="shell-row shell-row-dir" type="button"><i class="shell-dir is-in" title="Shared with you"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 4.5 4.5 11.5M4.5 6.5v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span class="shell-row-main"><b>Search ranking v2</b><span>from Chen Yu · can view</span></span></button></li>
@@ -48,9 +43,9 @@
       </section>
     </div>
     <footer class="shell-drawer-foot">
-      <span class="shell-avatar" aria-hidden="true">L</span>
-      <div><b>lulu</b><span>namdamlu@outlook.com</span></div>
-      <button type="button" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.2 3H4.4A1.4 1.4 0 0 0 3 4.4v7.2A1.4 1.4 0 0 0 4.4 13h1.8M9.6 5.2 12.4 8l-2.8 2.8M12.2 8H6.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <span class="shell-avatar" id="shellAccountAvatar" aria-hidden="true">L</span>
+      <div><b id="shellAccountName">lulu</b><span id="shellAccountEmail">namdamlu@outlook.com</span></div>
+      <button type="button" id="btnShellSignOut" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.2 3H4.4A1.4 1.4 0 0 0 3 4.4v7.2A1.4 1.4 0 0 0 4.4 13h1.8M9.6 5.2 12.4 8l-2.8 2.8M12.2 8H6.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <a class="shell-foot-icon" id="linkBoardIntro" href="/landing/" title="Product intro" aria-label="Product intro"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v3.4M8 5.3v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
     </footer>
   </aside>

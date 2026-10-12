@@ -74,7 +74,7 @@ const domain = [
   '06-cloud-share.js',
   '07-chrome-boot.js',
   '08-source-lines.js',
-  '09-shell-prototype.js',
+  '09-shell-drawer.js',
   '10-source-style.js',
 ];
 const parts = domain.map((f) => {

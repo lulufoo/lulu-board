@@ -350,8 +350,12 @@ function cloudSetAccountUi() {
     }
   }
   cloudSetHistoryVisible(signedIn);
+  if (typeof shellPaintAccount === "function") shellPaintAccount(profile);
   if (typeof syncShareChrome === "function") syncShareChrome();
-  if (!signedIn) applyLocalSignedInPreview();
+  if (!signedIn) {
+    applyLocalSignedInPreview();
+    if (typeof shellRenderMine === "function") shellRenderMine([]);
+  }
 }
 
 function cloudShowHistoryMessage(message) {
@@ -733,6 +737,7 @@ async function refreshCloudBoardHistory() {
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     if (isLocalDrawerPreview()) applyLocalSignedInPreview();
     else cloudSetHistoryVisible(false);
+    if (typeof shellRenderMine === "function") shellRenderMine([]);
     return;
   }
   var list = document.getElementById("boardHistoryList");
@@ -743,6 +748,7 @@ async function refreshCloudBoardHistory() {
   if (typeof wireHistoryCombos === "function") wireHistoryCombos();
   try {
     var groups = await cloudFetchGroupSummaries();
+    if (typeof shellRenderMine === "function") shellRenderMine(groups);
     if (!groups.length) {
       cloudShowHistoryMessage("No cloud boards yet");
       return;
