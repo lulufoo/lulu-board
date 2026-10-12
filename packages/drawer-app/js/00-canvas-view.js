@@ -148,7 +148,7 @@ function applyDocumentView(view, done) {
 function restoreOrFitDocumentView() {
   var view = readDocumentView();
   if (applyDocumentView(view)) return true;
-  if (typeof fitBoardView === "function") fitBoardView({ persist: true });
+  if (typeof fitBoardView === "function") fitBoardView();
   return false;
 }
 

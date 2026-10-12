@@ -13,7 +13,6 @@ stageEl.addEventListener('wheel', (e) => {
   const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
   const factor = Math.exp(-(e.deltaY * unit) * 0.0012);
   setCanvasZoom(scale * factor);
-  flushDrawerUiSave();
   if (typeof noteUserCanvasView === "function") noteUserCanvasView();
   flashChrome();
 }, { passive: false });
@@ -78,12 +77,7 @@ stageEl.addEventListener('pointerup', () => {
   panning = false; panOrigin = null; panMoved = false;
   stageEl.classList.remove('panning');
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
-  if (wasPanning && moved) {
-    flushDrawerUiSave();
-    if (typeof noteUserCanvasView === "function") noteUserCanvasView();
-  } else if (wasPanning) {
-    flushDrawerUiSave();
-  }
+  if (wasPanning && moved && typeof noteUserCanvasView === "function") noteUserCanvasView();
 });
 stageEl.addEventListener('selectstart', (e) => {
   if (panning) e.preventDefault();
@@ -154,8 +148,8 @@ boardTitleEditor.addEventListener("change", commitBoardTitle); boardTitleEditor.
 });
 function closeExportMenu() {}
 
-$('#btnZoomIn').onclick = () => { setCanvasZoom(scale * 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
-$('#btnZoomOut').onclick = () => { setCanvasZoom(scale / 1.08); flushDrawerUiSave(); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomIn').onclick = () => { setCanvasZoom(scale * 1.08); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
+$('#btnZoomOut').onclick = () => { setCanvasZoom(scale / 1.08); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
 $('#btnFit').onclick = fitView;
@@ -394,7 +388,6 @@ window.addEventListener('keydown', (e) => {
 
 function centerView() {
   fitBoardView();
-  flushDrawerUiSave();
 }
 function fitView() {
   fitBoardView();

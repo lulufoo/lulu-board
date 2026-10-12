@@ -190,7 +190,9 @@ let liveBoardId = "";
 let liveBoardTitle = "";
 let liveBoardArchive = "";
 let liveBoardPath = "";
-let scale = 0.9, panX = 0, panY = 0;
+/* Live camera only. The per-board source of truth is the document's style.viewport
+ * (00-canvas-view.js); nothing here is persisted or carried across boards. */
+let scale = 1, panX = 0, panY = 0;
 
 /* ── Drawer UI persistence (`localStorage["drawer.ui"]`) ─────────────────
  * Persist list (refresh restores these). Add a field here when wiring a new one:
@@ -199,8 +201,7 @@ let scale = 0.9, panX = 0, panY = 0;
  *   propsOpen        boolean   — right Props panel (legacy)
  *   dockTab          "" | "props" | "layout" | "source" | "style" | "export"
  *   dockWidth        number   — open sidebar width (px)
- *   scale, panX, panY number   — canvas zoom/pan
- *   boardViewId      string    — board record id that last owned scale/pan
+ * Canvas zoom/pan is NOT stored here: it lives only in the board document's style.viewport.
  * Other already-persistent keys (unchanged): drawer.diagramTheme, drawer.boardLinkRoute, drawer.boardItemCap
  * Board documents also persist those in `style <base64>` when not default.
  */
@@ -233,14 +234,10 @@ var DRAWER_UI_PERSIST_LIST = [
   { key: "sheetCollapsed", kind: "boolean" },
   { key: "propsOpen", kind: "boolean" },
   { key: "dockTab", kind: "enum:|props|layout|source|style|export" },
-  { key: "dockWidth", kind: "number" },
-  { key: "scale", kind: "number" },
-  { key: "panX", kind: "number" },
-  { key: "panY", kind: "number" },
-  { key: "boardViewId", kind: "string" }
+  { key: "dockWidth", kind: "number" }
 ];
 function defaultDrawerUi() {
-  return { v: DRAWER_UI_VERSION, mode: "board", sheetCollapsed: true, propsOpen: false, dockTab: "", dockWidth: 400, scale: 0.9, panX: 0, panY: 0, boardViewId: "" };
+  return { v: DRAWER_UI_VERSION, mode: "board", sheetCollapsed: true, propsOpen: false, dockTab: "", dockWidth: 400 };
 }
 function loadDrawerUi() {
   var out = defaultDrawerUi();
@@ -255,10 +252,6 @@ function loadDrawerUi() {
         if (parsed.dockTab === "" || parsed.dockTab === "props" || parsed.dockTab === "layout" || parsed.dockTab === "source" || parsed.dockTab === "style" || parsed.dockTab === "export") out.dockTab = parsed.dockTab;
         else if (out.propsOpen) out.dockTab = "props";
         if (typeof parsed.dockWidth === "number" && isFinite(parsed.dockWidth)) out.dockWidth = clampDockWidth(parsed.dockWidth);
-        if (typeof parsed.scale === "number" && isFinite(parsed.scale)) out.scale = Math.min(3, Math.max(0.2, parsed.scale));
-        if (typeof parsed.panX === "number" && isFinite(parsed.panX)) out.panX = parsed.panX;
-        if (typeof parsed.panY === "number" && isFinite(parsed.panY)) out.panY = parsed.panY;
-        if (typeof parsed.boardViewId === "string") out.boardViewId = parsed.boardViewId;
       }
     } else {
       try { if (localStorage.getItem("drawer.propsOpen") === "1") out.propsOpen = true; } catch (_e) {}
@@ -274,29 +267,16 @@ function saveDrawerUi(patch) {
 }
 function snapshotDrawerUi() {
   var app = $("#app");
-  var prev = loadDrawerUi();
   return saveDrawerUi({
     mode: "board",
     sheetCollapsed: !!(app && app.classList.contains("sheet-collapsed")),
     propsOpen: currentDockTab() === "props",
     dockTab: currentDockTab(),
-    dockWidth: currentDockWidth(),
-    scale: scale,
-    panX: panX,
-    panY: panY,
-    boardViewId: liveBoardId || prev.boardViewId || ""
+    dockWidth: currentDockWidth()
   });
 }
-var _drawerUiSaveTimer = null;
 var _drawerUiRestoreLock = false;
-function scheduleDrawerUiSave() {
-  if (_drawerUiRestoreLock) return;
-  clearTimeout(_drawerUiSaveTimer);
-  _drawerUiSaveTimer = setTimeout(snapshotDrawerUi, 120);
-}
 function flushDrawerUiSave() {
-  clearTimeout(_drawerUiSaveTimer);
-  _drawerUiSaveTimer = null;
   if (_drawerUiRestoreLock) return;
   snapshotDrawerUi();
 }
@@ -305,11 +285,7 @@ document.addEventListener("visibilitychange", function() {
   if (document.visibilityState === "hidden") flushDrawerUiSave();
 });
 (function hydrateDrawerUiView() {
-  var ui = loadDrawerUi();
-  scale = ui.scale;
-  panX = ui.panX;
-  panY = ui.panY;
-  applyDockWidth(ui.dockWidth, false);
+  applyDockWidth(loadDrawerUi().dockWidth, false);
 })();
 (function wireDockResize() {
   var handle = document.getElementById("boardDockResize");
@@ -425,7 +401,6 @@ function applyTransform() {
   previewEl.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
   var zr = document.querySelector("#btnZoomReset");
   if (zr) zr.textContent = Math.round(scale * 100) + "%";
-  scheduleDrawerUiSave();
 }
 /* Zoom the stage about its centre: the camera's world point stays put. */
 function setCanvasZoom(nextScale) {
@@ -453,34 +428,36 @@ function boardContentOnStage() {
   var halfW = stage.w / 2 / cam.scale, halfH = stage.h / 2 / cam.scale;
   return b.maxX > cam.cx - halfW && b.minX < cam.cx + halfW && b.maxY > cam.cy - halfH && b.minY < cam.cy + halfH;
 }
+/* Camera for a freshly rendered board: the document's own style.viewport when it has one,
+ * otherwise fit (content) or 100% centred (empty). Never reuses the previous board's camera. */
 function applyRestoredBoardView() {
   var view = typeof readDocumentView === "function" ? readDocumentView() : null;
   if (view && typeof applyDocumentView === "function") {
     applyDocumentView(view, function (ok) {
       if (!ok || (typeof boardContentOnStage === "function" && !boardContentOnStage())) {
-        fitBoardView({ persist: true });
+        fitBoardView();
       }
     });
     return;
   }
-  fitBoardView({ persist: true });
+  fitBoardView();
 }
-function fitBoardView(opts) {
-  opts = opts || {};
+function fitBoardView() {
   if (!previewEl) return;
   pinBoardTitle();
   const content = previewEl.querySelector(".board-render");
   if (!content) return;
   requestAnimationFrame(() => {
     var stage = typeof stageSize === "function" ? stageSize() : null;
+    if (!stage) return;
     var b = boardWorldBounds();
-    if (!stage || !b) return;
+    /* Empty board: nothing to frame, so 100% with the world origin at the stage centre. */
+    if (!b) { applyCamera({ scale: 1, cx: 0, cy: 0 }); return; }
     /* Board title is document.title — do not reserve a canvas band for it */
     var topBand = 12;
     const pad = 24;
     var next = Math.max(0.2, Math.min(1, (stage.w - pad) / Math.max(1, b.width), (stage.h - topBand - pad) / Math.max(1, b.height)));
     if (!applyCamera({ scale: next, cx: b.cx, cy: b.cy })) return;
-    if (opts.persist) snapshotDrawerUi();
     var key = boardSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
