@@ -22,3 +22,7 @@ assert.match(form, /board-type-container,[^{]*\{\s*border-radius:\s*var\(--bf-ra
 const diagram = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 assert.match(diagram, /border:\s*1\.5px dashed var\(--board-container-zone-border/);
 assert.doesNotMatch(diagram, /board-type-container > \.box-title[^}]*opacity:\s*0\.72/);
+
+// chips: borderless, 8px, warm inline code
+assert.match(css, /board-item-type-chip:not\(\.board-item-diamond\)\s*\{[^}]*border:\s*0 !important[^}]*border-radius:\s*var\(--bf-radius-chip\)/);
+assert.match(css, /\.board-item-md code\s*\{[^}]*rgba\(90, 67, 48/);

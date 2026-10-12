@@ -39,3 +39,14 @@
 .board-render .board-zone.board-type-container {
   border-radius: var(--bf-radius-box) !important;
 }
+
+/* ---- Item · chip (rect): solid fill only; fills come from the pack (in-card vs on-canvas) ---- */
+.board-render .board-item.board-item-type-chip:not(.board-item-diamond) {
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: var(--bf-radius-chip) !important;
+}
+/* inline code in Markdown: warm tint instead of cold slate */
+.board-render .board-item-md code {
+  background: rgba(90, 67, 48, .09);
+}
