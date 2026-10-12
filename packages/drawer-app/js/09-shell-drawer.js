@@ -1,4 +1,5 @@
-/* drawer-app/09-shell-drawer.js — the left drawer: open/close, account row, "Mine" group list, New board.
+/* drawer-app/09-shell-drawer.js — the left drawer: open/close, account row, "Mine" group list, "Shared" list, New board.
+   The Mine / Shared tabs live in 09-shell-tabs.js.
    Search: ⌘K pop-up, name search over groups and boards plus lines of the open board. */
 var shellGroups = [];
 var shellShares = [];
@@ -50,18 +51,6 @@ var shellShares = [];
     });
   }
   scrim.addEventListener("click", function () { closeAll(false); });
-  // Shared list is folded by default; the header toggles it.
-  var shared = document.getElementById("shellShared");
-  var fold = document.getElementById("shellFold");
-  if (shared && fold) {
-    var openShared = /[?&]shared=open/.test(location.search);
-    shared.classList.toggle("is-folded", !openShared);
-    fold.setAttribute("aria-expanded", openShared ? "true" : "false");
-    fold.addEventListener("click", function () {
-      var folded = shared.classList.toggle("is-folded");
-      fold.setAttribute("aria-expanded", folded ? "false" : "true");
-    });
-  }
   // Review links: ?shell=drawer or ?shell=search opens that state on load.
   // ?shell=props|style|source|export opens that right-dock panel.
   var want = /[?&]shell=(drawer|search|props|style|source|export)/.exec(location.search);
@@ -298,7 +287,7 @@ function shellRenderMine(groups) {
   list.replaceChildren(frag);
   list.scrollTop = keepScroll;
   shellWatchMore(list, sentinel);
-  if (count) count.textContent = rows.length ? rows.length + (rows.length === 1 ? " group" : " groups") : "";
+  if (count) count.textContent = rows.length ? String(rows.length) : "";
   if (empty) empty.hidden = rows.length > 0;
   shellRenderShared();
 }
@@ -367,6 +356,7 @@ function shellRenderShared(shares) {
   var preview = shellIsPreview();
   var signedIn = !!(cloudSession && cloudSession.user);
   section.hidden = !(signedIn || preview);
+  shellSyncTabs(!section.hidden);
   shellSyncShareButton();
   var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   var rows = preview ? shellSampleShares() : shellShares;

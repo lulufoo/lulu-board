@@ -22,18 +22,21 @@
   </button>
   <div class="shell-scrim" id="shellScrim" hidden></div>
   <aside class="shell-drawer" id="shellDrawer" aria-label="Your boards" tabindex="-1" hidden>
-    <div class="shell-drawer-body">
+    <div class="shell-drawer-body" data-shell-tab="mine">
       <button class="shell-new" id="shellNewBoard" type="button">
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         New board
       </button>
-      <section class="shell-sec" aria-label="Mine">
-        <h2 class="shell-sec-head"><span>Mine</span><em id="shellMineCount"></em></h2>
+      <div class="shell-tabs" id="shellTabs" role="tablist" aria-label="Boards">
+        <button class="shell-tab" id="shellTabMine" type="button" role="tab" aria-selected="true" aria-controls="shellMine" data-shell-tab="mine"><span>Mine</span><em id="shellMineCount"></em></button>
+        <button class="shell-tab" id="shellTabShared" type="button" role="tab" aria-selected="false" aria-controls="shellShared" data-shell-tab="shared" tabindex="-1" hidden><span>Shared</span><em id="shellSharedCount"></em></button>
+      </div>
+      <section class="shell-sec" id="shellMine" role="tabpanel" aria-labelledby="shellTabMine">
         <ul class="shell-list" id="shellMineList"></ul>
         <p class="shell-empty" id="shellMineEmpty" hidden>No boards yet</p>
       </section>
-      <section class="shell-sec shell-shared" id="shellShared" aria-label="Shared" hidden>
-        <h2 class="shell-sec-head"><button class="shell-fold" id="shellFold" type="button" aria-expanded="true"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m6 4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Shared</span><em id="shellSharedCount"></em></button><button class="shell-ghost" id="shellShareBoard" type="button">Share this board</button></h2>
+      <section class="shell-sec shell-shared" id="shellShared" role="tabpanel" aria-labelledby="shellTabShared" hidden>
+        <div class="shell-share-row"><button class="shell-ghost" id="shellShareBoard" type="button">Share this board</button></div>
         <ul class="shell-list" id="shellSharedList"></ul>
       </section>
     </div>

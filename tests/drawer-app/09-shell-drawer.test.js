@@ -115,8 +115,10 @@ console.log('ok 09-shell-drawer');
   assert.doesNotMatch(js, /createElement\("button"\);\s*more\.type/, 'it is not a button any more');
   assert.match(js, /new IntersectionObserver[\s\S]*root: list/, 'reaching the bottom of the list triggers loading');
   assert.match(js, /"Loading more"[\s\S]*shell-dots/, 'loading shows Loading more with the dots');
-  assert.match(css, /#shellMineList \{ max-height: min\(46vh, 420px\); overflow-y: auto; \}/, 'Mine list scrolls on its own');
-  assert.doesNotMatch(css, /#shellMineList \{[^}]*overscroll-behavior/, 'the list does not trap the wheel: the drawer body above it stays reachable');
+  const tabsCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/09-shell-tabs.css'), 'utf8');
+  assert.doesNotMatch(css, /#shellMineList \{[^}]*max-height/, 'no fixed height cap: the list fills the drawer');
+  assert.match(tabsCss, /#shellMineList \{ flex: 1; min-height: 0; overflow-y: auto; \}/, 'Mine list fills the drawer and scrolls on its own');
+  assert.doesNotMatch(tabsCss, /#shellMineList \{[^}]*overscroll-behavior/, 'the list does not trap the wheel');
   assert.match(css, /@keyframes shell-dot-1[\s\S]*@keyframes shell-dot-3/, 'dots cycle . .. ...');
   assert.match(css, /prefers-reduced-motion: reduce\) \{ \.shell-dots i \{ animation: none/, 'reduced motion shows static dots');
 }

@@ -1,0 +1,59 @@
+/* drawer-app/09-shell-tabs.css — Mine / Shared tabs in the left drawer (sorts after 08-workspace-shell.css on purpose). */
+.shell-tabs {
+  display: flex;
+  gap: 2px;
+  margin: 14px 0 6px;
+  padding: 3px;
+  border-radius: 11px;
+  background: var(--wash);
+}
+.shell-tab {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  font: 600 12.5px var(--font);
+  cursor: pointer;
+}
+.shell-tab[hidden] { display: none; }
+.shell-tab em { font-style: normal; font-weight: 500; opacity: .75; }
+.shell-tab:hover { color: var(--ink); }
+.shell-tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: var(--press); }
+.shell-tab:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* one list at a time */
+.shell-drawer-body[data-shell-tab="mine"] #shellShared,
+.shell-drawer-body[data-shell-tab="shared"] #shellMine { display: none; }
+.shell-drawer-body .shell-sec,
+.shell-drawer-body .shell-sec + .shell-sec { margin-top: 6px; }
+
+/* the open board is shared, but the Shared tab is not showing: a small dot on its label */
+.shell-drawer-body:not([data-shell-tab="shared"]):has(#shellSharedList .is-current) #shellTabShared span::after {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--brand);
+  vertical-align: 1px;
+}
+
+/* Share this board: the first thing on the Shared page, full width */
+.shell-share-row { margin: 2px 0 8px; }
+.shell-share-row .shell-ghost { width: 100%; height: 34px; border-radius: 10px; font-size: 13px; }
+
+/* the drawer body does not scroll: New board and the tabs stay put, the open page fills the rest and scrolls inside */
+.shell-drawer-body { display: flex; flex-direction: column; overflow: hidden; }
+.shell-drawer-body > .shell-new,
+.shell-drawer-body > .shell-tabs { flex: none; }
+.shell-drawer-body .shell-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.shell-drawer-body .shell-sec[hidden] { display: none; }
+#shellMineList { flex: 1; min-height: 0; overflow-y: auto; }
+#shellShared { overflow-y: auto; }
