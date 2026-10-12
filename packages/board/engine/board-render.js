@@ -22,7 +22,7 @@
   const CHIP_SHAPES = new Set(['rect', 'diamond']);
   const ITEM_CAPS = new Set(['on', 'off']);
   const LINK_TYPES = new Set(['solid', 'dashed']);
-  const STYLE_THEMES = new Set(['default', 'classic', 'pastel', 'kami']);
+  const STYLE_THEMES = new Set(['default', 'classic', 'pastel']);
   const STYLE_ROUTES = new Set(['trunk', 'stagger', 'straight']);
   const STYLE_DEFAULTS = { theme: 'default', item_cap: 16, link_route: 'stagger', type_step: 0 };
   const STYLE_CAP_MIN = 8;

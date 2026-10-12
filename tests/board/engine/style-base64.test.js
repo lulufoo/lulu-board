@@ -30,14 +30,14 @@ item HERO type text "Hi"
 }
 
 {
-  const payload = b64({ theme: 'kami', item_cap: 24, link_route: 'stagger' });
+  const payload = b64({ theme: 'pastel', item_cap: 24, link_route: 'stagger' });
   const board = Render.parse(src(`
 board Demo
 style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'kami',
+    theme: 'pastel',
     item_cap: 24,
     link_route: 'stagger',
     type_step: 0,
@@ -46,7 +46,7 @@ item HERO type text "Hi"
   assert.ok(out.startsWith('board "Demo"\nstyle '), out);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'kami',
+    theme: 'pastel',
     item_cap: 24,
   });
 }
@@ -66,12 +66,12 @@ item HERO type text "Hi"
 }
 
 {
-  const payload = b64({ theme: 'kami', extra: 'keep' });
+  const payload = b64({ theme: 'pastel', extra: 'keep' });
   const board = Render.parse(`board Demo\nstyle ${payload}\nitem HERO type text "Hi"\n`);
   const out = Render.serialize(board);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'kami',
+    theme: 'pastel',
     extra: 'keep',
   });
 }
@@ -135,21 +135,21 @@ item HERO type text "Hi"
 }
 
 {
-  const payload = b64({ theme: 'kami', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
+  const payload = b64({ theme: 'pastel', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
   const board = Render.parse(src(`
 board Demo
 style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'kami',
+    theme: 'pastel',
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
   });
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'kami',
+    theme: 'pastel',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
 }
@@ -165,10 +165,10 @@ item HERO type text "Hi"
 
 {
   // Old pan-pixel viewports drop out of the style line: the app fits once instead.
-  const stale = b64({ theme: 'kami', viewport: { scale: 0.8, x: 12, y: 24 } });
+  const stale = b64({ theme: 'pastel', viewport: { scale: 0.8, x: 12, y: 24 } });
   const board = Render.parse(`board Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { theme: 'kami' });
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { theme: 'pastel' });
 }
 
 {

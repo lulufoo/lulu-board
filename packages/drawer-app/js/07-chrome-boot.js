@@ -182,7 +182,7 @@ function currentDiagramTheme() {
   const legacy = localStorage.getItem('drawer.boardTheme');
   const v = localStorage.getItem(DIAGRAM_THEME_KEY) || legacy || 'default';
   if (window.BoardThemes && typeof BoardThemes.resolveId === 'function') return BoardThemes.resolveId(v);
-  const allowed = ['default', 'classic', 'pastel', 'kami'];
+  const allowed = ['default', 'classic', 'pastel'];
   return allowed.includes(v) ? v : 'default';
 }
 const ITEM_CAP_KEY = 'drawer.boardItemCap';
@@ -230,7 +230,7 @@ function applyBoardThemeToPreview() {
 function applyDiagramTheme(theme, opts) {
   const t = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
     ? BoardThemes.resolveId(theme)
-    : ((['default', 'classic', 'pastel', 'kami'].includes(theme) ? theme : 'default'));
+    : ((['default', 'classic', 'pastel'].includes(theme) ? theme : 'default'));
   localStorage.setItem(DIAGRAM_THEME_KEY, t);
   localStorage.setItem('drawer.boardTheme', t); // back-compat
   document.querySelectorAll('#diagramThemeMenu .theme-item').forEach((btn) => {

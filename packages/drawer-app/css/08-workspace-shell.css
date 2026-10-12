@@ -45,7 +45,7 @@ html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
 html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
 /* ---- canvas ground: white with faint dots ---- */
-html[data-drawer-mode="board"][data-theme="light"]:not([data-diagram-theme="kami"]) .canvas-shell {
+html[data-drawer-mode="board"][data-theme="light"] .canvas-shell {
   background-color: #fff !important;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
   background-size: 24px 24px !important;

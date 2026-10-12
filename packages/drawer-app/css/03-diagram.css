@@ -609,18 +609,11 @@ html[data-drawer-mode="board"] .canvas-shell {
     linear-gradient(90deg, rgba(100,116,139,.12) 1px, transparent 1px) !important;
   background-size: 20px 20px !important;
 }
-html[data-drawer-mode="board"][data-diagram-theme="kami"] .canvas-shell {
-  background-color: #f5f4ed !important;
-  background-image: linear-gradient(rgba(80,78,73,.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(80,78,73,.08) 1px, transparent 1px) !important;
-  background-size: 24px 24px !important;
-}
 .board-render,
 .board-render[data-board-theme="default"],
 .board-render:not([data-board-theme]),
 .board-render[data-board-theme="classic"],
 .board-render[data-board-theme="pastel"],
-.board-render[data-board-theme="kami"],
 .board-render[data-board-theme="minimal"],
 .board-render[data-board-theme="slate"] {
   border: 0 !important;
@@ -904,16 +897,6 @@ html[data-drawer-mode="board"] #preview.board-preview {
 }
 .board-html-header { display: block; margin: 0 0 28px; padding: 0 0 18px; border-bottom: 1px solid #dbe4ef; }
 .board-html-header h2 { margin: 0; color: #0f172a; font-size: var(--board-display-size, 24px); line-height: 1.1; font-weight: 720; letter-spacing: -0.04em; }
-.board-render[data-board-theme="kami"] {
-  letter-spacing: 0;
-  font-weight: 600;
-  -webkit-font-smoothing: auto;
-}
-.board-render[data-board-theme="kami"] .board-html-header h2 {
-  color: #141413;
-  font-weight: 600;
-  letter-spacing: 0;
-}
 .board-html-header p { margin: 8px 0 0; color: #64748b; font-size: 12px; line-height: 1.35; letter-spacing: 0.01em; }
 .board-canvas { position: relative; min-width: 0; overflow: visible; }
 /* Zones under edges so short-gap labels (ABCDE) are not covered by box fill. */
@@ -1396,31 +1379,6 @@ html[data-drawer-mode="board"] .top-float {
   pointer-events: none;
   background: #d4ce86;
   clip-path: polygon(0 0, 100% 100%, 0 100%);
-}
-.board-render[data-board-theme="kami"] .board-item-note-sheet {
-  background: #f0e4b0;
-  border-color: #9a8848;
-}
-.board-render[data-board-theme="kami"] .board-item-note-fold {
-  background: #b3942e;
-}
-.board-render[data-board-theme="kami"] .board-item-note .board-item-text {
-  color: #141413;
-}
-.board-render[data-board-theme="kami"] .board-item-note .board-item-md h1 {
-  border-bottom-color: #6b6a64;
-}
-.board-render[data-board-theme="kami"] .board-diamond-shape polygon {
-  fill: var(--board-card-bg, #faf9f5);
-  stroke: var(--board-edge, #1B365D);
-}
-.board-render[data-board-theme="kami"] .board-edge-label {
-  stroke: #f5f4ed;
-  fill: #141413;
-  font-weight: 600;
-}
-.board-render[data-board-theme="kami"] .board-edge-label.board-edge-selected {
-  font-weight: 700;
 }
 .board-render .board-item-icon {
   background: transparent !important;

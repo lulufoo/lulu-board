@@ -7,6 +7,5 @@ const font = (id) => Themes.get(id).fontFamily;
 assert.match(font('default'), /SF Pro Text.*Inter/, 'default uses the site font stack');
 assert.match(font('default'), /PingFang SC/, 'default has a CJK sans fallback');
 assert.match(font('classic'), /Trebuchet/, 'classic keeps Trebuchet');
-assert.match(font('kami'), /Songti SC/, 'kami keeps its serif');
 assert.match(font('pastel'), /ui-sans-serif/, 'pastel is untouched');
 console.log('ok pack-fonts');

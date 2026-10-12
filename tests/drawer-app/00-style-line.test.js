@@ -9,7 +9,7 @@ function b64(obj) {
 }
 
 {
-  const token = b64({ theme: 'kami' });
+  const token = b64({ theme: 'pastel' });
   const body = 'board "Demo"\nitem X type text "Hi"\n';
   assert.strictEqual(Style.joinRendererStyle(token, body), `style ${token}\n` + body);
   assert.strictEqual(Style.splitRendererStyle(`style ${token}\n` + body).token, token);

@@ -18,7 +18,6 @@ const SCRIPTS = [
   'themes/packs/default.js',
   'themes/packs/classic.js',
   'themes/packs/pastel.js',
-  'themes/packs/kami.js',
   'themes/index.js',
   'view/board-view.js',
   'box/board-box.js',
