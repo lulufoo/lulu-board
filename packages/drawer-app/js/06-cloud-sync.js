@@ -197,7 +197,6 @@ function cloudCloseAccountMenus() {
   if (signIn) signIn.setAttribute("aria-expanded", "false");
   if (sessionMenu) sessionMenu.hidden = true;
   if (chip) chip.setAttribute("aria-expanded", "false");
-  if (typeof closeShareMenu === "function") closeShareMenu();
 }
 
 function cloudVersionsAligned(serverRev, clientRev) {
@@ -675,11 +674,13 @@ async function cloudRefreshGroups() {
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     if (isLocalDrawerPreview()) applyLocalSignedInPreview();
     if (typeof shellRenderMine === "function") shellRenderMine([]);
+    if (typeof shellRenderShared === "function") shellRenderShared([]);
     return;
   }
   try {
     var groups = await cloudFetchGroupSummaries();
     if (typeof shellRenderMine === "function") shellRenderMine(groups);
+    if (typeof cloudRefreshShares === "function") void cloudRefreshShares();
   } catch (error) {
     setStatus(error && error.message ? error.message : "Could not load your boards", true);
   }

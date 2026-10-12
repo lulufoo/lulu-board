@@ -72,6 +72,7 @@ const domain = [
   '06-cloud-group-order.js',
   '06-cloud-delete.js',
   '06-cloud-share.js',
+  '06-cloud-shares.js',
   '07-chrome-boot.js',
   '08-source-lines.js',
   '09-shell-drawer.js',
