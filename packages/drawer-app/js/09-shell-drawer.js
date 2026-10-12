@@ -209,7 +209,7 @@ function shellRevealCurrent() {
   if (over > 0) list.scrollTop += over + 6;
 }
 
-// Mine pages in by itself: when the last row scrolls into view it shows "Load more" with cycling dots,
+// Mine pages in by itself: when the last row scrolls into view it shows "Loading more" with cycling dots,
 // then adds the next page. The data is already in memory; the short pause only makes the state visible.
 function shellMineLoadDelay() { return 900; }
 var shellMineWatcher = null;
@@ -223,7 +223,7 @@ function shellWatchMore(list, sentinel) {
     if (shellMineLoading || !entries.some(function (entry) { return entry.isIntersecting; })) return;
     shellMineLoading = true;
     sentinel.classList.add("is-loading");
-    sentinel.appendChild(document.createTextNode("Load more"));
+    sentinel.appendChild(document.createTextNode("Loading more"));
     var dots = document.createElement("span");
     dots.className = "shell-dots";
     dots.setAttribute("aria-hidden", "true");
