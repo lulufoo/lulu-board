@@ -38,7 +38,21 @@
     try { sessionStorage.setItem(SIGN_IN_FLAG, intent); } catch (_e) {}
   }
 
+  // copy buttons: data-copy names the element whose text goes to the clipboard
+  function copyText(event) {
+    var button = event.currentTarget;
+    var source = document.getElementById(button.getAttribute("data-copy"));
+    if (!source || !navigator.clipboard) return;
+    navigator.clipboard.writeText(source.textContent.trim()).then(function () {
+      button.textContent = "Copied";
+      setTimeout(function () { button.textContent = "Copy"; }, 1500);
+    }, function () {});
+  }
+
   showAuthState(readStoredSession());
+  Array.prototype.forEach.call(document.querySelectorAll("[data-copy]"), function (button) {
+    button.addEventListener("click", copyText);
+  });
   Array.prototype.forEach.call(document.querySelectorAll("[data-open-sign-in]"), function (link) {
     link.addEventListener("click", markSignInIntent);
   });
