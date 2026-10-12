@@ -446,3 +446,21 @@ html[data-drawer-mode="board"] .group-tab-float {
 }
 html[data-drawer-mode="board"] .group-tab:hover { background: var(--wash); }
 html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
+
+/* product intro (landing) lives in the left drawer, above the account row */
+.shell-intro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 10px 8px;
+  padding: 0 12px;
+  height: 38px;
+  border-radius: 11px;
+  color: var(--ink-soft);
+  font: 600 13px var(--font);
+  text-decoration: none;
+}
+.shell-intro:hover { background: var(--wash); color: var(--ink); }
+.shell-intro svg { width: 16px; height: 16px; flex: none; }
+.shell-intro span { flex: 1; }
+.shell-intro .shell-intro-out { width: 13px; height: 13px; opacity: .6; }
