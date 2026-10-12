@@ -6,7 +6,8 @@
   --bf-radius-chip: 8px;
   --bf-ring: #db4c84;
   --bf-ring-soft: rgba(219, 76, 132, .4);
-  --bf-shadow-box: 0 1px 2px rgba(74, 53, 36, .06), 0 6px 18px rgba(74, 53, 36, .07);
+  --bf-edge: rgba(74, 53, 36, .22); /* card ring and container dash share this depth */
+  --bf-shadow-box: 0 0 0 1px var(--bf-edge), 0 1px 2px rgba(74, 53, 36, .08), 0 6px 18px rgba(74, 53, 36, .09);
 }
 
 /* ---- selection and hover: pink ring on nodes ---- */

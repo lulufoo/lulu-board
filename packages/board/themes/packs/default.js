@@ -22,7 +22,7 @@
     // Warm paper: bg = card, item = chip inside a card, card = chip straight on the canvas,
     // canvasItem = chip inside a container (on the canvas), border = container dash colour.
     swatches: [
-      { bg: '#fffdf9', border: '#b8a68a', item: '#f3ebdd', card: '#ece3d3', canvasItem: '#ece3d3' },
+      { bg: '#fffdf9', border: 'rgba(74, 53, 36, .3)', item: '#f3ebdd', card: '#ece3d3', canvasItem: '#ece3d3' },
     ],
     typePartials: {
       card: { radius: '12px', titleColor: '#4a3524', titleWeight: '650', cardColor: '#4a3524' },
