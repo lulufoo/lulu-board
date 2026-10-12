@@ -6,9 +6,8 @@
   const DefaultPack = loadPack('default');
   const ClassicPack = loadPack('classic');
   const PastelPack = loadPack('pastel');
-  const KamiPack = loadPack('kami');
-  if (!Scale || !DefaultPack || !ClassicPack || !PastelPack || !KamiPack) throw new Error('BoardThemes parts are not loaded');
-  const api = factory(Scale, { default: DefaultPack, classic: ClassicPack, pastel: PastelPack, kami: KamiPack });
+  if (!Scale || !DefaultPack || !ClassicPack || !PastelPack) throw new Error('BoardThemes parts are not loaded');
+  const api = factory(Scale, { default: DefaultPack, classic: ClassicPack, pastel: PastelPack });
   if (typeof module === 'object' && module.exports) module.exports = api;
   root.BoardThemes = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (Scale, packs) {
@@ -89,11 +88,10 @@
     default: hydrate(packs.default),
     classic: hydrate(packs.classic),
     pastel: hydrate(packs.pastel),
-    kami: hydrate(packs.kami),
   };
   const FALLBACK_SWATCHES = THEMES.default.swatches;
 
-  const ORDER = ['default', 'classic', 'pastel', 'kami'];
+  const ORDER = ['default', 'classic', 'pastel'];
   const LEGACY_IDS = { minimal: 'classic', slate: 'pastel' };
 
   function resolveId(id) {

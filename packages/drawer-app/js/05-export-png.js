@@ -141,10 +141,9 @@ function cropExportCanvas(canvas, surfaceSize) {
 }
 
 function paintExportGrid(ctx, canvas, surfaceSize) {
-  const kami = String(document.documentElement.dataset.diagramTheme || '').toLowerCase() === 'kami';
-  const background = kami ? '#f5f4ed' : '#f8fafc';
-  const line = kami ? 'rgba(80,78,73,.08)' : 'rgba(100,116,139,.12)';
-  const spacing = kami ? 24 : 20;
+  const background = '#f8fafc';
+  const line = 'rgba(100,116,139,.12)';
+  const spacing = 20;
   const pixelRatio = canvas.width / surfaceSize.width;
   const step = spacing * pixelRatio;
   const lineWidth = Math.max(1, Math.round(pixelRatio));
