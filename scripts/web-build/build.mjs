@@ -71,7 +71,7 @@ const landingOut = path.join(webDir, 'landing');
 mkdirSync(landingOut, { recursive: true });
 mkdirSync(path.join(landingOut, 'fonts'), { recursive: true });
 for (const name of [
-  'index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg',
+  'index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.webp',
   'agent-chat.webp', 'board-shot.webp',
   'fonts/instrument-serif-latin-400-normal.woff2', 'fonts/inter-latin-wght-normal.woff2',
   'fonts/OFL-instrument-serif.txt', 'fonts/OFL-inter.txt',

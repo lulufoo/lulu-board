@@ -131,7 +131,7 @@ html[data-auth="out"] .only-in { display: none !important; }
   height: calc(550px + var(--nav-h));
   padding: calc(48px + var(--nav-h)) 0 0;
   text-align: center;
-  background: #f4e8d6 url("./hero-art.jpg") center / cover no-repeat;
+  background: #f4e8d6 url("./hero-art.webp") center / cover no-repeat;
 }
 .hero-inner {
   display: flex;

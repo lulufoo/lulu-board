@@ -17,7 +17,7 @@ for (const m of block.matchAll(/'([^'\n]+\.[a-z0-9]+)'/g)) {
   if (name.startsWith('examples/')) continue; // source half of a [from, to] pair
   shipped.add(name);
 }
-for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.jpg', 'agent-chat.webp', 'board-shot.webp']) {
+for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.webp', 'agent-chat.webp', 'board-shot.webp']) {
   assert.ok(shipped.has(required), 'build ships ' + required);
 }
 
