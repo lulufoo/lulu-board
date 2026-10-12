@@ -56,7 +56,6 @@ html[data-drawer-mode="board"][data-theme="light"] .canvas-shell {
 html[data-drawer-mode="board"] .board-brand {
   pointer-events: auto !important;
   cursor: pointer;
-  border-right-color: var(--paper-line);
 }
 .board-brand .board-brand-mark { transition: box-shadow .15s; }
 .board-brand:hover .board-brand-mark,

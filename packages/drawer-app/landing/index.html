@@ -85,30 +85,23 @@ STATE <span class="code-kw">-&gt;</span> VIEW title "render"</pre>
     </div>
   </section>
 
-  <section class="feature" id="connect">
-    <div class="feature-copy">
-      <h2>Connect your agent</h2>
-      <p>Add the hosted MCP server so your agent can create and update cloud boards in your account.</p>
-      <p class="mcp-url"><code>https://mcp.luluboard.app/mcp</code></p>
-      <p class="mcp-note">Streamable HTTP. On first use your client opens a Lulu Board sign-in and an OAuth consent screen — no API key to paste. Without MCP, <code>/board</code> still works with a local link.</p>
-    </div>
-    <div class="feature-art mcp-cards">
-      <figure class="mcp-card"><figcaption>Cursor · <code>~/.cursor/mcp.json</code></figcaption>
-<pre class="code-card">{
-  "mcpServers": {
-    "lulu-board": { "url": "https://mcp.luluboard.app/mcp" }
-  }
-}</pre></figure>
-      <figure class="mcp-card"><figcaption>Claude Code</figcaption>
-<pre class="code-card">claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp</pre></figure>
-      <figure class="mcp-card"><figcaption>Other MCP clients</figcaption>
-<pre class="code-card">{
-  "lulu-board": {
-    "type": "http",
-    "url": "https://mcp.luluboard.app/mcp"
-  }
-}</pre></figure>
-    </div>
+  <section class="connect" id="connect">
+    <h2>Connect your agent</h2>
+    <p class="connect-lead">Two steps, and your agent draws boards in your account.</p>
+    <ol class="steps">
+      <li class="step">
+        <span class="step-num">1</span>
+        <h3>Connect MCP</h3>
+        <div class="url-pill"><code id="mcpUrl">https://mcp.luluboard.app/mcp</code><button class="copy-btn" type="button" data-copy="mcpUrl">Copy</button></div>
+        <p>Add this MCP URL in your agent — Cursor, Claude Code or any MCP client. First use opens a Lulu Board sign-in; no API key.</p>
+      </li>
+      <li class="step">
+        <span class="step-num">2</span>
+        <h3>Install the skill</h3>
+        <p>Teaches your agent the <code>/board</code> command and the text protocol.</p>
+        <a class="btn" href="https://github.com/lulufoo/lulu-board/tree/main/skill" target="_blank" rel="noopener noreferrer">View skill on GitHub</a>
+      </li>
+    </ol>
   </section>
 
   <section class="faq" id="faq">
