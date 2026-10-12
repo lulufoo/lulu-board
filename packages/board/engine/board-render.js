@@ -202,6 +202,7 @@
     applyNodeTypeStep(board, key, step);
     return serialize(board);
   }
+  function toneOptions(theme) { return { auto: !!(theme && theme.autoTone), autoBoxes: !!(theme && theme.autoBoxTone) }; }
   function toneThemeOf(board) {
     const id = resolveStyle(board).theme;
     return Themes && typeof Themes.get === 'function' ? Themes.get(id) : null;
@@ -209,7 +210,7 @@
   // After a parent changes, every explicit child tone is re-checked against the gap rule and written back.
   function settleTones(board) {
     const theme = toneThemeOf(board);
-    const map = Tone.resolve(board, { auto: !!(theme && theme.autoTone) });
+    const map = Tone.resolve(board, toneOptions(theme));
     const ids = Object.assign({}, styleIdsOf(board));
     map.forEach((info, node) => {
       if (info.explicit == null || info.tone == null || info.tone === info.explicit) return;
@@ -226,7 +227,7 @@
     const theme = toneThemeOf(board);
     const base = (theme && theme.ramp) || [];
     if (!node || !Tone || !Tone.fillable(node) || !base.length) return { fillable: false, ramp: base };
-    const map = Tone.resolve(board, { auto: !!(theme && theme.autoTone) });
+    const map = Tone.resolve(board, toneOptions(theme));
     const info = map.get(node) || { tone: null, explicit: null, parent: null, hue: null };
     const ramp = Themes && typeof Themes.rampFor === 'function' ? Themes.rampFor(theme, info.hue) : base;
     return { fillable: true, tone: info.tone, explicit: info.explicit, parent: info.parent, allowed: Tone.allowed(info.parent), ramp };
@@ -1926,7 +1927,7 @@
       elements,
       nested: false,
       toneSeq: { n: 0 },
-      tones: Tone ? Tone.resolve(board, { auto: !!(Themes && Themes.get(themeId).autoTone) }) : new Map(),
+      tones: Tone ? Tone.resolve(board, toneOptions(Themes && Themes.get(themeId))) : new Map(),
       toneRamp: (info) => (Themes && typeof Themes.rampFor === 'function' ? Themes.rampFor(themeId, info && info.hue) : []),
       applyFlex,
       propsFor,

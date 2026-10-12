@@ -65,6 +65,7 @@
    */
   function resolve(board, opts) {
     const autoOn = !!(opts && opts.auto);
+    const autoBoxes = !!(opts && opts.autoBoxes); // boxes follow the ramp by default, items keep the theme's own colours
     const out = new Map();
     // Boxes take their swatch in mount order (pre-order, every box), so a counter here reproduces it.
     // hue = that number for the outermost box above a node (itself when it is outermost); null for a root item.
@@ -75,13 +76,14 @@
       const fills = fillable(node);
       const explicit = fills ? explicitOf(board, node.id) : null;
       let tone = null;
+      const autoHere = autoOn || (autoBoxes && !isItem(node));
       if (fills) {
         if (parentTone != null) {
           if (explicit != null) tone = fix(explicit, parentTone);
-          else if (autoOn) tone = auto(parentTone);
+          else if (autoHere) tone = auto(parentTone);
         } else if (explicit != null) {
           tone = explicit;
-        } else if (autoOn) {
+        } else if (autoHere) {
           tone = 0;
         }
       }
