@@ -40,7 +40,7 @@
 
   <section class="shot" aria-label="Ask your agent, see the board">
     <figure class="shot-frame">
-        <img src="./agent-chat.png" width="3024" height="1726" alt="An agent chat on the left: /board, draw an Android MVI architecture diagram. On the right, the generated board with View, Presentation and Model layers.">
+        <img src="./agent-chat.webp" width="1600" height="873" alt="An agent chat on the left: /board, draw an Android MVI architecture diagram. On the right, the generated board with View, Presentation and Model layers.">
     </figure>
     <p class="shot-caption">Ask your agent with <code>/board</code> — the board opens right next to the chat.</p>
   </section>
@@ -52,7 +52,7 @@
     </div>
     <div class="feature-art">
       <figure class="shot-frame">
-        <img src="./llm-architecture.png" width="2594" height="1408" alt="A structured board with layered cards, items and labelled links on a grid canvas.">
+        <img src="./board-shot.webp" width="1600" height="1488" alt="The Lulu Board canvas with its properties panel: a structured board with layered cards, items and labelled links on a grid canvas.">
       </figure>
     </div>
   </section>
@@ -62,22 +62,52 @@
       <h2>A compact text protocol</h2>
       <p>Your agent writes a few readable lines. Lulu Board draws them.</p>
       <ul class="legend">
+        <li><code>board</code><span>the board title</span></li>
         <li><code>box</code><span>a card</span></li>
         <li><code>item</code><span>a leaf inside a card</span></li>
         <li><code>-&gt;</code><span>a link between them</span></li>
       </ul>
     </div>
     <div class="feature-art">
-      <pre class="code-card" aria-label="Protocol example"><span class="code-kw">box</span> VIEW 205 "View"
+      <pre class="code-card" aria-label="Protocol example"><span class="code-kw">board</span> "Android MVI Architecture"
+<span class="code-kw">box</span> VIEW 205 "View"
   <span class="code-kw">item</span> Render "Collect `State` and render"
 <span class="code-kw">box</span> PRES type container "Presentation"
   <span class="code-kw">box</span> INTENT 104 "MVI Intent"
+    <span class="code-kw">item</span> type note "Not `android.content.Intent`"
   <span class="code-kw">box</span> STORE 405 "ViewModel"
+    <span class="code-kw">item</span> Reduce "Reduce → new `State`"
   <span class="code-kw">box</span> STATE 309 "State"
 VIEW <span class="code-kw">-&gt;</span> INTENT title "emit"
 INTENT <span class="code-kw">-&gt;</span> STORE title "handle"
 STORE <span class="code-kw">-&gt;</span> STATE title "reduce"
 STATE <span class="code-kw">-&gt;</span> VIEW title "render"</pre>
+    </div>
+  </section>
+
+  <section class="feature" id="connect">
+    <div class="feature-copy">
+      <h2>Connect your agent</h2>
+      <p>Add the hosted MCP server so your agent can create and update cloud boards in your account.</p>
+      <p class="mcp-url"><code>https://mcp.luluboard.app/mcp</code></p>
+      <p class="mcp-note">Streamable HTTP. On first use your client opens a Lulu Board sign-in and an OAuth consent screen — no API key to paste. Without MCP, <code>/board</code> still works with a local link.</p>
+    </div>
+    <div class="feature-art mcp-cards">
+      <figure class="mcp-card"><figcaption>Cursor · <code>~/.cursor/mcp.json</code></figcaption>
+<pre class="code-card">{
+  "mcpServers": {
+    "lulu-board": { "url": "https://mcp.luluboard.app/mcp" }
+  }
+}</pre></figure>
+      <figure class="mcp-card"><figcaption>Claude Code</figcaption>
+<pre class="code-card">claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp</pre></figure>
+      <figure class="mcp-card"><figcaption>Other MCP clients</figcaption>
+<pre class="code-card">{
+  "lulu-board": {
+    "type": "http",
+    "url": "https://mcp.luluboard.app/mcp"
+  }
+}</pre></figure>
     </div>
   </section>
 
@@ -100,13 +130,12 @@ STATE <span class="code-kw">-&gt;</span> VIEW title "render"</pre>
 
 <footer class="site-foot">
   <div class="site-foot-inner">
-    <b class="foot-brand">Lulu Board</b>
+    <span class="foot-legal">© Lulu Board</span>
     <nav class="foot-links" aria-label="Footer">
       <a href="#faq">FAQ</a>
       <a href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY">Open a blank board</a>
       <a class="only-out" href="/#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY" data-open-sign-in="menu">Sign in</a>
     </nav>
-    <span class="foot-legal">© Lulu Board</span>
   </div>
 </footer>
 <script src="./landing.js"></script>
