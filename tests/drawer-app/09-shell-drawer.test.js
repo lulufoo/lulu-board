@@ -93,3 +93,11 @@ console.log('ok 09-shell-drawer');
   assert.match(board, /<option value=/, 'categories are rendered as options');
   assert.match(boot, /boardIconSec\.addEventListener\("change"/, 'picking a category switches the icon list');
 }
+
+// ---- shared rows: a real gap between the title and the hover actions ----
+{
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+  assert.match(css, /\.shell-row-link \.shell-row-main \{ gap: 6px; \}/, 'title keeps 6px from the second line');
+  assert.match(css, /\.shell-row-link \.shell-row-main > span \{ height: 20px; line-height: 20px; \}/, 'second line is a fixed 20px slot, same height as the buttons');
+  assert.match(css, /\.shell-row-link \.shell-row-acts \{ bottom: 8px; \}/, 'actions sit in that slot');
+}

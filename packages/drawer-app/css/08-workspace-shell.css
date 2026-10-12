@@ -508,6 +508,11 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
   gap: 4px;
 }
 .shell-row-link .shell-row-acts button { height: 20px; padding: 0 7px; font-size: 11px; }
+/* Shared rows: the second line is a fixed 20px slot (note text, or the action buttons on hover),
+   with a real gap under the title, so the buttons never crowd it and the row never jumps. */
+.shell-row-link .shell-row-main { gap: 6px; }
+.shell-row-link .shell-row-main > span { height: 20px; line-height: 20px; }
+.shell-row-link .shell-row-acts { bottom: 8px; }
 .shell-row-link:hover .shell-row-main > span { visibility: hidden; }
 .shell-row-acts button:last-child { color: var(--ink); }
 .shell-row-acts button.is-danger { color: var(--danger); }
