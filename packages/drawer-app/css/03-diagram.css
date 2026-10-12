@@ -391,7 +391,7 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
 /* Diagram themes (Board) — CSS vars from vendor/board/themes; per box type via --board-<type>-* */
 .board-render {
   color: var(--board-color, #333);
-  font-family: var(--board-font, "Trebuchet MS", Verdana, Arial, sans-serif);
+  font-family: var(--board-font, "SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif);
   letter-spacing: 0;
 }
 .board-render .board-zone {
@@ -892,7 +892,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
   position: relative; width: max-content; min-width: 0; box-sizing: border-box;
   padding: 34px 40px 62px; color: var(--board-color, #1e293b); background: #fbfcfe;
   border: 0; border-radius: 0; box-shadow: none; background: transparent;
-  font-family: var(--board-font, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--board-font, "SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif);
   letter-spacing: -0.012em;
 }
 .board-html-header { display: block; margin: 0 0 28px; padding: 0 0 18px; border-bottom: 1px solid #dbe4ef; }

@@ -10,7 +10,6 @@
   return {
     id: 'pastel',
     label: 'Pastel',
-    fontFamily: 'ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif',
     color: '#1e293b',
     edgeStroke: '#64748b',
     edgeEvidence: '#94a3b8',

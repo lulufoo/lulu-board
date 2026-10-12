@@ -21,7 +21,7 @@
       pad: '12px 14px',
       titleColor: '#333',
       titleSize: Scale.sizeForTitle('card'),
-      titleWeight: '700',
+      titleWeight: Scale.TITLE_WEIGHT,
       titleMargin: '0 0 8px',
       cardRadius: '4px',
       cardPad: '6px 10px',
@@ -44,7 +44,7 @@
     return {
       id: pack.id,
       label: pack.label,
-      fontFamily: pack.fontFamily,
+      fontFamily: Scale.FONT_FAMILY,
       color: pack.color,
       edgeStroke: pack.edgeStroke,
       edgeLabel: pack.edgeLabel,

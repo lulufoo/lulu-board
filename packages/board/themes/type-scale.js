@@ -14,6 +14,10 @@
     label: '11px', // link titles
     diamondTitle: '12px',
   };
+  // One font stack and one title weight for every theme: themes change colour and chrome, not typography.
+  // Same stack as the site shell (--font) plus CJK fallbacks so Chinese text does not fall to a serif.
+  const FONT_FAMILY = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
+  const TITLE_WEIGHT = '650';
   const STEP_MIN = -3;
   const STEP_MAX = 3;
   const FACTOR = 1.125;
@@ -79,7 +83,7 @@
   }
 
   return {
-    SCALE, STEP_MIN, STEP_MAX, FACTOR, MIN_PX,
+    SCALE, FONT_FAMILY, TITLE_WEIGHT, STEP_MIN, STEP_MAX, FACTOR, MIN_PX,
     get, clampStep, factor, px, sizeForTitle, sizeForCard, sizeForLabel, sizes,
     stepFromStyle, applyBoxTitleStep, applyItemStep,
   };
