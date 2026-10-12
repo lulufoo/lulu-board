@@ -23,6 +23,12 @@ assert.doesNotMatch(html, /shellFold|shell-fold/, 'Shared no longer folds');
 assert.doesNotMatch(drawer, /is-folded|shellFold/, 'the fold logic is gone');
 assert.doesNotMatch(shellCss, /shell-fold|is-folded/, 'the fold rules are gone');
 
+// Share this board: first on the Shared page, on its own row, no list heading around it
+assert.match(html, /id="shellShared"[\s\S]*<div class="shell-share-row"><button class="shell-ghost" id="shellShareBoard"[\s\S]*id="shellSharedList"/, 'the button sits above the list');
+assert.doesNotMatch(html, /shell-sec-head/, 'no section headings are left');
+assert.doesNotMatch(shellCss, /shell-sec-head/, 'the heading rules are gone');
+assert.match(css, /\.shell-share-row \.shell-ghost \{ width: 100%;/, 'the button is full width');
+
 // built, and styled after the drawer sheet it overrides
 assert.match(build, /'09-shell-drawer\.js',\s*'09-shell-tabs\.js'/);
 assert.ok('09-shell-tabs.css' > '08-workspace-shell.css', 'the tabs sheet sorts after the shell sheet');

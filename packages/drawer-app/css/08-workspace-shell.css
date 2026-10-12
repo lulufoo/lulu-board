@@ -151,18 +151,6 @@ html[data-drawer-mode="board"] .board-brand {
 .shell-new:hover { background: #c43e72; }
 .shell-new svg { width: 15px; height: 15px; }
 .shell-sec { margin-top: 18px; }
-.shell-sec-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0 0 4px;
-  padding: 0 10px;
-  font: 600 11px/1 var(--font);
-  letter-spacing: .09em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-}
-.shell-sec-head em { font-style: normal; font-weight: 500; letter-spacing: 0; text-transform: none; opacity: .75; }
 .shell-ghost {
   height: 24px;
   padding: 0 9px;
@@ -553,7 +541,5 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 
 /* LB-303 spacing: rows breathe, and Shared's header keeps clear of its first row */
 .shell-list { display: flex; flex-direction: column; gap: 2px; }
-.shell-shared .shell-sec-head { margin-bottom: 10px; }
 .shell-shared .shell-list { padding-bottom: 4px; }
 .shell-sec + .shell-sec { margin-top: 22px; }
-.shell-sec-head { margin-bottom: 6px; }
