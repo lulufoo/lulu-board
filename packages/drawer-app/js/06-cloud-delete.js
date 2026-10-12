@@ -58,7 +58,7 @@ async function cloudDeleteSavedBoard() {
       cloudClearGroupTabs();
     }
     setStatus("Deleted board");
-    await refreshCloudBoardHistory();
+    await cloudRefreshGroups();
     return true;
   } catch (error) {
     setStatus(error && error.message ? error.message : "Cloud delete failed", true);

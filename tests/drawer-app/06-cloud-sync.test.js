@@ -35,7 +35,7 @@ assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button')
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays with the account cluster');
 assert.match(html, /id="boardAccount"[\s\S]*id="btnBoardSignIn"/, 'Sign in lives in the account cluster');
-assert.match(html, /class="float top-float"[\s\S]*id="boardHistory"/, 'signed-in History is on the top-right');
+assert.match(html, /id="shellMineList"/, 'signed-in groups are listed in the left drawer');
 assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockShare"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardOnboarding"/, 'Source is dock tab 3, Share is tab 4');
 assert.match(dockCss, /\.board-dock\[data-open="share"\] \{\s*width:/, 'Share tab expands the dock');
 assert.match(html, /id="btnShareRoleView"/, 'owner can choose view access');
@@ -137,7 +137,7 @@ assert.match(shareRoleSql, /access text/, 'shared read returns the access role')
 assert.match(shareRoleSql, /grant execute on function public\.save_shared_board/, 'shared edit is authenticated only');
 assert.match(cloud, /provider: selected/, 'cloud sign in selects an OAuth provider');
 assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, not a token fragment');
-assert.match(cloud, /refreshCloudBoardHistory/, 'cloud History is loaded from Supabase');
+assert.match(cloud, /cloudRefreshGroups/, 'the drawer group list is loaded from Supabase');
 assert.match(cloud, /function cloudAccountProfile/, 'account chrome reads the OAuth profile');
 assert.match(cloud, /function cloudCloseAccountMenus/, 'account menus share one close path');
 assert.match(cloud, /function cloudShowSignInDialog/, 'unsigned cloud hash opens the dialog');
@@ -246,15 +246,12 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
 }
 
 {
-  const hist = cloud.slice(
-    cloud.indexOf('async function refreshCloudBoardHistory'),
-    cloud.indexOf('async function deleteCloudGroup')
-  );
-  assert.match(hist, /from\("group_members"\)/, 'history loads memberships');
-  assert.match(hist, /groupBoardRowsByGroup/, 'history renders by group');
-  assert.match(hist, /dataset\.historyGroupId/, 'each row is a group');
-  assert.match(hist, /deleteCloudGroup\(group\.group_id, boardIds\)/, '× deletes the group');
-  assert.doesNotMatch(hist, /history-group-members/, 'history does not list each board_id');
+  const groups = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-groups.js'), 'utf8');
+  assert.match(groups, /from\("group_members"\)/, 'groups load memberships');
+  assert.match(groups, /groupBoardRowsByGroup/, 'groups are built by group');
+  const refresh = cloud.slice(cloud.indexOf('async function cloudRefreshGroups'), cloud.indexOf('async function deleteCloudGroup'));
+  assert.match(refresh, /cloudFetchGroupSummaries/, 'the refresh reads the shared group data');
+  assert.match(refresh, /shellRenderMine\(groups\)/, 'the drawer renders each row as a group');
 }
 
 {
@@ -269,7 +266,7 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
 {
   const load = cloud.slice(
     cloud.indexOf('async function loadCloudBoardByHash'),
-    cloud.indexOf('async function refreshCloudBoardHistory')
+    cloud.indexOf('async function cloudRefreshGroups')
   );
   const reject = load.indexOf('if (!boardId) return false');
   const members = load.search(/refreshCloudGroupMembers|from\("group_members"\)|loadSiblingBoardIds/);
@@ -278,7 +275,7 @@ assert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'inse
   assert.match(load, /cloudKnownGroupBoard/, '#b: known sibling skips the group list');
   assert.match(load, /cloudCachedBoardRow/, '#b: uses an in-memory row when present');
   assert.match(load, /if \(cached\)/, '#b: cache hit does not query boards');
-  assert.match(load, /if \(!known\) void refreshCloudBoardHistory/, 'known sibling skips history refresh');
+  assert.match(load, /if \(!known\) void cloudRefreshGroups/, 'known sibling skips the group list refresh');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
   assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');

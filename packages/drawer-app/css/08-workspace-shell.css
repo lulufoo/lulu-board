@@ -45,7 +45,6 @@ html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
 html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
 /* the shell prototype replaces the old toolbar History and the Share tab */
-html[data-drawer-mode="board"] .top-float #boardHistory { display: none !important; }
 #btnDockShare { display: none !important; }
 
 /* ---- canvas ground: white with faint dots ---- */

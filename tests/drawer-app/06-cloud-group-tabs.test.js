@@ -55,7 +55,7 @@ assert.match(tabs, /loadCloudBoardByHash/, 'tab switch does not wait for hashcha
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
 assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
-assert.match(cloud, /if \(!known\) void refreshCloudBoardHistory/, 'sibling switch does not refresh history');
+assert.match(cloud, /if \(!known\) void cloudRefreshGroups/, 'sibling switch does not refresh history');
 assert.match(cloud, /function cloudCachePut/, 'visited boards stay in a memory cache');
 assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
 assert.match(cloud, /cloudForgetBoardCache/, 'sign out and group delete drop the memory cache');
