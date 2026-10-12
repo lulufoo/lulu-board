@@ -1,4 +1,4 @@
-/* drawer-app/oauth/consent — OAuth 2.1 consent for Cursor MCP */
+/* drawer-app/oauth/consent — OAuth 2.1 consent for any MCP client (named from its registration) */
 (function () {
   "use strict";
 
@@ -54,6 +54,20 @@
     return body;
   }
 
+  // Supabase authorization details carry the registered client: { client: { name } } (client_name as a fallback).
+  function clientName(details) {
+    var c = details && details.client;
+    var name = (c && (c.name || c.client_name)) || (details && details.client_name) || "";
+    return String(name).replace(/\s+/g, " ").trim().slice(0, 80);
+  }
+
+  function showClient(name) {
+    if (!name) return;
+    $("consent-title").textContent = "Authorize " + name;
+    $("consent-lead").textContent = name + " wants to read and write your Lulu Board clouds.";
+    document.title = "Authorize " + name + " — Lulu Board";
+  }
+
   function leaveTo(url) {
     if (url) location.assign(url);
   }
@@ -89,7 +103,7 @@
     }
 
     try {
-      await authorizationGet(session, id);
+      showClient(clientName(await authorizationGet(session, id)));
     } catch (error) {
       showError(error.message);
     }
@@ -111,6 +125,11 @@
     $("btn-consent-switch").onclick = function () {
       cloud.auth.signOut().then(function () { location.reload(); });
     };
+  }
+
+  if (typeof module === "object" && module.exports) {
+    module.exports = { clientName: clientName };
+    return;
   }
 
   document.querySelectorAll("[data-consent-oauth]").forEach(function (button) {
