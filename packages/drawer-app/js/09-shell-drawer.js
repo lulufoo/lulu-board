@@ -110,9 +110,6 @@ var shellShares = shellShares || [];
 })();
 
 // Account row. profile: { name, email, initials } or null when signed out.
-// The first account paint of a page load is the initial auth resolution; later paints (sign-in, sign-out) are transitions.
-var shellAccountResolved = false;
-
 function shellPaintAccount(profile) {
   var name = document.getElementById("shellAccountName");
   var email = document.getElementById("shellAccountEmail");
@@ -122,9 +119,6 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
-  var initial = !shellAccountResolved;
-  shellAccountResolved = true;
-  if (initial && !profile) shellNudgeBrand();
   var row = document.getElementById("btnShellAccount");
   if (row) {
     row.classList.toggle("is-signin", !profile);
@@ -132,29 +126,6 @@ function shellPaintAccount(profile) {
     row.title = profile ? "" : "Sign in";
     row.setAttribute("aria-label", profile ? (profile.name || "Account") : "Not signed in. Choose how to sign in");
   }
-}
-
-// Signed-out page load: the L mark pulses its pink ring twice to hint it is clickable.
-// Once per browser: the localStorage flag persists (sign-out never clears it) and is set when the nudge starts.
-function shellNudgeBrand() {
-  var brand = document.getElementById("shellDrawerToggle");
-  if (!brand || document.documentElement.dataset.drawerMode !== "board") return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  try {
-    if (localStorage.getItem("board.brandNudged")) return;
-    localStorage.setItem("board.brandNudged", "1");
-  } catch (_) {}
-  var mark = brand.querySelector(".board-brand-mark");
-  var stop = function () {
-    brand.classList.remove("is-nudge");
-    brand.removeEventListener("pointerenter", stop);
-    brand.removeEventListener("click", stop);
-    if (mark) mark.removeEventListener("animationend", stop);
-  };
-  brand.classList.add("is-nudge");
-  brand.addEventListener("pointerenter", stop);
-  brand.addEventListener("click", stop);
-  if (mark) mark.addEventListener("animationend", stop);
 }
 
 function shellWhen(iso) {
