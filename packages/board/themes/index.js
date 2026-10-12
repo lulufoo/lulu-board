@@ -55,9 +55,38 @@
       swatches: pack.swatches,
       edgeRgb: pack.edgeRgb || '74, 53, 36',
       ramp: pack.ramp || [],
+      hueRamp: !!pack.hueRamp,
       autoTone: !!pack.autoTone,
       types,
     };
+  }
+
+  function hex(c) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(c || ''));
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function mixHex(a, b, t) {
+    const x = hex(a);
+    const y = hex(b);
+    if (!x || !y) return a;
+    const out = x.map((v, i) => Math.round(v + (y[i] - v) * t));
+    return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
+  }
+  // Share of the accent colour at each ramp step (step 0 is the swatch background itself).
+  const HUE_MIX = [0, 0.06, 0.13, 0.2, 0.28, 0.37, 0.47, 0.58];
+  /**
+   * The 8-step ramp for a node. Themes with hueRamp (pastel) build it from the swatch of the outermost box
+   * (hue = its mount-order number), so a picked tone stays in that box's colour family; the others use their fixed ramp.
+   */
+  function rampFor(themeOrId, hue) {
+    const theme = typeof themeOrId === 'string' ? get(themeOrId) : themeOrId;
+    if (!theme.hueRamp || hue == null || !(theme.swatches || []).length) return theme.ramp;
+    const n = theme.swatches.length;
+    const sw = theme.swatches[((hue % n) + n) % n];
+    const accent = hex(sw.border) ? sw.border : sw.item;
+    return HUE_MIX.map((t) => mixHex(sw.bg, accent, t));
   }
 
   function kitFromPool(swatches, toneIndex, itemCount) {
@@ -308,6 +337,6 @@
 
   return {
     THEMES, ORDER, BOX_TYPES, LEGACY_IDS,
-    get, list, resolveId, kitFor, kitFromPool, applyTo, applyBoxTone,
+    get, list, resolveId, kitFor, rampFor, kitFromPool, applyTo, applyBoxTone,
   };
 });

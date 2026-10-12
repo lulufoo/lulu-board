@@ -66,7 +66,12 @@
   function resolve(board, opts) {
     const autoOn = !!(opts && opts.auto);
     const out = new Map();
-    function visit(node, parentTone) {
+    // Boxes take their swatch in mount order (pre-order, every box), so a counter here reproduces it.
+    // hue = that number for the outermost box above a node (itself when it is outermost); null for a root item.
+    let seq = 0;
+    function visit(node, parentTone, rootSeq) {
+      const mySeq = isItem(node) ? null : seq++;
+      const hue = rootSeq != null ? rootSeq : mySeq;
       const fills = fillable(node);
       const explicit = fills ? explicitOf(board, node.id) : null;
       let tone = null;
@@ -80,12 +85,12 @@
           tone = 0;
         }
       }
-      out.set(node, { tone, explicit, parent: parentTone });
+      out.set(node, { tone, explicit, parent: parentTone, hue });
       const below = fills ? tone : parentTone;
       const kids = Array.isArray(node.kids) ? node.kids : (node.items || []).concat(node.boxes || []);
-      kids.forEach((kid) => visit(kid, below));
+      kids.forEach((kid) => visit(kid, below, hue));
     }
-    (board.views || board.boxes || []).forEach((node) => visit(node, null));
+    (board.views || board.boxes || []).forEach((node) => visit(node, null, null));
     return out;
   }
 
@@ -97,7 +102,8 @@
   function paint(el, ramp, info, diamond) {
     if (!el || !info || info.tone == null || !ramp) return;
     if (info.explicit == null && info.parent == null) return;
-    const color = ramp[info.tone];
+    const steps = typeof ramp === 'function' ? ramp(info) : ramp;
+    const color = steps && steps[info.tone];
     if (!color) return;
     el.dataset.bfTone = String(info.tone);
     if (diamond) el.style.setProperty('--bf-tone-fill', color);
