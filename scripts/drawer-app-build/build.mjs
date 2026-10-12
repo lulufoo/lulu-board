@@ -73,6 +73,7 @@ const domain = [
   '06-cloud-share.js',
   '07-chrome-boot.js',
   '08-source-lines.js',
+  '09-shell-prototype.js',
 ];
 const parts = domain.map((f) => {
   const p = path.join(jsDir, f);
