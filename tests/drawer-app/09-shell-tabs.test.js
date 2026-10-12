@@ -103,4 +103,10 @@ function fakeDom(search, sharedShownAtLoad) {
   const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
   assert.match(shellCss, /\.shell-drawer \{[^}]*width: min\(421px, calc\(100vw - 24px\)\);/, 'drawer is 421px wide, never wider than the window');
 }
+{
+  const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+  assert.match(shellCss, /\[data-dock-panel="props"\] \{ scrollbar-width: none; \}/, 'Properties draws no scrollbar (Firefox / standard)');
+  assert.match(shellCss, /\[data-dock-panel="props"\]::-webkit-scrollbar \{ display: none; \}/, 'Properties draws no scrollbar (WebKit / Chrome)');
+  assert.doesNotMatch(shellCss, /\[data-dock-panel="props"\][^{]*\{[^}]*overflow: *hidden/, 'Properties is hidden-bar, not unscrollable');
+}
 console.log('ok 09-shell-tabs');

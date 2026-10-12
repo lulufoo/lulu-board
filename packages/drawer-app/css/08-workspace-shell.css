@@ -366,6 +366,9 @@ html[data-drawer-mode="board"] .board-account .board-cloud-status-icon { width: 
 
 /* panels */
 html[data-drawer-mode="board"] .board-dock-panel { padding: 20px 20px 24px; gap: 14px; }
+/* Properties still scrolls when the fields are taller than the window; it just draws no scrollbar */
+html[data-drawer-mode="board"] [data-dock-panel="props"] { scrollbar-width: none; }
+html[data-drawer-mode="board"] [data-dock-panel="props"]::-webkit-scrollbar { display: none; }
 html[data-drawer-mode="board"] .board-dock .props-head { border-bottom-color: var(--paper-line); padding-bottom: 14px; }
 html[data-drawer-mode="board"] .board-dock .props-head strong,
 html[data-drawer-mode="board"] .board-dock .dock-source-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
