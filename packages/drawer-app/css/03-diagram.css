@@ -1,6 +1,6 @@
 /* board diagram surfaces */
-.board-selection { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
-.board-selection-tree { outline: 3px dashed #f59e0b !important; outline-offset: 3px; }
+.board-selection { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+.board-selection-tree { outline: 2px dashed var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
 .board-reorder-caret {
   position: absolute;
@@ -53,7 +53,7 @@
 }
 .board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection),
 .board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection) {
-  outline: 1px dashed rgba(245, 158, 11, 0.55);
+  outline: 1px dashed var(--bf-ring-soft, rgba(219, 76, 132, .45));
   outline-offset: 3px;
 }
 .board-render .box.board-type-container > .box-content,
@@ -63,15 +63,15 @@
 }
 .board-render .box.board-type-container.board-selection,
 .board-render .board-zone.board-type-container.board-selection {
-  /* Amber selection outline; keep dashed group border visible underneath. */
-  outline: 3px solid #f59e0b !important;
-  outline-offset: 3px;
+  /* Selection ring (brand pink); keep dashed group border visible underneath. */
+  outline: 2px solid var(--bf-ring, #db4c84) !important;
+  outline-offset: 2px;
   background: transparent !important;
 }
 .board-render .box.board-type-layout.board-selection,
 .board-render .board-zone.board-type-layout.board-selection {
-  outline: 3px solid #f59e0b !important;
-  outline-offset: 3px;
+  outline: 2px solid var(--bf-ring, #db4c84) !important;
+  outline-offset: 2px;
   border-color: transparent !important;
   background: transparent !important;
 }
@@ -1038,7 +1038,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-diamond { display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: 0; box-shadow: none; overflow: visible; }
 .board-diamond-visual { position: relative; flex: 0 0 auto; }
 .board-diamond.board-selection { outline: none !important; }
-.board-diamond.board-selection > .board-diamond-visual { outline: 3px solid #f59e0b !important; outline-offset: 3px; }
+.board-diamond.board-selection > .board-diamond-visual { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
 .board-diamond-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .board-diamond .box-content { padding: 0; gap: 6px; align-items: stretch; flex: 0 0 auto; width: max-content; max-width: 100%; }
 .board-diamond .box-content > .board-item { width: 100%; box-sizing: border-box; }

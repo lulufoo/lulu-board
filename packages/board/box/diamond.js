@@ -60,8 +60,8 @@
     halo.classList.add('board-item-diamond-halo');
     halo.setAttribute('points', '50,-1.8 101.8,50 50,101.8 -1.8,50');
     halo.setAttribute('fill', 'none');
-    halo.setAttribute('stroke', '#f59e0b');
-    halo.setAttribute('stroke-width', '3');
+    halo.setAttribute('stroke', '#db4c84');
+    halo.setAttribute('stroke-width', '2');
     halo.setAttribute('stroke-linejoin', 'miter');
     halo.setAttribute('vector-effect', 'non-scaling-stroke');
     const polygon = doc.createElementNS('http://www.w3.org/2000/svg', 'polygon');
