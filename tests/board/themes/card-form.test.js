@@ -30,3 +30,7 @@ assert.match(css, /\.board-item-md code\s*\{[^}]*rgba\(90, 67, 48/);
 // diamond chip: no outline; fill follows the parent box like the rect chip
 assert.match(css, /board-item-diamond-face\s*\{[^}]*stroke:\s*none/);
 assert.match(css, /board-type-card > \.box-content > \.board-item-diamond \.board-item-diamond-face/);
+
+// note: cream paper without an outline, quieter title
+assert.match(css, /board-item-note-sheet\s*\{[^}]*background:\s*#fff6dc[^}]*border:\s*0/);
+assert.match(css, /board-item-note \.board-item-md h1\s*\{[^}]*font-size:\s*1\.15em/);
