@@ -423,7 +423,7 @@ function setMode(mode, opts) {
   var skipBoard = !!(opts.restore && hasBoard);
   if (!skipBoard) {
     renderBoard({ fit: false, restoreView: true });
-    if (typeof refreshBoardHistory === "function") void refreshBoardHistory();
+    if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();
   } else {
     applyRestoredBoardView();
     requestAnimationFrame(function () {
@@ -513,15 +513,7 @@ async function openOnboardingHash() {
   btn.addEventListener("click", function() { void openOnboardingHash(); });
 })();
 
-(function wireBoardHistory() {
-  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
-    var cloudRefresh = document.getElementById("btnBoardHistoryRefresh");
-    if (cloudRefresh) cloudRefresh.addEventListener("click", function() { void refreshBoardHistory(); });
-    void refreshBoardHistory();
-    return;
-  }
-  var btn = document.getElementById("btnBoardHistoryRefresh");
-  if (btn) btn.addEventListener("click", function() { void refreshBoardHistory(); });
-  void refreshBoardHistory();
+(function bootGroups() {
+  if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();
 })();
 

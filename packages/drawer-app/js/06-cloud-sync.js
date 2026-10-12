@@ -90,55 +90,9 @@ function cloudBoardId() {
     : "";
 }
 
-function cloudSetHistoryVisible(visible) {
-  var root = document.documentElement;
-  root.dataset.cloudHistory = visible ? "on" : "off";
-  var heading = document.querySelector("#boardHistory .history-head strong");
-  if (heading) heading.textContent = visible ? "Cloud history" : "History";
-}
-
 function isLocalDrawerPreview() {
   var host = location.hostname;
   return host === "127.0.0.1" || host === "localhost";
-}
-
-function paintLocalHistoryPreview() {
-  var list = document.getElementById("boardHistoryList");
-  var empty = document.getElementById("boardHistoryEmpty");
-  var combo = list && list.closest(".history-combo");
-  if (!list || !combo) return;
-  if (typeof wireHistoryCombos === "function") wireHistoryCombos();
-  var titles = [
-    "Alpha Route", "Beta Notes", "Gamma Map", "Delta Spec",
-    "Epsilon Draft", "Zeta Review", "Eta Plan", "Selected Board",
-    "Theta Board", "Iota Sketch", "Kappa Outline", "Lambda Copy"
-  ];
-  var active = 7;
-  list.innerHTML = "";
-  titles.forEach(function (title, index) {
-    var li = document.createElement("li");
-    li.className = "history-item";
-    li.setAttribute("role", "option");
-    li.dataset.historyTitle = title;
-    li.dataset.historyKind = "board";
-    li.classList.toggle("is-active", index === active);
-    li.setAttribute("aria-selected", index === active ? "true" : "false");
-    var main = document.createElement("div");
-    main.className = "history-item-main";
-    var top = document.createElement("div");
-    top.className = "history-item-top";
-    var name = document.createElement("span");
-    name.className = "history-item-title";
-    name.textContent = title;
-    top.appendChild(name);
-    main.appendChild(top);
-    li.appendChild(main);
-    list.appendChild(li);
-  });
-  if (empty) empty.hidden = true;
-  if (typeof setHistoryComboFace === "function") {
-    setHistoryComboFace(combo, { title: titles[active] }, "board");
-  }
 }
 
 function applyLocalSignedInPreview() {
@@ -172,9 +126,7 @@ function applyLocalSignedInPreview() {
     img.removeAttribute("src");
     img.hidden = true;
   }
-  cloudSetHistoryVisible(true);
-  var list = document.getElementById("boardHistoryList");
-  if (!list || !list.children.length) paintLocalHistoryPreview();
+  if (typeof shellRenderMine === "function") shellRenderMine([]);
 }
 
 function cloudSafeAvatarUrl(raw) {
@@ -349,21 +301,11 @@ function cloudSetAccountUi() {
       img.hidden = true;
     }
   }
-  cloudSetHistoryVisible(signedIn);
+  if (typeof shellPaintAccount === "function") shellPaintAccount(profile);
   if (typeof syncShareChrome === "function") syncShareChrome();
-  if (!signedIn) applyLocalSignedInPreview();
-}
-
-function cloudShowHistoryMessage(message) {
-  var list = document.getElementById("boardHistoryList");
-  var empty = document.getElementById("boardHistoryEmpty");
-  var combo = list && list.closest(".history-combo");
-  if (list) list.innerHTML = "";
-  if (typeof setHistoryComboFace === "function") setHistoryComboFace(combo, null, "board");
-  if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
-  if (empty) {
-    empty.hidden = !message;
-    empty.textContent = message || "";
+  if (!signedIn) {
+    applyLocalSignedInPreview();
+    if (typeof shellRenderMine === "function") shellRenderMine([]);
   }
 }
 
@@ -432,14 +374,14 @@ function cloudInit() {
       if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(location.hash)) {
         if (typeof loadSharedBoardByHash === "function") void loadSharedBoardByHash(location.hash);
       } else if (cloudSession) {
-        void refreshCloudBoardHistory();
+        void cloudRefreshGroups();
         if (cloudBoardId()) void loadCloudBoardByHash(location.hash);
       }
     });
     cloudSessionReady = cloudClient.auth.getSession().then(function (result) {
       cloudSession = result && result.data ? result.data.session : null;
       cloudSetAccountUi();
-      if (cloudSession) void refreshCloudBoardHistory();
+      if (cloudSession) void cloudRefreshGroups();
       else cloudOpenSignInFromLanding();
       return cloudSession;
     }).catch(function () {
@@ -483,7 +425,6 @@ async function cloudSignOut() {
   cloudForgetBoardCache();
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
   cloudSetAccountUi();
-  cloudShowHistoryMessage("");
   if (leaveCloud) {
     history.replaceState(null, "", location.pathname + location.search);
     if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
@@ -652,7 +593,7 @@ async function saveBoardToCloud(opts) {
     setBoardSyncUI("ok");
     setStatus("Saved to cloud");
     if (opts.explicit && typeof showCopyTip === "function") showCopyTip("Saved to cloud");
-    await refreshCloudBoardHistory();
+    await cloudRefreshGroups();
     return true;
   } catch (error) {
     if (seq !== cloudSaveSeq) return false;
@@ -695,7 +636,7 @@ async function loadCloudBoardByHash(raw) {
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
-    if (!known) void refreshCloudBoardHistory();
+    if (!known) void cloudRefreshGroups();
     return true;
   }
   setStatus("Loading cloud board…");
@@ -718,7 +659,7 @@ async function loadCloudBoardByHash(raw) {
     if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
-    if (!known) void refreshCloudBoardHistory();
+    if (!known) void cloudRefreshGroups();
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
@@ -729,108 +670,18 @@ async function loadCloudBoardByHash(raw) {
   }
 }
 
-async function refreshCloudBoardHistory() {
+// Refresh the drawer's Mine list from the cloud. Signed out: empty (or sample rows in the local preview).
+async function cloudRefreshGroups() {
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     if (isLocalDrawerPreview()) applyLocalSignedInPreview();
-    else cloudSetHistoryVisible(false);
+    if (typeof shellRenderMine === "function") shellRenderMine([]);
     return;
   }
-  var list = document.getElementById("boardHistoryList");
-  var empty = document.getElementById("boardHistoryEmpty");
-  var combo = list && list.closest(".history-combo");
-  if (!list) return;
-  cloudSetHistoryVisible(true);
-  if (typeof wireHistoryCombos === "function") wireHistoryCombos();
   try {
-    var result = await cloudClient.from("boards")
-      .select("board_id,title,created_at,updated_at")
-      .order("updated_at", { ascending: false });
-    if (result.error) throw result.error;
-    var memberResult = await cloudClient.from("group_members")
-      .select("board_id,group_id");
-    if (memberResult.error) throw memberResult.error;
-    var rows = result.data || [];
-    var groups = groupBoardRowsByGroup(rows, memberResult.data || []);
-    if (!groups.length) {
-      cloudShowHistoryMessage("No cloud boards yet");
-      return;
-    }
-    if (empty) empty.hidden = true;
-    var current = cloudBoardId();
-    var activeItem = null;
-    var fragment = document.createDocumentFragment();
-    groups.forEach(function (group) {
-      var faceRow = group.members[0];
-      if (!faceRow) return;
-      var boardIds = group.members.map(function (row) { return row.board_id; });
-      var inGroup = boardIds.indexOf(current) >= 0;
-      var item = {
-        id: faceRow.board_id,
-        title: faceRow.title,
-        created_at: faceRow.updated_at || faceRow.created_at,
-      };
-      var li = document.createElement("li");
-      li.className = "history-item";
-      li.setAttribute("role", "option");
-      li.dataset.historyId = item.id;
-      li.dataset.historyTitle = item.title || "Untitled";
-      li.dataset.historyKind = "board";
-      li.dataset.historyGroupId = group.group_id;
-      li.classList.toggle("is-active", inGroup);
-      li.setAttribute("aria-selected", inGroup ? "true" : "false");
-      if (inGroup) activeItem = item;
-
-      var main = document.createElement("div");
-      main.className = "history-item-main";
-      var top = document.createElement("div");
-      top.className = "history-item-top";
-      var kind = document.createElement("span");
-      kind.className = "history-kind";
-      kind.textContent = "board";
-      var title = document.createElement("span");
-      title.className = "history-item-title";
-      title.textContent = historyDisplayTitle(item, "board");
-      top.appendChild(kind);
-      top.appendChild(title);
-      var meta = document.createElement("div");
-      meta.className = "history-item-meta";
-      appendHistoryMetaLine(meta, item);
-      main.appendChild(top);
-      main.appendChild(meta);
-
-      var del = document.createElement("button");
-      del.type = "button";
-      del.className = "history-item-del";
-      del.setAttribute("aria-label", "Delete group");
-      del.textContent = "×";
-      li.appendChild(main);
-      li.appendChild(del);
-      li.addEventListener("click", function (event) {
-        if (event.target === del || del.contains(event.target)) return;
-        if (typeof closeHistoryCombo === "function") closeHistoryCombo(combo);
-        if (inGroup) return;
-        if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(item.id);
-        else cloudSetBoardHash(item.id, false);
-      });
-      del.addEventListener("click", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        void deleteCloudGroup(group.group_id, boardIds);
-      });
-      fragment.appendChild(li);
-    });
-    list.innerHTML = "";
-    list.appendChild(fragment);
-    if (typeof filterHistoryCombo === "function") filterHistoryCombo(combo);
-    var faceRow = groups[0].members[0];
-    var faceItem = activeItem || {
-      id: faceRow.board_id,
-      title: faceRow.title,
-      created_at: faceRow.updated_at || faceRow.created_at,
-    };
-    if (typeof setHistoryComboFace === "function") setHistoryComboFace(combo, faceItem, "board");
+    var groups = await cloudFetchGroupSummaries();
+    if (typeof shellRenderMine === "function") shellRenderMine(groups);
   } catch (error) {
-    cloudShowHistoryMessage(error && error.message ? error.message : "Cloud history failed");
+    setStatus(error && error.message ? error.message : "Could not load your boards", true);
   }
 }
 
@@ -861,7 +712,7 @@ async function deleteCloudGroup(groupId, boardIds) {
       await refreshCloudGroupMembers(cloudBoardId());
     }
     setStatus("Deleted group");
-    await refreshCloudBoardHistory();
+    await cloudRefreshGroups();
   } catch (error) {
     setStatus(error && error.message ? error.message : "Cloud delete failed", true);
   }

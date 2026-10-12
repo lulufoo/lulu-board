@@ -46,12 +46,17 @@ function renderSourceGutter(gutter, heights) {
   var n = heights.length;
   var digits = String(Math.max(1, n)).length;
   gutter.style.minWidth = (Math.max(2, digits) + 1.6) + "ch";
-  var html = "";
+  // Built with DOM calls: the page CSP (style-src 'self') drops style="" written through innerHTML.
+  var frag = document.createDocumentFragment();
   var i;
   for (i = 0; i < n; i++) {
-    html += "<div class=\"source-gutter-line\" style=\"height:" + heights[i] + "px\">" + (i + 1) + "</div>";
+    var line = document.createElement("div");
+    line.className = "source-gutter-line";
+    line.style.height = heights[i] + "px";
+    line.textContent = String(i + 1);
+    frag.appendChild(line);
   }
-  inner.innerHTML = html;
+  inner.replaceChildren(frag);
 }
 function refreshSourceLineEditor(textarea, gutter) {
   if (!textarea || !gutter || textarea.clientWidth < 8) return;

@@ -16,7 +16,7 @@ assert.deepStrictEqual([...intents], ['menu'], 'only the footer Sign in writes a
 assert.match(landingJs, /lulu-board:open-sign-in/, 'landing writes the one-shot flag');
 
 // the workspace reads it once, only on the signed-out branch
-assert.match(sync, /if \(cloudSession\) void refreshCloudBoardHistory\(\);\s*else cloudOpenSignInFromLanding\(\);/, 'only when there is no session');
+assert.match(sync, /if \(cloudSession\) void cloudRefreshGroups\(\);\s*else cloudOpenSignInFromLanding\(\);/, 'only when there is no session');
 
 const start = sync.indexOf('function cloudOpenSignInFromLanding()');
 const end = sync.indexOf('function cloudInit()');
