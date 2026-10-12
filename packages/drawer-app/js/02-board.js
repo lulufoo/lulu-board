@@ -1650,7 +1650,7 @@ function renderBoard(opts) {
       syncBoardStyleChrome(rendered.board);
       applyBoardThemeToPreview();
       if (opts.fit) {
-        fitBoardView({ persist: true });
+        fitBoardView();
       } else if (opts.restoreView) {
         applyRestoredBoardView();
       } else {
