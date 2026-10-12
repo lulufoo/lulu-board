@@ -64,7 +64,7 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter {
   border-right: 0;
   background: transparent;
   color: var(--src-num);
-  font: 11px/1.65 var(--src-mono);
+  font: 9px/1.65 var(--src-mono);
 }
 html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter-line { padding: 0 14px 0 20px; }
 html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter-line.is-current { color: var(--src-num-on); font-weight: 700; }
@@ -74,7 +74,7 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource {
   position: relative;
   z-index: 1;
   padding: 16px 16px 28px 4px;
-  font: 11px/1.65 var(--src-mono);
+  font: 9px/1.65 var(--src-mono);
   tab-size: 2;
   color: transparent;
   caret-color: #111;
@@ -90,7 +90,7 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placehol
   padding: 16px 16px 28px 4px;
   overflow: hidden;
   pointer-events: none;
-  font: 11px/1.65 var(--src-mono);
+  font: 9px/1.65 var(--src-mono);
   tab-size: 2;
   white-space: pre-wrap;
   overflow-wrap: break-word;
