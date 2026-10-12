@@ -62,9 +62,12 @@
     const start = ((toneIndex % n) + n) % n;
     const primary = swatches[start];
     const items = [];
+    const canvasItems = [];
     const count = Math.max(itemCount || 5, 5);
     for (let i = 0; i < count; i++) {
-      items.push(swatches[(start + i) % n].item || swatches[(start + i) % n].bg);
+      const sw = swatches[(start + i) % n];
+      items.push(sw.item || sw.bg);
+      canvasItems.push(sw.canvasItem || sw.item || sw.bg);
     }
     return {
       zoneBg: primary.bg,
@@ -75,6 +78,7 @@
       cardBorder: primary.border,
       cardLeft: '1px solid ' + primary.border,
       itemPalette: items,
+      canvasItemPalette: canvasItems,
       toneIndex: start,
     };
   }
@@ -144,7 +148,7 @@
       const raw = kitFromPool(theme.swatches || FALLBACK_SWATCHES, toneIndex || 0, 8);
       kit.cardLeft = '1px solid ' + raw.zoneBorder;
       kit.cardBorder = raw.zoneBorder;
-      kit.itemPalette = raw.itemPalette;
+      kit.itemPalette = raw.canvasItemPalette;
       if (chrome.shell === 'outline' && !kit.zoneBorder) kit.zoneBorder = raw.zoneBorder;
     }
     return kit;

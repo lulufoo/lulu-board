@@ -15,3 +15,21 @@
   outline: 2px solid var(--bf-ring-soft);
   outline-offset: 2px;
 }
+
+/* ---- Box · card: no border, soft corners; only the outermost card lifts off the canvas ---- */
+.board-render .box.board-type-card {
+  border: 0 !important;
+  border-radius: var(--bf-radius-box) !important;
+  box-shadow: var(--bf-shadow-box);
+}
+/* a card inside a card: fill only, one step deeper than its parent, no lift */
+.board-render .board-type-card .box.board-type-card {
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+  box-shadow: none;
+}
+.board-render .board-type-card .box.board-type-card:has(> .box-content > .board-item) {
+  background: color-mix(in srgb, var(--board-card-zone-bg, #fffdf9) 92%, #5a4330) !important;
+}
+.board-render .board-type-card .box.board-type-card > .box-title {
+  background: transparent !important;
+}

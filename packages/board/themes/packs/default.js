@@ -12,24 +12,21 @@
     label: 'Default',
     // Same stack as the site shell (--font), plus CJK fallbacks so Chinese text does not fall to a serif.
     fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
-    color: '#222',
+    color: '#4a3524',
     edgeStroke: '#2563eb',
     edgeEvidence: '#aaaaaa',
     edgeFeedback: '#888888',
     bandBg: '#f5f5f5',
     bandBorder: '#bbb',
+    // Warm paper: bg = card, item = chip inside a card, card = chip straight on the canvas,
+    // canvasItem = chip inside a container (on the canvas), border = container dash colour.
     swatches: [
-      { bg: '#ffffff', border: '#bbbbbb', item: '#ffffff' },
-      { bg: '#f7f7f7', border: '#999999', item: '#f5f5f5' },
-      { bg: '#ffffff', border: '#888888', item: '#fafafa' },
-      { bg: '#f3f3f3', border: '#777777', item: '#eeeeee' },
-      { bg: '#ffffff', border: '#666666', item: '#f7f7f7' },
-      { bg: '#f9f9f9', border: '#555555', item: '#f0f0f0' },
+      { bg: '#fffdf9', border: '#b8a68a', item: '#f3ebdd', card: '#ece3d3', canvasItem: '#ece3d3' },
     ],
     typePartials: {
-      card: { radius: '6px', titleColor: '#222', titleWeight: '650' },
+      card: { radius: '12px', titleColor: '#4a3524', titleWeight: '650', cardColor: '#4a3524' },
       layout: { shell: 'hollow', pad: '0' },
-      container: { shell: 'outline', borderStyle: 'dashed', pad: '16px' },
+      container: { shell: 'outline', borderStyle: 'dashed', pad: '16px', titleColor: '#7a6650', titleWeight: '600', cardColor: '#4a3524' },
     },
   };
 });

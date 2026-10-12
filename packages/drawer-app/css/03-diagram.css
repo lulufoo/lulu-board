@@ -490,10 +490,10 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
 .board-render .board-type-container > .box-content > .box.board-type-card,
 .board-render .board-type-container > .box-content > .board-zone.board-type-card {
   background: var(--board-card-zone-bg, var(--board-zone-bg)) !important;
-  border: 1px solid var(--board-card-zone-border, var(--board-zone-border)) !important;
+  border: 0 !important;
   border-radius: var(--board-card-zone-radius, var(--board-zone-radius));
   padding: var(--board-card-zone-pad, var(--board-zone-pad)) !important;
-  box-shadow: none;
+  box-shadow: var(--bf-shadow-box);
 }
 .board-render .board-type-container > .box-content > .box.board-type-card .board-card,
 .board-render .board-type-container > .box-content > .board-zone.board-type-card .board-card {
