@@ -53,7 +53,7 @@ assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
 assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
-assert.match(read('packages/drawer-app/js/06-cloud-shares.js') + read('packages/drawer-app/js/09-shell-drawer.js'), /set_share_role/, 'owner access uses set_share_role');
+assert.match(read('packages/drawer-app/js/06-cloud-shares.js') + read('packages/drawer-app/js/09-shell-drawer.js') + read('packages/drawer-app/js/09-share-dialog.js'), /set_share_role/, 'owner access uses set_share_role');
 assert.match(shareJs, /save_shared_board/, 'shared editors save through save_shared_board');
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');

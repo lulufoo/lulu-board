@@ -191,7 +191,7 @@ html[data-drawer-mode="board"] .board-brand {
 }
 .shell-row-dir { flex-direction: row; align-items: center; gap: 10px; }
 .shell-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.shell-row-link { cursor: default; }
+.shell-row-link { cursor: pointer; }
 .shell-dir {
   flex: none;
   width: 22px; height: 22px;
@@ -205,7 +205,8 @@ html[data-drawer-mode="board"] .board-brand {
 
 /* shared section: the list of boards I shared (a tab, see 09-shell-tabs.css) */
 .shell-row-acts { display: none; gap: 4px; }
-.shell-row-link:hover .shell-row-acts { display: flex; }
+.shell-row-link:hover .shell-row-acts,
+.shell-row-link:focus-within .shell-row-acts { display: flex; }
 .shell-row-acts button {
   height: 24px;
   padding: 0 8px;
@@ -216,7 +217,6 @@ html[data-drawer-mode="board"] .board-brand {
   font: 600 11.5px var(--font);
   cursor: pointer;
 }
-.shell-row-acts button:last-child { color: var(--danger); }
 .shell-drawer-foot {
   display: flex;
   align-items: center;
@@ -449,7 +449,8 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
   color: var(--brand);
   box-shadow: var(--press);
 }
-.shell-row-link.is-current:hover .shell-here { display: none; }
+.shell-row-link.is-current:hover .shell-here,
+.shell-row-link.is-current:focus-within .shell-here { display: none; }
 
 /* product intro: an icon at the far right of the account row */
 .shell-foot-icon {
@@ -480,24 +481,11 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 .shell-ghost:disabled { opacity: .45; cursor: default; }
 .shell-ghost:disabled:hover { background: transparent; }
 
-/* hover actions take the place of the second line, so the row never changes height */
+/* a Shared row: title and note, with the one action (Stop) at the right on hover / focus; the rest is in the Share dialog */
 .shell-row-link .shell-row-main b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.shell-row-link .shell-row-acts {
-  position: absolute; left: 44px; right: 8px; bottom: 6px;
-  gap: 4px;
-}
-.shell-row-link .shell-row-acts button { height: 20px; padding: 0 7px; font-size: 11px; }
-/* Shared rows: the second line is a fixed 20px slot (note text, or the action buttons on hover),
-   with a real gap under the title, so the buttons never crowd it and the row never jumps. */
-.shell-row-link .shell-row-main { gap: 6px; }
-.shell-row-link .shell-row-main > span { height: 20px; line-height: 20px; }
-.shell-row-link .shell-row-acts { bottom: 8px; }
-.shell-row-link:hover .shell-row-main > span { visibility: hidden; }
-.shell-row-acts button:last-child { color: var(--ink); }
-.shell-row-acts button.is-danger { color: var(--danger); }
-.shell-shared .shell-list .shell-empty { padding: 4px 12px 8px; }
-.shell-ghost:disabled { opacity: .45; cursor: default; }
-.shell-ghost:disabled:hover { background: transparent; }
+.shell-row-link .shell-row-acts { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); }
+.shell-row-link .shell-row-acts button { height: 24px; padding: 0 10px; font-size: 11.5px; }
+.shell-row-link:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 
 .shell-search-results { max-height: min(420px, 60vh); overflow: auto; padding: 0 6px 8px; }
 .shell-search-results .shell-row b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

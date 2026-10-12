@@ -97,12 +97,11 @@ console.log('ok 09-shell-drawer');
   assert.match(boot, /boardIconSec\.addEventListener\("change"/, 'picking a category switches the icon list');
 }
 
-// ---- shared rows: a real gap between the title and the hover actions ----
+// ---- shared rows: one action (Stop) at the right; the rest lives in the Share dialog ----
 {
   const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
-  assert.match(css, /\.shell-row-link \.shell-row-main \{ gap: 6px; \}/, 'title keeps 6px from the second line');
-  assert.match(css, /\.shell-row-link \.shell-row-main > span \{ height: 20px; line-height: 20px; \}/, 'second line is a fixed 20px slot, same height as the buttons');
-  assert.match(css, /\.shell-row-link \.shell-row-acts \{ bottom: 8px; \}/, 'actions sit in that slot');
+  assert.match(css, /\.shell-row-link \.shell-row-acts \{ position: absolute; right: 8px; top: 50%; transform: translateY\(-50%\); \}/, 'Stop sits at the right edge of the row');
+  assert.doesNotMatch(css, /\.shell-row-link:hover \.shell-row-main > span \{ visibility: hidden; \}/, 'the note stays visible on hover');
 }
 
 // ---- Mine: Load more is a state at the end of the list (auto-loads on reaching it), not a button ----

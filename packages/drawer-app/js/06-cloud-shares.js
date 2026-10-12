@@ -73,21 +73,6 @@ async function cloudShareCopyLink(shareId) {
   }
 }
 
-// "Share this board": make a link for the open board if it has none, copy it, refresh the list.
-async function cloudShareOpenBoard() {
-  var boardId = typeof cloudBoardId === "function" ? cloudBoardId() : "";
-  if (!boardId || !cloudSession || !cloudSession.user || (typeof isShareGuest === "function" && isShareGuest())) {
-    setStatus("Save this board to the cloud to share it", true);
-    return;
-  }
-  var row = null;
-  var shares = typeof shellShares !== "undefined" ? shellShares : [];
-  var known = shares.filter(function (item) { return item.boardId === boardId; })[0];
-  if (known) row = { share_id: known.shareId };
-  else row = await cloudShareMutate(boardId, "open_share", null, "Share link ready");
-  if (row && row.share_id) await cloudShareCopyLink(row.share_id);
-}
-
 async function cloudRefreshShares() {
   var shares = [];
   try {

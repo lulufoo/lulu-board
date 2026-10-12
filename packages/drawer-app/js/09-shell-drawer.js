@@ -102,7 +102,7 @@ var shellShares = [];
   if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
   var shareBtn = document.getElementById("shellShareBoard");
   if (shareBtn) shareBtn.addEventListener("click", function () {
-    if (typeof cloudShareOpenBoard === "function") void cloudShareOpenBoard();
+    if (typeof shareDialogOpenCurrent === "function") shareDialogOpenCurrent(false);
   });
   window.addEventListener("hashchange", function () { shellRenderMine(); shellRenderShared(); });
 })();
@@ -313,14 +313,23 @@ function shellIsPreview() {
   return typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
 }
 
-// "Share this board" works for a saved cloud board you own.
+// Is the open board already one of the shares? (Then its row, not this button, is how you reach its dialog.)
+function shellOpenBoardShared() {
+  if (shellIsPreview()) return shellSampleShares().some(function (item) { return item.isCurrent; });
+  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  return !!current && shellShares.some(function (item) { return item.boardId === current; });
+}
+
+// "Share this board" works for a saved cloud board you own, and only shows while the open board is not shared yet.
 function shellSyncShareButton() {
   var btn = document.getElementById("shellShareBoard");
+  var row = document.getElementById("shellShareRow");
   if (!btn) return;
+  if (row) row.hidden = shellOpenBoardShared();
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   var own = typeof cloudBoardId === "function" && !!cloudBoardId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
-  btn.title = btn.disabled ? "Save this board to the cloud to share it" : "Copy a link to this board";
+  btn.title = btn.disabled ? "Save this board to the cloud to share it" : "Share this board";
 }
 
 // Functions, not vars: the first render can run before this file's var initialisers do.
@@ -329,11 +338,12 @@ function shellArrowOut() { return '<svg viewBox="0 0 16 16" fill="none" aria-hid
 
 // Local preview only: sample rows, including the "shared with me" kind that is not built yet.
 function shellSampleShares() {
+  var openIsShared = !/[?&]board=unshared/.test(location.search); // review link: ?board=unshared
   return [
     { incoming: true, title: "Search ranking v2", note: "from Chen Yu · can view" },
     { incoming: true, title: "Release checklist", note: "from Mia · can edit" },
-    { boardId: "x1", shareId: "x1", title: "LLM architecture", role: "view", isCurrent: true },
-    { boardId: "x2", shareId: "x2", title: "Android MVI", role: "edit", isCurrent: false },
+    { boardId: "x1", shareId: "s_11111111111111111111111111111111", title: "LLM architecture", role: "view", isCurrent: openIsShared },
+    { boardId: "x2", shareId: "s_22222222222222222222222222222222", title: "Android MVI", role: "edit", isCurrent: false },
   ];
 }
 
@@ -403,13 +413,7 @@ function shellRenderShared(shares) {
     var acts = document.createElement("div");
     acts.className = "shell-row-acts";
     var live = !preview && typeof cloudShareMutate === "function";
-    acts.appendChild(shellShareAction("Copy", "Copy the link", function () { if (live) void cloudShareCopyLink(item.shareId); }));
-    acts.appendChild(shellShareAction(item.role === "edit" ? "Edit" : "View", item.role === "edit" ? "Anyone with the link can edit. Click to make it view only." : "Anyone with the link can view. Click to allow editing.", function () {
-      if (live) void cloudShareMutate(item.boardId, "set_share_role", { p_role: item.role === "edit" ? "view" : "edit" }, item.role === "edit" ? "Link is view only" : "Link can edit");
-    }));
-    acts.appendChild(shellShareAction("New link", "Replace the link; the old one stops working", function () {
-      if (live) void cloudShareMutate(item.boardId, "rotate_share", null, "Share link replaced");
-    }));
+    // Everything else about a share (link, who can do what, a new link) lives in the Share dialog.
     var stop = shellShareAction("Stop", "Stop sharing this board", async function () {
       if (!live) return;
       if (typeof boardAskConfirm === "function" && !(await boardAskConfirm({
@@ -423,10 +427,12 @@ function shellRenderShared(shares) {
     stop.className = "is-danger";
     acts.appendChild(stop);
     li.appendChild(acts);
-    li.addEventListener("click", function () {
-      if (!live || isCurrent) return;
-      if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
-      if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(item.boardId);
+    li.tabIndex = 0;
+    li.title = "Share settings";
+    function openShare() { if (typeof shareDialogOpen === "function") shareDialogOpen(Object.assign({}, item, { isCurrent: isCurrent })); }
+    li.addEventListener("click", openShare);
+    li.addEventListener("keydown", function (event) {
+      if (event.target === li && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); openShare(); }
     });
     frag.appendChild(li);
   });
