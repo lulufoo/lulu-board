@@ -25,7 +25,7 @@ function shareDialogFind(boardId) {
 function shareDialogCurrentItem(wantNew) {
   if (shellIsPreview()) {
     var sample = shellSampleShares().filter(function (item) { return item.isCurrent; })[0];
-    var copy = Object.assign({}, sample);
+    var copy = Object.assign({ boardId: "x0", title: "Untitled", shareId: "", role: "view", isCurrent: true }, sample);
     if (wantNew) copy.shareId = "";
     return copy;
   }

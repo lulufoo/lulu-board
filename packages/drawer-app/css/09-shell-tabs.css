@@ -45,9 +45,10 @@
   vertical-align: 1px;
 }
 
-/* Share this board: the first thing on the Shared page, full width */
-.shell-share-row { margin: 2px 0 8px; }
-.shell-share-row .shell-ghost { width: 100%; height: 34px; border-radius: 10px; font-size: 13px; }
+/* Share this board: bottom right of the Shared page; hidden while the open board is already in the list */
+.shell-share-row { flex: none; display: flex; justify-content: flex-end; padding: 8px 2px 2px; }
+.shell-share-row[hidden] { display: none; }
+.shell-share-row .shell-ghost { height: 32px; padding: 0 14px; border-radius: 10px; font-size: 13px; }
 
 /* the drawer body does not scroll: New board and the tabs stay put, the open page fills the rest and scrolls inside */
 .shell-drawer-body { display: flex; flex-direction: column; overflow: hidden; }
@@ -56,4 +57,4 @@
 .shell-drawer-body .shell-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .shell-drawer-body .shell-sec[hidden] { display: none; }
 #shellMineList { flex: 1; min-height: 0; overflow-y: auto; }
-#shellShared { overflow-y: auto; }
+#shellSharedList { flex: 1; min-height: 0; overflow-y: auto; }

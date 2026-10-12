@@ -23,11 +23,13 @@ assert.doesNotMatch(html, /shellFold|shell-fold/, 'Shared no longer folds');
 assert.doesNotMatch(drawer, /is-folded|shellFold/, 'the fold logic is gone');
 assert.doesNotMatch(shellCss, /shell-fold|is-folded/, 'the fold rules are gone');
 
-// Share this board: first on the Shared page, on its own row, no list heading around it
-assert.match(html, /id="shellShared"[\s\S]*<div class="shell-share-row"><button class="shell-ghost" id="shellShareBoard"[\s\S]*id="shellSharedList"/, 'the button sits above the list');
+// Share this board: bottom right of the Shared page, no list heading around it
+assert.match(html, /id="shellShared"[\s\S]*id="shellSharedList"[\s\S]*<div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareBoard"/, 'the button sits below the list');
+assert.match(drawer, /row\.hidden = shellOpenBoardShared\(\)/, 'hidden while the open board is already shared');
 assert.doesNotMatch(html, /shell-sec-head/, 'no section headings are left');
 assert.doesNotMatch(shellCss, /shell-sec-head/, 'the heading rules are gone');
-assert.match(css, /\.shell-share-row \.shell-ghost \{ width: 100%;/, 'the button is full width');
+assert.match(css, /\.shell-share-row \{ flex: none; display: flex; justify-content: flex-end;/, 'the button is right aligned');
+assert.match(css, /#shellSharedList \{ flex: 1; min-height: 0; overflow-y: auto; \}/, 'the list takes the height, the button stays at the bottom');
 
 // built, and styled after the drawer sheet it overrides
 assert.match(build, /'09-shell-drawer\.js'[\s\S]*'09-shell-tabs\.js'/);

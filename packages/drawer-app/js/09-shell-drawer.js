@@ -313,10 +313,19 @@ function shellIsPreview() {
   return typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
 }
 
-// "Share this board" works for a saved cloud board you own.
+// Is the open board already one of the shares? (Then its row, not this button, is how you reach its dialog.)
+function shellOpenBoardShared() {
+  if (shellIsPreview()) return shellSampleShares().some(function (item) { return item.isCurrent; });
+  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  return !!current && shellShares.some(function (item) { return item.boardId === current; });
+}
+
+// "Share this board" works for a saved cloud board you own, and only shows while the open board is not shared yet.
 function shellSyncShareButton() {
   var btn = document.getElementById("shellShareBoard");
+  var row = document.getElementById("shellShareRow");
   if (!btn) return;
+  if (row) row.hidden = shellOpenBoardShared();
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   var own = typeof cloudBoardId === "function" && !!cloudBoardId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
@@ -329,10 +338,11 @@ function shellArrowOut() { return '<svg viewBox="0 0 16 16" fill="none" aria-hid
 
 // Local preview only: sample rows, including the "shared with me" kind that is not built yet.
 function shellSampleShares() {
+  var openIsShared = !/[?&]board=unshared/.test(location.search); // review link: ?board=unshared
   return [
     { incoming: true, title: "Search ranking v2", note: "from Chen Yu · can view" },
     { incoming: true, title: "Release checklist", note: "from Mia · can edit" },
-    { boardId: "x1", shareId: "s_11111111111111111111111111111111", title: "LLM architecture", role: "view", isCurrent: true },
+    { boardId: "x1", shareId: "s_11111111111111111111111111111111", title: "LLM architecture", role: "view", isCurrent: openIsShared },
     { boardId: "x2", shareId: "s_22222222222222222222222222222222", title: "Android MVI", role: "edit", isCurrent: false },
   ];
 }
