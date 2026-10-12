@@ -537,7 +537,7 @@ html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 
 /* Mine: a bounded, scrolling list; Load more is its last row (only visible at the bottom) */
 /* no overscroll-behavior: contain here: once the list hits its top, the wheel must carry on to the drawer body, or New board / MINE stay out of reach */
 #shellMineList { max-height: min(46vh, 420px); overflow-y: auto; }
-/* the last row is a state, not a button: blank until it is reached, then "Load more" + cycling dots */
+/* the last row is a state, not a button: blank until it is reached, then "Loading more" + cycling dots */
 .shell-more-item { min-height: 30px; padding: 7px 12px; text-align: center; color: var(--ink-soft); font: 500 12px var(--font); }
 .shell-dots i { font-style: normal; animation: shell-dot 0.9s steps(1, end) infinite; }
 .shell-dots i:nth-child(1) { animation-name: shell-dot-1; }
