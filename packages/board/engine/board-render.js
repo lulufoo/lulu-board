@@ -125,12 +125,8 @@
       if (!row || typeof row !== 'object' || Array.isArray(row)) return;
       const next = {};
       if (row.fz != null && row.fz !== '') next.fz = clampTypeStep(row.fz);
-      if (row.tone != null && row.tone !== '' && Tone) {
-        const t = Tone.clamp(row.tone);
-        if (t != null) next.tone = t;
-      }
       Object.keys(row).forEach((field) => {
-        if (field === 'fz' || field === 'tone' || row[field] == null) return;
+        if (field === 'fz' || row[field] == null) return;
         next[field] = row[field];
       });
       if (Object.keys(next).length) out[key] = next;
@@ -200,52 +196,6 @@
     }
     if (!key) fail('node id is required');
     applyNodeTypeStep(board, key, step);
-    return serialize(board);
-  }
-  function toneThemeOf(board) {
-    const id = resolveStyle(board).theme;
-    return Themes && typeof Themes.get === 'function' ? Themes.get(id) : null;
-  }
-  // After a parent changes, every explicit child tone is re-checked against the gap rule and written back.
-  function settleTones(board) {
-    const theme = toneThemeOf(board);
-    const map = Tone.resolve(board, { auto: !!(theme && theme.autoTone) });
-    const ids = Object.assign({}, styleIdsOf(board));
-    map.forEach((info, node) => {
-      if (info.explicit == null || info.tone == null || info.tone === info.explicit) return;
-      const row = Object.assign({}, ids[node.id] || {});
-      row.tone = info.tone;
-      ids[node.id] = row;
-    });
-    setStyleIds(board, ids);
-  }
-  /** Fill state of one node for the picker: { fillable, tone, explicit, parent, allowed[8], ramp[8] }. */
-  function nodeToneInfo(source, target) {
-    const board = typeof source === 'string' ? parse(source) : source;
-    const node = findNode(board, target);
-    const theme = toneThemeOf(board);
-    const ramp = (theme && theme.ramp) || [];
-    if (!node || !Tone || !Tone.fillable(node) || !ramp.length) return { fillable: false, ramp };
-    const map = Tone.resolve(board, { auto: !!(theme && theme.autoTone) });
-    const info = map.get(node) || { tone: null, explicit: null, parent: null };
-    return { fillable: true, tone: info.tone, explicit: info.explicit, parent: info.parent, allowed: Tone.allowed(info.parent), ramp };
-  }
-  function updateNodeTone(source, target, tone) {
-    const board = parse(source);
-    const node = nodeForTypeStep(board, target);
-    let key = String(node.id || '').trim();
-    const next = tone == null || tone === '' ? null : Tone.clamp(tone);
-    if (!key) {
-      if (next == null) return source;
-      key = String(ensureKidId(board, node) || '').trim();
-    }
-    if (!key) fail('node id is required');
-    const ids = Object.assign({}, styleIdsOf(board));
-    const row = Object.assign({}, ids[key] || {});
-    if (next == null) delete row.tone; else row.tone = next;
-    if (!Object.keys(row).length) delete ids[key]; else ids[key] = row;
-    setStyleIds(board, ids);
-    settleTones(board);
     return serialize(board);
   }
   function resolveStyle(board) {
@@ -2418,5 +2368,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateNodeTone, nodeToneInfo, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
 });
