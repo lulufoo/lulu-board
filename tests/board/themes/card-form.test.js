@@ -40,3 +40,9 @@ assert.match(css, /board-item-note \.board-item-md h1\s*\{[^}]*font-size:\s*1\.1
   const kit = Themes.kitFor(id, 'card', 0, 5);
   assert.ok(kit.cardBg && kit.cardBg.toLowerCase() !== '#fff' && kit.cardBg !== kit.zoneBg || id === 'default', id + ' canvas chip fill');
 });
+
+// diamond corners are rounded (path with arcs, not a sharp polygon) and the halo follows them
+const dsrc = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/diamond.js'), 'utf8');
+assert.match(dsrc, /function roundedRhombusPath/);
+assert.match(dsrc, /createElementNS\('http:\/\/www\.w3\.org\/2000\/svg', 'path'\)/);
+assert.doesNotMatch(dsrc, /stroke-linejoin', 'miter'/);

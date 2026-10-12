@@ -18,6 +18,64 @@
     ));
   }
 
+  // Rounded rhombus in pixel space. The rounded tips still touch the W x H box
+  // (the vertices are pushed out by the arc setback), so link ends stay flush.
+  const DIAMOND_RADIUS = 6;
+  const HALO_GAP = 3;
+
+  function roundedRhombusPath(cx, cy, a, b, r) {
+    const pts = [[cx, cy - b], [cx + a, cy], [cx, cy + b], [cx - a, cy]];
+    const parts = [];
+    for (let i = 0; i < 4; i++) {
+      const v = pts[i];
+      const p = pts[(i + 3) % 4];
+      const n = pts[(i + 1) % 4];
+      const l1 = Math.hypot(p[0] - v[0], p[1] - v[1]);
+      const l2 = Math.hypot(n[0] - v[0], n[1] - v[1]);
+      const u1 = [(p[0] - v[0]) / l1, (p[1] - v[1]) / l1];
+      const u2 = [(n[0] - v[0]) / l2, (n[1] - v[1]) / l2];
+      const cos = Math.max(-1, Math.min(1, u1[0] * u2[0] + u1[1] * u2[1]));
+      const half = Math.acos(cos) / 2;
+      const t = Math.min(r / Math.tan(half), l1 / 2, l2 / 2);
+      const s = [v[0] + u1[0] * t, v[1] + u1[1] * t];
+      const e = [v[0] + u2[0] * t, v[1] + u2[1] * t];
+      parts.push((i === 0 ? 'M' : 'L') + s[0].toFixed(2) + ' ' + s[1].toFixed(2)
+        + ' Q' + v[0].toFixed(2) + ' ' + v[1].toFixed(2) + ' ' + e[0].toFixed(2) + ' ' + e[1].toFixed(2));
+    }
+    return parts.join(' ') + ' Z';
+  }
+
+  // Half-diagonals so that, after rounding with radius r, the tips land on W/2 and H/2.
+  function rhombusHalfDiagonals(W, H, r) {
+    const a0 = W / 2;
+    const b0 = H / 2;
+    const side = Math.hypot(a0, b0);
+    const sinSide = b0 / side; // half-angle at the left/right tips
+    const sinTop = a0 / side;  // half-angle at the top/bottom tips
+    return {
+      a: a0 + r * (1 / sinSide - 1),
+      b: b0 + r * (1 / sinTop - 1),
+    };
+  }
+
+  function applyDiamondShape(svg, W, H) {
+    if (!svg || !(W > 0) || !(H > 0)) return;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const face = svg.querySelector('.board-item-diamond-face');
+    const halo = svg.querySelector('.board-item-diamond-halo');
+    const r = Math.min(DIAMOND_RADIUS, Math.min(W, H) / 6);
+    const base = rhombusHalfDiagonals(W, H, r);
+    if (face) face.setAttribute('d', roundedRhombusPath(W / 2, H / 2, base.a, base.b, r));
+    if (halo) {
+      // Outline pushed out by HALO_GAP; the arc radius grows by the same amount.
+      const side = Math.hypot(base.a, base.b);
+      const ao = base.a + HALO_GAP * side / base.b;
+      const bo = base.b + HALO_GAP * side / base.a;
+      halo.setAttribute('d', roundedRhombusPath(W / 2, H / 2, ao, bo, r + HALO_GAP));
+    }
+  }
+
   function decorateChipDiamond(el, item, ctx) {
     if (!el) return;
     // `el` is the transparent host. Required. Do not unwrap or delete it.
@@ -44,7 +102,7 @@
     visual.style.overflow = 'visible';
     const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.classList.add('board-item-diamond-shape');
-    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('viewBox', '0 0 96 69');
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.setAttribute('shape-rendering', 'geometricPrecision');
     svg.setAttribute('width', '96');
@@ -56,28 +114,26 @@
     svg.style.height = '69px';
     svg.style.overflow = 'visible';
     svg.style.display = 'block';
-    const halo = doc.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    const halo = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     halo.classList.add('board-item-diamond-halo');
-    halo.setAttribute('points', '50,-1.8 101.8,50 50,101.8 -1.8,50');
     halo.setAttribute('fill', 'none');
     halo.setAttribute('stroke', '#db4c84');
     halo.setAttribute('stroke-width', '2');
-    halo.setAttribute('stroke-linejoin', 'miter');
+    halo.setAttribute('stroke-linejoin', 'round');
     halo.setAttribute('vector-effect', 'non-scaling-stroke');
-    const polygon = doc.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    const polygon = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     polygon.classList.add('board-item-diamond-face');
-    polygon.setAttribute('points', '50,0 100,50 50,100 0,50');
     const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.diagramTheme) || 'default';
     const theme = root.BoardThemes && root.BoardThemes.get ? root.BoardThemes.get(themeId) : null;
     const kit = root.BoardThemes && root.BoardThemes.kitFor ? root.BoardThemes.kitFor(themeId, 'card', 0, 1) : null;
     polygon.setAttribute('fill', (kit && kit.cardBg) || '#fff');
     polygon.setAttribute('stroke', (kit && kit.cardBorder) || (theme && theme.edgeStroke) || '#9370db');
     polygon.setAttribute('stroke-width', '1.5');
-    polygon.setAttribute('stroke-linejoin', 'miter');
-    polygon.setAttribute('stroke-miterlimit', '8');
+    polygon.setAttribute('stroke-linejoin', 'round');
     polygon.setAttribute('vector-effect', 'non-scaling-stroke');
     svg.appendChild(halo);
     svg.appendChild(polygon);
+    applyDiamondShape(svg, 96, 69);
     visual.appendChild(svg);
     el.style.position = el.classList.contains('board-root-item') ? 'absolute' : 'relative';
     el.insertBefore(visual, el.firstChild);
@@ -236,6 +292,7 @@
         svg.style.height = svgH + 'px';
         svg.style.overflow = 'visible';
         svg.style.display = 'block';
+        applyDiamondShape(svg, svgW, svgH);
       }
     }
     if (!copy) return;
