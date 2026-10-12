@@ -388,6 +388,38 @@
     <button type="button" class="board-sign-in-close" id="btnBoardSignInClose">Not now</button>
   </div>
 </div>
+<div class="board-sign-in" id="shareDialog" hidden>
+  <button type="button" class="board-sign-in-backdrop" id="shareDialogBackdrop" aria-label="Close"></button>
+  <div class="board-sign-in-sheet share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareDialogTitle">
+    <h2 id="shareDialogTitle">Share board</h2>
+    <p class="share-board" id="shareDialogBoard"></p>
+    <div class="share-pane" id="shareDialogOff">
+      <p>Create a link to share this board. Anyone with the link will be able to view it.</p>
+      <button type="button" class="btn primary share-wide" id="shareCreate">Create link</button>
+    </div>
+    <div class="share-pane" id="shareDialogOn" hidden>
+      <div class="share-label">Link</div>
+      <div class="share-link-row">
+        <input type="text" id="shareLinkInput" readonly spellcheck="false" aria-label="Share link">
+        <button type="button" class="btn primary" id="shareCopy">Copy</button>
+      </div>
+      <div class="share-label" id="shareRoleLabel">Anyone with the link can</div>
+      <div class="share-seg" role="radiogroup" aria-labelledby="shareRoleLabel">
+        <button type="button" role="radio" aria-checked="true" data-share-role="view">View</button>
+        <button type="button" role="radio" aria-checked="false" data-share-role="edit">Edit</button>
+      </div>
+      <p class="share-hint" id="shareRoleHint"></p>
+      <div class="share-new-row">
+        <button type="button" class="share-text-btn" id="shareNewLink">Create a new link</button>
+        <span>The old link stops working.</span>
+      </div>
+    </div>
+    <div class="share-foot">
+      <button type="button" class="btn" id="shareOpenBoard" hidden>Open board</button>
+      <button type="button" class="btn" id="shareDone">Done</button>
+    </div>
+  </div>
+</div>
 <div class="board-sign-in" id="boardConfirmDialog" hidden>
   <button type="button" class="board-sign-in-backdrop" id="boardConfirmBackdrop" aria-label="Cancel"></button>
   <div class="board-sign-in-sheet" role="dialog" aria-modal="true" aria-labelledby="boardConfirmTitle">

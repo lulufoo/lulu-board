@@ -30,7 +30,7 @@ assert.doesNotMatch(shellCss, /shell-sec-head/, 'the heading rules are gone');
 assert.match(css, /\.shell-share-row \.shell-ghost \{ width: 100%;/, 'the button is full width');
 
 // built, and styled after the drawer sheet it overrides
-assert.match(build, /'09-shell-drawer\.js',\s*'09-shell-tabs\.js'/);
+assert.match(build, /'09-shell-drawer\.js'[\s\S]*'09-shell-tabs\.js'/);
 assert.ok('09-shell-tabs.css' > '08-workspace-shell.css', 'the tabs sheet sorts after the shell sheet');
 assert.match(css, /data-shell-tab="mine"\] #shellShared,[\s\S]*data-shell-tab="shared"\] #shellMine \{ display: none; \}/, 'one list at a time');
 assert.match(css, /:not\(\[data-shell-tab="shared"\]\):has\(#shellSharedList \.is-current\) #shellTabShared span::after/, 'dot on Shared when the open board is shared');

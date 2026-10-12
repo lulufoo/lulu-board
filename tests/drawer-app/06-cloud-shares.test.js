@@ -8,6 +8,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const shares = read('packages/drawer-app/js/06-cloud-shares.js');
 const drawer = read('packages/drawer-app/js/09-shell-drawer.js');
+const dialog = read('packages/drawer-app/js/09-share-dialog.js');
 const sync = read('packages/drawer-app/js/06-cloud-sync.js');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
 
@@ -15,7 +16,7 @@ assert.match(appBuild, /06-cloud-share\.js[\s\S]*06-cloud-shares\.js/, 'shares m
 assert.match(shares, /\.not\("share_id", "is", null\)/, 'the list is the boards that have a share link');
 assert.match(shares, /own_share_state/, 'each link role comes from own_share_state (grants has no client read policy)');
 for (const rpc of ['open_share', 'rotate_share', 'unshare', 'set_share_role']) {
-  assert.match(shares + drawer, new RegExp(rpc), rpc + ' is reachable from the drawer');
+  assert.match(shares + drawer + dialog, new RegExp(rpc), rpc + ' is reachable from the drawer or the Share dialog');
 }
 assert.match(drawer, /Stop sharing this board\?/, 'Stop asks first: the link stops working');
 assert.match(sync, /cloudRefreshShares\(\)/, 'the group refresh also refreshes the shared list');

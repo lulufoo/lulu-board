@@ -76,6 +76,7 @@ const domain = [
   '07-chrome-boot.js',
   '08-source-lines.js',
   '09-shell-drawer.js',
+  '09-share-dialog.js',
   '09-shell-tabs.js',
   '10-source-style.js',
 ];
