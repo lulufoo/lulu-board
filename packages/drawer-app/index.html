@@ -37,8 +37,12 @@
         <ul class="shell-list" id="shellSharedList"></ul>
       </section>
     </div>
+    <div class="shell-auth-menu" id="shellAuthMenu" role="menu" hidden>
+      <button type="button" class="board-auth-provider" data-board-oauth="google" role="menuitem">Continue with Google</button>
+      <button type="button" class="board-auth-provider" data-board-oauth="github" role="menuitem">Continue with GitHub</button>
+    </div>
     <footer class="shell-drawer-foot">
-      <button type="button" class="shell-account" id="btnShellAccount">
+      <button type="button" class="shell-account" id="btnShellAccount" aria-haspopup="menu" aria-expanded="false">
         <span class="shell-avatar" id="shellAccountAvatar" aria-hidden="true">L</span>
         <span class="shell-account-text"><b id="shellAccountName">lulu</b><span id="shellAccountEmail">namdamlu@outlook.com</span></span>
       </button>
