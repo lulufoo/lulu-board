@@ -31,7 +31,7 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-identity:
   background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23232b3b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m8 7-5 5 5 5M16 7l5 5-5 5M14 5l-4 14'/></svg>") center / contain no-repeat;
 }
 html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-head strong {
-  font: 500 14px/1 var(--src-mono);
+  font: 500 14px/20px var(--src-mono);
   letter-spacing: 0;
   color: var(--src-ink);
 }
@@ -97,6 +97,11 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placehol
 }
 .hl-line { display: block; }
 .hl-line.is-current { background: rgba(35, 43, 59, .035); box-shadow: inset 0 1px 0 rgba(35, 43, 59, .08), inset 0 -1px 0 rgba(35, 43, 59, .08); }
+.hl-line.ind-1,.hl-line.ind-2,.hl-line.ind-3,.hl-line.ind-4 { background-repeat: no-repeat; background-size: 1px 1.65em; }
+.hl-line.ind-1 { background-image: linear-gradient(#c3ccd1, #c3ccd1); background-position: .5ch 0; }
+.hl-line.ind-2 { background-image: linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1); background-position: .5ch 0, 2.5ch 0; }
+.hl-line.ind-3 { background-image: linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1); background-position: .5ch 0, 2.5ch 0, 4.5ch 0; }
+.hl-line.ind-4 { background-image: linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1), linear-gradient(#c3ccd1, #c3ccd1); background-position: .5ch 0, 2.5ch 0, 4.5ch 0, 6.5ch 0; }
 .hl-kw { color: #8a43c4; font-weight: 700; }
 .hl-key { color: #5f939c; }
 .hl-id { color: #a02a7c; }

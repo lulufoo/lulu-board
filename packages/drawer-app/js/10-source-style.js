@@ -71,6 +71,8 @@
     String(ta.value).split("\n").forEach(function (text) {
       var line = document.createElement("span");
       line.className = "hl-line";
+      var ind = Math.min(4, Math.floor((/^ */.exec(text)[0].length) / 2));
+      if (ind > 0) line.classList.add("ind-" + ind);
       tokenizeLine(text, line);
       frag.appendChild(line);
     });
