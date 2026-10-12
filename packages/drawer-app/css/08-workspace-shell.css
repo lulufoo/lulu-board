@@ -438,3 +438,12 @@ html[data-drawer-mode="board"] .export-type-row { border: 0; border-radius: 12px
 html[data-drawer-mode="board"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }
 html[data-drawer-mode="board"] .board-editor-wrap { border: 0; border-radius: 12px; background: var(--fill); }
 html[data-drawer-mode="board"] .dock-source-foot .btn-delete { height: 34px; color: var(--danger); }
+
+/* group tabs keep the light surface so the active pink state reads clearly */
+html[data-drawer-mode="board"] .group-tab-float {
+  background: var(--paper) !important;
+  border: 1px solid var(--paper-line) !important;
+  box-shadow: var(--press);
+}
+html[data-drawer-mode="board"] .group-tab:hover { background: var(--wash); }
+html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
