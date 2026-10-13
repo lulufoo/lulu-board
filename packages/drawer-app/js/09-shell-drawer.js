@@ -61,7 +61,7 @@ var shellShares = shellShares || [];
     else if (want[1] === "search") setSearch(true);
     else { var tab = document.getElementById("btnDock" + want[1].charAt(0).toUpperCase() + want[1].slice(1)); if (tab) tab.click(); }
   }
-  // Blank start: early-head sets data-blank-start-drawer for unsigned blank-start (ws=1).
+  // Blank start: early-head sets data-blank-start-drawer for every blank-start (LB-360).
   if (document.documentElement.dataset.blankStartDrawer === "1") {
     setDrawer(true);
     delete document.documentElement.dataset.blankStartDrawer;
