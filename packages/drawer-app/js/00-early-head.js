@@ -99,7 +99,7 @@
     if (!shouldBlankStart(ctx)) return null;
     return {
       hash: BLANK_Z_HASH,
-      openDrawer: !hasStoredSession(ctx && ctx.storage),
+      openDrawer: true, // LB-360: signed-in and unsigned both open drawer
     };
   }
 

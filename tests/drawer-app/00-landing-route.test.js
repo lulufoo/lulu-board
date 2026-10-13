@@ -118,12 +118,12 @@ assert.strictEqual(planOut.openDrawer, true, 'unsigned blank-start opens left dr
 const planIn = Head.blankStartPlan({ search: '?ws=1', hash: '', storage: session });
 assert.ok(planIn);
 assert.strictEqual(planIn.hash, Head.BLANK_Z_HASH);
-assert.strictEqual(planIn.openDrawer, false, 'signed-in blank-start keeps drawer closed');
+assert.strictEqual(planIn.openDrawer, true, 'signed-in blank-start opens left drawer (LB-360)');
 
 const planRootIn = Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: session });
 assert.ok(planRootIn);
 assert.strictEqual(planRootIn.hash, Head.BLANK_Z_HASH);
-assert.strictEqual(planRootIn.openDrawer, false, 'signed-in / blank-start keeps drawer closed');
+assert.strictEqual(planRootIn.openDrawer, true, 'signed-in / blank-start opens left drawer (LB-360)');
 
 assert.strictEqual(Head.blankStartPlan({ search: '?ws=1', hash: BOARD, storage: empty }), null);
 assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: empty }), null, 'unsigned / → landing not blank-start');
@@ -141,7 +141,7 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', st
   const p = Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: session });
   assert.ok(p, 'LB-357: signed-in / → blank-start');
   assert.strictEqual(p.hash, Head.BLANK_Z_HASH);
-  assert.strictEqual(p.openDrawer, false, 'LB-357: signed-in blank-start keeps drawer closed');
+  assert.strictEqual(p.openDrawer, true, 'LB-360: signed-in blank-start opens drawer');
   assert.strictEqual(route({ pathname: '/', search: '', hash: '', storage: session }), false, 'LB-357: signed-in / stays on workspace');
 }
 
@@ -154,7 +154,7 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', st
 
   const inn = Head.blankStartPlan({ pathname: '/', search: '?ws=1', hash: '', storage: session });
   assert.ok(inn, 'LB-357: /?ws=1 signed → blank-start');
-  assert.strictEqual(inn.openDrawer, false);
+  assert.strictEqual(inn.openDrawer, true);
   assert.strictEqual(route({ pathname: '/', search: '?ws=1', hash: '', storage: session }), false);
 }
 
