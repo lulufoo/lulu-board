@@ -187,7 +187,6 @@ let boardLinkMode = false;
 let boardLinkStart = null;
 let boardSaveTimer = null;
 let liveBoardId = "";
-let liveBoardTitle = "";
 let liveBoardArchive = "";
 let liveBoardPath = "";
 /* Live camera only. The per-board source of truth is the document's style.viewport
@@ -329,7 +328,6 @@ function archiveBase(path) {
 function applyBoardLiveMeta(meta = {}) {
   if (meta && meta.id) liveBoardId = String(meta.id);
   else if (meta && meta.id === "") liveBoardId = "";
-  if (meta && meta.title != null) liveBoardTitle = String(meta.title || "");
   // Protocol: meta.current points at the editable history record (SSOT).
   // Legacy clients may still send archive — treat it as current.
   if (meta && Object.prototype.hasOwnProperty.call(meta, "current")) {

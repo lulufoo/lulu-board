@@ -313,13 +313,22 @@ function cloudBoardTitle(source) {
   return typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "";
 }
 
+// The board shown in the editor right now: its cloud id, or "" when it has none
+// (local server, #z: hash board, share link, unsaved + draft).
+function cloudOpenBoardId() {
+  if (typeof cloudPlusDraftActive !== "undefined" && cloudPlusDraftActive) return "";
+  return typeof cloudBoardId === "function" ? cloudBoardId() : "";
+}
+
 // SSOT for a board's display title: in-memory md first (the open board's live
 // source, then the cached bmd), else the queried boards.title, else Untitled.
+// An empty id means the open board without a cloud id: read the editor md.
 function getBoardTitle(boardId, queriedTitle) {
   var id = String(boardId || "");
   var source = null;
-  if (id && !cloudPlusDraftActive && typeof cloudBoardId === "function" && cloudBoardId() === id && boardSourceEl) {
-    source = boardSourceEl.value;
+  var editor = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl : null;
+  if (editor && (!id || id === cloudOpenBoardId())) {
+    source = editor.value;
   } else {
     var cached = cloudCachedBoardRow(id);
     if (cached && cached.bmd) source = cached.bmd;
@@ -344,7 +353,7 @@ function cloudClearOpenBoard() {
   boardLocalRev = 0;
   boardServerRev = 0;
   if (typeof updateBoardChars === "function") updateBoardChars();
-  if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", title: "" });
+  if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
   if (typeof renderBoard === "function") renderBoard({ fit: false });
   syncCloudSaveChrome();
 }
@@ -467,7 +476,6 @@ function applyCloudBoardRow(row, opts) {
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: row && row.board_id || "",
-      title: (row && row.title) || cloudBoardTitle(source),
       version: boardLocalRev,
     });
   }

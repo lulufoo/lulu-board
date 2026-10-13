@@ -106,7 +106,7 @@ assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; 
 assert.match(tabs, /"Add board"/, 'plus keeps Add board');
 {
   const sync = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-sync.js'), 'utf8');
-  const start = sync.indexOf('function getBoardTitle');
+  const start = sync.indexOf('function cloudOpenBoardId');
   const end = sync.indexOf('function cloudSetBoardHash');
   assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
@@ -127,6 +127,10 @@ assert.match(tabs, /"Add board"/, 'plus keeps Add board');
   assert.strictEqual(get('b_1', 'Q'), 'Untitled', 'md without a title line → Untitled');
   const draft = make({ draft: true, current: 'b_1', el, cache: { b_1: { bmd: 'board "Saved"' } } });
   assert.strictEqual(draft('b_1', 'Q'), 'Saved', 'while on the draft, member reads its cached md');
+  el.value = 'board "Draft title"\n';
+  assert.strictEqual(draft(''), 'Draft title', 'open board without a cloud id reads the editor md');
+  const local = make({ current: '', el: { value: 'board "Local real"\n' } });
+  assert.strictEqual(local(''), 'Local real', 'local server mode (no id) keeps the real md title, not Untitled');
 }
 assert.doesNotMatch(tabs, /group_members/, 'tabs no longer read group_members');
 console.log('ok cloud-group-tabs');

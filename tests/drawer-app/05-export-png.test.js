@@ -33,4 +33,30 @@ assert.match(boot, /btnCanvasCopySrc.*exportBoardFile/, 'Export File button trig
 assert.doesNotMatch(boot, /copyActiveSourcePath/, 'Copy Path handler is gone');
 assert.match(shell, /Export File below/, 'export hint names Export File');
 
+assert.doesNotMatch(exportPng, /liveBoardTitle/, 'export no longer reads the switch-time title copy');
+assert.match(exportPng, /getBoardTitle\(cloudOpenBoardId\(\)\)/, 'export title comes from getBoardTitle');
+{
+  // switch to a board, then rename it in the editor: export uses the new title
+  const renderIo = read('packages/drawer-app/js/05-render-io.js');
+  const sync = read('packages/drawer-app/js/06-cloud-sync.js');
+  const stemSrc = exportPng.slice(exportPng.indexOf('function exportBoardStem'));
+  const stemBody = stemSrc.slice(0, stemSrc.indexOf('\n}\n') + 3);
+  const titleSrc = sync.slice(sync.indexOf('function cloudOpenBoardId'), sync.indexOf('function cloudSetBoardHash'));
+  const stemOf = renderIo.slice(renderIo.indexOf('function exportStem'), renderIo.indexOf('var copyTipTimer'));
+  const env = { hash: 'b_1', el: { value: 'board "Old name"\n' }, cache: { b_1: { bmd: 'board "Old name"\n' } } };
+  const api = new Function('env', `
+    var cloudPlusDraftActive = false, liveBoardId = 'b_1';
+    function cloudBoardId() { return env.hash; }
+    var boardSourceEl = env.el;
+    function cloudCachedBoardRow(id) { return env.cache[id] || null; }
+    function cloudBoardTitle(src) { var m = /^\\s*board\\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; }
+    ${stemOf}\n${titleSrc}\n${stemBody}
+    return { exportBoardStem: exportBoardStem };`)(env);
+  assert.strictEqual(api.exportBoardStem(), 'Old-name', 'export uses the open board title');
+  env.el.value = 'board "New name"\n';
+  assert.strictEqual(api.exportBoardStem(), 'New-name', 'after renaming in the editor, export uses the new title');
+}
+const shellJs = read('packages/drawer-app/js/01-shell-state.js');
+assert.doesNotMatch(shellJs, /liveBoardTitle/, 'liveBoardTitle copy is gone');
+
 console.log('ok export-png');
