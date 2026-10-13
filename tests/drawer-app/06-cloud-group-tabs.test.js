@@ -93,12 +93,16 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
 
 assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order,title"\)/, 'tabs read group, order and title from boards');
 assert.strictEqual((tabs.match(/cloudClient\.from\("boards"\)/g) || []).length, 1, 'one boards query feeds the tabs');
-assert.match(tabs, /btn\.title = t;/, 'number tabs carry a native title');
+assert.doesNotMatch(tabs, /\.title = /, 'number tabs drop the slow native title');
+assert.match(tabs, /bindGroupTabTip\(btn, relabel\)/, 'number tabs show the self-drawn tip');
+assert.match(tabCss, /\.group-tab-tip \{[\s\S]*pointer-events: none/, 'tip never steals the pointer');
+assert.match(tabCss, /\.group-tab-tip \{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis/, 'tip is a block box so the ellipsis renders');
+assert.match(tabCss, /prefers-reduced-motion/, 'tip honors reduced motion');
 assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
 assert.match(tabs, /getBoardTitle\(row\.board_id, row\.title\)/, 'tabs take the title only from getBoardTitle');
-assert.match(tabs, /addEventListener\("mouseenter", relabel\)/, 'title is re-read on hover');
-assert.match(tabs, /addEventListener\("focus", relabel\)/, 'title is re-read on focus');
-assert.match(tabs, /draft\.title = "Untitled"/, 'unsaved draft tab hovers Untitled');
+assert.match(tabs, /addEventListener\("mouseenter", show\)/, 'title is re-read on hover');
+assert.match(tabs, /addEventListener\("focus", show\)/, 'title is re-read on focus');
+assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; \}\)/, 'unsaved draft tab hovers Untitled');
 assert.match(tabs, /"Add board"/, 'plus keeps Add board');
 {
   const sync = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-sync.js'), 'utf8');
