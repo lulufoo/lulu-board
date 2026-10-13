@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/readme/logo.png" width="160" alt="Lulu Drawer" />
+  <img src="docs/readme/lulu-board-icon.webp" width="160" alt="Lulu Board" />
 </p>
 
 <h1 align="center">Lulu Board</h1>
@@ -36,7 +36,7 @@ The Drawer opens on a built-in template — the onboarding board — so you can 
 
 <p align="center">
   <a href="./examples/board-onboarding/onboarding.bmd">
-    <img src="./examples/board-onboarding/onboarding.png" alt="Board · Onboarding" width="720" />
+    <img src="./docs/readme/lulu-board.webp" alt="Board · Onboarding" width="720" />
   </a>
 </p>
 
@@ -58,7 +58,7 @@ A signed-in owner can share a saved cloud board from the Share dock. The first a
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
-    <img src="./examples/board-android-mvi/android-mvi-architecture.png" alt="Board · Android MVI" width="720" />
+    <img src="./docs/readme/agent-chat.webp" alt="Board · Android MVI" width="720" />
   </a>
 </p>
 
@@ -92,7 +92,7 @@ Click a preview to open the source.
   <tr>
     <td valign="top" align="center">
       <a href="./examples/board-llm-architecture/llm-architecture.bmd">
-        <img src="./examples/board-llm-architecture/llm-architecture.png" alt="Board · LLM Architecture" />
+        <img src="./docs/readme/llm-technical-architecture.webp" alt="Board · LLM Architecture" />
       </a>
       <p>
         <strong>LLM Architecture</strong><br />
@@ -114,7 +114,7 @@ skill/
 ## Develop
 
 ```text
-examples/    # README previews (source + PNG) → packed into skill/board/templates
+examples/    # README previews (source) → packed into skill/board/templates
 packages/    # board, drawer-app
 scripts/     # build tooling
 skill/       # /board skill
