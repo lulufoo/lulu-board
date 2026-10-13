@@ -130,4 +130,71 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', st
 assert.strictEqual(Head.blankStartPlan({ search: '?ws=1&code=x', hash: '', storage: empty }), null);
 assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: BOARD, storage: session }), null);
 
+
+// ---- LB-357 navigation regression checklist (end-to-end matrix) ----
+// unsigned / → landing
+assert.strictEqual(route({ pathname: '/', search: '', hash: '', storage: empty }), true, 'LB-357: unsigned / → landing');
+assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: empty }), null);
+
+// signed-in / → blank-start (drawer closed)
+{
+  const p = Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: session });
+  assert.ok(p, 'LB-357: signed-in / → blank-start');
+  assert.strictEqual(p.hash, Head.BLANK_Z_HASH);
+  assert.strictEqual(p.openDrawer, false, 'LB-357: signed-in blank-start keeps drawer closed');
+  assert.strictEqual(route({ pathname: '/', search: '', hash: '', storage: session }), false, 'LB-357: signed-in / stays on workspace');
+}
+
+// /?ws=1 unsigned + signed → blank-start (drawer open only when unsigned)
+{
+  const out = Head.blankStartPlan({ pathname: '/', search: '?ws=1', hash: '', storage: empty });
+  assert.ok(out, 'LB-357: /?ws=1 unsigned → blank-start');
+  assert.strictEqual(out.openDrawer, true);
+  assert.strictEqual(route({ pathname: '/', search: '?ws=1', hash: '', storage: empty }), false);
+
+  const inn = Head.blankStartPlan({ pathname: '/', search: '?ws=1', hash: '', storage: session });
+  assert.ok(inn, 'LB-357: /?ws=1 signed → blank-start');
+  assert.strictEqual(inn.openDrawer, false);
+  assert.strictEqual(route({ pathname: '/', search: '?ws=1', hash: '', storage: session }), false);
+}
+
+// /landing forced landing (no early-head redirect, no blank-start)
+for (const pathLanding of ['/landing', '/landing/']) {
+  assert.strictEqual(route({ pathname: pathLanding, storage: empty }), false, 'LB-357: ' + pathLanding + ' is not redirected by early-head');
+  assert.strictEqual(route({ pathname: pathLanding, storage: session }), false);
+  assert.strictEqual(Head.shouldBlankStart({ pathname: pathLanding, search: '', hash: '', storage: empty }), false);
+  assert.strictEqual(Head.shouldBlankStart({ pathname: pathLanding, search: '', hash: '', storage: session }), false);
+  assert.strictEqual(Head.blankStartPlan({ pathname: pathLanding, search: '', hash: '', storage: session }), null);
+}
+
+// legal #z/#b/#s → workspace (no landing, no blank-start rewrite)
+for (const hash of [BOARD, SHARE, BLANK]) {
+  assert.strictEqual(route({ hash, storage: empty }), false, 'LB-357: legal hash stays workspace ' + hash);
+  assert.strictEqual(route({ hash, storage: session }), false);
+  assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash, storage: empty }), false);
+  assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash, storage: session }), false);
+  assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '?ws=1', hash, storage: empty }), false, 'LB-357: legal hash wins over ws=1');
+}
+
+// OAuth return stays on workspace (redirectTo is /?ws=1; code/error skip landing + blank-start)
+assert.strictEqual(route({ search: '?ws=1&code=abc' }), false, 'LB-357: OAuth /?ws=1&code= stays workspace');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1&code=abc', hash: '' }), false);
+assert.strictEqual(Head.blankStartPlan({ search: '?code=abc&ws=1', hash: '', storage: empty }), null);
+
+// /start is no longer a product entry (helpers gone; path never blank-starts or soft-lands)
+assert.strictEqual(Head.isStartPath, undefined, 'LB-357: /start helpers removed');
+assert.strictEqual(Head.rewriteStartToRoot, undefined, 'LB-357: /start helpers removed');
+assert.strictEqual(route({ pathname: '/start', storage: empty }), false, 'LB-357: /start not soft-landing');
+assert.strictEqual(route({ pathname: '/start/', storage: session }), false);
+assert.strictEqual(Head.shouldBlankStart({ pathname: '/start', search: '', hash: '', storage: empty }), false);
+assert.strictEqual(Head.shouldBlankStart({ pathname: '/start', search: '', hash: '', storage: session }), false);
+assert.strictEqual(Head.blankStartPlan({ pathname: '/start/', search: '', hash: '', storage: session }), null);
+{
+  const fs = require('fs');
+  const path = require('path');
+  const early = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/00-early-head.js'), 'utf8');
+  assert.doesNotMatch(early, /function isStartPath|function rewriteStartToRoot/, 'LB-357: early-head source has no /start helpers');
+  assert.doesNotMatch(early, /location\.replace\(\s*\/\s*\+|pathname\s*===\s*["']\/start/, 'LB-357: early-head does not redirect /start');
+}
+
 console.log('ok landing-route');

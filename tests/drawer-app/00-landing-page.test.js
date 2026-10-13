@@ -15,6 +15,7 @@ assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.webp')), 'agent-chat.w
 // LB-358: Start free / Get Started / Open a blank board → /?ws=1
 const wsLinks = html.match(/href="\/\?ws=1"/g) || [];
 assert.strictEqual(wsLinks.length, 3, 'three workspace CTAs point to /?ws=1');
+assert.doesNotMatch(html, /href=["']\/start\/?["'#?]/, 'LB-357: landing has no /start product links');
 assert.match(html, /href="\/\?ws=1"><span class="only-out">Start free</);
 assert.match(html, /href="\/\?ws=1"><span class="only-out">Get Started</);
 assert.match(html, /href="\/\?ws=1">Open a blank board</);
