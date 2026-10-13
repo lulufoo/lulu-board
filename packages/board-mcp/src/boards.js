@@ -2,7 +2,7 @@
 
 const BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
-const BOARD_PUBLIC_SELECT = "board_id,title,bmd,version,updated_at,group_members(group_id)";
+const BOARD_PUBLIC_SELECT = "board_id,title,bmd,version,updated_at,group_id";
 
 export function boardTitleFromBody(body) {
   var hit = /^\s*board\s+"([^"]*)"/.exec(String(body || ""));
@@ -41,15 +41,9 @@ export function assertGroupId(groupId) {
   return id;
 }
 
-function groupIdFromMembers(members) {
-  if (!members) return "";
-  if (Array.isArray(members)) return (members[0] && members[0].group_id) || "";
-  return members.group_id || "";
-}
-
 function rowPublic(row) {
   if (!row) return null;
-  var raw = row.group_id || groupIdFromMembers(row.group_members);
+  var raw = row.group_id;
   if (!String(raw || "").trim()) throw new Error("missing group id");
   return {
     board_id: row.board_id,
