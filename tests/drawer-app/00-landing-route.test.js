@@ -57,23 +57,25 @@ assert.strictEqual(route({ pathname: '/landing/' }), false);
 assert.strictEqual(route({ pathname: '/oauth/consent/' }), false);
 assert.strictEqual(route({ storage: null }), true);
 
-
-// /start redirect helpers (LB-353): rewrite to /, keep search, drop hash; never landing
-assert.strictEqual(Head.isStartPath('/start'), true);
-assert.strictEqual(Head.isStartPath('/start/'), true);
-assert.strictEqual(Head.isStartPath('/'), false);
-assert.strictEqual(Head.isStartPath('/landing/'), false);
-assert.strictEqual(Head.isStartPath('/startup'), false);
-assert.strictEqual(Head.isStartPath('/start/extra'), false);
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '' }), '/');
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start/', search: '' }), '/');
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '?code=abc' }), '/?code=abc');
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start/', search: '?code=abc&state=1' }), '/?code=abc&state=1');
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '?code=abc', hash: '#z:deadbeef' }), '/?code=abc', 'hash dropped');
-assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/', search: '' }), null);
-assert.strictEqual(route({ pathname: '/start' }), false, '/start must not show landing');
-assert.strictEqual(route({ pathname: '/start/' }), false, '/start/ must not show landing');
-assert.strictEqual(route({ pathname: '/start', hash: '#foo' }), false);
-assert.strictEqual(route({ pathname: '/start', search: '?code=abc' }), false);
+// /?ws=1 forced workspace (LB-359); /start abandoned
+assert.strictEqual(Head.isForcedWorkspace('?ws=1'), true);
+assert.strictEqual(Head.isForcedWorkspace('?ws=true'), true);
+assert.strictEqual(Head.isForcedWorkspace('?ws=yes'), true);
+assert.strictEqual(Head.isForcedWorkspace('?foo=1&ws=1'), true);
+assert.strictEqual(Head.isForcedWorkspace('?ws=0'), false);
+assert.strictEqual(Head.isForcedWorkspace('?ws=false'), false);
+assert.strictEqual(Head.isForcedWorkspace('?ws=no'), false);
+assert.strictEqual(Head.isForcedWorkspace('?ws='), false);
+assert.strictEqual(Head.isForcedWorkspace(''), false);
+assert.strictEqual(Head.isForcedWorkspace('?code=abc'), false);
+assert.strictEqual(Head.isStartPath, undefined, '/start helpers removed');
+assert.strictEqual(Head.rewriteStartToRoot, undefined, '/start helpers removed');
+assert.strictEqual(route({ search: '?ws=1' }), false, 'ws=1 signed out -> workspace not landing');
+assert.strictEqual(route({ search: '?ws=1', storage: session }), false, 'ws=1 signed in -> workspace');
+assert.strictEqual(route({ search: '?ws=1', hash: '#foo' }), false);
+assert.strictEqual(route({ search: '?ws=true' }), false);
+assert.strictEqual(route({ search: '?ws=0' }), true, 'ws=0 does not force workspace');
+assert.strictEqual(route({ pathname: '/start' }), false, '/start is not a product path (non-root)');
+assert.strictEqual(route({ pathname: '/start/' }), false, '/start/ is not a product path (non-root)');
 
 console.log('ok landing-route');

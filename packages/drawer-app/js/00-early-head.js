@@ -4,13 +4,6 @@
   if (typeof module === "object" && module.exports) module.exports = api;
   if (typeof document !== "undefined" && typeof location !== "undefined") {
     var doc = document.documentElement;
-    if (api.isStartPath(location.pathname)) {
-      location.replace(api.rewriteStartToRoot({
-        pathname: location.pathname,
-        search: location.search,
-      }));
-      return;
-    }
     if (api.shouldShowLanding({
       pathname: location.pathname,
       hash: location.hash,
@@ -57,18 +50,17 @@
     return /[?&](code|error|error_code)=/.test(String(search || ""));
   }
 
-  function isStartPath(pathname) {
-    return /^\/start\/?$/.test(String(pathname || ""));
-  }
-
-  // /start -> / with search kept and hash dropped (blank #z is LB-354).
-  function rewriteStartToRoot(ctx) {
-    if (!isStartPath(ctx && ctx.pathname)) return null;
-    return "/" + String((ctx && ctx.search) || "");
+  // /?ws=1 (truthy ws) forces workspace; replaces /start (LB-359). Blank #z is LB-354.
+  function isForcedWorkspace(search) {
+    var m = /(?:^|[?&])ws=([^&]*)/.exec(String(search || ""));
+    if (!m) return false;
+    var v = decodeURIComponent(m[1]).toLowerCase();
+    return v !== "" && v !== "0" && v !== "false" && v !== "no";
   }
 
   function shouldShowLanding(ctx) {
     if (!/^\/(index\.html)?$/.test(String(ctx.pathname || ""))) return false;
+    if (isForcedWorkspace(ctx.search)) return false;
     if (isLegalHash(ctx.hash)) return false;
     if (isAuthReturn(ctx.search)) return false;
     if (hasStoredSession(ctx.storage)) return false;
@@ -84,8 +76,7 @@
     isLegalHash: isLegalHash,
     hasStoredSession: hasStoredSession,
     isAuthReturn: isAuthReturn,
-    isStartPath: isStartPath,
-    rewriteStartToRoot: rewriteStartToRoot,
+    isForcedWorkspace: isForcedWorkspace,
     shouldShowLanding: shouldShowLanding,
     safeStorage: safeStorage,
   };
