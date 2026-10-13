@@ -157,7 +157,7 @@ async function refreshCloudGroupMembers(boardId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("group_members").select("board_id,group_id,sort_order");
+  var members = await cloudClient.from("boards").select("board_id,group_id,sort_order");
   if (members.error) {
     renderCloudGroupTabs();
     return;

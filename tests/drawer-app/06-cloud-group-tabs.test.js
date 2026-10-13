@@ -91,4 +91,6 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
+assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order"\)/, 'tabs read group and order from boards');
+assert.doesNotMatch(tabs, /group_members/, 'tabs no longer read group_members');
 console.log('ok cloud-group-tabs');

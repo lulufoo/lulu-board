@@ -238,7 +238,8 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const groups = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-groups.js'), 'utf8');
-  assert.match(groups, /from\("group_members"\)/, 'groups load memberships');
+  assert.match(groups, /from\("boards"\)\.select\("board_id,group_id"\)/, 'groups load membership from boards');
+  assert.doesNotMatch(groups, /group_members/, 'group_members is gone');
   assert.match(groups, /groupBoardRowsByGroup/, 'groups are built by group');
   const refresh = cloud.slice(cloud.indexOf('async function cloudRefreshGroups'), cloud.indexOf('async function deleteCloudGroup'));
   assert.match(refresh, /cloudFetchGroupSummaries/, 'the refresh reads the shared group data');
