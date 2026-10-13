@@ -121,3 +121,11 @@ console.log('ok 09-shell-drawer');
   assert.match(css, /@keyframes shell-dot-1[\s\S]*@keyframes shell-dot-3/, 'dots cycle . .. ...');
   assert.match(css, /prefers-reduced-motion: reduce\) \{ \.shell-dots i \{ animation: none/, 'reduced motion shows static dots');
 }
+
+// ---- blank start opens left drawer when early-head flagged it (LB-354) ----
+{
+  const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  assert.match(src, /dataset\.blankStartDrawer === "1"/, 'honors early-head blank-start drawer flag');
+  assert.match(src, /delete document\.documentElement\.dataset\.blankStartDrawer/, 'clears one-shot blank-start flag');
+}
+

@@ -78,4 +78,32 @@ assert.strictEqual(route({ search: '?ws=0' }), true, 'ws=0 does not force worksp
 assert.strictEqual(route({ pathname: '/start' }), false, '/start is not a product path (non-root)');
 assert.strictEqual(route({ pathname: '/start/' }), false, '/start/ is not a product path (non-root)');
 
+
+// blank start shared plan (LB-354): hang on /?ws=1 only; legal hash skips
+assert.strictEqual(Head.BLANK_Z_HASH, BLANK.slice(1), 'blank token matches landing CTA');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: '' }), true);
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: '#foo' }), true, 'illegal hash still blank-starts');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=true', hash: '' }), true);
+assert.strictEqual(Head.shouldBlankStart({ search: '', hash: '' }), false, 'plain / does not blank-start yet (LB-355)');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=0', hash: '' }), false);
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: BOARD }), false, 'legal #b skips');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: SHARE }), false, 'legal #s skips');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: BLANK }), false, 'legal #z skips');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1&code=abc', hash: '' }), false, 'OAuth return skips blank-start');
+assert.strictEqual(Head.shouldBlankStart({ search: '?code=abc&ws=1', hash: '' }), false);
+
+const planOut = Head.blankStartPlan({ search: '?ws=1', hash: '', storage: empty });
+assert.ok(planOut);
+assert.strictEqual(planOut.hash, Head.BLANK_Z_HASH);
+assert.strictEqual(planOut.openDrawer, true, 'unsigned blank-start opens left drawer');
+
+const planIn = Head.blankStartPlan({ search: '?ws=1', hash: '', storage: session });
+assert.ok(planIn);
+assert.strictEqual(planIn.hash, Head.BLANK_Z_HASH);
+assert.strictEqual(planIn.openDrawer, false, 'signed-in blank-start keeps drawer closed');
+
+assert.strictEqual(Head.blankStartPlan({ search: '?ws=1', hash: BOARD, storage: empty }), null);
+assert.strictEqual(Head.blankStartPlan({ search: '', hash: '', storage: empty }), null);
+assert.strictEqual(Head.blankStartPlan({ search: '?ws=1&code=x', hash: '', storage: empty }), null);
+
 console.log('ok landing-route');
