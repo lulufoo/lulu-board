@@ -1767,7 +1767,7 @@ async function saveBoardToFile() {
       'X-Board-Label': 'docker-sbx-board',
     };
     if (typeof liveBoardId !== 'undefined' && liveBoardId) headers['X-Board-Id'] = liveBoardId;
-    if (typeof liveBoardTitle !== 'undefined' && liveBoardTitle) headers['X-Board-Title'] = headerByteString(liveBoardTitle);
+    if (typeof getBoardTitle === 'function') headers['X-Board-Title'] = headerByteString(getBoardTitle(cloudOpenBoardId()));
     const res = await fetch('./board.bmd', { method: 'PUT', headers, body: text });
     if (seq !== boardSaveSeq) return;
     if (res.status === 409) { const payload = await res.json(); boardLocalRev = Number(payload.version != null ? payload.version : payload.rev) || boardLocalRev; boardDirty = false; if (typeof payload.source === 'string') { boardSourceEl.value = payload.source; renderBoard(); } setBoardSyncUI('conflict'); setStatus(`Board version conflict → loaded v ${boardLocalRev}`, true); return; }
@@ -1816,7 +1816,7 @@ async function bootstrapBoardFromHash() {
     boardLocalRev = 1;
     boardServerRev = 0;
     if (typeof applyBoardLiveMeta === "function") {
-      applyBoardLiveMeta({ id: "", version: 1, title: "Untitled" });
+      applyBoardLiveMeta({ id: "", version: 1 });
     }
     await saveBoardToHash({ bump: false });
     setStatus("New board");
@@ -1834,7 +1834,6 @@ async function bootstrapBoardFromHash() {
       applyBoardLiveMeta({
         id: "",
         version: boardLocalRev,
-        title: typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "",
       });
     }
     if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();

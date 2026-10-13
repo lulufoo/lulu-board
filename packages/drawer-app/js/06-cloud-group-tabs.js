@@ -292,9 +292,6 @@ async function cloudSwitchToPlusDraft() {
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: "",
-      title: typeof boardTitleFromBody === "function"
-        ? boardTitleFromBody(boardSourceEl ? boardSourceEl.value : cloudPlusDraftSource)
-        : "Untitled",
       version: boardLocalRev,
     });
   }
@@ -330,7 +327,7 @@ async function cloudStartPlusDraft() {
   boardLocalRev = 1;
   boardServerRev = 0;
   if (typeof applyBoardLiveMeta === "function") {
-    applyBoardLiveMeta({ id: "", title: "Untitled", version: 1 });
+    applyBoardLiveMeta({ id: "", version: 1 });
   }
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId("");
   if (typeof renderBoard === "function") renderBoard({ fit: false });

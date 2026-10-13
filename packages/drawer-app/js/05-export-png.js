@@ -165,7 +165,8 @@ function canvasToPngBlob(canvas) {
 }
 
 function exportBoardStem() {
-  const title = typeof liveBoardTitle === "string" ? liveBoardTitle : "";
+  const parsed = typeof getBoardTitle === "function" ? getBoardTitle(cloudOpenBoardId()) : "";
+  const title = parsed === "Untitled" ? "" : parsed;
   const id = typeof liveRecordId === "function"
     ? liveRecordId()
     : (typeof liveBoardId === "string" ? liveBoardId : "");

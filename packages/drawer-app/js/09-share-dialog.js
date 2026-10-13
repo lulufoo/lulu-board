@@ -32,8 +32,7 @@ function shareDialogCurrentItem(wantNew) {
   var boardId = cloudBoardId();
   var known = shareDialogFind(boardId);
   if (known) return known;
-  var source = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl.value : "";
-  return { boardId: boardId, title: cloudBoardTitle(source) || "Untitled", shareId: "", role: "view", isCurrent: true };
+  return { boardId: boardId, title: getBoardTitle(cloudOpenBoardId()), shareId: "", role: "view", isCurrent: true };
 }
 
 function shareDialogLink(shareId) {

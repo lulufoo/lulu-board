@@ -39,7 +39,6 @@ function applySharedBoardRow(row) {
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: "",
-      title: (row && row.title) || (typeof cloudBoardTitle === "function" ? cloudBoardTitle(source) : ""),
       version: boardLocalRev,
     });
   }
@@ -95,7 +94,7 @@ async function loadSharedBoardByHash(raw) {
     setShareView(false);
     setShareEdit(false);
     if (boardSourceEl) boardSourceEl.value = "";
-    if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", title: "" });
+    if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
     if (typeof renderBoard === "function") renderBoard({ fit: false });
     setBoardSyncUI("error");
     var message = shareRpcError(error, "Shared board load failed");
@@ -135,7 +134,7 @@ async function saveSharedBoard(opts) {
     ? stripDocumentMeta(boardSourceEl && boardSourceEl.value)
     : String(boardSourceEl && boardSourceEl.value || "");
   if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
-  var title = (typeof cloudBoardTitle === "function" ? cloudBoardTitle(source) : "") || "Untitled";
+  var title = getBoardTitle(cloudOpenBoardId());
   var expected = Number(boardServerRev);
   if (!(expected > 0)) expected = 1;
   var seq = ++cloudSaveSeq;
