@@ -47,8 +47,7 @@ assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.board_i
 const saved = del.slice(del.indexOf('async function cloudDeleteSavedBoard'), del.indexOf('async function cloudDeleteCurrentBoard'));
 assert.match(saved, /boardAskConfirm\(\{[\s\S]*Delete this board\?/, 'saved board asks first, in English');
 assert.match(saved, /from\("boards"\)\.delete\(\)\.eq\("board_id", boardId\)/, 'deletes the boards row');
-assert.match(saved, /if \(!nextId && groupId\)[\s\S]*from\("groups"\)\.delete\(\)\.eq\("group_id", groupId\)/, 'only the last board deletes the group');
-assert.ok(saved.indexOf('from("boards").delete()') < saved.indexOf('from("groups").delete()'), 'boards go before the group');
+assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
 assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');
 assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*from\("boards"\)\.delete/, 'pending autosave is cancelled before delete');
 assert.match(saved, /cloudForgetBoardCache\(\[boardId\]\)/, 'cached row is dropped');

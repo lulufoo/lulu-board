@@ -703,8 +703,6 @@ async function deleteCloudGroup(groupId, boardIds) {
     var boards = await cloudClient.from("boards").delete().in("board_id", ids);
     if (boards.error) throw boards.error;
     cloudForgetBoardCache(ids);
-    var group = await cloudClient.from("groups").delete().eq("group_id", groupId);
-    if (group.error) throw group.error;
     var openId = cloudBoardId();
     if (openId && ids.indexOf(openId) >= 0) {
       history.replaceState(null, "", location.pathname + location.search);

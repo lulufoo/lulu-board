@@ -29,7 +29,6 @@ function cloudDropPlusDraft() {
 
 async function cloudDeleteSavedBoard() {
   var boardId = cloudBoardId();
-  var groupId = cloudGroupId;
   if (!cloudClient || !boardId) return false;
   var confirmed = await boardAskConfirm({
     title: "Delete this board?",
@@ -44,10 +43,6 @@ async function cloudDeleteSavedBoard() {
     var board = await cloudClient.from("boards").delete().eq("board_id", boardId);
     if (board.error) throw board.error;
     cloudForgetBoardCache([boardId]);
-    if (!nextId && groupId) {
-      var group = await cloudClient.from("groups").delete().eq("group_id", groupId);
-      if (group.error) throw group.error;
-    }
     if (nextId) {
       cloudGroupMembers = cloudGroupMembers.filter(function (row) { return row.board_id !== boardId; });
       cloudOpenBoardById(nextId);

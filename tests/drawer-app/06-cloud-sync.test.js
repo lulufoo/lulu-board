@@ -251,7 +251,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
     cloud.indexOf('(function wireCloudAuth')
   );
   assert.match(del, /from\("boards"\)\.delete\(\)\.in\("board_id"/, 'group delete removes every board');
-  assert.match(del, /from\("groups"\)\.delete\(\)\.eq\("group_id"/, 'group delete removes the group row');
+  assert.doesNotMatch(del, /from\("groups"\)/, 'group delete no longer touches the groups table');
 }
 
 {
