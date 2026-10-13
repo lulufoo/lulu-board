@@ -71,7 +71,7 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 
 ## Icons
 
-Box faces and `icon` items take `<n>` from [icons.json](../common/icons.json).
+Box faces and `icon` items take `<n>` from [icons.json](./icons.json).
 
 - pick `n` from `sections[].icons[]`
 - `gloss` is the meaning; the section is the category

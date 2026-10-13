@@ -22,6 +22,8 @@ from drawer_ctl.export import *  # noqa: F403
 from drawer_ctl.board import *  # noqa: F403
 from drawer_ctl.migrate import migrate_document_envelopes  # noqa: F401
 from drawer_ctl.commands import *  # noqa: F403
+from drawer_ctl import assets as _assets
+from drawer_ctl.assets import sync_assets
 
 # Drop star-imported snapshot so `dc.STATE_DIR` reads stay live.
 del STATE_DIR  # noqa: F821
@@ -41,6 +43,12 @@ def parser():
     p = argparse.ArgumentParser(description="Preview and write Lulu Board source.")
     commands = p.add_subparsers(dest="command", required=True)
     commands.add_parser("status", help="print board status as JSON")
+    commands.add_parser(
+        "assets",
+        help="check vocab/icons md5 against the web and update the local cache",
+        description=_assets.__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
     prev_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
@@ -62,6 +70,8 @@ def main(argv=None) -> int:
     try:
         if args.command == "status":
             print(json.dumps(status(), ensure_ascii=False))
+        elif args.command == "assets":
+            print(json.dumps(sync_assets(), ensure_ascii=False))
         elif args.command == "preview":
             if args.no_open:
                 mode = "none"

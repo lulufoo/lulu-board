@@ -1,4 +1,4 @@
-# Built-in Demo. icon <n> and box-face <n> come from board/common/icons.json.
+# Built-in Demo. icon <n> and box-face <n> come from icons.json.
 
 board "Demo"
 

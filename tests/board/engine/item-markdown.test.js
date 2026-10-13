@@ -49,7 +49,7 @@ assert.ok(/noopener noreferrer/.test(itemJs), 'links open safely');
 const noteJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/item/note.js'), 'utf8');
 assert.ok(!/function renderNoteMarkdown/.test(noteJs), 'note does not keep a second renderer');
 
-const vocab = fs.readFileSync(path.join(__dirname, '../../../skill/board/references/vocab.md'), 'utf8');
+const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
 assert.ok(/`chip`, `text`, and `note` share this markdown subset/.test(vocab), 'vocab shares markdown');
 assert.ok(/`\[text\]\(url\)`/.test(vocab), 'vocab documents markdown links');
 assert.ok(/mailto:/.test(vocab), 'vocab names allowed protocols');

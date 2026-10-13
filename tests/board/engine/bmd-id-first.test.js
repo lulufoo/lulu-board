@@ -10,7 +10,7 @@ const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 const board = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
-const vocab = fs.readFileSync(path.join(root, 'skill/board/references/vocab.md'), 'utf8');
+const vocab = fs.readFileSync(path.join(root, 'packages/drawer-app/skill-assets/vocab.md'), 'utf8');
 const themes = fs.readFileSync(path.join(root, 'packages/board/themes/index.js'), 'utf8');
 
 assert.ok(/id="btnSourceCopyId"/.test(html), 'Source has Copy ID');

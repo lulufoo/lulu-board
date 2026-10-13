@@ -10,7 +10,7 @@ const packages = path.join(repo, 'packages');
 const webVendor = path.join(repo, '.cache/web/vendor');
 const srcDir = path.join(packages, 'board');
 const outFile = path.join(webVendor, 'board.min.js');
-const iconCatalogFile = path.join(repo, 'skill/board/common/icons.json');
+const iconCatalogFile = path.join(repo, 'packages/drawer-app/skill-assets/icons.json');
 const iconPathsFile = path.join(srcDir, 'item/icon-paths.json');
 
 const SCRIPTS = [

@@ -2,7 +2,8 @@
 /**
  * Public site build: compiled viewer assets into .cache/web/. Does not copy skill/.
  */
-import { mkdirSync, readFileSync, rmSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -83,3 +84,28 @@ for (const name of [
 }
 
 rmSync(path.join(webDir, 'css'), { recursive: true, force: true });
+
+const skillAssetsSrc = path.join(repo, 'packages/drawer-app/skill-assets');
+const skillAssetsOut = path.join(webDir, 'skill-assets');
+rmSync(skillAssetsOut, { recursive: true, force: true });
+mkdirSync(skillAssetsOut, { recursive: true });
+for (const name of ['vocab.md', 'icons.json']) {
+  const src = path.join(skillAssetsSrc, name);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(skillAssetsOut, name));
+  console.log('ok .cache/web/skill-assets/' + name);
+}
+
+// md5 manifest over the shipped bytes (no newline normalisation); the skill compares it with its local cache
+const manifest = { version: 1, files: {} };
+for (const name of readdirSync(skillAssetsOut).sort()) {
+  if (name === 'manifest.json') continue;
+  const bytes = readFileSync(path.join(skillAssetsOut, name));
+  manifest.files[name] = { md5: createHash('md5').update(bytes).digest('hex'), bytes: bytes.length };
+}
+writeFileSync(path.join(skillAssetsOut, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+console.log('ok .cache/web/skill-assets/manifest.json');
+
+// Workers Assets: revalidate skill-assets on every fetch so the manifest is never stale
+writeFileSync(path.join(webDir, '_headers'), '/skill-assets/*\n  Cache-Control: no-cache\n');
+console.log('ok .cache/web/_headers');

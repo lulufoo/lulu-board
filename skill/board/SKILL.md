@@ -27,10 +27,11 @@ into `#z:`. Cloud mode mints `#b:` through MCP.
 Load the authoring contract before writing.
 
 1. Keep this file at start.
-2. Load [vocab](./references/vocab.md); it is the authoring contract.
-3. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
-4. When using an icon, load [icons.json](./common/icons.json).
-5. Load [viewer](./references/viewer.md) for `status` or the pointer protocol.
+2. Run `$DRAWER_CTL assets`. If it fails, stop and report.
+3. Load vocab from `files["vocab.md"].path`; it is the authoring contract.
+4. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
+5. When using an icon, load `files["icons.json"].path`.
+6. Load [viewer](./references/viewer.md) for `status` or the pointer protocol.
 
 ## Mode
 
