@@ -57,4 +57,23 @@ assert.strictEqual(route({ pathname: '/landing/' }), false);
 assert.strictEqual(route({ pathname: '/oauth/consent/' }), false);
 assert.strictEqual(route({ storage: null }), true);
 
+
+// /start redirect helpers (LB-353): rewrite to /, keep search, drop hash; never landing
+assert.strictEqual(Head.isStartPath('/start'), true);
+assert.strictEqual(Head.isStartPath('/start/'), true);
+assert.strictEqual(Head.isStartPath('/'), false);
+assert.strictEqual(Head.isStartPath('/landing/'), false);
+assert.strictEqual(Head.isStartPath('/startup'), false);
+assert.strictEqual(Head.isStartPath('/start/extra'), false);
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '' }), '/');
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start/', search: '' }), '/');
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '?code=abc' }), '/?code=abc');
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start/', search: '?code=abc&state=1' }), '/?code=abc&state=1');
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/start', search: '?code=abc', hash: '#z:deadbeef' }), '/?code=abc', 'hash dropped');
+assert.strictEqual(Head.rewriteStartToRoot({ pathname: '/', search: '' }), null);
+assert.strictEqual(route({ pathname: '/start' }), false, '/start must not show landing');
+assert.strictEqual(route({ pathname: '/start/' }), false, '/start/ must not show landing');
+assert.strictEqual(route({ pathname: '/start', hash: '#foo' }), false);
+assert.strictEqual(route({ pathname: '/start', search: '?code=abc' }), false);
+
 console.log('ok landing-route');
