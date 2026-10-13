@@ -130,26 +130,21 @@ class BoardAssetsTest(unittest.TestCase):
         self.assertEqual(out["files"]["vocab.md"]["status"], "updated")
         self.assertEqual(out["files"]["icons.json"]["status"], "fresh")
         self.assertEqual((self.cache / "vocab.md").read_bytes(), VOCAB)
+        self.assertEqual(self.server.hits.count("vocab.md"), 1)
         self.assertEqual(list(self.cache.glob(".*.tmp")), [])
 
-    def test_bad_download_keeps_old_cache(self) -> None:
-        old = b"# vocab v1\n"
-        self.seed("vocab.md", old)
+    def test_bad_download_errors_and_drops_cache(self) -> None:
+        self.seed("vocab.md", b"# vocab v1\n")
         self.seed("icons.json", ICONS)
         self.server.manifest_override = {"version": 1, "files": {
             "vocab.md": {"md5": md5(b"something else"), "bytes": 1},
             "icons.json": {"md5": md5(ICONS), "bytes": len(ICONS)},
         }}
         code, out = self.run_cli()
-        self.assertEqual(code, 0)
-        self.assertEqual(out["files"]["vocab.md"]["status"], "stale")
-        self.assertEqual((self.cache / "vocab.md").read_bytes(), old)
-        self.assertEqual(list(self.cache.glob(".*.tmp")), [])
-        # and with nothing cached a bad download is an error
-        (self.cache / "vocab.md").unlink()
-        code, out = self.run_cli()
         self.assertEqual(code, 1)
+        self.assertIsNone(out)
         self.assertFalse((self.cache / "vocab.md").exists())
+        self.assertEqual(list(self.cache.glob(".*.tmp")), [])
 
     def test_offline_with_cache(self) -> None:
         self.seed("vocab.md", b"# whatever\n")

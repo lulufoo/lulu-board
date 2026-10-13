@@ -1,4 +1,17 @@
-"""Sync vocab/icons from the web: md5 of local cache vs the live manifest, every run."""
+"""Sync vocab/icons from the web: md5 of local cache vs the live manifest, every run.
+
+Output (stdout, one JSON object):
+  {"ok": true, "online": bool, "dir": "<cache dir>",
+   "files": {"<name>": {"path": "<local path>", "status": "<status>"}}}
+
+status:
+  fresh    local md5 matches the manifest; no download
+  updated  missing or mismatched locally (mismatch is deleted first); downloaded and verified
+  offline  manifest unreachable; using the existing local copy as is
+
+Exit 1 (no JSON) when a file cannot be obtained: download fails or its md5 does not
+match the manifest, or offline with no local cache.
+"""
 from __future__ import annotations
 
 import hashlib
@@ -61,8 +74,7 @@ def _atomic_write(dest: Path, data: bytes) -> None:
 def sync_assets() -> dict:
     """Return {"ok", "online", "dir", "files": {name: {"path", "status"}}}.
 
-    status: fresh (md5 matches), updated (downloaded), offline (manifest unreachable,
-    using cache), stale (download failed md5 check; old cache kept).
+    Status meanings: see the module docstring.
     Raises RuntimeError when a file has no usable copy.
     """
     root = assets_dir()
@@ -93,6 +105,7 @@ def sync_assets() -> dict:
         if md5_file(dest) == want:
             out[name] = {"path": str(dest), "status": "fresh"}
             continue
+        dest.unlink(missing_ok=True)  # mismatched cache counts as no cache
         try:
             data = _fetch(f"{base}/{name}")
         except Exception as exc:
@@ -102,8 +115,6 @@ def sync_assets() -> dict:
         if err is None:
             _atomic_write(dest, data)
             out[name] = {"path": str(dest), "status": "updated"}
-        elif dest.is_file():
-            out[name] = {"path": str(dest), "status": "stale", "error": err}
         else:
-            raise RuntimeError(f"assets: {name}: {err} and no local cache")
+            raise RuntimeError(f"assets: {name}: {err}")
     return {"ok": True, "online": True, "dir": str(root), "files": out}

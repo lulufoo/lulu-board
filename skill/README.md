@@ -16,6 +16,6 @@ From `board/`, the same CLI is `python3 scripts/drawer_control.py`.
 
 `preview` prints a `https://luluboard.app/#z:…` URL from `{bmd, version}`. It does not write local history.
 
-`assets` syncs `vocab.md` and `icons.json` into `~/.cache/board/assets/`. Each run it hashes the local copies (md5) and compares them with `https://luluboard.app/skill-assets/manifest.json`; missing or mismatched files are re-downloaded and verified before replacing. Offline, it uses the cache. The source of both files is `packages/drawer-app/skill-assets/` in the repo.
+`assets` syncs `vocab.md` and `icons.json` from luluboard.app into `~/.cache/board/assets/`.
 
 Rebuild the public viewer from the repo root: `node scripts/web-build/build.mjs`.

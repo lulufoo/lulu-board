@@ -1,4 +1,4 @@
-# Built-in Demo. icon <n> and box-face <n> come from icons.json (see `$DRAWER_CTL assets`).
+# Built-in Demo. icon <n> and box-face <n> come from icons.json.
 
 board "Demo"
 
