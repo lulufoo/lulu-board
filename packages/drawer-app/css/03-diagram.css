@@ -702,6 +702,12 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 .board-cloud-status.is-pending.is-uncreated {
   color: var(--muted, #64748b);
 }
+.board-cloud-status.is-pending.is-signed-out {
+  color: var(--muted, #64748b);
+  opacity: .5;
+  cursor: default;
+}
+.board-cloud-status.is-pending.is-signed-out:active { transform: none; }
 .board-cloud-status.is-pending:active,
 .board-cloud-status.is-current:active {
   transform: scale(.98);

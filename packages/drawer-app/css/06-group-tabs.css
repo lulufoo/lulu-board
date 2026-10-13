@@ -58,8 +58,8 @@
 }
 .group-tab:disabled:hover { background: transparent; }
 
-/* self-drawn title tip, left of the number tab; size tracks .group-tab */
-.group-tab-tip {
+/* self-drawn chrome tip (group tabs, cloud save), left of the button; size tracks .group-tab */
+.chrome-tip {
   position: fixed;
   top: 0;
   right: 0;
@@ -86,13 +86,13 @@
   transform: translate(4px, -50%);
   transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s linear 120ms;
 }
-.group-tab-tip.is-on {
+.chrome-tip.is-on {
   opacity: 1;
   visibility: visible;
   transform: translate(0, -50%);
   transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s;
 }
-html[data-drawer-mode="board"] .group-tab-tip {
+html[data-drawer-mode="board"] .chrome-tip {
   height: 36px;
   border-radius: 9px;
   font: 500 14px/36px var(--font, var(--sans));
@@ -101,6 +101,6 @@ html[data-drawer-mode="board"] .group-tab-tip {
   box-shadow: var(--press), 0 6px 18px rgba(120, 80, 40, .07);
 }
 @media (prefers-reduced-motion: reduce) {
-  .group-tab-tip,
-  .group-tab-tip.is-on { transition: none; transform: translate(0, -50%); }
+  .chrome-tip,
+  .chrome-tip.is-on { transition: none; transform: translate(0, -50%); }
 }

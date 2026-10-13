@@ -32,28 +32,31 @@ function cloudLabelGroupTab(btn, row, number) {
   return t;
 }
 
-// Self-drawn title tip: shows at once left of the number tab (native title
-// waits on the OS delay). One fixed node on body so the strip cannot clip it.
-var groupTabTipEl = null;
-var groupTabTipHideTimer = null;
+// Self-drawn chrome tip: shows at once left of a button (native title waits on
+// the OS delay). One fixed node on body so no container can clip it. Shared by
+// the group number tabs and the cloud save button.
+var chromeTipEl = null;
+var chromeTipHideTimer = null;
 
-function groupTabTip() {
-  if (groupTabTipEl && groupTabTipEl.isConnected) return groupTabTipEl;
-  groupTabTipEl = document.createElement("div");
-  groupTabTipEl.className = "group-tab-tip";
-  groupTabTipEl.setAttribute("aria-hidden", "true");
-  document.body.appendChild(groupTabTipEl);
-  return groupTabTipEl;
+function chromeTip() {
+  if (chromeTipEl && chromeTipEl.isConnected) return chromeTipEl;
+  chromeTipEl = document.createElement("div");
+  chromeTipEl.className = "chrome-tip";
+  chromeTipEl.setAttribute("aria-hidden", "true");
+  document.body.appendChild(chromeTipEl);
+  return chromeTipEl;
 }
 
-function showGroupTabTip(btn, text) {
-  var tip = groupTabTip();
+// edge: optional element whose left edge the tip keeps 6px away from
+// (the group tab strip); defaults to the button itself.
+function showChromeTip(btn, text, edge) {
+  var tip = chromeTip();
   var wasOn = tip.classList.contains("is-on");
-  clearTimeout(groupTabTipHideTimer);
+  clearTimeout(chromeTipHideTimer);
   tip.textContent = text;
   var r = btn.getBoundingClientRect();
   tip.style.top = (r.top + r.height / 2) + "px";
-  var rail = btn.parentElement ? btn.parentElement.getBoundingClientRect() : r;
+  var rail = edge ? edge.getBoundingClientRect() : r;
   tip.style.right = (window.innerWidth - Math.min(r.left, rail.left) + 6) + "px";
   if (wasOn) return;
   tip.classList.remove("is-on");
@@ -61,22 +64,35 @@ function showGroupTabTip(btn, text) {
   tip.classList.add("is-on");
 }
 
-function hideGroupTabTip() {
-  if (!groupTabTipEl) return;
-  var tip = groupTabTipEl;
-  clearTimeout(groupTabTipHideTimer);
-  // short grace so moving to the next tab swaps text instead of replaying
-  groupTabTipHideTimer = setTimeout(function () { tip.classList.remove("is-on"); }, 60);
+function hideChromeTip() {
+  if (!chromeTipEl) return;
+  var tip = chromeTipEl;
+  clearTimeout(chromeTipHideTimer);
+  // short grace so moving to the next button swaps text instead of replaying
+  chromeTipHideTimer = setTimeout(function () { tip.classList.remove("is-on"); }, 60);
+}
+
+function clearChromeTip() {
+  if (chromeTipEl) chromeTipEl.classList.remove("is-on");
+}
+
+// label() is read on every show; edge() optional, read on every show.
+function bindChromeTip(btn, label, edge) {
+  var show = function () {
+    var text = label();
+    if (!text) return;
+    showChromeTip(btn, text, edge ? edge() : null);
+  };
+  btn.addEventListener("mouseenter", show);
+  btn.addEventListener("focus", show);
+  btn.addEventListener("mouseleave", hideChromeTip);
+  btn.addEventListener("blur", hideChromeTip);
+  btn.addEventListener("pointerdown", hideChromeTip);
+  btn.addEventListener("dragstart", hideChromeTip);
 }
 
 function bindGroupTabTip(btn, label) {
-  var show = function () { showGroupTabTip(btn, label()); };
-  btn.addEventListener("mouseenter", show);
-  btn.addEventListener("focus", show);
-  btn.addEventListener("mouseleave", hideGroupTabTip);
-  btn.addEventListener("blur", hideGroupTabTip);
-  btn.addEventListener("pointerdown", hideGroupTabTip);
-  btn.addEventListener("dragstart", hideGroupTabTip);
+  bindChromeTip(btn, label, function () { return btn.parentElement; });
 }
 
 function cloudKnownGroupBoard(boardId) {
@@ -136,7 +152,7 @@ function renderCloudGroupTabs() {
   var show = cloudGroupTabsVisible();
   root.hidden = !show;
   root.innerHTML = "";
-  if (groupTabTipEl) groupTabTipEl.classList.remove("is-on");
+  clearChromeTip();
   if (!show) return;
   var viewingDraft = !!cloudPlusDraftActive;
   var current = viewingDraft ? "" : cloudBoardId();

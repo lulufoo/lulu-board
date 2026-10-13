@@ -108,15 +108,8 @@ function applyLocalSignedInPreview() {
   var img = document.getElementById("boardAccountAvatarImg");
   if (signIn) signIn.hidden = true;
   if (session) session.hidden = false;
-  if (status) {
-    status.hidden = true;
-    status.title = "";
-  }
-  if (save) {
-    save.hidden = false;
-    save.disabled = false;
-    save.title = "Not saved";
-  }
+  if (status) status.hidden = true;
+  if (save) cloudSetSaveSignedOut(save);
   if (chip) chip.title = "Local preview";
   if (initialsEl) {
     initialsEl.textContent = "";
@@ -210,13 +203,29 @@ function cloudSaveButtonCopy(signedIn, aligned) {
     return { hidden: true, pending: false, current: false, label: "Saved", title: "" };
   }
   if (aligned) {
-    return { hidden: false, pending: false, current: true, label: "Saved", title: "Synced" };
+    return { hidden: false, pending: false, current: true, label: "Saved", title: "Sync" };
   }
-  return { hidden: false, pending: true, current: false, label: "Saved", title: "Not saved" };
+  return { hidden: false, pending: true, current: false, label: "Saved", title: "Save" };
 }
 
 function cloudSaveUncreated(signedIn, boardId) {
   return !!(signedIn && !String(boardId || "").trim());
+}
+
+// Hover tip and aria-label say what a click does (LB-376).
+function cloudSetActionLabel(el, text) {
+  el.removeAttribute("title");
+  if (text) el.setAttribute("aria-label", text);
+  else el.removeAttribute("aria-label");
+}
+
+// Local preview, signed out: a faded button whose click only explains.
+function cloudSetSaveSignedOut(save) {
+  save.hidden = false;
+  save.disabled = false;
+  save.classList.remove("is-uncreated");
+  save.classList.add("is-signed-out");
+  cloudSetActionLabel(save, "Sign in to save");
 }
 
 function syncCloudSaveChrome() {
@@ -226,32 +235,31 @@ function syncCloudSaveChrome() {
   if (typeof syncBoardDeleteChrome === "function") syncBoardDeleteChrome();
   var signedIn = !!(cloudSession && cloudSession.user);
   if (!signedIn && isLocalDrawerPreview()) {
-    save.hidden = false;
-    save.disabled = false;
-    save.title = "Not saved";
+    cloudSetSaveSignedOut(save);
     status.hidden = true;
-    status.title = "";
+    cloudSetActionLabel(status, "");
     return;
   }
+  save.classList.remove("is-signed-out");
   var ownCloud = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
   if (cloudPlusDraftActive) ownCloud = "";
   if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
     save.disabled = false;
-    save.title = "Not created";
+    cloudSetActionLabel(save, "Create");
     save.classList.add("is-uncreated");
     status.hidden = true;
-    status.title = "";
+    cloudSetActionLabel(status, "");
     return;
   }
   save.classList.remove("is-uncreated");
   var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, boardLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
-  save.title = copy.pending ? copy.title : "";
+  cloudSetActionLabel(save, copy.pending ? copy.title : "");
   status.hidden = !copy.current;
-  status.title = copy.current ? "Synced. Click to pull from cloud" : "";
+  cloudSetActionLabel(status, copy.current ? copy.title : "");
 }
 
 function cloudSetAccountUi() {
@@ -775,7 +783,14 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
   if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
   var save = document.getElementById("btnBoardSaveCloud");
+  if (save && typeof bindChromeTip === "function") {
+    bindChromeTip(save, function () { return save.getAttribute("aria-label") || ""; });
+  }
   if (save) save.addEventListener("click", function () {
+    if (save.classList.contains("is-signed-out")) {
+      if (typeof showCopyTip === "function") showCopyTip("Sign in to save to the cloud");
+      return;
+    }
     cloudCloseAccountMenus();
     if (typeof isShareGuest === "function" && isShareGuest() && typeof forkSharedBoard === "function") {
       void forkSharedBoard();

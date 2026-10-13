@@ -72,7 +72,8 @@ assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosa
 }
 assert.match(cloud, /cloudSaveUncreated\(signedIn, ownCloud\)/, 'signed-in #z: and #s: keep Saved clickable');
 assert.match(cloud, /if \(!ownCloud && typeof liveBoardId/, 'Saved chrome follows the created row before the hash flips');
-assert.match(cloud, /save\.title = "Not created"/, 'uncreated Saved hints Not created');
+assert.match(cloud, /cloudSetActionLabel\(save, "Create"\)/, 'uncreated Saved hints Create');
+assert.doesNotMatch(cloud, /save\.title =|status\.title =/, 'save chrome drops the native title');
 {
   const block = dockCss.match(/\.board-cloud-status\.is-pending\.is-uncreated \{[^}]+\}/);
   assert.ok(block, 'uncreated Saved has a pending rule');
@@ -156,15 +157,92 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
     pending: false,
     current: true,
     label: "Saved",
-    title: "Synced",
+    title: "Sync",
   });
   assert.deepStrictEqual(helpers.cloudSaveButtonCopy(true, false), {
     hidden: false,
     pending: true,
     current: false,
     label: "Saved",
-    title: "Not saved",
+    title: "Save",
   });
+}
+
+{
+  // four save states: tip text (from aria-label) and aria-label, no native title
+  const start = cloud.indexOf('function cloudVersionsAligned');
+  const end = cloud.indexOf('function cloudSetAccountUi');
+  const mkEl = () => {
+    const attrs = {}, cls = new Set();
+    return { hidden: true, disabled: false, attrs,
+      setAttribute(k, v) { attrs[k] = String(v); }, getAttribute(k) { return k in attrs ? attrs[k] : null; },
+      removeAttribute(k) { delete attrs[k]; },
+      classList: { add: (c) => cls.add(c), remove: (c) => cls.delete(c), contains: (c) => cls.has(c) } };
+  };
+  const run = (env) => {
+    const save = mkEl(), status = mkEl();
+    new Function('env', 'save', 'status', `
+      var cloudSession = env.signedIn ? { user: {} } : null, cloudPlusDraftActive = false, liveBoardId = '';
+      var boardServerRev = env.server, boardLocalRev = env.client;
+      var document = { getElementById: (id) => id === 'btnBoardSaveCloud' ? save : status };
+      function isLocalDrawerPreview() { return !!env.local; }
+      function cloudBoardId() { return env.id || ''; }
+      ${cloud.slice(start, end)}
+      syncCloudSaveChrome();`)(env, save, status);
+    return { save, status };
+  };
+  const uncreated = run({ signedIn: true, id: '', server: 0, client: 1 });
+  assert.strictEqual(uncreated.save.hidden, false);
+  assert.strictEqual(uncreated.save.getAttribute('aria-label'), 'Create', '#z uncreated → Create');
+  const dirty = run({ signedIn: true, id: 'b_1', server: 3, client: 4 });
+  assert.strictEqual(dirty.save.hidden, false);
+  assert.strictEqual(dirty.save.getAttribute('aria-label'), 'Save', 'unsaved → Save');
+  const synced = run({ signedIn: true, id: 'b_1', server: 4, client: 4 });
+  assert.strictEqual(synced.status.hidden, false);
+  assert.strictEqual(synced.status.getAttribute('aria-label'), 'Sync', 'synced green → Sync');
+  assert.strictEqual(synced.save.hidden, true);
+  const out = run({ signedIn: false, local: true });
+  assert.strictEqual(out.save.hidden, false);
+  assert.strictEqual(out.save.getAttribute('aria-label'), 'Sign in to save', 'local signed out → Sign in to save');
+  assert.ok(out.save.classList.contains('is-signed-out'), 'signed out is the faded state');
+  const prod = run({ signedIn: false, local: false });
+  assert.strictEqual(prod.save.hidden, true, 'signed out on production stays hidden');
+  assert.strictEqual(prod.status.hidden, true);
+  for (const r of [uncreated, dirty, synced, out]) {
+    assert.ok(!('title' in r.save.attrs) && !('title' in r.status.attrs), 'no native title');
+  }
+  assert.match(cloud, /bindChromeTip\(save, function \(\) \{ return save\.getAttribute\("aria-label"\) \|\| ""; \}\)/, 'tip text is the aria-label');
+}
+{
+  // signed out click: toast only, no save, no sign-in, no navigation
+  const a = cloud.indexOf('if (save) save.addEventListener("click", function () {');
+  const b = cloud.indexOf('\n  });', a);
+  const handler = cloud.slice(cloud.indexOf('function () {', a), b + 4);
+  const calls = [];
+  const env = {
+    save: { classList: { contains: (c) => c === 'is-signed-out' } },
+    showCopyTip: (m) => calls.push(['toast', m]),
+    saveBoardToCloud: () => calls.push(['save']),
+    forkSharedBoard: () => calls.push(['fork']),
+    isShareGuest: () => false,
+    cloudCloseAccountMenus: () => calls.push(['menus']),
+    cloudShowSignInDialog: () => calls.push(['signin']),
+    location: { assign: () => calls.push(['nav']), set href(v) { calls.push(['nav']); } },
+  };
+  const click = new Function(...Object.keys(env), 'return ' + handler.replace(/\);?\s*$/, ''))(...Object.values(env));
+  click();
+  assert.deepStrictEqual(calls, [['toast', 'Sign in to save to the cloud']], 'signed out click only shows the toast');
+  calls.length = 0;
+  env.save.classList.contains = () => false;
+  click();
+  assert.deepStrictEqual(calls, [['menus'], ['save']], 'signed in click still saves');
+}
+const diagramCss = read('packages/drawer-app/css/03-diagram.css');
+{
+  const block = diagramCss.match(/\.board-cloud-status\.is-pending\.is-signed-out \{[^}]+\}/);
+  assert.ok(block, 'signed out has its own rule');
+  assert.match(block[0], /opacity:\s*\.5/, 'signed out is faded');
+  assert.match(block[0], /cursor:\s*default/, 'signed out uses the default cursor');
 }
 
 {
