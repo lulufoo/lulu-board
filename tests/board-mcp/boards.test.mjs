@@ -45,7 +45,7 @@ const latest = {
   bmd: 'board "Now"\n',
   version: 4,
   updated_at: '2026-09-19T00:00:00Z',
-  group_members: { group_id: 'g_99aabbcc' },
+  group_id: 'g_99aabbcc',
 };
 const arrayEmbed = {
   board_id: 'b_0fc10002',
@@ -54,6 +54,7 @@ const arrayEmbed = {
   version: 1,
   updated_at: '2026-09-19T00:00:00Z',
   group_members: [{ group_id: 'g_99aabbcc' }],
+  group_id: 'g_99aabbcc',
 };
 const missingEmbed = {
   board_id: 'b_0fc10003',
@@ -111,7 +112,7 @@ globalThis.fetch = async (url, init) => {
         bmd: patch.bmd,
         version: 5,
         updated_at: latest.updated_at,
-        group_members: { group_id: 'g_99aabbcc' },
+        group_id: 'g_99aabbcc',
       }]),
     };
   }
@@ -166,7 +167,8 @@ try {
   assert.equal(got.version, 4);
   assert.equal(got.updated_at, latest.updated_at);
   assert.equal(got.group_id, 'g_99aabbcc');
-  assert.ok(calls.some((c) => c.url.includes('select=board_id,title,bmd,version,updated_at,group_members(group_id)')));
+  assert.ok(calls.some((c) => c.url.includes('select=board_id,title,bmd,version,updated_at,group_id')));
+  assert.ok(!calls.some((c) => c.url.includes('group_members')));
 
   const fromArray = await getBoard(env, 'tok', 'b_0fc10002');
   assert.equal(fromArray.group_id, 'g_99aabbcc');
