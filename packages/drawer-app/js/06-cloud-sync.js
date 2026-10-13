@@ -401,7 +401,9 @@ async function cloudSignIn(provider) {
     return;
   }
   var selected = provider === "github" ? "github" : "google";
-  var returnTo = location.origin + location.pathname + location.search + location.hash;
+  // Always land on /?ws=1 after OAuth (LB-356); do not return to the pre-login URL.
+  // Supabase PKCE appends ?code= (or &code=) onto redirectTo for detectSessionInUrl.
+  var returnTo = location.origin + "/?ws=1";
   var result = await cloudClient.auth.signInWithOAuth({
     provider: selected,
     options: { redirectTo: returnTo },

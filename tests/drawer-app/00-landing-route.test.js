@@ -51,7 +51,13 @@ for (const hash of [BOARD, SHARE, BLANK]) {
   assert.strictEqual(route({ hash, storage: session }), false);
 }
 assert.strictEqual(route({ search: '?code=abc' }), false, 'OAuth return must not be redirected');
+assert.strictEqual(route({ search: '?ws=1&code=abc' }), false, 'LB-356 OAuth return /?ws=1&code= stays on workspace');
+assert.strictEqual(route({ search: '?code=abc&ws=1' }), false, 'LB-356 OAuth return /?code=&ws=1 stays on workspace');
 assert.strictEqual(route({ search: '?error=access_denied' }), false);
+assert.strictEqual(route({ search: '?ws=1&error=access_denied' }), false);
+assert.strictEqual(Head.isAuthReturn('?ws=1&code=abc'), true);
+assert.strictEqual(Head.isAuthReturn('?code=abc&ws=1'), true);
+assert.strictEqual(Head.isAuthReturn('?ws=1'), false);
 assert.strictEqual(route({ pathname: '/index.html' }), true);
 assert.strictEqual(route({ pathname: '/landing/' }), false);
 assert.strictEqual(route({ pathname: '/oauth/consent/' }), false);
