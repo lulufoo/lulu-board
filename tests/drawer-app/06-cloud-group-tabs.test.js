@@ -87,10 +87,27 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
-  assert.match(tabs, /select\("board_id,group_id,sort_order"\)/, 'tabs read the stored order');
+  assert.match(tabs, /select\("board_id,group_id,sort_order,title"\)/, 'tabs read the stored order and title');
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
-assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order"\)/, 'tabs read group and order from boards');
+assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order,title"\)/, 'tabs read group, order and title from boards');
+assert.strictEqual((tabs.match(/cloudClient\.from\("boards"\)/g) || []).length, 1, 'one boards query feeds the tabs');
+assert.match(tabs, /btn\.title = tabTitle/, 'number tabs carry a native title');
+assert.match(tabs, /"Board " \+ \(index \+ 1\) \+ ": " \+ tabTitle/, 'aria-label is Board N: <title>');
+assert.match(tabs, /draft\.title = "Untitled"/, 'unsaved draft tab hovers Untitled');
+assert.match(tabs, /"Add board"/, 'plus keeps Add board');
+{
+  const start = tabs.indexOf('function cloudGroupTabTitle');
+  const end = tabs.indexOf('function cloudKnownGroupBoard');
+  const make = (cache) => new Function('cloudCachedBoardRow', tabs.slice(start, end) + '\nreturn cloudGroupTabTitle;')(cache);
+  const plain = make(undefined);
+  assert.strictEqual(plain({ board_id: 'b_1', title: 'Plan' }), 'Plan');
+  assert.strictEqual(plain({ board_id: 'b_1', title: '' }), 'Untitled', 'empty title shows Untitled');
+  assert.strictEqual(plain({ board_id: 'b_1', title: '   ' }), 'Untitled');
+  const cached = make((id) => (id === 'b_1' ? { title: 'Renamed' } : null));
+  assert.strictEqual(cached({ board_id: 'b_1', title: 'Old' }), 'Renamed', 'saved rename wins over the old row');
+  assert.strictEqual(cached({ board_id: 'b_2', title: 'Two' }), 'Two');
+}
 assert.doesNotMatch(tabs, /group_members/, 'tabs no longer read group_members');
 console.log('ok cloud-group-tabs');

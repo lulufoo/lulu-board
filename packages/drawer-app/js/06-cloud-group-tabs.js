@@ -24,6 +24,14 @@ function cloudMembersInclude(boardId, groupId, members) {
   return false;
 }
 
+// Hover title for a group tab: the saved boards.title, newest known copy first.
+function cloudGroupTabTitle(row) {
+  var id = row && row.board_id;
+  var cached = id && typeof cloudCachedBoardRow === "function" ? cloudCachedBoardRow(id) : null;
+  var title = String((cached && cached.title) || (row && row.title) || "").trim();
+  return title || "Untitled";
+}
+
 function cloudKnownGroupBoard(boardId) {
   return cloudMembersInclude(boardId, cloudGroupId, cloudGroupMembers);
 }
@@ -93,7 +101,9 @@ function renderCloudGroupTabs() {
     btn.textContent = String(index + 1);
     btn.dataset.boardId = row.board_id;
     btn.draggable = true;
-    btn.setAttribute("aria-label", "Board " + (index + 1));
+    var tabTitle = cloudGroupTabTitle(row);
+    btn.title = tabTitle;
+    btn.setAttribute("aria-label", "Board " + (index + 1) + ": " + tabTitle);
     btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
     btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
@@ -106,7 +116,8 @@ function renderCloudGroupTabs() {
     draft.type = "button";
     draft.className = "group-tab";
     draft.textContent = String(draftNo);
-    draft.setAttribute("aria-label", "Board " + draftNo);
+    draft.title = "Untitled";
+    draft.setAttribute("aria-label", "Board " + draftNo + ": Untitled");
     draft.setAttribute("aria-current", viewingDraft ? "true" : "false");
     draft.classList.toggle("is-active", viewingDraft);
     draft.addEventListener("click", function () { void cloudSwitchToPlusDraft(); });
@@ -157,7 +168,7 @@ async function refreshCloudGroupMembers(boardId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("boards").select("board_id,group_id,sort_order");
+  var members = await cloudClient.from("boards").select("board_id,group_id,sort_order,title");
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -180,16 +191,12 @@ async function refreshCloudGroupMembers(boardId) {
     cloudClearPlusDraftSlot();
   }
   cloudGroupId = groupId;
-  var ids = [];
-  rows.forEach(function (row) {
-    if (row && row.group_id === groupId && row.board_id) ids.push(row.board_id);
+  var inGroup = rows.filter(function (row) {
+    return row && row.group_id === groupId && row.board_id;
+  }).map(function (row) {
+    return { board_id: row.board_id, title: row.title || "" };
   });
-  var boards = await cloudClient.from("boards").select("board_id").in("board_id", ids);
-  if (boards.error) {
-    renderCloudGroupTabs();
-    return;
-  }
-  cloudGroupMembers = sortBoardRowsByGroupOrder(boards.data || [], rows);
+  cloudGroupMembers = sortBoardRowsByGroupOrder(inGroup, rows);
   renderCloudGroupTabs();
 }
 
