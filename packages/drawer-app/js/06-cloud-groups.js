@@ -36,7 +36,7 @@ async function cloudFetchGroupSummaries() {
     .select("board_id,title,created_at,updated_at")
     .order("updated_at", { ascending: false });
   if (boards.error) throw boards.error;
-  var members = await cloudClient.from("group_members").select("board_id,group_id");
+  var members = await cloudClient.from("boards").select("board_id,group_id");
   if (members.error) throw members.error;
   var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
   return cloudGroupSummaries(boards.data || [], members.data || [], current);
