@@ -1174,13 +1174,6 @@ html[data-drawer-mode="board"] .top-float {
   max-width: none;
   width: max-content;
 }
-.board-render .board-item[data-board-cap="off"] .board-item-copy,
-.board-render .board-item[data-board-cap="off"] .board-item-text {
-  width: max-content;
-  max-width: none;
-  white-space: pre;
-  overflow-wrap: normal;
-}
 .board-render .board-item.board-item-type-chip,
 .board-render .board-item.board-card.board-item-type-chip {
   justify-content: center;
@@ -2012,4 +2005,18 @@ html[data-drawer-mode="board"] .board-account {
     max-width: 11rem;
     padding-right: 8px;
   }
+}
+
+/* Width Cap off: never wrap. Kept last and one notch more specific than the
+   per-type rules (text / chip / note / diamond) so it wins for every type. */
+.board-render .board-item.board-item[data-board-cap="off"] .board-item-copy,
+.board-render .board-item.board-item[data-board-cap="off"] .board-item-text {
+  width: max-content;
+  max-width: none;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.board-render .board-item.board-item[data-board-cap="off"] .board-item-md :is(h1, h2, h3, p, li, blockquote) {
+  white-space: pre;
+  overflow-wrap: normal;
 }

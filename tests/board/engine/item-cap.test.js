@@ -89,6 +89,25 @@ item HERO type text "Welcome"
   assert.ok(/id="boardCapEditor"/.test(html) && /Width Cap/.test(html), 'props have Width Cap select');
   assert.ok(/id="boardItemCapSlider"[^>]*min="8"[^>]*max="24"[^>]*value="16"/.test(html), 'cap slider centers 16');
   assert.ok(/dataset\.boardCap = 'off'/.test(itemJs), 'mount marks cap off');
+  {
+    // Width Cap off must beat every per-type wrap rule: later in the file and more specific.
+    const offSel = '.board-render .board-item.board-item[data-board-cap="off"] .board-item-text';
+    const offAt = css.indexOf(offSel);
+    assert.ok(offAt >= 0, 'cap off text rule exists');
+    const offBody = css.slice(offAt, css.indexOf('}', offAt));
+    assert.ok(/white-space:\s*pre;/.test(offBody) && /overflow-wrap:\s*normal/.test(offBody) && /width:\s*max-content/.test(offBody), 'cap off text: pre, normal, max-content');
+    const spec = (sel) => (sel.match(/\.[\w-]+|\[[^\]]+\]|:[\w-]+/g) || []).length;
+    const re = /([^{}]+)\{([^}]*)\}/g;
+    let m;
+    while ((m = re.exec(css))) {
+      if (!/white-space:\s*pre-wrap/.test(m[2])) continue;
+      m[1].split(',').map((x) => x.trim()).filter((x) => /\.board-item-(text|copy)$/.test(x) && /\.board-render/.test(x)).forEach((sel) => {
+        assert.ok(m.index < offAt, 'cap off rule comes after ' + sel);
+        assert.ok(spec(sel) <= spec(offSel), 'cap off rule is at least as specific as ' + sel);
+      });
+    }
+    assert.ok(/data-board-cap="off"\] \.board-item-md :is\(h1, h2, h3/.test(css), 'cap off covers markdown headings');
+  }
   assert.ok(
     /eachRootItem\(\(item\) => \{[\s\S]*?measureLive[\s\S]*?eachRootItem\(\(item\) => \{[\s\S]*?measureLive/.test(renderJs),
     'root items measure overflow twice'
