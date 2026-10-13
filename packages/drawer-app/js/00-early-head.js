@@ -61,7 +61,9 @@
     return false;
   }
 
-  // OAuth (PKCE) returns to the page with ?code=...; the session is not stored yet.
+  // OAuth (PKCE) returns with ?code=... (LB-356: redirectTo is /?ws=1, so often
+  // /?ws=1&code=... or /?code=...&ws=1). Session is not stored yet — skip landing
+  // and blank-start until detectSessionInUrl exchanges the code.
   function isAuthReturn(search) {
     return /[?&](code|error|error_code)=/.test(String(search || ""));
   }
