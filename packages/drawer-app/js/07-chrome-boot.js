@@ -215,9 +215,8 @@ function applyDiagramTheme(theme, opts) {
     : ((['default', 'classic', 'pastel'].includes(theme) ? theme : 'default'));
   localStorage.setItem(DIAGRAM_THEME_KEY, t);
   localStorage.setItem('drawer.boardTheme', t); // back-compat
-  document.querySelectorAll('#diagramThemeMenu .theme-item').forEach((btn) => {
-    btn.classList.toggle('is-active', btn.dataset.theme === t);
-  });
+  const themeSelect = document.getElementById('diagramThemeSelect');
+  if (themeSelect) themeSelect.value = t;
   document.documentElement.dataset.diagramTheme = t;
   document.querySelectorAll('.board-render').forEach((el) => {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
@@ -230,7 +229,6 @@ function applyDiagramTheme(theme, opts) {
   if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
-const diagramThemeMenu = $('#diagramThemeMenu');
 
 // Keep dropdown panels from covering the left Lulu Drawer sheet
 function placeMenuPanel(wrap) {
@@ -265,9 +263,10 @@ function closeDiagramThemeMenu() {
 
 try { syncStyleLayoutSections(); } catch (_e) {}
 
-document.querySelectorAll('#diagramThemeMenu .theme-item').forEach((btn) => {
-  btn.addEventListener('click', () => { applyDiagramTheme(btn.dataset.theme, { persist: true }); });
-});
+const diagramThemeSelect = $('#diagramThemeSelect');
+if (diagramThemeSelect) {
+  diagramThemeSelect.addEventListener('change', () => { applyDiagramTheme(diagramThemeSelect.value, { persist: true }); });
+}
 const _themeMo = new MutationObserver(() => {
   const t = currentDiagramTheme();
   document.querySelectorAll('.board-render').forEach((el) => { el.dataset.boardTheme = t; });
