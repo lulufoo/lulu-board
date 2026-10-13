@@ -4,6 +4,13 @@
   if (typeof module === "object" && module.exports) module.exports = api;
   if (typeof document !== "undefined" && typeof location !== "undefined") {
     var doc = document.documentElement;
+    if (api.isStartPath(location.pathname)) {
+      location.replace(api.rewriteStartToRoot({
+        pathname: location.pathname,
+        search: location.search,
+      }));
+      return;
+    }
     if (api.shouldShowLanding({
       pathname: location.pathname,
       hash: location.hash,
@@ -50,6 +57,16 @@
     return /[?&](code|error|error_code)=/.test(String(search || ""));
   }
 
+  function isStartPath(pathname) {
+    return /^\/start\/?$/.test(String(pathname || ""));
+  }
+
+  // /start -> / with search kept and hash dropped (blank #z is LB-354).
+  function rewriteStartToRoot(ctx) {
+    if (!isStartPath(ctx && ctx.pathname)) return null;
+    return "/" + String((ctx && ctx.search) || "");
+  }
+
   function shouldShowLanding(ctx) {
     if (!/^\/(index\.html)?$/.test(String(ctx.pathname || ""))) return false;
     if (isLegalHash(ctx.hash)) return false;
@@ -67,6 +84,8 @@
     isLegalHash: isLegalHash,
     hasStoredSession: hasStoredSession,
     isAuthReturn: isAuthReturn,
+    isStartPath: isStartPath,
+    rewriteStartToRoot: rewriteStartToRoot,
     shouldShowLanding: shouldShowLanding,
     safeStorage: safeStorage,
   };
