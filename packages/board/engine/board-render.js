@@ -1588,10 +1588,6 @@
     return !!(el && (el.classList.contains('board-item-diamond') || el.dataset.boardShape === 'diamond' || (View && View.isDiamondEl && View.isDiamondEl(el))));
   }
 
-  function kidCrossNeed(el, row) {
-    return (row ? el.offsetHeight : el.offsetWidth) || 0;
-  }
-
   function contentFloor(el, axis) {
     const key = axis === 'width' ? 'boardContentMinWidth' : 'boardContentMinHeight';
     const value = Number(el && el.dataset && el.dataset[key]);
@@ -1627,11 +1623,13 @@
     });
   }
 
-  function equalizeBoxKids(content, dir) {
+  // Reset leftover sizes and restore each kid's own content floor. Cross-axis
+  // sizing is left to flex `align`; siblings are not pinned to a shared max.
+  function resetBoxKidSizes(content) {
     const kids = boxContentKids(content);
     if (!kids.length) return;
-    const row = dir === 'row';
     kids.forEach((el) => {
+      el.style.boxSizing = 'border-box';
       el.style.width = '';
       el.style.minWidth = contentFloorStyle(el, 'width');
       el.style.maxWidth = '';
@@ -1640,28 +1638,9 @@
         el.style.minHeight = contentFloorStyle(el, 'height');
       }
     });
-    let max = 0;
-    kids.forEach((el) => {
-      max = Math.max(max, kidCrossNeed(el, row));
-    });
-    if (!(max > 0)) return;
-    // Integer offset* can sit <1px under max-content. Pinning that integer
-    // wraps the last word; complete with +1, do not round.
-    const complete = max + 1;
-    kids.forEach((el) => {
-      el.style.boxSizing = 'border-box';
-      if (isDiamondKid(el)) return;
-      if (row) {
-        el.style.height = complete + 'px';
-        el.style.minHeight = complete + 'px';
-      } else {
-        el.style.width = complete + 'px';
-        el.style.minWidth = complete + 'px';
-      }
-    });
   }
 
-  function equalizeAllBoxKids(root, board) {
+  function resetAllBoxKidSizes(root, board) {
     if (!root) return;
     root.querySelectorAll('.box-content').forEach((content) => {
       if (content.style.display === 'none') return;
@@ -1669,8 +1648,7 @@
       const id = host && host.dataset.boardId;
       if (!id) return;
       const props = propsFor(board, id);
-      const dir = props.direction === 'row' ? 'row' : 'column';
-      equalizeBoxKids(content, dir);
+      resetBoxKidSizes(content);
       applyMainStretch(content, props);
     });
   }
@@ -1930,10 +1908,10 @@
         });
       };
       // Equalize first so contentInsetNeed sees the shared column width.
-      equalizeAllBoxKids(root, board);
+      resetAllBoxKidSizes(root, board);
       fitNestedBoxes();
       applyRootFrames();
-      equalizeAllBoxKids(root, board);
+      resetAllBoxKidSizes(root, board);
       fitNestedBoxes();
       applyRootFrames();
       if (View && typeof View.fitChipDiamonds === 'function') View.fitChipDiamonds(root);
@@ -1992,7 +1970,7 @@
       // Equalize + Max until stable before/between layout passes.
       let changed = false;
       for (let i = 0; i < 4; i += 1) {
-        equalizeAllBoxKids(root, board);
+        resetAllBoxKidSizes(root, board);
         if (!applySiblingSlotGaps(root)) break;
         changed = true;
       }

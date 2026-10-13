@@ -15,8 +15,8 @@ assert.ok(
   'fits nested rows from leaves to roots before sizing root frames'
 );
 assert.ok(
-  /contentFloorStyle[\s\S]*equalizeBoxKids/.test(render),
-  'equalization preserves nested content floors'
+  /resetBoxKidSizes[\s\S]*contentFloorStyle/.test(render),
+  'size reset preserves nested content floors'
 );
 
 const need = View.flexContentNeed(
