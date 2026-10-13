@@ -159,7 +159,7 @@ function shellSampleGroups() {
 // groups: cloudGroupSummaries() result; omit to repaint the last one (the open board may have changed).
 // Mine shows a page of groups; Load more adds the next page. The open group is always listed.
 // A function, not a var: the first render can run before this file's var initialisers do.
-function shellMinePage() { return 8; }
+function shellMinePage() { return 20; }
 var shellMineShown = 0; // 0 = first page
 
 // Pure: which rows to list, and how many are held back.
