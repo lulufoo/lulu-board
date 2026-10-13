@@ -6,14 +6,25 @@ const Persist = require('../../packages/drawer-app/js/00-hash-persist.js');
 
 const landingDir = path.join(__dirname, '../../packages/drawer-app/landing');
 const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY';
+const WS = '/?ws=1';
 
-// one blank board address everywhere on the page
 const html = fs.readFileSync(path.join(landingDir, 'index.html'), 'utf8');
 assert.match(html, /src="\.\/agent-chat\.webp"/, 'first shot is the agent-chat clip');
 assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.webp')), 'agent-chat.webp exists');
+
+// LB-358: Start free / Get Started / Open a blank board → /?ws=1
+const wsLinks = html.match(/href="\/\?ws=1"/g) || [];
+assert.strictEqual(wsLinks.length, 3, 'three workspace CTAs point to /?ws=1');
+assert.match(html, /href="\/\?ws=1"><span class="only-out">Start free</);
+assert.match(html, /href="\/\?ws=1"><span class="only-out">Get Started</);
+assert.match(html, /href="\/\?ws=1">Open a blank board</);
+
+// Sign in keeps blank #z (LB-356 / landing sign-in handoff); not a product CTA
 const blankLinks = html.match(/href="\/#z:[^"]+"/g) || [];
-assert.ok(blankLinks.length >= 4, 'landing page links to the blank board');
-for (const link of blankLinks) assert.strictEqual(link, 'href="/' + BLANK + '"');
+assert.strictEqual(blankLinks.length, 1, 'only Sign in still uses blank #z');
+assert.strictEqual(blankLinks[0], 'href="/' + BLANK + '"');
+assert.match(html, /href="\/#z:[^"]+" data-open-sign-in="menu">Sign in</);
+
 assert.match(html, /href="https:\/\/github.com\/lulufoo\/lulu-board"/, 'GitHub opens the repo');
 assert.match(html, /href="mailto:namdamlu@outlook.com"/, 'Email opens a mail to namdamlu');
 assert.doesNotMatch(html, /data-open-sign-in="github"/, 'GitHub is not a sign-in button');
@@ -40,7 +51,7 @@ assert.match(script, /avatar\.textContent = \(email \|\| "\?"\)\.charAt\(0\)\.to
 const baseCss = fs.readFileSync(path.join(landingDir, 'landing-base.css'), 'utf8');
 assert.match(baseCss, /\.auth-status \{[^}]*width: 40px;[^}]*height: 40px;[^}]*border-radius: 50%;/, 'the mark is a 40px circle');
 
-// the fixed blank address opens as a blank board in the workspace
+// Sign-in blank address still opens as a blank board in the workspace
 Persist.decodeBoardHash(BLANK).then((decoded) => {
   assert.strictEqual(decoded.bmd, 'board "Untitled"\n');
   assert.strictEqual(decoded.version, 1);
