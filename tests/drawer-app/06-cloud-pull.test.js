@@ -14,7 +14,8 @@ const appBuild = read('scripts/drawer-app-build/build.mjs');
 
 assert.match(html, /<button class="board-cloud-status is-current" id="boardCloudStatus" type="button" hidden>/, 'green Saved is a button');
 assert.match(css, /\.board-cloud-status\.is-current \{[^}]*cursor:\s*pointer/, 'green Saved looks clickable');
-assert.match(sync, /Synced\. Click to pull from cloud/, 'green tooltip says it pulls');
+assert.match(sync, /title: "Sync"/, 'green tip says Sync (click pulls)');
+assert.match(pull, /bindChromeTip\(status,/, 'green control uses the self-drawn tip');
 assert.match(appBuild, /06-cloud-sync\.js[\s\S]*06-cloud-pull\.js[\s\S]*06-cloud-group-tabs\.js/, 'pull module is built after sync');
 
 assert.match(pull, /getElementById\("boardCloudStatus"\)/, 'pull is wired to the green control');

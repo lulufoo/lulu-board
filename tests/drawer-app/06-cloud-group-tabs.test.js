@@ -95,8 +95,9 @@ assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order,titl
 assert.strictEqual((tabs.match(/cloudClient\.from\("boards"\)/g) || []).length, 1, 'one boards query feeds the tabs');
 assert.doesNotMatch(tabs, /\.title = /, 'number tabs drop the slow native title');
 assert.match(tabs, /bindGroupTabTip\(btn, relabel\)/, 'number tabs show the self-drawn tip');
-assert.match(tabCss, /\.group-tab-tip \{[\s\S]*pointer-events: none/, 'tip never steals the pointer');
-assert.match(tabCss, /\.group-tab-tip \{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis/, 'tip is a block box so the ellipsis renders');
+assert.match(tabs, /function bindGroupTabTip\(btn, label\) \{\n  bindChromeTip\(btn, label, function \(\) \{ return btn\.parentElement; \}\);/, 'tab tip is the shared chrome tip, 6px off the strip');
+assert.match(tabCss, /\.chrome-tip \{[\s\S]*pointer-events: none/, 'tip never steals the pointer');
+assert.match(tabCss, /\.chrome-tip \{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis/, 'tip is a block box so the ellipsis renders');
 assert.match(tabCss, /prefers-reduced-motion/, 'tip honors reduced motion');
 assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
 assert.match(tabs, /getBoardTitle\(row\.board_id, row\.title\)/, 'tabs take the title only from getBoardTitle');

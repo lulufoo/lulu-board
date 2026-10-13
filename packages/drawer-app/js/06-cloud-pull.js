@@ -42,6 +42,9 @@ async function pullBoardFromCloud() {
 (function wireCloudPull() {
   var status = document.getElementById("boardCloudStatus");
   if (!status) return;
+  if (typeof bindChromeTip === "function") {
+    bindChromeTip(status, function () { return status.getAttribute("aria-label") || ""; });
+  }
   status.addEventListener("click", function () {
     cloudCloseAccountMenus();
     void pullBoardFromCloud();
