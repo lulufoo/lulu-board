@@ -313,6 +313,21 @@ function cloudBoardTitle(source) {
   return typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "";
 }
 
+// SSOT for a board's display title: in-memory md first (the open board's live
+// source, then the cached bmd), else the queried boards.title, else Untitled.
+function getBoardTitle(boardId, queriedTitle) {
+  var id = String(boardId || "");
+  var source = null;
+  if (id && !cloudPlusDraftActive && typeof cloudBoardId === "function" && cloudBoardId() === id && boardSourceEl) {
+    source = boardSourceEl.value;
+  } else {
+    var cached = cloudCachedBoardRow(id);
+    if (cached && cached.bmd) source = cached.bmd;
+  }
+  var title = source != null ? cloudBoardTitle(source) : String(queriedTitle || "");
+  return title.trim() || "Untitled";
+}
+
 function cloudSetBoardHash(boardId, replace) {
   if (!boardId || typeof cloudBoardHash !== "function") return;
   var hash = cloudBoardHash(boardId);

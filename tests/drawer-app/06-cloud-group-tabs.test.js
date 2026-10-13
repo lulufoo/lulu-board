@@ -93,21 +93,36 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
 
 assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order,title"\)/, 'tabs read group, order and title from boards');
 assert.strictEqual((tabs.match(/cloudClient\.from\("boards"\)/g) || []).length, 1, 'one boards query feeds the tabs');
-assert.match(tabs, /btn\.title = tabTitle/, 'number tabs carry a native title');
-assert.match(tabs, /"Board " \+ \(index \+ 1\) \+ ": " \+ tabTitle/, 'aria-label is Board N: <title>');
+assert.match(tabs, /btn\.title = t;/, 'number tabs carry a native title');
+assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
+assert.match(tabs, /getBoardTitle\(row\.board_id, row\.title\)/, 'tabs take the title only from getBoardTitle');
+assert.match(tabs, /addEventListener\("mouseenter", relabel\)/, 'title is re-read on hover');
+assert.match(tabs, /addEventListener\("focus", relabel\)/, 'title is re-read on focus');
 assert.match(tabs, /draft\.title = "Untitled"/, 'unsaved draft tab hovers Untitled');
 assert.match(tabs, /"Add board"/, 'plus keeps Add board');
 {
-  const start = tabs.indexOf('function cloudGroupTabTitle');
-  const end = tabs.indexOf('function cloudKnownGroupBoard');
-  const make = (cache) => new Function('cloudCachedBoardRow', tabs.slice(start, end) + '\nreturn cloudGroupTabTitle;')(cache);
-  const plain = make(undefined);
-  assert.strictEqual(plain({ board_id: 'b_1', title: 'Plan' }), 'Plan');
-  assert.strictEqual(plain({ board_id: 'b_1', title: '' }), 'Untitled', 'empty title shows Untitled');
-  assert.strictEqual(plain({ board_id: 'b_1', title: '   ' }), 'Untitled');
-  const cached = make((id) => (id === 'b_1' ? { title: 'Renamed' } : null));
-  assert.strictEqual(cached({ board_id: 'b_1', title: 'Old' }), 'Renamed', 'saved rename wins over the old row');
-  assert.strictEqual(cached({ board_id: 'b_2', title: 'Two' }), 'Two');
+  const sync = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-sync.js'), 'utf8');
+  const start = sync.indexOf('function getBoardTitle');
+  const end = sync.indexOf('function cloudSetBoardHash');
+  assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
+  const body = sync.slice(start, end);
+  assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'boardSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
+    body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
+    (id) => (env.cache || {})[id] || null,
+    (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });
+  const el = { value: 'board "Live"\n' };
+  const get = make({ current: 'b_1', el, cache: { b_1: { bmd: 'board "Saved"' }, b_2: { bmd: 'board "Cached"\n', title: 'Old' } } });
+  assert.strictEqual(get('b_1', 'Q'), 'Live', 'open board follows the live md');
+  el.value = 'board "Renamed"\n';
+  assert.strictEqual(get('b_1', 'Q'), 'Renamed', 'unsaved rename shows at once');
+  assert.strictEqual(get('b_2', 'Q'), 'Cached', 'loaded board follows cached md, not its stored title');
+  assert.strictEqual(get('b_3', 'Queried'), 'Queried', 'unloaded board uses the queried title');
+  assert.strictEqual(get('b_3', ''), 'Untitled', 'empty → Untitled');
+  el.value = 'item a\n';
+  assert.strictEqual(get('b_1', 'Q'), 'Untitled', 'md without a title line → Untitled');
+  const draft = make({ draft: true, current: 'b_1', el, cache: { b_1: { bmd: 'board "Saved"' } } });
+  assert.strictEqual(draft('b_1', 'Q'), 'Saved', 'while on the draft, member reads its cached md');
 }
 assert.doesNotMatch(tabs, /group_members/, 'tabs no longer read group_members');
 console.log('ok cloud-group-tabs');

@@ -24,12 +24,12 @@ function cloudMembersInclude(boardId, groupId, members) {
   return false;
 }
 
-// Hover title for a group tab: the saved boards.title, newest known copy first.
-function cloudGroupTabTitle(row) {
-  var id = row && row.board_id;
-  var cached = id && typeof cloudCachedBoardRow === "function" ? cloudCachedBoardRow(id) : null;
-  var title = String((cached && cached.title) || (row && row.title) || "").trim();
-  return title || "Untitled";
+// Group tab label: title comes only from getBoardTitle (06-cloud-sync), read
+// again on hover/focus so an unsaved rename shows at once.
+function cloudLabelGroupTab(btn, row, number) {
+  var t = typeof getBoardTitle === "function" ? getBoardTitle(row.board_id, row.title) : (row.title || "Untitled");
+  btn.title = t;
+  btn.setAttribute("aria-label", "Board " + number + ": " + t);
 }
 
 function cloudKnownGroupBoard(boardId) {
@@ -101,9 +101,10 @@ function renderCloudGroupTabs() {
     btn.textContent = String(index + 1);
     btn.dataset.boardId = row.board_id;
     btn.draggable = true;
-    var tabTitle = cloudGroupTabTitle(row);
-    btn.title = tabTitle;
-    btn.setAttribute("aria-label", "Board " + (index + 1) + ": " + tabTitle);
+    cloudLabelGroupTab(btn, row, index + 1);
+    var relabel = function () { cloudLabelGroupTab(btn, row, index + 1); };
+    btn.addEventListener("mouseenter", relabel);
+    btn.addEventListener("focus", relabel);
     btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
     btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
