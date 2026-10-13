@@ -199,24 +199,7 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
   font-weight: 650;
   letter-spacing: .04em;
 }
-.style-theme-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.style-theme-list .style-theme-btn {
-  justify-content: center;
-  width: 100%;
-  min-height: 36px;
-  text-align: center;
-  border-radius: 10px;
-}
-.style-theme-list .style-theme-btn.is-active {
-  border-color: var(--accent, #2563eb);
-  background: color-mix(in srgb, var(--accent, #2563eb) 12%, var(--panel-solid));
-  color: var(--accent, #2563eb);
-  font-weight: 650;
-}
+#diagramThemeSelect { width: 100%; }
 #stylePanel .props-seg {
   gap: 8px;
 }
@@ -1731,6 +1714,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   text-align: right;
 }
 .props-label { font-size: 11px; color: var(--muted, #64748b); margin: 0; letter-spacing: .02em; }
+#diagramThemeSelect,
 #boardTypeEditor,
 #boardTitleEditor,
 #boardDirEditor,
@@ -1772,6 +1756,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 #boardTitleEditor.is-multiline {
   min-height: 108px;
 }
+#diagramThemeSelect:focus,
 #boardTypeEditor:focus,
 #boardTitleEditor:focus,
 #boardDirEditor:focus,
@@ -1783,6 +1768,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 #boardIdEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
+#diagramThemeSelect,
 #boardTypeEditor,
 #boardDirEditor,
 #boardIconSec,
@@ -1798,6 +1784,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   background-position: right 14px center;
   background-size: 12px 12px;
 }
+html[data-theme="dark"] #diagramThemeSelect,
 html[data-theme="dark"] #boardTypeEditor,
 html[data-theme="dark"] #boardDirEditor,
 html[data-theme="dark"] #boardIconSec,

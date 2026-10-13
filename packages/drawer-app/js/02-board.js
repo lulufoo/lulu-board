@@ -1281,9 +1281,8 @@ function syncBoardStyleChrome(board) {
     if (typeof BoardRender.setLinkRouteStyle === "function") BoardRender.setLinkRouteStyle(next.link_route);
     syncBoardLinkRouteButton();
   }
-  document.querySelectorAll("#diagramThemeMenu .theme-item").forEach(function(btn) {
-    btn.classList.toggle("is-active", btn.dataset.theme === next.theme);
-  });
+  var themeSelect = document.getElementById("diagramThemeSelect");
+  if (themeSelect && next.theme) themeSelect.value = next.theme;
 }
 function commitBoardCap() {
   if (!boardCapEditor || !selectedBoardNode || selectedBoardNode.kind !== "item") return;

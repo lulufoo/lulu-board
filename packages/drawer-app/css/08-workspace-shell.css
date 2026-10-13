@@ -369,6 +369,7 @@ html[data-drawer-mode="board"] .board-dock .style-hint,
 html[data-drawer-mode="board"] .board-dock .export-type-hint { font-size: 12px; color: var(--ink-soft); }
 html[data-drawer-mode="board"] .style-block + .style-block { border-top-color: var(--paper-line); }
 
+html[data-drawer-mode="board"] .board-dock #diagramThemeSelect,
 html[data-drawer-mode="board"] .board-dock #boardTypeEditor,
 html[data-drawer-mode="board"] .board-dock #boardTitleEditor,
 html[data-drawer-mode="board"] .board-dock #boardDirEditor,
@@ -381,6 +382,7 @@ html[data-drawer-mode="board"] .board-dock #boardIdEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
 }
+html[data-drawer-mode="board"] .board-dock #diagramThemeSelect:focus,
 html[data-drawer-mode="board"] .board-dock #boardTypeEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardTitleEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardDirEditor:focus,
@@ -401,11 +403,9 @@ html[data-drawer-mode="board"] .board-dock .props-seg-btn {
 html[data-drawer-mode="board"] .board-dock .btn:hover,
 html[data-drawer-mode="board"] .board-dock .props-seg-btn:hover { background: var(--fill-hover); }
 html[data-drawer-mode="board"] .board-dock .props-seg-btn { height: 40px; }
-html[data-drawer-mode="board"] .board-dock .props-seg-btn[aria-pressed="true"],
-html[data-drawer-mode="board"] .board-dock .style-theme-btn.is-active {
+html[data-drawer-mode="board"] .board-dock .props-seg-btn[aria-pressed="true"] {
   background: rgba(219, 76, 132, .14); color: var(--brand); font-weight: 650;
 }
-html[data-drawer-mode="board"] .style-theme-list .style-theme-btn { min-height: 40px; border-radius: 12px; }
 html[data-drawer-mode="board"] #stylePanel .props-seg-btn { height: 40px; border-radius: 12px; }
 html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
 html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
