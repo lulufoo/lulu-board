@@ -39,7 +39,7 @@ function read(rel) {
   assert.ok(threw, 'type image rejected');
 }
 
-const vocab = read('skill/board/references/vocab.md');
+const vocab = read('packages/drawer-app/skill-assets/vocab.md');
 assert.ok(/^## Icons$/m.test(vocab), 'vocab heading is Icons');
 assert.ok(/\| `icon` \|/.test(vocab), 'vocab table has icon');
 assert.ok(!/### img/.test(vocab), 'vocab has no img heading');

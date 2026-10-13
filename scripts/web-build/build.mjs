@@ -83,3 +83,14 @@ for (const name of [
 }
 
 rmSync(path.join(webDir, 'css'), { recursive: true, force: true });
+
+const skillAssetsSrc = path.join(repo, 'packages/drawer-app/skill-assets');
+const skillAssetsOut = path.join(webDir, 'skill-assets');
+rmSync(skillAssetsOut, { recursive: true, force: true });
+mkdirSync(skillAssetsOut, { recursive: true });
+for (const name of ['vocab.md', 'icons.json']) {
+  const src = path.join(skillAssetsSrc, name);
+  if (!existsSync(src)) throw new Error('missing ' + src);
+  copyFileSync(src, path.join(skillAssetsOut, name));
+  console.log('ok .cache/web/skill-assets/' + name);
+}

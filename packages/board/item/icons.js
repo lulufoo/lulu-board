@@ -26,7 +26,7 @@
   function loadCatalog() {
     const path = typeof require === 'function' ? require('path') : null;
     return loadJSON('BoardIconsCatalog', 'icon catalog', path ? [
-      path.join(__dirname, '..', '..', '..', 'skill', 'board', 'common', 'icons.json')
+      path.join(__dirname, '..', '..', 'drawer-app', 'skill-assets', 'icons.json')
     ] : []);
   }
 

@@ -187,7 +187,7 @@ item HERO type text "Hi"
 
 {
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-  const vocab = fs.readFileSync(path.join(__dirname, '../../../skill/board/references/vocab.md'), 'utf8');
+  const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/id="boardCapEditor"/.test(html), 'props have Width Cap select');
   assert.ok(/Width Cap/.test(html), 'cap field is labeled Width Cap');
   assert.ok(!/Capped/.test(html) && !/data-cap=/.test(html), 'cap segments removed');
