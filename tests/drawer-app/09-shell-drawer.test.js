@@ -62,14 +62,14 @@ console.log('ok 09-shell-drawer');
   const shellMineWindow = new Function(src.slice(start, end) + '\nreturn shellMineWindow;')();
   const rows = Array.from({ length: 30 }, (_, i) => ({ id: i }));
   const none = () => false;
-  assert.equal(shellMineWindow(rows, 8, none).visible.length, 8, 'first page');
-  assert.equal(shellMineWindow(rows, 8, none).hidden, 22, 'rest is held back');
-  const withCurrent = shellMineWindow(rows, 8, (g) => g.id === 20);
-  assert.equal(withCurrent.visible.length, 9, 'the open group is listed even past the page');
-  assert.equal(withCurrent.hidden, 21, 'hidden count excludes it');
+  assert.equal(shellMineWindow(rows, 20, none).visible.length, 20, 'first page');
+  assert.equal(shellMineWindow(rows, 20, none).hidden, 10, 'rest is held back');
+  const withCurrent = shellMineWindow(rows, 20, (g) => g.id === 25);
+  assert.equal(withCurrent.visible.length, 21, 'the open group is listed even past the page');
+  assert.equal(withCurrent.hidden, 9, 'hidden count excludes it');
   assert.equal(shellMineWindow(rows, 40, none).hidden, 0, 'no Load more when all fit');
-  assert.equal(shellMineWindow([], 8, none).visible.length, 0, 'empty list');
-  assert.match(src, /function shellMinePage\(\)/, 'page size survives the first render running early');
+  assert.equal(shellMineWindow([], 20, none).visible.length, 0, 'empty list');
+  assert.match(src, /function shellMinePage\(\) \{ return 20; \}/, 'page size is 20 and survives the first render running early');
 }
 
 // ---- drawer account row + spacing (LB-303) ----
