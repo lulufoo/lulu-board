@@ -19,7 +19,7 @@
     doc.dataset.drawerMode = "board";
     // Hide canvas until first transform is applied to avoid left-flash.
     doc.dataset.drawerBoot = "1";
-    // Blank start (LB-354): hang on /?ws=1 for now; LB-355 will reuse the plan.
+    // Blank start: /?ws=1 (any auth) or signed-in / (LB-355); plan from blankStartPlan.
     var plan = api.blankStartPlan(ctx);
     if (plan) {
       var next = location.pathname + location.search + "#" + plan.hash;
@@ -83,12 +83,14 @@
     return true;
   }
 
-  // Shared blank-start gate. LB-354 hangs only on /?ws=1; LB-355 will add "/" + signed-in.
+  // Shared blank-start gate: /?ws=1 (any auth), or signed-in empty / (LB-355).
+  // Legal #z/#b/#s and OAuth returns skip. must not override ws=1.
   function shouldBlankStart(ctx) {
     if (isLegalHash(ctx && ctx.hash)) return false;
     if (isAuthReturn(ctx && ctx.search)) return false;
     if (isForcedWorkspace(ctx && ctx.search)) return true;
-    return false;
+    if (!/^\/(index\.html)?$/.test(String(ctx && ctx.pathname || ""))) return false;
+    return hasStoredSession(ctx && ctx.storage);
   }
 
   function blankStartPlan(ctx) {
