@@ -2,26 +2,42 @@
 (function (root, factory) {
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
+  root.DrawerEarlyHead = api;
   if (typeof document !== "undefined" && typeof location !== "undefined") {
     var doc = document.documentElement;
-    if (api.shouldShowLanding({
+    var storage = api.safeStorage(root);
+    var ctx = {
       pathname: location.pathname,
       hash: location.hash,
       search: location.search,
-      storage: api.safeStorage(root),
-    })) {
+      storage: storage,
+    };
+    if (api.shouldShowLanding(ctx)) {
       location.replace(api.LANDING_PATH);
       return;
     }
     doc.dataset.drawerMode = "board";
     // Hide canvas until first transform is applied to avoid left-flash.
     doc.dataset.drawerBoot = "1";
+    // Blank start (LB-354): hang on /?ws=1 for now; LB-355 will reuse the plan.
+    var plan = api.blankStartPlan(ctx);
+    if (plan) {
+      var next = location.pathname + location.search + "#" + plan.hash;
+      if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+        history.replaceState(null, "", next);
+      } else {
+        location.hash = plan.hash;
+      }
+      if (plan.openDrawer) doc.dataset.blankStartDrawer = "1";
+    }
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
   var LANDING_PATH = "/landing/";
   var SESSION_KEY_RE = /^sb-.+-auth-token$/;
+  // Same blank Untitled payload landing CTAs use (encodeBoardHash of blankHashBoardSource).
+  var BLANK_Z_HASH = "z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY";
 
   // Format check only (same shapes as 00-cloud-route.js); #z: payload is never decoded here.
   function isLegalHash(raw) {
@@ -67,17 +83,36 @@
     return true;
   }
 
+  // Shared blank-start gate. LB-354 hangs only on /?ws=1; LB-355 will add "/" + signed-in.
+  function shouldBlankStart(ctx) {
+    if (isLegalHash(ctx && ctx.hash)) return false;
+    if (isAuthReturn(ctx && ctx.search)) return false;
+    if (isForcedWorkspace(ctx && ctx.search)) return true;
+    return false;
+  }
+
+  function blankStartPlan(ctx) {
+    if (!shouldBlankStart(ctx)) return null;
+    return {
+      hash: BLANK_Z_HASH,
+      openDrawer: !hasStoredSession(ctx && ctx.storage),
+    };
+  }
+
   function safeStorage(root) {
     try { return root.localStorage || null; } catch (_e) { return null; }
   }
 
   return {
     LANDING_PATH: LANDING_PATH,
+    BLANK_Z_HASH: BLANK_Z_HASH,
     isLegalHash: isLegalHash,
     hasStoredSession: hasStoredSession,
     isAuthReturn: isAuthReturn,
     isForcedWorkspace: isForcedWorkspace,
     shouldShowLanding: shouldShowLanding,
+    shouldBlankStart: shouldBlankStart,
+    blankStartPlan: blankStartPlan,
     safeStorage: safeStorage,
   };
 });

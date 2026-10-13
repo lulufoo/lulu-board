@@ -61,6 +61,11 @@ var shellShares = shellShares || [];
     else if (want[1] === "search") setSearch(true);
     else { var tab = document.getElementById("btnDock" + want[1].charAt(0).toUpperCase() + want[1].slice(1)); if (tab) tab.click(); }
   }
+  // Blank start (LB-354): early-head sets data-blank-start-drawer for unsigned /?ws=1.
+  if (document.documentElement.dataset.blankStartDrawer === "1") {
+    setDrawer(true);
+    delete document.documentElement.dataset.blankStartDrawer;
+  }
   document.addEventListener("keydown", function (event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
