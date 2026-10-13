@@ -25,6 +25,6 @@ assert.ok(itemRule, 'item diamond rule');
 assert.ok(!/align-self:\s*stretch/.test(itemRule[0]), 'css must not force stretch');
 assert.ok(/align-self:\s*auto/.test(itemRule[0]), 'css follows parent align');
 
-assert.ok(/if \(isDiamondKid\(el\)\) return;/.test(renderJs), 'equalize skips diamond size write');
+assert.ok(/if \(!isDiamondKid\(el\)\) \{\s*el\.style\.height = '';/.test(renderJs), 'size reset skips diamond height write');
 
 console.log('ok diamond-chip-align');
