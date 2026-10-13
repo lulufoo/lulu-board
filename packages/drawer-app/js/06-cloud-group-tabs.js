@@ -28,8 +28,55 @@ function cloudMembersInclude(boardId, groupId, members) {
 // again on hover/focus so an unsaved rename shows at once.
 function cloudLabelGroupTab(btn, row, number) {
   var t = typeof getBoardTitle === "function" ? getBoardTitle(row.board_id, row.title) : (row.title || "Untitled");
-  btn.title = t;
   btn.setAttribute("aria-label", "Board " + number + ": " + t);
+  return t;
+}
+
+// Self-drawn title tip: shows at once left of the number tab (native title
+// waits on the OS delay). One fixed node on body so the strip cannot clip it.
+var groupTabTipEl = null;
+var groupTabTipHideTimer = null;
+
+function groupTabTip() {
+  if (groupTabTipEl && groupTabTipEl.isConnected) return groupTabTipEl;
+  groupTabTipEl = document.createElement("div");
+  groupTabTipEl.className = "group-tab-tip";
+  groupTabTipEl.setAttribute("aria-hidden", "true");
+  document.body.appendChild(groupTabTipEl);
+  return groupTabTipEl;
+}
+
+function showGroupTabTip(btn, text) {
+  var tip = groupTabTip();
+  var wasOn = tip.classList.contains("is-on");
+  clearTimeout(groupTabTipHideTimer);
+  tip.textContent = text;
+  var r = btn.getBoundingClientRect();
+  tip.style.top = (r.top + r.height / 2) + "px";
+  var rail = btn.parentElement ? btn.parentElement.getBoundingClientRect() : r;
+  tip.style.right = (window.innerWidth - Math.min(r.left, rail.left) + 6) + "px";
+  if (wasOn) return;
+  tip.classList.remove("is-on");
+  void tip.offsetWidth;
+  tip.classList.add("is-on");
+}
+
+function hideGroupTabTip() {
+  if (!groupTabTipEl) return;
+  var tip = groupTabTipEl;
+  clearTimeout(groupTabTipHideTimer);
+  // short grace so moving to the next tab swaps text instead of replaying
+  groupTabTipHideTimer = setTimeout(function () { tip.classList.remove("is-on"); }, 60);
+}
+
+function bindGroupTabTip(btn, label) {
+  var show = function () { showGroupTabTip(btn, label()); };
+  btn.addEventListener("mouseenter", show);
+  btn.addEventListener("focus", show);
+  btn.addEventListener("mouseleave", hideGroupTabTip);
+  btn.addEventListener("blur", hideGroupTabTip);
+  btn.addEventListener("pointerdown", hideGroupTabTip);
+  btn.addEventListener("dragstart", hideGroupTabTip);
 }
 
 function cloudKnownGroupBoard(boardId) {
@@ -89,6 +136,7 @@ function renderCloudGroupTabs() {
   var show = cloudGroupTabsVisible();
   root.hidden = !show;
   root.innerHTML = "";
+  if (groupTabTipEl) groupTabTipEl.classList.remove("is-on");
   if (!show) return;
   var viewingDraft = !!cloudPlusDraftActive;
   var current = viewingDraft ? "" : cloudBoardId();
@@ -102,9 +150,8 @@ function renderCloudGroupTabs() {
     btn.dataset.boardId = row.board_id;
     btn.draggable = true;
     cloudLabelGroupTab(btn, row, index + 1);
-    var relabel = function () { cloudLabelGroupTab(btn, row, index + 1); };
-    btn.addEventListener("mouseenter", relabel);
-    btn.addEventListener("focus", relabel);
+    var relabel = function () { return cloudLabelGroupTab(btn, row, index + 1); };
+    bindGroupTabTip(btn, relabel);
     btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
     btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
     btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
@@ -117,8 +164,8 @@ function renderCloudGroupTabs() {
     draft.type = "button";
     draft.className = "group-tab";
     draft.textContent = String(draftNo);
-    draft.title = "Untitled";
     draft.setAttribute("aria-label", "Board " + draftNo + ": Untitled");
+    bindGroupTabTip(draft, function () { return "Untitled"; });
     draft.setAttribute("aria-current", viewingDraft ? "true" : "false");
     draft.classList.toggle("is-active", viewingDraft);
     draft.addEventListener("click", function () { void cloudSwitchToPlusDraft(); });

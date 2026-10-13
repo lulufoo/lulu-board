@@ -57,3 +57,50 @@
   cursor: default;
 }
 .group-tab:disabled:hover { background: transparent; }
+
+/* self-drawn title tip, left of the number tab; size tracks .group-tab */
+.group-tab-tip {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 60;
+  box-sizing: border-box;
+  height: 32px;
+  max-width: 240px;
+  padding: 0 10px;
+  border-radius: 8px;
+  /* block, not flex: ellipsis does not apply to a flex item's text */
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 500 13px/32px var(--sans);
+  color: var(--text);
+  background: var(--panel);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .06);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(4px, -50%);
+  transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s linear 120ms;
+}
+.group-tab-tip.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(0, -50%);
+  transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s;
+}
+html[data-drawer-mode="board"] .group-tab-tip {
+  height: 36px;
+  border-radius: 9px;
+  font: 500 14px/36px var(--font, var(--sans));
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: var(--press), 0 6px 18px rgba(120, 80, 40, .07);
+}
+@media (prefers-reduced-motion: reduce) {
+  .group-tab-tip,
+  .group-tab-tip.is-on { transition: none; transform: translate(0, -50%); }
+}
