@@ -51,6 +51,9 @@ assert.match(script, /status\.title = label/, 'full address is the tooltip');
 assert.match(script, /avatar\.textContent = \(email \|\| "\?"\)\.charAt\(0\)\.toUpperCase\(\)/, 'avatar shows the email initial');
 const baseCss = fs.readFileSync(path.join(landingDir, 'landing-base.css'), 'utf8');
 assert.match(baseCss, /\.auth-status \{[^}]*width: 40px;[^}]*height: 40px;[^}]*border-radius: 50%;/, 'the mark is a 40px circle');
+const mobileHero = baseCss.slice(baseCss.indexOf('.hero {'), baseCss.indexOf('@media (min-width: 601px)'));
+assert.doesNotMatch(mobileHero, /^\s*(?:block-size|min-height|height):/m, 'LB-386: mobile hero is content-driven');
+assert.match(baseCss, /@media \(min-width: 768px\) \{\s*\.hero \{[^}]*block-size: 100vh;[^}]*block-size: 100dvh;/, 'LB-386: wide hero is exactly one viewport tall');
 
 // Sign-in blank address still opens as a blank board in the workspace
 Persist.decodeBoardHash(BLANK).then((decoded) => {
