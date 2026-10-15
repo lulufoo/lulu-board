@@ -128,8 +128,7 @@ html[data-auth="out"] .only-in { display: none !important; }
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  height: calc(550px + var(--nav-h));
-  padding: calc(48px + var(--nav-h)) 0 0;
+  padding: calc(48px + var(--nav-h)) 0 64px;
   text-align: center;
   background: #f4e8d6 url("./hero-art.webp") center / cover no-repeat;
 }
@@ -156,7 +155,12 @@ html[data-auth="out"] .only-in { display: none !important; }
   .hero-lead { font-size: 18px; line-height: 26px; }
 }
 @media (min-width: 768px) {
-  .hero { align-items: center; height: calc(720px + var(--nav-h)); padding: var(--nav-h) 0 0; }
+  .hero {
+    align-items: center;
+    block-size: 100vh;
+    block-size: 100dvh;
+    padding: var(--nav-h) 0 0;
+  }
 }
 @media (min-width: 1024px) {
   :root { --nav-h: 96px; }
