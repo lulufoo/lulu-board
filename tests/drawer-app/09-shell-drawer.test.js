@@ -52,6 +52,11 @@ console.log('ok 09-shell-drawer');
   const lines = shellSearchMatches('item', groups, 'box A\n  item one\nitem two');
   assert.deepEqual(lines.lines.map((l) => l.line), [1, 2], 'source line hits keep line numbers');
   assert.equal(shellSearchMatches('zzz', groups, 'abc').boards.length, 0, 'no match');
+  assert.match(src, /section\("Mine"/, 'signed-in search lists own boards');
+  assert.match(src, /section\("Public"/, 'signed-in search lists others public boards');
+  assert.match(src, /cloudSearchBoards/, 'board search goes through the search rpc');
+  assert.match(src, /cloudSearchSignedIn\(\)/, 'empty or signed-out search does not call the rpc');
+  assert.match(src, /hit\.kind === "public"/, 'a Public hit opens the share link');
 }
 
 // ---- Mine paging (LB-302) ----
