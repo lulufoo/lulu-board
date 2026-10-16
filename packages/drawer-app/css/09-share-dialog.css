@@ -32,6 +32,22 @@
 }
 .share-seg button:hover { color: var(--text); }
 .share-seg button[aria-checked="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(18, 18, 18, 0.14); }
+.share-seg button:disabled { opacity: 0.45; cursor: not-allowed; }
+.share-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 34px;
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text) 4%, transparent);
+  color: var(--muted);
+  font: 600 13px var(--font);
+  cursor: pointer;
+}
+.share-switch[aria-checked="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(18, 18, 18, 0.14); }
+.share-switch:disabled { opacity: 0.45; cursor: not-allowed; }
 .share-sheet .share-hint { margin: 8px 0 0; font-size: 12px; }
 .share-new-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-top: 18px; color: var(--muted); font: 12px/1.4 var(--font); }
 .share-text-btn { padding: 0; border: 0; background: transparent; color: var(--accent); font: 600 12.5px var(--font); cursor: pointer; }

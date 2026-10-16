@@ -433,6 +433,7 @@ function shellRenderShared(shares) {
 // ---- search ----
 var shellSearchHits = [];
 var shellSearchIndex = 0;
+var shellSearchSeq = 0;
 
 // Case-insensitive substring search. groups: cloudGroupSummaries() shape (members carry board titles).
 // Empty query: the most recently edited groups. Lines: matching lines of the open board's source.
@@ -475,13 +476,9 @@ function shellSearchGroups() {
   return shellGroups;
 }
 
-function shellRenderSearch() {
+function shellPaintSearchResults(query, found, remote) {
   var box = document.getElementById("shellSearchResults");
-  var input = document.getElementById("shellSearchInput");
-  if (!box || !input) return;
-  var query = input.value;
-  var source = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl.value : "";
-  var found = shellSearchMatches(query, shellSearchGroups(), source);
+  if (!box) return;
   shellSearchHits = [];
   var frag = document.createDocumentFragment();
   function section(label, items, kind) {
@@ -508,6 +505,8 @@ function shellRenderSearch() {
     });
   }
   section(String(query).trim() ? "Boards" : "Recent", found.boards, "board");
+  section("Mine", (remote && remote.mine) || [], "mine");
+  section("Public", (remote && remote.public) || [], "public");
   section("In this board", found.lines, "line");
   if (!shellSearchHits.length) {
     var none = document.createElement("p");
@@ -518,6 +517,31 @@ function shellRenderSearch() {
   box.replaceChildren(frag);
   shellSearchIndex = 0;
   shellPaintSearchActive();
+}
+
+function shellRenderSearch() { void shellFillSearch(); }
+
+async function shellFillSearch() {
+  var box = document.getElementById("shellSearchResults");
+  var input = document.getElementById("shellSearchInput");
+  if (!box || !input) return;
+  var seq = ++shellSearchSeq;
+  var query = input.value;
+  var source = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl.value : "";
+  var found = shellSearchMatches(query, shellSearchGroups(), source);
+  var remote = { mine: [], public: [] };
+  shellPaintSearchResults(query, found, remote);
+  var q = String(query || "").trim();
+  if (!q || typeof cloudSearchBoards !== "function" || typeof cloudSearchSignedIn !== "function" || !cloudSearchSignedIn()) return;
+  try {
+    remote = await cloudSearchBoards(q);
+  } catch (error) {
+    if (seq !== shellSearchSeq) return;
+    if (typeof setStatus === "function") setStatus(error && error.message ? error.message : "Search failed", true);
+    return;
+  }
+  if (seq !== shellSearchSeq) return;
+  shellPaintSearchResults(query, found, remote);
 }
 
 function shellPaintSearchActive() {
@@ -538,8 +562,12 @@ function shellPickSearch() {
   if (!hit) return;
   if (typeof window.shellCloseSearch === "function") window.shellCloseSearch();
   if (shellIsPreview()) return;
-  if (hit.kind === "board") {
+  if (hit.kind === "board" || hit.kind === "mine") {
     if (hit.item.boardId && typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(hit.item.boardId);
+    return;
+  }
+  if (hit.kind === "public") {
+    if (hit.item.shareId && typeof cloudShareHash === "function") location.hash = cloudShareHash(hit.item.shareId);
     return;
   }
   // A line of the open board: show it in Source and select it.

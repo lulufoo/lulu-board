@@ -1,7 +1,7 @@
 /* drawer-app/06-cloud-shares.js — the boards I shared out (link shares), as data plus per-board actions. */
 
 // boards: owner rows with a share_id; roles: { [shareId]: "view" | "edit" }.
-function cloudShareSummaries(boardRows, roles, currentBoardId) {
+function cloudShareSummaries(boardRows, roles, currentBoardId, publics) {
   var current = String(currentBoardId || "");
   var out = [];
   (boardRows || []).forEach(function (row) {
@@ -11,6 +11,7 @@ function cloudShareSummaries(boardRows, roles, currentBoardId) {
       title: row.title || "",
       shareId: row.share_id,
       role: roles && roles[row.share_id] === "edit" ? "edit" : "view",
+      isPublic: !!(publics && publics[row.share_id]),
       updatedAt: String(row.updated_at || row.created_at || ""),
       isCurrent: !!current && row.board_id === current,
     });
@@ -33,12 +34,14 @@ async function cloudFetchOwnShares() {
   if (boards.error) throw boards.error;
   var rows = boards.data || [];
   var roles = {};
+  var publics = {};
   await Promise.all(rows.map(async function (row) {
     var state = await runShareRpc("own_share_state", { p_board_id: row.board_id });
     if (state && state.role) roles[row.share_id] = state.role;
+    if (state && state.is_public) publics[row.share_id] = true;
   }));
   var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
-  return cloudShareSummaries(rows, roles, current);
+  return cloudShareSummaries(rows, roles, current, publics);
 }
 
 // One RPC on one board. Keeps the open board's own share state (status chrome) in step.
@@ -46,9 +49,10 @@ async function cloudShareMutate(boardId, name, args, okStatus) {
   try {
     var row = await runShareRpc(name, Object.assign({ p_board_id: boardId }, args || {}));
     if (boardId === cloudBoardId()) {
-      if (name === "unshare") { ownerShareRole = "view"; rememberOwnerShareId(""); }
+      if (name === "unshare") { ownerShareRole = "view"; ownerIsPublic = false; rememberOwnerShareId(""); }
       else if (row) {
         ownerShareRole = row.role === "edit" ? "edit" : "view";
+        ownerIsPublic = !!row.is_public;
         rememberOwnerShareId(row.share_id);
       }
     }
