@@ -1,6 +1,7 @@
 /* drawer-app/06-cloud-share.js — share rpc helpers and guest-share chrome (the share list lives in the left drawer) */
 var ownerShareId = "";
 var ownerShareRole = "view";
+var ownerIsPublic = false;
 
 function isShareView() { return document.documentElement.dataset.shareView === "on"; }
 function isShareEdit() { return document.documentElement.dataset.shareEdit === "on"; }
@@ -22,7 +23,10 @@ function setShareView(on) {
 }
 function rememberOwnerShareId(shareId) {
   ownerShareId = String(shareId || "");
-  if (!ownerShareId) ownerShareRole = "view";
+  if (!ownerShareId) {
+    ownerShareRole = "view";
+    ownerIsPublic = false;
+  }
   if (!isShareView()) syncShareChrome();
 }
 function shareRpcError(error, fallback) {
@@ -120,6 +124,7 @@ async function refreshOwnShareState() {
     var row = await runShareRpc("own_share_state", { p_board_id: boardId });
     if (!row) return;
     ownerShareRole = row.role === "edit" ? "edit" : "view";
+    ownerIsPublic = !!row.is_public;
     rememberOwnerShareId(row.share_id || "");
   } catch (_error) {}
 }

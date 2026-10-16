@@ -25,14 +25,14 @@ function shareDialogFind(boardId) {
 function shareDialogCurrentItem(wantNew) {
   if (shellIsPreview()) {
     var sample = shellSampleShares().filter(function (item) { return item.isCurrent; })[0];
-    var copy = Object.assign({ boardId: "x0", title: "Untitled", shareId: "", role: "view", isCurrent: true }, sample);
+    var copy = Object.assign({ boardId: "x0", title: "Untitled", shareId: "", role: "view", isPublic: false, isCurrent: true }, sample);
     if (wantNew) copy.shareId = "";
     return copy;
   }
   var boardId = cloudBoardId();
   var known = shareDialogFind(boardId);
   if (known) return known;
-  return { boardId: boardId, title: getBoardTitle(cloudOpenBoardId()), shareId: "", role: "view", isCurrent: true };
+  return { boardId: boardId, title: getBoardTitle(cloudOpenBoardId()), shareId: "", role: "view", isPublic: false, isCurrent: true };
 }
 
 function shareDialogLink(shareId) {
@@ -45,10 +45,18 @@ function shareDialogRoleHint(role) {
     : "Anyone with the link can view this board.";
 }
 
+function shareDialogPublicHint(item) {
+  if (item.role === "edit") return "Turn link access to View before listing this board in search.";
+  return item.isPublic
+    ? "Signed-in people can find this board in search."
+    : "Off. This board is not listed in search.";
+}
+
 function shareDialogPaint() {
   var item = shareDialogItem;
   if (!item) return;
   var shared = !!item.shareId;
+  var isPublic = !!item.isPublic;
   shareDialogEl("shareDialogBoard").textContent = item.title || "Untitled";
   shareDialogEl("shareDialogOff").hidden = shared;
   shareDialogEl("shareDialogOn").hidden = !shared;
@@ -57,8 +65,17 @@ function shareDialogPaint() {
   shareDialogEl("shareLinkInput").value = shareDialogLink(item.shareId);
   shareDialogEl("shareRoleHint").textContent = shareDialogRoleHint(item.role);
   Array.prototype.forEach.call(document.querySelectorAll("[data-share-role]"), function (btn) {
-    btn.setAttribute("aria-checked", btn.getAttribute("data-share-role") === item.role ? "true" : "false");
+    var role = btn.getAttribute("data-share-role");
+    btn.setAttribute("aria-checked", role === item.role ? "true" : "false");
+    btn.disabled = role === "edit" && isPublic;
   });
+  var pub = shareDialogEl("sharePublicToggle");
+  var hint = shareDialogEl("sharePublicHint");
+  if (pub) {
+    pub.setAttribute("aria-checked", isPublic ? "true" : "false");
+    pub.disabled = item.role === "edit";
+  }
+  if (hint) hint.textContent = shareDialogPublicHint(item);
 }
 
 function shareDialogOpen(item) {
@@ -100,13 +117,26 @@ async function shareDialogApply(rpc, args, okStatus, preview) {
 }
 
 function shareDialogCreateLink() {
-  void shareDialogApply("open_share", null, "Share link ready", function () { return { shareId: shareDialogRandomId(), role: "view" }; });
+  void shareDialogApply("open_share", null, "Share link ready", function () { return { shareId: shareDialogRandomId(), role: "view", isPublic: false }; });
 }
 
 function shareDialogSetRole(role) {
   var item = shareDialogItem;
   if (!item || !item.shareId || item.role === role) return;
+  if (role === "edit" && item.isPublic) return;
   void shareDialogApply("set_share_role", { p_role: role }, role === "edit" ? "Link can edit" : "Link is view only", function () { return { role: role }; });
+}
+
+function shareDialogSetPublic(on) {
+  var item = shareDialogItem;
+  if (!item || !item.shareId || !!item.isPublic === !!on) return;
+  if (on && item.role === "edit") return;
+  void shareDialogApply(
+    "set_share_role",
+    { p_role: on ? "view" : "off", p_principal: "public" },
+    on ? "Listed in search" : "Removed from search",
+    function () { return { isPublic: !!on }; }
+  );
 }
 
 function shareDialogRenewLink() {
@@ -147,6 +177,10 @@ function shareDialogOpenCurrent(wantNew) {
   shareDialogEl("shareLinkInput").addEventListener("focus", function (event) { event.target.select(); });
   Array.prototype.forEach.call(document.querySelectorAll("[data-share-role]"), function (btn) {
     btn.addEventListener("click", function () { shareDialogSetRole(btn.getAttribute("data-share-role")); });
+  });
+  var pub = shareDialogEl("sharePublicToggle");
+  if (pub) pub.addEventListener("click", function () {
+    shareDialogSetPublic(pub.getAttribute("aria-checked") !== "true");
   });
   document.addEventListener("keydown", function (event) {
     if (event.key !== "Escape" || dialog.hidden) return;

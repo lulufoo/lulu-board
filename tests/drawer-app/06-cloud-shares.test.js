@@ -39,6 +39,12 @@ assert.deepStrictEqual(cloudShareSummaries([], {}, 'b_1'), []);
   assert.strictEqual(out[0].role, 'view', 'unknown role falls back to view');
   assert.strictEqual(out[1].isCurrent, true, 'the open board is marked');
   assert.strictEqual(out[0].isCurrent, false);
+  assert.strictEqual(out[0].isPublic, false, 'unknown public flag is off');
+  assert.strictEqual(out[1].isPublic, false);
+}
+{
+  const out = cloudShareSummaries([row('b_1', 's_a', '2026-10-01T00:00:00Z')], { s_a: 'view' }, '', { s_a: true });
+  assert.strictEqual(out[0].isPublic, true, 'public flag comes from own_share_state');
 }
 assert.strictEqual(cloudShareSummaries([row('b_1', 's_a', '')], {}, '')[0].isCurrent, false, 'no open board: nothing marked');
 console.log('ok 06-cloud-shares');
