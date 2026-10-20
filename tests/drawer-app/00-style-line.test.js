@@ -29,6 +29,18 @@ function b64(obj) {
 }
 
 {
+  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'board');
+  assert.strictEqual(Style.bodyKind('flowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('%% title Demo\nflowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('style default\nflowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('mindmap\nroot((A))\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('sequenceDiagram\nA->>B: hi\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind(''), 'empty');
+  assert.strictEqual(Style.bodyKind('not a diagram\n'), 'unknown');
+}
+
+{
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');

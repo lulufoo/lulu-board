@@ -892,7 +892,8 @@ function clearDrawerBoot() {
 function pinBoardTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
-  if (document.documentElement.dataset.drawerMode !== "board") {
+  var kind = document.documentElement.dataset.diagramKind || "";
+  if (kind && kind !== "board") {
     if (document.title !== "Lulu Board") document.title = "Lulu Board";
     return;
   }
@@ -1634,8 +1635,112 @@ previewEl.addEventListener("dblclick", function(event) {
   inspectBoardSelection();
   if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
 });
+function sourceBodyForKind(text) {
+  var raw = String(text == null ? "" : text);
+  if (typeof stripDocumentMeta === "function") {
+    try { raw = stripDocumentMeta(raw); } catch (_e) {}
+  }
+  if (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.splitRendererStyle) {
+    raw = DrawerStyleLine.splitRendererStyle(raw).body;
+  }
+  return raw;
+}
+
+function applyDrawerKind(kind) {
+  var html = document.documentElement;
+  if (!html) return;
+  html.dataset.diagramKind = kind === "empty" ? "" : String(kind || "");
+  // Chrome CSS is gated on data-drawer-mode=board. Keep that; kind switches tools/render.
+  if (!html.dataset.drawerMode) html.dataset.drawerMode = "board";
+}
+
+function fixSvgIntrinsic(svg) {
+  if (!svg) return;
+  var vb = String(svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+    svg.setAttribute("width", String(Math.ceil(vb[2])));
+    svg.setAttribute("height", String(Math.ceil(vb[3])));
+  }
+  svg.style.width = "auto";
+  svg.style.height = "auto";
+  svg.style.maxWidth = "none";
+}
+
+function finishCanvasView(opts) {
+  opts = opts || {};
+  if (opts.fit) {
+    if (typeof fitBoardView === "function") fitBoardView();
+    else if (typeof applyTransform === "function") applyTransform();
+  } else if (opts.restoreView) {
+    if (typeof applyRestoredBoardView === "function") applyRestoredBoardView();
+    else if (typeof applyTransform === "function") applyTransform();
+  } else if (typeof applyTransform === "function") {
+    applyTransform();
+  }
+  if (typeof pinBoardTitle === "function") pinBoardTitle();
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () { clearDrawerBoot(); });
+  });
+}
+
+function renderFlowchart(opts) {
+  opts = opts || {};
+  syncBoardEditControls();
+  previewEl.classList.remove("board-preview");
+  var body = sourceBodyForKind(boardSourceEl.value);
+  updateBoardChars();
+  if (!body.trim()) {
+    previewEl.innerHTML = "";
+    showBoardError("");
+    setStatus("No flowchart source");
+    finishCanvasView(opts);
+    return;
+  }
+  if (!window.pele || typeof window.pele.render !== "function") {
+    previewEl.innerHTML = "";
+    showBoardError("Pele renderer missing");
+    setStatus("Pele renderer missing", true);
+    finishCanvasView(opts);
+    return;
+  }
+  try {
+    var result = window.pele.render(body.trim(), {
+      fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
+      autoDirection: false,
+      responsive: false,
+    });
+    previewEl.innerHTML = result && result.svg ? result.svg : "";
+    var svg = previewEl.querySelector("svg");
+    fixSvgIntrinsic(svg);
+    showBoardError("");
+    setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
+  } catch (err) {
+    previewEl.innerHTML = "";
+    showBoardError(err instanceof Error ? err.message : String(err));
+    setStatus("Invalid flowchart source", true);
+  }
+  finishCanvasView(opts);
+}
+
+function refuseUnsupportedMermaid() {
+  syncBoardEditControls();
+  previewEl.classList.remove("board-preview");
+  previewEl.innerHTML = "";
+  updateBoardChars();
+  showBoardError("Only flowchart can be rendered.");
+  setStatus("Only flowchart can be rendered.", true);
+  finishCanvasView({});
+}
+
 function renderBoard(opts) {
   opts = opts || {};
+  var body = sourceBodyForKind(boardSourceEl ? boardSourceEl.value : "");
+  var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
+    ? DrawerStyleLine.bodyKind(body)
+    : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "board" : "unknown");
+  applyDrawerKind(kind);
+  if (kind === "flowchart") return renderFlowchart(opts);
+  if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
   syncBoardEditControls();
   previewEl.classList.add('board-preview');
   const text = boardSourceEl.value.trim(); updateBoardChars();

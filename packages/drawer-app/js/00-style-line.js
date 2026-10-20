@@ -20,8 +20,35 @@
     return "";
   }
 
+  var FLOWCHART_RE = /^(flowchart|graph|flowchart-elk)\b/i;
+  var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart-beta|block-beta|architecture(?:-beta)?|packet-beta|kanban|sankey-beta|requirement(?:Diagram)?|radar-beta)\b/i;
+
+  function firstDiagramLine(body) {
+    var lines = String(body == null ? "" : body).split(/\r?\n/);
+    for (var i = 0; i < lines.length; i += 1) {
+      var line = String(lines[i] || "").trim();
+      if (!line) continue;
+      if (line.charAt(0) === "#" || line.indexOf("//") === 0) continue;
+      if (line.indexOf("%%") === 0 || line.indexOf("meta ") === 0) continue;
+      if (/^---/.test(line)) continue;
+      if (isRendererStyleLine(line)) continue;
+      return line;
+    }
+    return "";
+  }
+
   function bodyIsBoard(body) {
     return /^board\s+/i.test(firstRealLine(body));
+  }
+
+  // board | flowchart | mermaid-unsupported | empty | unknown
+  function bodyKind(body) {
+    var line = firstDiagramLine(body);
+    if (!line) return "empty";
+    if (/^board\s+/i.test(line)) return "board";
+    if (FLOWCHART_RE.test(line)) return "flowchart";
+    if (MERMAID_RE.test(line)) return "mermaid-unsupported";
+    return "unknown";
   }
 
   function splitRendererStyle(body) {
@@ -70,7 +97,9 @@
   return {
     RENDERER_STYLE_RE: RENDERER_STYLE_RE,
     isRendererStyleLine: isRendererStyleLine,
+    firstDiagramLine: firstDiagramLine,
     bodyIsBoard: bodyIsBoard,
+    bodyKind: bodyKind,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     authoredViewport: authoredViewport,

@@ -111,6 +111,14 @@
 .board-render .box.board-nested { position: relative !important; left: auto !important; top: auto !important; }
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
 html[data-drawer-mode="board"] .board-edit-tools { display: inline-flex; }
+html[data-diagram-kind="flowchart"] .board-edit-tools,
+html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
+html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
+html[data-diagram-kind="flowchart"] #preview,
+html[data-diagram-kind="mermaid-unsupported"] #preview {
+  width: max-content;
+  height: max-content;
+}
 .board-brand {
   display: none;
   align-items: center;
