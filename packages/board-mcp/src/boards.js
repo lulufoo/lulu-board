@@ -3,6 +3,20 @@
 const BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
 const BOARD_PUBLIC_SELECT = "board_id,title,bmd,version,updated_at,group_id";
+const META_LINE = /^(?:%%\s*)?meta\s+(\S+|{.*})\s*$/;
+
+export function stripPersistedMeta(text) {
+  var raw = String(text == null ? "" : text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  var lines = raw.split("\n");
+  var i = 0;
+  while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
+  while (i < lines.length) {
+    if (!META_LINE.test(String(lines[i]).trim())) break;
+    i += 1;
+    while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
+  }
+  return lines.slice(i).join("\n");
+}
 
 export function boardTitleFromBody(body) {
   var hit = /^\s*board\s+"([^"]*)"/.exec(String(body || ""));
@@ -89,7 +103,7 @@ export async function getBoard(env, token, boardId) {
 }
 
 export async function createBoard(env, token, userId, bmd, boardId, groupId) {
-  var source = String(bmd || "");
+  var source = stripPersistedMeta(bmd);
   if (!source.trim()) throw new Error("board source must not be empty");
   var id = boardId ? assertBoardId(boardId) : newBoardId();
   var ownedGroup = groupId ? assertGroupId(groupId) : null;
@@ -109,7 +123,7 @@ export async function createBoard(env, token, userId, bmd, boardId, groupId) {
 
 export async function saveBoard(env, token, boardId, bmd, expectedVersion) {
   var id = assertBoardId(boardId);
-  var source = String(bmd || "");
+  var source = stripPersistedMeta(bmd);
   if (!source.trim()) throw new Error("board source must not be empty");
   var expected = Number(expectedVersion);
   if (!(expected > 0)) expected = 1;

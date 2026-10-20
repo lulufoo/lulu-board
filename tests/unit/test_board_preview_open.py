@@ -76,7 +76,7 @@ class BoardPreviewOpenTest(unittest.TestCase):
         root = self.tmp / "history"
         if not root.is_dir():
             return []
-        return sorted(p.name for p in root.glob("*.bmd"))
+        return sorted(p.name for p in root.iterdir() if p.suffix in {".bmd", ".mmd"})
 
     def test_empty_preview_opens_site_without_write(self) -> None:
         data = self._preview()
@@ -112,6 +112,19 @@ class BoardPreviewOpenTest(unittest.TestCase):
         self.assertEqual(decoded["version"], 1)
         self.assertEqual(self._history_names(), [])
         self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
+
+    def test_flowchart_preview_is_hash_without_history(self) -> None:
+        src = self.tmp / "flow.mmd"
+        src.write_text('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n', encoding="utf-8")
+        data = self._preview(path=str(src))
+        self.assertEqual(data["open"], "created")
+        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
+        decoded = hash_url.decode_board_hash(data["url"].split("#", 1)[1])
+        self.assertEqual(decoded["bmd"], "flowchart TD\n  A-->B\n")
+        self.assertNotIn("m_", decoded["bmd"])
+        self.assertNotIn("%% meta", decoded["bmd"])
+        self.assertEqual(self._history_names(), [])
+        self.assertEqual(list(self.tmp.rglob("history/*.mmd")), [])
 
     def test_open_uses_public_hash_url(self) -> None:
         src = self.tmp / "new.bmd"

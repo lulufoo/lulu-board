@@ -11,6 +11,7 @@ import {
   getBoard,
   createBoard,
   saveBoard,
+  stripPersistedMeta,
 } from '../../packages/board-mcp/src/boards.js';
 import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
 import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
@@ -25,6 +26,10 @@ const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('item X\n'), '');
+assert.equal(
+  stripPersistedMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
+  'flowchart TD\n  A-->B\n'
+);
 assert.match(drawerTitle, /function boardTitleFromBody/, 'drawer still owns the title regex');
 assert.equal(newBoardId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');
@@ -154,6 +159,20 @@ try {
   assert.match(mintBody.p_board_id, /^b_[0-9a-f]{8}$/);
   assert.equal(mintBody.p_group_id, null);
 
+  const flowCreated = await createBoard(
+    env,
+    'tok',
+    'user-1',
+    '%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n',
+    'b_ff00aa11'
+  );
+  assert.equal(flowCreated.board_id, 'b_ff00aa11');
+  const flowCreate = JSON.parse(calls[3].body);
+  assert.equal(flowCreate.p_board_id, 'b_ff00aa11');
+  assert.equal(flowCreate.p_bmd, 'flowchart TD\n  A-->B\n');
+  assert.doesNotMatch(flowCreate.p_bmd, /m_[0-9a-f]{8}/);
+  assert.equal(flowCreate.p_title, 'Untitled');
+
   await assert.rejects(
     () => createBoard(env, 'tok', 'user-1', 'board "X"\n', 'b_aabbccdd', missingGroupId),
     /group not found/
@@ -186,6 +205,11 @@ try {
   const patch = calls.find((c) => c.method === 'PATCH' && c.url.includes('version=eq.4'));
   assert.ok(patch);
   assert.deepEqual(JSON.parse(patch.body), { title: 'Mine', bmd: 'board "Mine"\n' });
+
+  const flowSaved = await saveBoard(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
+  assert.equal(flowSaved.conflict, false);
+  const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
+  assert.ok(flowPatch, 'save_board stores flowchart in bmd');
 
   const conflict = await saveBoard(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
@@ -228,6 +252,7 @@ assert.match(worker, /group this board_id belongs to/, 'get/create say group_id 
 assert.match(worker, /row\.group_id is the group this board_id belongs to/, 'save describes row.group_id');
 assert.match(worker, /current account/, 'create joins a group on the current account');
 assert.match(worker, /Omit group_id to create a new group/, 'create says omit mints a group');
+assert.doesNotMatch(worker, /create_mermaid/, 'MCP stays one persist set');
 assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const payload = Buffer.from(JSON.stringify({
