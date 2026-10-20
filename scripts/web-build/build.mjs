@@ -34,6 +34,7 @@ const vendorFiles = [
   'supabase-client.js',
   'snapdom.mjs',
   'pele.global.js',
+  'flowchart.min.js',
 ];
 for (const name of vendorFiles) {
   const src = path.join(webVendor, name);

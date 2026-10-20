@@ -5,6 +5,7 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -45,7 +46,12 @@ for (const [name, outName] of Object.entries(earlyMap)) {
   console.log(`ok ${outName}`);
 }
 
-for (const name of ['snapdom.mjs', 'pele.global.js']) {
+{
+  const ext = spawnSync(process.execPath, [path.join(repo, 'scripts/mermaid-ext-build/build.mjs')], { stdio: 'inherit' });
+  if (ext.status) process.exit(ext.status || 1);
+}
+
+for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js']) {
   const src = path.join(srcDir, 'vendor', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(vendorOut, name));
