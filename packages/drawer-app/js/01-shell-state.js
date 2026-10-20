@@ -473,3 +473,4 @@ function updateBoardChars() {
 function showBoardError(message) { boardError.textContent = message || ''; boardError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
+wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);

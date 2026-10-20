@@ -114,10 +114,28 @@ html[data-drawer-mode="board"] .board-edit-tools { display: inline-flex; }
 html[data-diagram-kind="flowchart"] .board-edit-tools,
 html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
 html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
+.flowchart-edit-tools { display: none; align-items: center; gap: 8px; }
+html[data-diagram-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
+html[data-diagram-kind="flowchart"] #propsFields { display: none !important; }
 html[data-diagram-kind="flowchart"] #preview,
 html[data-diagram-kind="mermaid-unsupported"] #preview {
   width: max-content;
   height: max-content;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
+html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 20px;
+  pointer-events: stroke;
+}
+html[data-diagram-kind="flowchart"] g.flowchart-selection {
+  outline: 2px solid var(--accent, #db4c84);
+  outline-offset: 2px;
+}
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit) {
+  stroke: var(--accent, #db4c84) !important;
+  stroke-width: 2.6px !important;
 }
 .board-brand {
   display: none;

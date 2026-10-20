@@ -1486,7 +1486,7 @@ if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditActio
 if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(boardSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(boardSourceEl.value, selectedBoardNode); }); };
 if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!boardLinkMode); };
 document.addEventListener("keydown", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "board" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
   var target = event.target;
   if (target === boardSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
@@ -1571,7 +1571,7 @@ function boardNudgeTopLevel(dx, dy) {
   return true;
 }
 document.addEventListener("keydown", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "board" || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
   var delta = 0;
   if (event.key === "ArrowUp" || event.key === "ArrowLeft") delta = -1;
@@ -1599,7 +1599,7 @@ document.addEventListener("keyup", function(event) {
 });
 window.addEventListener("blur", boardNudgeResetSlide);
 document.addEventListener("keydown", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "board" || !event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || !event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
   var target = event.target;
   if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
@@ -1628,14 +1628,14 @@ function boardEventIsItemMdLink(event) {
 }
 // Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
 previewEl.addEventListener("pointerdown", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "board") return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
   if (event.button !== 0) return;
   if (boardClickIsOnNode(event)) return;
   if (boardLinkMode) { setBoardLinkMode(false); return; }
   clearBoardSelection();
 }, true);
 previewEl.addEventListener("click", function(event) {
-  if (document.documentElement.dataset.drawerMode !== "board") return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
   if (boardLinkMode) return;
   if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return;
   var canvas = event.target.closest(".board-canvas");
@@ -1645,6 +1645,7 @@ previewEl.addEventListener("click", function(event) {
   if (!boardClickIsOnNode(event)) clearBoardSelection();
 });
 previewEl.addEventListener("dblclick", function(event) {
+  if (!isBoardCanvasKind()) return;
   if (boardEventIsItemMdLink(event)) return;
   var canvas = event.target.closest(".board-canvas"); if (!canvas) return;
   var root = canvas.closest(".board-render");
@@ -1665,6 +1666,11 @@ function sourceBodyForKind(text) {
   return raw;
 }
 
+function isBoardCanvasKind() {
+  var kind = document.documentElement.dataset.diagramKind || "";
+  return kind !== "flowchart" && kind !== "mermaid-unsupported";
+}
+
 function applyDrawerKind(kind) {
   var html = document.documentElement;
   if (!html) return;
@@ -1672,6 +1678,13 @@ function applyDrawerKind(kind) {
   // Chrome CSS is gated on data-drawer-mode=board. Keep that; kind switches tools/render.
   if (!html.dataset.drawerMode) html.dataset.drawerMode = "board";
   if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
+  if (propsEmpty) {
+    propsEmpty.textContent = kind === "flowchart"
+      ? "Select a node, link, or subgraph"
+      : "Select a title, box, or item";
+  }
+  var flowProps = document.getElementById("flowchartPropsFields");
+  if (flowProps && kind !== "flowchart") flowProps.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {
@@ -1746,6 +1759,7 @@ function renderFlowchart(opts) {
     fixSvgIntrinsic(svg);
     showBoardError("");
     setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
+    if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
   } catch (err) {
     previewEl.innerHTML = "";
     showBoardError(err instanceof Error ? err.message : String(err));
