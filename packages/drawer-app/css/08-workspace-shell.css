@@ -33,6 +33,7 @@ html[data-drawer-mode="board"] .board-dock .dock-source-head strong,
 html[data-drawer-mode="board"] .board-dock .style-section-label { color: var(--ink); }
 
 html[data-drawer-mode="board"] .board-edit-tool,
+html[data-drawer-mode="board"] .flowchart-edit-tool,
 html[data-drawer-mode="board"] .zoom-float,
 html[data-drawer-mode="board"] .group-tab-float {
   background: var(--paper) !important;
@@ -40,8 +41,14 @@ html[data-drawer-mode="board"] .group-tab-float {
   box-shadow: var(--press);
   color: var(--ink);
 }
-html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled) { background: #fff !important; }
-html[data-drawer-mode="board"] .board-edit-tool:disabled { opacity: .5; }
+html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled),
+html[data-drawer-mode="board"] .flowchart-edit-tool:hover:not(:disabled) { background: #fff !important; }
+html[data-drawer-mode="board"] .board-edit-tool:disabled,
+html[data-drawer-mode="board"] .flowchart-edit-tool:disabled { opacity: .5; }
+html[data-drawer-mode="board"] .flowchart-edit-tool#btnFlowchartDelete:not(:disabled) {
+  background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--paper, #fff)) !important;
+  color: var(--accent, #db4c84) !important;
+}
 html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
 html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
 

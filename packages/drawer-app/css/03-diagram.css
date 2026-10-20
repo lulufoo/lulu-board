@@ -130,12 +130,22 @@ html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
   pointer-events: stroke;
 }
 html[data-diagram-kind="flowchart"] g.flowchart-selection {
-  outline: 2px solid var(--accent, #db4c84);
-  outline-offset: 2px;
+  outline: none;
+  overflow: visible;
+}
+html[data-diagram-kind="flowchart"] .flowchart-selection-halo {
+  fill: none !important;
+  stroke: var(--accent, #db4c84) !important;
+  stroke-width: 2px !important;
+  pointer-events: none !important;
 }
 html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit) {
   stroke: var(--accent, #db4c84) !important;
   stroke-width: 2.6px !important;
+}
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker {
+  stroke: var(--accent, #db4c84) !important;
+  fill: var(--accent, #db4c84) !important;
 }
 .board-brand {
   display: none;

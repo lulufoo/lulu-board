@@ -29,7 +29,97 @@ function flowchartSource() {
 
 function peleDataId(el) {
   if (!el || !el.getAttribute) return "";
-  return el.getAttribute("data-id") || el.getAttribute("data-edge-dom-id") || "";
+  return el.getAttribute("data-id") || el.getAttribute("data-edge-dom-id") || el.id || "";
+}
+
+var FLOWCHART_SEL_HALO_GAP = 2.5;
+
+function flowchartSelectionAccent() {
+  var cs = document.documentElement && window.getComputedStyle
+    ? getComputedStyle(document.documentElement)
+    : null;
+  return (cs && cs.getPropertyValue("--accent").trim()) || "#db4c84";
+}
+
+function flowchartSelectionShape(g) {
+  if (!g || !g.querySelector) return null;
+  return g.querySelector(":scope > rect:not(.mermaid-edge-label-hit):not(.flowchart-selection-halo), :scope > polygon, :scope > path:not(.pele-marker):not(.mermaid-edge-hit), :scope > circle, :scope > ellipse");
+}
+
+function paintFlowchartSelectionHalo(g) {
+  if (!g) return;
+  g.querySelectorAll(".flowchart-selection-halo").forEach(function (el) { el.remove(); });
+  var shape = flowchartSelectionShape(g);
+  if (!shape) return;
+  var halo = shape.cloneNode(true);
+  halo.setAttribute("class", "flowchart-selection-halo");
+  halo.removeAttribute("id");
+  halo.setAttribute("fill", "none");
+  halo.setAttribute("pointer-events", "none");
+  var gap = FLOWCHART_SEL_HALO_GAP;
+  var tag = String(shape.tagName || "").toLowerCase();
+  if (tag === "rect") {
+    var x = parseFloat(shape.getAttribute("x") || 0);
+    var y = parseFloat(shape.getAttribute("y") || 0);
+    var w = parseFloat(shape.getAttribute("width") || 0);
+    var h = parseFloat(shape.getAttribute("height") || 0);
+    if (!(w > 0 && h > 0)) {
+      try {
+        var bb = shape.getBBox();
+        x = bb.x; y = bb.y; w = bb.width; h = bb.height;
+      } catch (_e) { return; }
+    }
+    halo.setAttribute("x", String(x - gap));
+    halo.setAttribute("y", String(y - gap));
+    halo.setAttribute("width", String(w + gap * 2));
+    halo.setAttribute("height", String(h + gap * 2));
+    var rxN = parseFloat(shape.getAttribute("rx") || "");
+    var ryN = parseFloat(shape.getAttribute("ry") || "");
+    if (isFinite(rxN)) halo.setAttribute("rx", String(Math.max(0, rxN + gap)));
+    if (isFinite(ryN)) halo.setAttribute("ry", String(Math.max(0, ryN + gap)));
+    else if (isFinite(rxN)) halo.setAttribute("ry", String(Math.max(0, rxN + gap)));
+  } else if (tag === "circle") {
+    var r = parseFloat(shape.getAttribute("r") || 0);
+    if (r > 0) halo.setAttribute("r", String(r + gap));
+  } else if (tag === "ellipse") {
+    var erx = parseFloat(shape.getAttribute("rx") || 0);
+    var ery = parseFloat(shape.getAttribute("ry") || 0);
+    if (erx > 0) halo.setAttribute("rx", String(erx + gap));
+    if (ery > 0) halo.setAttribute("ry", String(ery + gap));
+  } else if (tag === "polygon") {
+    var raw = String(shape.getAttribute("points") || "").trim().split(/\s+/);
+    var pairs = [];
+    var i;
+    for (i = 0; i < raw.length; i += 1) {
+      var xy = raw[i].split(",");
+      if (xy.length < 2) continue;
+      var px = parseFloat(xy[0]);
+      var py = parseFloat(xy[1]);
+      if (!isFinite(px) || !isFinite(py)) continue;
+      pairs.push([px, py]);
+    }
+    if (!pairs.length) return;
+    var minX = pairs[0][0], maxX = pairs[0][0], minY = pairs[0][1], maxY = pairs[0][1];
+    for (i = 1; i < pairs.length; i += 1) {
+      if (pairs[i][0] < minX) minX = pairs[i][0];
+      if (pairs[i][0] > maxX) maxX = pairs[i][0];
+      if (pairs[i][1] < minY) minY = pairs[i][1];
+      if (pairs[i][1] > maxY) maxY = pairs[i][1];
+    }
+    var cx = (minX + maxX) / 2;
+    var cy = (minY + maxY) / 2;
+    var bw = maxX - minX || 1;
+    var bh = maxY - minY || 1;
+    halo.setAttribute("points", pairs.map(function (p) {
+      return (cx + (p[0] - cx) * ((bw + gap * 2) / bw)) + "," + (cy + (p[1] - cy) * ((bh + gap * 2) / bh));
+    }).join(" "));
+  }
+  if (shape.parentNode) shape.parentNode.insertBefore(halo, shape);
+}
+
+function applyFlowchartSelectionHalos() {
+  if (!previewEl) return;
+  previewEl.querySelectorAll("g.pele-node.flowchart-selection, g.pele-cluster.flowchart-selection").forEach(paintFlowchartSelectionHalo);
 }
 
 function flowchartEditAction(action) {
@@ -67,6 +157,7 @@ function syncFlowchartDeleteButton() {
 
 function clearFlowchartSelectionVisual() {
   if (!previewEl) return;
+  previewEl.querySelectorAll(".flowchart-selection-halo").forEach(function (el) { el.remove(); });
   previewEl.querySelectorAll(".flowchart-selection, .flowchart-link-source").forEach(function (el) {
     el.classList.remove("flowchart-selection", "flowchart-link-source");
   });
@@ -88,13 +179,25 @@ function applyFlowchartSelectionVisual() {
   }
   if (sel.kind === "link") {
     var prefix = sel.from && sel.to ? ("L_" + sel.from + "_" + sel.to + "_") : "";
+    var accent = flowchartSelectionAccent();
     previewEl.querySelectorAll("g.pele-edge").forEach(function (el) {
       var eid = peleDataId(el);
-      if ((sel.domId && eid === sel.domId) || (prefix && eid.indexOf(prefix) === 0)) {
-        el.classList.add("flowchart-selection");
+      if (!((sel.domId && eid === sel.domId) || (prefix && eid.indexOf(prefix) === 0))) return;
+      el.classList.add("flowchart-selection");
+      var path = el.querySelector("path:not(.pele-marker):not(.mermaid-edge-hit)") || el.querySelector("path");
+      if (path) {
+        path.style.stroke = accent;
+        path.setAttribute("stroke", accent);
+      }
+    });
+    previewEl.querySelectorAll("g.pele-edge-label").forEach(function (g) {
+      var lid = peleDataId(g);
+      if ((sel.domId && lid === sel.domId) || (prefix && lid.indexOf(prefix) === 0)) {
+        g.classList.add("flowchart-selection");
       }
     });
   }
+  applyFlowchartSelectionHalos();
   syncFlowchartDeleteButton();
 }
 
@@ -175,9 +278,12 @@ function fillFlowchartPropsBody() {
     if (flowchartTypeField) flowchartTypeField.hidden = false;
     if (flowchartTypeLabel) flowchartTypeLabel.textContent = "Type";
     if (flowchartTypeEditor) {
-      flowchartTypeEditor.innerHTML = ["default", "start", "end", "judgment"]
-        .map(function (k) { return "<option value=\"" + k + "\">" + k + "</option>"; })
-        .join("");
+      flowchartTypeEditor.innerHTML = [
+        { value: "default", label: "default" },
+        { value: "start", label: "start" },
+        { value: "end", label: "end" },
+        { value: "judgment", label: "judgment" },
+      ].map(function (k) { return "<option value=\"" + k.value + "\">" + k.label + "</option>"; }).join("");
       var cur = node.nodeKind || (FlowchartEdit.kindFromShape ? FlowchartEdit.kindFromShape(node.shape, node.label) : "default");
       if (FlowchartEdit.normalizeNodeKind) cur = FlowchartEdit.normalizeNodeKind(cur);
       flowchartTypeEditor.value = cur || "default";
@@ -274,7 +380,15 @@ function flowchartSelectionFromEvent(event) {
   var sel = FlowchartEdit.selectionFromDom(event.target, source);
   if (sel) return sel;
   if (event.clientX == null || event.clientY == null) return null;
-  return flowchartHitAt(event.clientX, event.clientY, source);
+  var found = flowchartHitAt(event.clientX, event.clientY, source);
+  if (found) return found;
+  var pads = [[0, -10], [0, 10], [-10, 0], [10, 0], [0, -18], [0, 18]];
+  var p;
+  for (p = 0; p < pads.length; p += 1) {
+    found = flowchartHitAt(event.clientX + pads[p][0], event.clientY + pads[p][1], source);
+    if (found && found.kind === "link") return found;
+  }
+  return null;
 }
 
 function flowchartHitSelect(event) {
