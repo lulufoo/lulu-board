@@ -45,7 +45,7 @@ for (const [name, outName] of Object.entries(earlyMap)) {
   console.log(`ok ${outName}`);
 }
 
-for (const name of ['snapdom.mjs']) {
+for (const name of ['snapdom.mjs', 'pele.global.js']) {
   const src = path.join(srcDir, 'vendor', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(vendorOut, name));
