@@ -26,11 +26,16 @@ const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('item X\n'), '');
+assert.equal(boardTitleFromBody('%% title Demo\nflowchart TD\n  A-->B\n'), 'Demo');
+assert.equal(boardTitleFromBody('%% title: "Ship"\nflowchart TD\n  A-->B\n'), 'Ship');
+assert.equal(boardTitleFromBody('flowchart TD\n  A-->B\n'), '');
+assert.notEqual(boardTitleFromBody('flowchart TD\n  A-->B\n'), 'flowchart');
 assert.equal(
   stripPersistedMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
   'flowchart TD\n  A-->B\n'
 );
 assert.match(drawerTitle, /function boardTitleFromBody/, 'drawer still owns the title regex');
+assert.match(drawerTitle, /%%\\s\*title/, 'drawer reads mermaid %% title');
 assert.equal(newBoardId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');
 assert.equal(assertBoardId('b_0fc10001'), 'b_0fc10001');
@@ -172,6 +177,17 @@ try {
   assert.equal(flowCreate.p_bmd, 'flowchart TD\n  A-->B\n');
   assert.doesNotMatch(flowCreate.p_bmd, /m_[0-9a-f]{8}/);
   assert.equal(flowCreate.p_title, 'Untitled');
+
+  const titledFlow = await createBoard(
+    env,
+    'tok',
+    'user-1',
+    '%% title Demo\nflowchart TD\n  A-->B\n',
+    'b_ff00aa12'
+  );
+  assert.equal(titledFlow.title, 'Demo');
+  const titledBody = JSON.parse(calls.find((c) => c.body && String(c.body).includes('b_ff00aa12')).body);
+  assert.equal(titledBody.p_title, 'Demo');
 
   await assert.rejects(
     () => createBoard(env, 'tok', 'user-1', 'board "X"\n', 'b_aabbccdd', missingGroupId),

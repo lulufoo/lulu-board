@@ -121,6 +121,7 @@ class BoardPreviewOpenTest(unittest.TestCase):
         self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
         decoded = hash_url.decode_board_hash(data["url"].split("#", 1)[1])
         self.assertEqual(decoded["bmd"], "flowchart TD\n  A-->B\n")
+        self.assertEqual(data.get("title"), "Untitled")
         self.assertNotIn("m_", decoded["bmd"])
         self.assertNotIn("%% meta", decoded["bmd"])
         self.assertEqual(self._history_names(), [])

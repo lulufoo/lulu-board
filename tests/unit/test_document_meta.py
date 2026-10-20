@@ -113,5 +113,15 @@ class DocumentMetaTest(unittest.TestCase):
         self.assertNotIn("m_", strip_leading_meta_lines(raw))
 
 
+class BoardTitleTest(unittest.TestCase):
+    def test_mermaid_title_or_untitled(self) -> None:
+        from drawer_ctl.titles import derive_board_title
+
+        self.assertEqual(derive_board_title('board "Onboarding"\n'), "Onboarding")
+        self.assertEqual(derive_board_title("%% title Demo\nflowchart TD\n  A-->B\n"), "Demo")
+        self.assertEqual(derive_board_title("flowchart TD\n  A-->B\n"), "Untitled")
+        self.assertNotEqual(derive_board_title("flowchart TD\n  A-->B\n"), "flowchart")
+
+
 if __name__ == "__main__":
     unittest.main()
