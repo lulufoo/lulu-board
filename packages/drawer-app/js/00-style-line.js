@@ -4,7 +4,8 @@
   root.DrawerStyleLine = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
-  var RENDERER_STYLE_RE = /^style\s+(\S+)\s*$/i;
+  var RENDERER_STYLE_RE = /^(?:%%\s*)?style\s+(\S+)\s*$/i;
+  var THEME_IDS = { default: 1, classic: 1, pastel: 1 };
 
   function isRendererStyleLine(line) {
     return RENDERER_STYLE_RE.test(String(line || "").trim());
@@ -69,11 +70,38 @@
     return { token: token, body: out.join("\n") };
   }
 
+  function resolveThemeId(id) {
+    var raw = String(id == null ? "" : id).trim();
+    if (raw === "minimal") return "classic";
+    if (raw === "slate" || raw === "kami") return "default";
+    return THEME_IDS[raw] ? raw : "default";
+  }
+
+  function mermaidStyleToken(theme) {
+    var t = resolveThemeId(theme);
+    return t === "default" ? "" : t;
+  }
+
+  function themeFromStyleToken(token) {
+    var raw = String(token == null ? "" : token).trim();
+    if (!raw) return "default";
+    if (THEME_IDS[raw]) return raw;
+    if (raw === "kami") return "default";
+    try {
+      var json = typeof Buffer !== "undefined"
+        ? Buffer.from(raw.replace(/\s+/g, ""), "base64").toString("utf8")
+        : decodeURIComponent(escape(atob(raw.replace(/\s+/g, ""))));
+      var data = JSON.parse(json);
+      if (data && data.theme) return resolveThemeId(data.theme);
+    } catch (_e) {}
+    return "default";
+  }
+
   function joinRendererStyle(token, body) {
     var rest = String(body == null ? "" : body);
     var t = String(token || "").trim();
     if (!t) return rest;
-    var line = "style " + t;
+    var line = (bodyIsBoard(rest) ? "style " : "%% style ") + t;
     if (!rest) return line + "\n";
     if (rest.charAt(0) === "\n") return line + rest;
     return line + "\n" + rest;
@@ -102,6 +130,9 @@
     bodyKind: bodyKind,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
+    resolveThemeId: resolveThemeId,
+    mermaidStyleToken: mermaidStyleToken,
+    themeFromStyleToken: themeFromStyleToken,
     authoredViewport: authoredViewport,
   };
 });

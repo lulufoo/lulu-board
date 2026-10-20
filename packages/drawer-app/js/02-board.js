@@ -1251,10 +1251,19 @@ function commitBoardShape(shape) {
     setBoardShapeField(true, nextShape);
   } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
 }
+function persistMermaidStyle(body, patch) {
+  if (typeof DrawerStyleLine === "undefined") return body;
+  var styled = DrawerStyleLine.splitRendererStyle(body);
+  var theme = patch && patch.theme != null
+    ? DrawerStyleLine.resolveThemeId(patch.theme)
+    : DrawerStyleLine.themeFromStyleToken(styled.token);
+  var token = DrawerStyleLine.mermaidStyleToken(theme);
+  return DrawerStyleLine.joinRendererStyle(token, styled.body);
+}
+
 function persistBoardStyle(patch) {
   if (!boardSourceEl || !boardSourceEl.value.trim()) return;
   if (document.documentElement.dataset.drawerMode !== "board") return;
-  if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
   try {
     var raw = boardSourceEl.value;
     var meta = null;
@@ -1264,7 +1273,17 @@ function persistBoardStyle(patch) {
       meta = doc.meta;
       body = doc.body;
     } catch (_e) {}
-    var nextBody = BoardRender.updateStyle(body, patch || {});
+    var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
+      ? DrawerStyleLine.bodyKind(body)
+      : "board";
+    var nextBody;
+    if (kind === "flowchart" || kind === "mermaid-unsupported") {
+      if (!patch || patch.theme == null) return;
+      nextBody = persistMermaidStyle(body, patch);
+    } else {
+      if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
+      nextBody = BoardRender.updateStyle(body, patch || {});
+    }
     var next = meta ? joinDocument(meta, nextBody) : nextBody;
     if (next !== boardSourceEl.value) {
       boardSourceEl.value = next;
@@ -1652,6 +1671,7 @@ function applyDrawerKind(kind) {
   html.dataset.diagramKind = kind === "empty" ? "" : String(kind || "");
   // Chrome CSS is gated on data-drawer-mode=board. Keep that; kind switches tools/render.
   if (!html.dataset.drawerMode) html.dataset.drawerMode = "board";
+  if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
 }
 
 function fixSvgIntrinsic(svg) {
@@ -1683,10 +1703,22 @@ function finishCanvasView(opts) {
   });
 }
 
+function syncMermaidStyleChrome(body) {
+  if (typeof DrawerStyleLine === "undefined") return;
+  var styled = DrawerStyleLine.splitRendererStyle(body);
+  var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
+  if (typeof applyDiagramTheme === "function") {
+    applyDiagramTheme(theme, { persist: false, skipRender: true });
+  } else if (typeof applyPeleThemeVars === "function") {
+    applyPeleThemeVars(theme);
+  }
+}
+
 function renderFlowchart(opts) {
   opts = opts || {};
   syncBoardEditControls();
   previewEl.classList.remove("board-preview");
+  syncMermaidStyleChrome(boardSourceEl ? boardSourceEl.value : "");
   var body = sourceBodyForKind(boardSourceEl.value);
   updateBoardChars();
   if (!body.trim()) {

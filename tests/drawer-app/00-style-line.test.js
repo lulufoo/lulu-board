@@ -24,8 +24,21 @@ function b64(obj) {
 
 {
   assert.strictEqual(Style.isRendererStyleLine('style eyJ0aGVtZSI6ImthbWkifQ=='), true);
+  assert.strictEqual(Style.isRendererStyleLine('%% style classic'), true);
   assert.strictEqual(Style.isRendererStyleLine('style A fill:#f9f'), false);
   assert.strictEqual(Style.bodyIsBoard('board "Demo"\nstyle xxx\n'), true);
+}
+
+{
+  const flow = 'flowchart TD\nA-->B\n';
+  assert.strictEqual(Style.joinRendererStyle('classic', flow), '%% style classic\n' + flow);
+  assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
+  assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
+  assert.strictEqual(Style.joinRendererStyle('classic', 'board "A"\n'), 'style classic\nboard "A"\n');
+  assert.strictEqual(Style.mermaidStyleToken('classic'), 'classic');
+  assert.strictEqual(Style.mermaidStyleToken('default'), '');
+  assert.strictEqual(Style.themeFromStyleToken('pastel'), 'pastel');
+  assert.strictEqual(Style.themeFromStyleToken('kami'), 'default');
 }
 
 {

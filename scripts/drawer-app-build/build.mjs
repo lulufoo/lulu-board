@@ -61,6 +61,7 @@ for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js']) {
 // Main module: concat domain files in order (still one ES module when loaded)
 const domain = [
   '00-style-line.js',
+  '00-pele-theme.js',
   '00-document-meta.js',
   '00-cloud-route.js',
   '00-hash-persist.js',
