@@ -31,7 +31,7 @@ What to write.
 
 1. **BMD Source** is the `.bmd` body. The file has no identity.
 2. Author one BMD Source string that follows vocab.
-3. Mint without meta or style. On update, leave those lines unchanged.
+3. Mint without style. On update, leave those lines unchanged.
 
 ## Mode
 
