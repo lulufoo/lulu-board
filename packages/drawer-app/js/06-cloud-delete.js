@@ -2,7 +2,7 @@
 function cloudDeleteVisible() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   if (!cloudSession || !cloudSession.user) return false;
-  return !!(cloudPlusDraftActive || cloudBoardId());
+  return !!(cloudPlusDraftActive || cloudVelaId());
 }
 
 function syncBoardDeleteChrome() {
@@ -27,8 +27,8 @@ function cloudDropPlusDraft() {
   return true;
 }
 
-async function cloudDeleteSavedBoard() {
-  var boardId = cloudBoardId();
+async function cloudDeleteSavedVela() {
+  var boardId = cloudVelaId();
   if (!cloudClient || !boardId) return false;
   var confirmed = await askConfirm({
     title: "Delete this Vela?",
@@ -64,7 +64,7 @@ async function cloudDeleteSavedBoard() {
 async function cloudDeleteCurrentBoard() {
   if (!cloudDeleteVisible()) return false;
   if (cloudPlusDraftActive) return cloudDropPlusDraft();
-  return cloudDeleteSavedBoard();
+  return cloudDeleteSavedVela();
 }
 
 (function wireCloudDelete() {

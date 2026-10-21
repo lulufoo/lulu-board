@@ -2,7 +2,7 @@
 async function pullBoardFromCloud() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return false;
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
-  var boardId = cloudBoardId();
+  var boardId = cloudVelaId();
   if (!boardId || cloudPlusDraftActive) return false;
   if (boardDirty && typeof askConfirm === "function") {
     var ok = await askConfirm({

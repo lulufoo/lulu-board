@@ -218,7 +218,7 @@ function shellRenderMine(groups) {
   var empty = document.getElementById("shellMineEmpty");
   if (!list) return;
   if (groups) shellGroups = groups;
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   var preview = typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
   var rows = preview ? shellSampleGroups() : shellGroups;
   var frag = document.createDocumentFragment();
@@ -295,7 +295,7 @@ function shellCloseAfterKindPick() {
 
 async function shellCommitBlankBoard(kind) {
   shellCloseAfterKindPick();
-  if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudBoardId === "function" && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudVelaId === "function" && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
@@ -362,7 +362,7 @@ function shellIsPreview() {
 // Is the open board already one of the shares? (Then its row, not this button, is how you reach its dialog.)
 function shellOpenBoardShared() {
   if (shellIsPreview()) return shellSampleShares().some(function (item) { return item.isCurrent; });
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   return !!current && shellShares.some(function (item) { return item.boardId === current; });
 }
 
@@ -373,7 +373,7 @@ function shellSyncShareButton() {
   if (!btn) return;
   if (row) row.hidden = shellOpenBoardShared();
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
-  var own = typeof cloudBoardId === "function" && !!cloudBoardId() && !(typeof isShareGuest === "function" && isShareGuest());
+  var own = typeof cloudVelaId === "function" && !!cloudVelaId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
   btn.title = btn.disabled ? "Save this Vela to the cloud to share it" : "Share this Vela";
 }
@@ -414,7 +414,7 @@ function shellRenderShared(shares) {
   section.hidden = !(signedIn || preview);
   shellSyncTabs(!section.hidden);
   shellSyncShareButton();
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   var rows = preview ? shellSampleShares() : shellShares;
   var frag = document.createDocumentFragment();
   rows.forEach(function (item) {

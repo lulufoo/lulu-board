@@ -68,7 +68,7 @@ function load(opts) {
     shellIsPreview: () => !!opts.preview,
     shellShares: opts.shares || [],
     shellSampleShares: () => [{ boardId: 'x2', shareId: 's_' + 'b'.repeat(32), title: 'Android MVI', role: 'edit', isCurrent: false }, { boardId: 'x1', shareId: 's_' + 'a'.repeat(32), title: 'LLM architecture', role: 'view', isCurrent: true }],
-    cloudBoardId: () => 'b_open',
+    cloudVelaId: () => 'b_open',
     cloudOpenBoardId: () => 'b_open',
     getBoardTitle: (id) => (id === 'b_open' ? 'Open board title' : 'Untitled'),
     cloudShareLinkFor: (id) => 'https://luluboard.app/#s:' + id,

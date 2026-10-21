@@ -76,8 +76,8 @@ async function loadSharedBoardByHash(raw) {
       setShareEdit(false);
       rememberOwnerShareId(shareId);
       if (typeof cloudSetBoardHash === "function") cloudSetBoardHash(result.data.graph_id, true);
-      if (typeof loadCloudBoardByHash === "function") {
-        await loadCloudBoardByHash("#b:" + result.data.graph_id);
+      if (typeof loadCloudVelaByHash === "function") {
+        await loadCloudVelaByHash("#b:" + result.data.graph_id);
       }
       return true;
     }
@@ -118,7 +118,7 @@ async function runShareRpc(name, args) {
   return row || null;
 }
 async function refreshOwnShareState() {
-  var boardId = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var boardId = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   if (!boardId || !cloudClient || !cloudSession || !cloudSession.user) return;
   try {
     var row = await runShareRpc("own_share_state", { p_graph_id: boardId });
@@ -186,7 +186,7 @@ async function forkSharedBoard() {
   setShareView(false);
   setShareEdit(false);
   liveBoardId = "";
-  var saved = await saveBoardToCloud({ explicit: true });
+  var saved = await saveVelaToCloud({ explicit: true });
   if (!saved) {
     if (wasEdit) setShareEdit(true);
     else if (wasView) setShareView(true);

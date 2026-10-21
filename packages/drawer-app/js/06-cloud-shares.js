@@ -40,7 +40,7 @@ async function cloudFetchOwnShares() {
     if (state && state.role) roles[row.share_id] = state.role;
     if (state && state.is_public) publics[row.share_id] = true;
   }));
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   return cloudShareSummaries(rows, roles, current, publics);
 }
 
@@ -48,7 +48,7 @@ async function cloudFetchOwnShares() {
 async function cloudShareMutate(boardId, name, args, okStatus) {
   try {
     var row = await runShareRpc(name, Object.assign({ p_graph_id: boardId }, args || {}));
-    if (boardId === cloudBoardId()) {
+    if (boardId === cloudVelaId()) {
       if (name === "unshare") { ownerShareRole = "view"; ownerIsPublic = false; rememberOwnerShareId(""); }
       else if (row) {
         ownerShareRole = row.role === "edit" ? "edit" : "view";

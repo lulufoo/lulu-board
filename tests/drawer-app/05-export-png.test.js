@@ -46,7 +46,7 @@ assert.match(exportPng, /getBoardTitle\(cloudOpenBoardId\(\)\)/, 'export title c
   const env = { hash: 'b_1', el: { value: 'board "Old name"\n' }, cache: { b_1: { bmd: 'board "Old name"\n' } } };
   const api = new Function('env', `
     var cloudPlusDraftActive = false, liveBoardId = 'b_1';
-    function cloudBoardId() { return env.hash; }
+    function cloudVelaId() { return env.hash; }
     var velaSourceEl = env.el;
     function cloudCachedBoardRow(id) { return env.cache[id] || null; }
     function cloudBoardTitle(src) { var m = /^\\s*board\\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; }

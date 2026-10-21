@@ -103,7 +103,7 @@ function cloudGroupTabsVisible() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   if (!cloudSession || !cloudSession.user) return false;
   if (!cloudGroupId || !cloudGroupMembers.length) return false;
-  if (!cloudPlusDraft && !cloudBoardId()) return false;
+  if (!cloudPlusDraft && !cloudVelaId()) return false;
   return true;
 }
 
@@ -158,7 +158,7 @@ function renderCloudGroupTabs() {
   clearChromeTip();
   if (!show) return;
   var viewingDraft = !!cloudPlusDraftActive;
-  var current = viewingDraft ? "" : cloudBoardId();
+  var current = viewingDraft ? "" : cloudVelaId();
   var last = cloudGroupMembers.length - 1;
   if (last >= 0) appendGroupDropLine(root, "is-start");
   cloudGroupMembers.forEach(function (row, index) {
@@ -210,7 +210,7 @@ function cloudClearGroupTabs() {
 
 async function cloudConfirmLeaveBoard() {
   if (cloudPlusDraftActive) return true;
-  if (boardDirty && cloudBoardId()) {
+  if (boardDirty && cloudVelaId()) {
     if (typeof askConfirm === "function") {
       return askConfirm({
         title: "Not saved yet",
@@ -271,9 +271,9 @@ function cloudOpenBoardById(boardId) {
   var id = String(boardId || "");
   if (!id) return;
   cloudSetBoardHash(id, true);
-  if (typeof loadCloudBoardByHash !== "function") return;
+  if (typeof loadCloudVelaByHash !== "function") return;
   var hash = typeof cloudBoardHash === "function" ? cloudBoardHash(id) : "#b:" + id;
-  void loadCloudBoardByHash(hash);
+  void loadCloudVelaByHash(hash);
 }
 
 async function cloudSwitchToBoard(boardId) {
@@ -284,9 +284,9 @@ async function cloudSwitchToBoard(boardId) {
     cloudOpenBoardById(id);
     return;
   }
-  if (id === cloudBoardId()) return;
+  if (id === cloudVelaId()) return;
   if (!(await cloudConfirmLeaveBoard())) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();
@@ -296,7 +296,7 @@ async function cloudSwitchToBoard(boardId) {
 async function cloudSwitchToPlusDraft() {
   if (!cloudPlusDraft || cloudPlusDraftActive) return;
   if (!(await cloudConfirmLeaveBoard())) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();
@@ -340,7 +340,7 @@ async function cloudStartPlusDraft() {
 async function cloudCommitPlusDraft(kind) {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (cloudPlusDraft) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();

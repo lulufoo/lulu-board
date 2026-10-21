@@ -65,7 +65,7 @@ assert.doesNotMatch(boardJs, /dataset\.shareView === "on"\) return/, 'share view
 assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosave does not write the shared original');
 {
   const start = boardJs.indexOf('async function saveBoardToFile');
-  const guest = boardJs.slice(start, boardJs.indexOf('if (typeof cloudBoardId', start));
+  const guest = boardJs.slice(start, boardJs.indexOf('if (typeof cloudVelaId', start));
   assert.match(guest, /isShareGuest\(\)/, 'hash persist sees share guests');
   assert.match(guest, /return Promise\.resolve\(\)/, 'share guests stay in memory');
   assert.doesNotMatch(guest, /forkSharedBoard|saveSharedBoard/, 'autosave does not create a share copy');
@@ -87,7 +87,7 @@ assert.match(html, /id="shellCloudStatus"/, 'aligned save state is a status chip
 assert.match(html, /shell-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
 assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
 assert.match(cloud, /copy\.pending/, 'unsaved chrome keeps the pending chip');
-assert.match(boardJs, /cloudBoardId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
+assert.match(boardJs, /cloudVelaId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
 assert.match(html, /id="btnShellSessionOut"[\s\S]*shellSessionMenu|id="shellSessionMenu"[\s\S]*id="btnShellSessionOut"/, 'Sign out lives in the account menu');
 assert.match(html, /data-shell-oauth="google"/, 'Google is an available provider');
 assert.match(html, /data-shell-oauth="github"/, 'GitHub is an available provider');
@@ -186,7 +186,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
       var boardServerRev = env.server, velaLocalRev = env.client;
       var document = { getElementById: (id) => id === 'btnShellSaveCloud' ? save : status };
       function isLocalDrawerPreview() { return !!env.local; }
-      function cloudBoardId() { return env.id || ''; }
+      function cloudVelaId() { return env.id || ''; }
       ${cloud.slice(start, end)}
       syncCloudSaveChrome();`)(env, save, status);
     return { save, status };
@@ -222,7 +222,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
   const env = {
     save: { classList: { contains: (c) => c === 'is-signed-out' } },
     showCopyTip: (m) => calls.push(['toast', m]),
-    saveBoardToCloud: () => calls.push(['save']),
+    saveVelaToCloud: () => calls.push(['save']),
     forkSharedBoard: () => calls.push(['fork']),
     isShareGuest: () => false,
     cloudCloseAccountMenus: () => calls.push(['menus']),
@@ -278,7 +278,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const start = cloud.indexOf('async function cloudSignOut');
-  const end = cloud.indexOf('async function saveBoardToCloud');
+  const end = cloud.indexOf('async function saveVelaToCloud');
   assert.ok(start >= 0 && end > start, 'cloudSignOut is a closed function');
   const body = cloud.slice(start, end);
   assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
@@ -289,7 +289,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 {
   const start = cloud.indexOf('function groupBoardRowsByGroup');
   const sib = cloud.indexOf('function loadSiblingBoardIds');
-  const save = cloud.indexOf('async function saveBoardToCloud');
+  const save = cloud.indexOf('async function saveVelaToCloud');
   assert.ok(start >= 0 && sib > start && save > sib, 'group helpers are closed functions');
   const helpers = new Function(
     cloud.slice(start, save) + '\nreturn { groupBoardRowsByGroup, loadSiblingBoardIds };'
@@ -335,7 +335,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const load = cloud.slice(
-    cloud.indexOf('async function loadCloudBoardByHash'),
+    cloud.indexOf('async function loadCloudVelaByHash'),
     cloud.indexOf('async function cloudRefreshGroups')
   );
   const reject = load.indexOf('if (!boardId) return false');
@@ -368,8 +368,8 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const save = cloud.slice(
-    cloud.indexOf('async function saveBoardToCloud'),
-    cloud.indexOf('async function loadCloudBoardByHash')
+    cloud.indexOf('async function saveVelaToCloud'),
+    cloud.indexOf('async function loadCloudVelaByHash')
   );
   const minted = save.indexOf('if (!boardId)');
   const updated = save.indexOf('} else {');

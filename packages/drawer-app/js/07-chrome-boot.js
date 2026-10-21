@@ -420,8 +420,8 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       boardSaveTimer = null;
       var outgoingId = "";
       outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && outgoingId && !cloudPlusDraftActive && typeof saveBoardToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
-        pending = saveBoardToCloud({ explicit: false }).catch(function() { return false; });
+      if (boardDirty && outgoingId && !cloudPlusDraftActive && typeof saveVelaToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
+        pending = saveVelaToCloud({ explicit: false }).catch(function() { return false; });
       }
       boardDirty = false;
     }

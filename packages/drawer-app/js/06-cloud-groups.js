@@ -38,6 +38,6 @@ async function cloudFetchGroupSummaries() {
   if (boards.error) throw boards.error;
   var members = await cloudClient.from("graphs").select("graph_id,group_id");
   if (members.error) throw members.error;
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   return cloudGroupSummaries(boards.data || [], members.data || [], current);
 }

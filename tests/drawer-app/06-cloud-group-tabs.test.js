@@ -55,7 +55,7 @@ assert.match(cloud, /p_group_id:\s*joinGroupId/);
 assert.match(cloud, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
 assert.match(tabs, /function cloudOpenBoardById/, 'tab switch loads one board id');
 assert.match(tabs, /cloudSetBoardHash\(id, true\)/, 'tab switch replaces the hash without hashchange');
-assert.match(tabs, /loadCloudBoardByHash/, 'tab switch does not wait for hashchange bootstrap');
+assert.match(tabs, /loadCloudVelaByHash/, 'tab switch does not wait for hashchange bootstrap');
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
 assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
@@ -116,7 +116,7 @@ assert.match(tabs, /"Add board"/, 'plus keeps Add board');
   assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
   assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
-  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudVelaId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
     body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
     (id) => (env.cache || {})[id] || null,
     (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });

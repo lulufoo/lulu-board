@@ -25,10 +25,10 @@ assert.match(pull, /cloudForgetBoardCache\(\[boardId\]\)/, 'pull drops the stale
 assert.match(pull, /cloudPlusDraftActive\) return false/, 'plus draft has nothing to pull');
 assert.match(pull, /isShareGuest/, 'share guests do not pull');
 assert.match(pull, /boardDirty && typeof askConfirm/, 'dirty local edits ask before overwrite');
-assert.doesNotMatch(pull, /saveBoardToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
+assert.doesNotMatch(pull, /saveVelaToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
 
 // brown stays upload
 const wire = sync.slice(sync.indexOf('var save = document.getElementById("btnShellSaveCloud");', sync.indexOf('function wireCloudAuth')));
-assert.match(wire, /saveBoardToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
+assert.match(wire, /saveVelaToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
 
 console.log('ok cloud-pull');

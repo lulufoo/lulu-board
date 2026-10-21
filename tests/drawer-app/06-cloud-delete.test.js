@@ -26,7 +26,7 @@ assert.match(appBuild, /06-cloud-group-order\.js[\s\S]*06-cloud-delete\.js/, 'de
 assert.match(sync, /syncBoardDeleteChrome/, 'save chrome refreshes delete visibility');
 
 assert.match(del, /isShareGuest/, 'share guests never see delete');
-assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows for a saved board or the plus draft');
+assert.match(del, /cloudPlusDraftActive \|\| cloudVelaId\(\)/, 'delete shows for a saved board or the plus draft');
 
 {
   const start = del.indexOf('function cloudNextBoardAfterDelete');
@@ -39,12 +39,12 @@ assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows fo
   assert.strictEqual(next(['b_1'], 'b_1'), '', 'only board has no next');
 }
 
-const draft = del.slice(del.indexOf('function cloudDropPlusDraft'), del.indexOf('async function cloudDeleteSavedBoard'));
+const draft = del.slice(del.indexOf('function cloudDropPlusDraft'), del.indexOf('async function cloudDeleteSavedVela'));
 assert.doesNotMatch(draft, /askConfirm|cloudClient/, 'dropping a draft neither asks nor hits the cloud');
 assert.match(draft, /cloudClearPlusDraftSlot\(\)/, 'dropping a draft clears the memory slot');
 assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.graph_id/, 'draft drop returns to the last saved board');
 
-const saved = del.slice(del.indexOf('async function cloudDeleteSavedBoard'), del.indexOf('async function cloudDeleteCurrentBoard'));
+const saved = del.slice(del.indexOf('async function cloudDeleteSavedVela'), del.indexOf('async function cloudDeleteCurrentBoard'));
 assert.match(saved, /askConfirm\(\{[\s\S]*Delete this Vela\?/, 'saved board asks first, in English');
 assert.match(saved, /from\("graphs"\)\.delete\(\)\.eq\("graph_id", boardId\)/, 'deletes the boards row');
 assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
