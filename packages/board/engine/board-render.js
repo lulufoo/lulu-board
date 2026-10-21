@@ -52,25 +52,12 @@
   function clampTypeStep(value) {
     return StyleToken.clampTypeStep(value);
   }
-  // Camera: the world point (cx, cy) shown at the stage centre, plus zoom.
-  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const scale = Number(raw.scale);
-    const cx = Number(raw.cx);
-    const cy = Number(raw.cy);
-    if (!Number.isFinite(scale) || !Number.isFinite(cx) || !Number.isFinite(cy)) return null;
-    return {
-      scale: Math.min(3, Math.max(0.2, scale)),
-      cx: Math.round(cx),
-      cy: Math.round(cy),
-    };
+    return StyleToken.authoredViewport(raw);
   }
   function authoredStyle(raw) {
     const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
     const out = Object.assign({}, StyleToken.authoredFields(src));
-    const viewport = authoredViewport(src.viewport || src.view);
-    if (viewport) out.viewport = viewport;
     const ids = authoredIds(src.ids);
     if (ids) out.ids = ids;
     Object.keys(src).forEach((key) => {

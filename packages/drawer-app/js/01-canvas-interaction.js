@@ -2,7 +2,8 @@
 (function (root, factory) {
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
-  root.CanvasInteraction = api;
+  root.Canvas = Object.assign(root.Canvas || {}, api);
+  root.CanvasInteraction = root.Canvas;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 

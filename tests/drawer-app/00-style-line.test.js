@@ -88,7 +88,7 @@ function b64(obj) {
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
-  assert.ok(/mermaidStyleToken\(theme, step\)/.test(boardJs), 'mermaid persist writes theme plus type_step');
+  assert.ok(/mermaidStyleToken\(theme, step, viewport\)/.test(boardJs), 'mermaid persist writes theme, type_step, viewport');
   assert.strictEqual(
     Style.encodeStylePayload({ theme: 'classic' }),
     Token.encodeStylePayload({ theme: 'classic' }),
@@ -104,7 +104,18 @@ function b64(obj) {
     { type_step: 2, item_cap: 20 },
     'shared fields keep non-default cap and step',
   );
+  assert.deepStrictEqual(
+    Token.authoredFields({ viewport: { scale: 1, cx: 0, cy: 0 } }),
+    {},
+    'shared fields omit the default camera',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ viewport: { scale: 0.8, cx: 12, cy: 24 } }),
+    { viewport: { scale: 0.8, cx: 12, cy: 24 } },
+    'shared fields keep a moved camera',
+  );
   assert.deepStrictEqual(Token.resolveFields({}), Token.DEFAULTS);
+  assert.deepStrictEqual(Token.resolveFields({}).viewport, { scale: 1, cx: 0, cy: 0 });
   assert.strictEqual(
     Style.mermaidStyleToken('classic', 2),
     Token.encodeStylePayload(Token.authoredFields({ theme: 'classic', type_step: 2 })),
@@ -117,7 +128,14 @@ function b64(obj) {
     ),
     'flowchart still does not write item_cap',
   );
-  assert.ok(/patch\.theme == null && patch\.type_step == null/.test(boardJs), 'flowchart persist accepts type_step without theme');
+  assert.ok(/patch\.theme == null && patch\.type_step == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts viewport without theme');
+  const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });
+  assert.deepStrictEqual(Token.decodeStylePayload(withView), {
+    theme: 'classic',
+    type_step: 2,
+    viewport: { scale: 0.8, cx: 10, cy: 20 },
+  });
+  assert.strictEqual(Style.mermaidStyleToken('default', 0, { scale: 1, cx: 0, cy: 0 }), '');
 }
 
 console.log('ok board-style-theme');

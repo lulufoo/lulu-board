@@ -14,12 +14,13 @@
     item_cap: 16,
     link_route: "stagger",
     type_step: 0,
+    viewport: { scale: 1, cx: 0, cy: 0 },
   };
   var ITEM_CAP_MIN = 8;
   var ITEM_CAP_MAX = 24;
   var TYPE_STEP_MIN = -3;
   var TYPE_STEP_MAX = 3;
-  var FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, type_step: 1 };
+  var FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, type_step: 1, viewport: 1 };
 
   function encodeStylePayload(obj) {
     var json = JSON.stringify(obj || {});
@@ -70,6 +71,25 @@
     return ROUTES[raw] ? raw : DEFAULTS.link_route;
   }
 
+  // Camera: world point (cx, cy) at the stage centre, plus zoom.
+  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
+  function authoredViewport(raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    var scale = Number(raw.scale);
+    var cx = Number(raw.cx);
+    var cy = Number(raw.cy);
+    if (!isFinite(scale) || !isFinite(cx) || !isFinite(cy)) return null;
+    return {
+      scale: Math.min(3, Math.max(0.2, scale)),
+      cx: Math.round(cx),
+      cy: Math.round(cy),
+    };
+  }
+
+  function isDefaultViewport(raw) {
+    return !!(raw && raw.scale === DEFAULTS.viewport.scale && raw.cx === DEFAULTS.viewport.cx && raw.cy === DEFAULTS.viewport.cy);
+  }
+
   function authoredFields(raw) {
     var src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
     var out = {};
@@ -87,16 +107,24 @@
       var step = clampTypeStep(src.type_step);
       if (step !== DEFAULTS.type_step) out.type_step = step;
     }
+    var viewport = authoredViewport(src.viewport || src.view);
+    if (viewport && !isDefaultViewport(viewport)) out.viewport = viewport;
     return out;
   }
 
   function resolveFields(raw) {
     var src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+    var viewport = authoredViewport(src.viewport || src.view);
     return {
       theme: src.theme != null && src.theme !== "" ? resolveThemeId(src.theme) : DEFAULTS.theme,
       item_cap: src.item_cap == null || src.item_cap === "" ? DEFAULTS.item_cap : clampItemCap(src.item_cap),
       link_route: src.link_route == null || src.link_route === "" ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
       type_step: src.type_step == null || src.type_step === "" ? DEFAULTS.type_step : clampTypeStep(src.type_step),
+      viewport: viewport || {
+        scale: DEFAULTS.viewport.scale,
+        cx: DEFAULTS.viewport.cx,
+        cy: DEFAULTS.viewport.cy,
+      },
     };
   }
 
@@ -118,6 +146,7 @@
     clampItemCap: clampItemCap,
     clampTypeStep: clampTypeStep,
     resolveLinkRoute: resolveLinkRoute,
+    authoredViewport: authoredViewport,
     authoredFields: authoredFields,
     resolveFields: resolveFields,
     isFieldKey: isFieldKey,

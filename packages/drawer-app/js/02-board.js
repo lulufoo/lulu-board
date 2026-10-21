@@ -1255,7 +1255,16 @@ function persistMermaidStyle(body, patch) {
   var step = patch && patch.type_step != null
     ? DrawerStyleLine.clampMermaidTypeStep(patch.type_step)
     : DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  var token = DrawerStyleLine.mermaidStyleToken(theme, step);
+  var viewport;
+  if (patch && Object.prototype.hasOwnProperty.call(patch, "viewport")) {
+    viewport = patch.viewport;
+  } else {
+    var prev = typeof DrawerStyleLine.decodeStyleTokenJson === "function"
+      ? DrawerStyleLine.decodeStyleTokenJson(styled.token)
+      : null;
+    viewport = prev && (prev.viewport || prev.view);
+  }
+  var token = DrawerStyleLine.mermaidStyleToken(theme, step, viewport);
   return DrawerStyleLine.joinRendererStyle(token, styled.body);
 }
 
@@ -1276,7 +1285,7 @@ function persistBoardStyle(patch) {
       : "board";
     var nextBody;
     if (kind === "flowchart" || kind === "mermaid-unsupported") {
-      if (!patch || (patch.theme == null && patch.type_step == null)) return;
+      if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
       if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
@@ -1688,6 +1697,24 @@ function fixSvgIntrinsic(svg) {
   // attribute and drops Pele's --_s / --_fg aliases (nodes paint black).
 }
 
+function bindCanvasWorld(rootEl, boundsFn) {
+  if (typeof Canvas !== "undefined" && typeof Canvas.setWorld === "function") {
+    Canvas.setWorld(rootEl || null, boundsFn || null);
+  }
+}
+
+function canvasSvgBounds(svg) {
+  if (!svg) return null;
+  var w = parseFloat(svg.getAttribute("width") || "");
+  var h = parseFloat(svg.getAttribute("height") || "");
+  if (!(w > 0 && h > 0) && svg.viewBox && svg.viewBox.baseVal) {
+    w = svg.viewBox.baseVal.width;
+    h = svg.viewBox.baseVal.height;
+  }
+  if (!(w > 0 && h > 0)) return null;
+  return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
+}
+
 function finishCanvasView(opts) {
   opts = opts || {};
   if (opts.fit) {
@@ -1727,6 +1754,7 @@ function renderFlowchart(opts) {
   updateBoardChars();
   if (!body.trim()) {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError("");
     setStatus("No flowchart source");
     finishCanvasView(opts);
@@ -1734,6 +1762,7 @@ function renderFlowchart(opts) {
   }
   if (!window.pele || typeof window.pele.render !== "function") {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError("Pele renderer missing");
     setStatus("Pele renderer missing", true);
     finishCanvasView(opts);
@@ -1758,6 +1787,7 @@ function renderFlowchart(opts) {
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
+    bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
     if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
     if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
     showBoardError("");
@@ -1765,6 +1795,7 @@ function renderFlowchart(opts) {
     if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
   } catch (err) {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError(err instanceof Error ? err.message : String(err));
     setStatus("Invalid flowchart source", true);
   }
@@ -1775,6 +1806,7 @@ function refuseUnsupportedMermaid() {
   syncBoardEditControls();
   previewEl.classList.remove("board-preview");
   previewEl.innerHTML = "";
+  bindCanvasWorld(null, null);
   updateBoardChars();
   showBoardError("Only flowchart can be rendered.");
   setStatus("Only flowchart can be rendered.", true);
@@ -1793,9 +1825,19 @@ function renderBoard(opts) {
   syncBoardEditControls();
   previewEl.classList.add('board-preview');
   const text = boardSourceEl.value.trim(); updateBoardChars();
-  if (!text) { previewEl.innerHTML = ''; if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
+  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
   BoardRender.render(text, previewEl).then((rendered) => {
     try {
+      var worldRoot = rendered && rendered.root && rendered.root.querySelector
+        ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
+          ? rendered.root
+          : rendered.root.querySelector(".board-canvas"))
+        : null;
+      bindCanvasWorld(worldRoot, function () {
+        return typeof BoardRender !== "undefined" && typeof BoardRender.worldBounds === "function"
+          ? BoardRender.worldBounds(rendered.root)
+          : null;
+      });
       syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardDomSelectionKey(boardSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection");
       // Repaint the live root after any mode/bootstrap render race.
       if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });

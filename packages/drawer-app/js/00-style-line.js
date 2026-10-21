@@ -114,11 +114,12 @@
     return Token.resolveFields(Token.decodeStylePayload(raw));
   }
 
-  function mermaidStyleToken(theme, typeStep) {
+  function mermaidStyleToken(theme, typeStep, viewport) {
     var Token = styleTokenApi();
     var data = Token.authoredFields({
       theme: Token.resolveThemeId(theme),
       type_step: Token.clampTypeStep(typeStep),
+      viewport: viewport,
     });
     if (!Object.keys(data).length) return "";
     return Token.encodeStylePayload(data);
@@ -142,19 +143,9 @@
     return line + "\n" + rest;
   }
 
-  // Camera viewport: world point at the stage centre + zoom.
-  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-    var scale = Number(raw.scale);
-    var cx = Number(raw.cx);
-    var cy = Number(raw.cy);
-    if (!isFinite(scale) || !isFinite(cx) || !isFinite(cy)) return null;
-    return {
-      scale: Math.min(3, Math.max(0.2, scale)),
-      cx: Math.round(cx),
-      cy: Math.round(cy),
-    };
+    var Token = styleTokenApi();
+    return Token && typeof Token.authoredViewport === "function" ? Token.authoredViewport(raw) : null;
   }
 
   return {
@@ -171,6 +162,7 @@
     authoredFields: function (raw) { return styleTokenApi().authoredFields(raw); },
     resolveFields: function (raw) { return styleTokenApi().resolveFields(raw); },
     mermaidStyleToken: mermaidStyleToken,
+    decodeStyleTokenJson: decodeStyleTokenJson,
     themeFromStyleToken: themeFromStyleToken,
     typeStepFromStyleToken: typeStepFromStyleToken,
     clampMermaidTypeStep: clampMermaidTypeStep,
