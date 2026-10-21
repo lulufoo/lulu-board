@@ -21,7 +21,7 @@
   }
 
   var FLOWCHART_RE = /^(flowchart|graph|flowchart-elk)\b/i;
-  var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart-beta|block-beta|architecture(?:-beta)?|packet-beta|kanban|sankey-beta|requirement(?:Diagram)?|radar-beta)\b/i;
+  var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
 
   function firstDiagramLine(body) {
     var lines = String(body == null ? "" : body).split(/\r?\n/);

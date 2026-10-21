@@ -83,8 +83,17 @@ function clickKind(t, kind, disabled) {
 {
   const items = load().ctx.CREATE_KIND_ITEMS;
   assert.strictEqual(items.filter((it) => it.cls === 'Board').length, 1);
-  assert.ok(items.filter((it) => it.cls === 'Mermaid').length > 8);
+  assert.strictEqual(items.filter((it) => it.cls === 'Mermaid').length, 32);
+  assert.strictEqual(items.length, 33);
   assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'board,flowchart');
+  const kinds = items.map((it) => it.kind);
+  [
+    'swimlane-beta', 'agentflow-beta', 'treeView-beta', 'usecase-beta',
+    'eventmodeling', 'railroad-beta', 'cynefin-beta', 'wardley-beta',
+    'venn-beta', 'ishikawa', 'treemap',
+  ].forEach((kind) => {
+    assert.ok(kinds.includes(kind), kind + ' is listed');
+  });
 }
 
 {
