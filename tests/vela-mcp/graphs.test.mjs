@@ -15,7 +15,7 @@ import {
 } from '../../packages/vela-mcp/src/graphs.js';
 import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
 import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
-import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/vela-mcp/src/brand.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/vela-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
@@ -262,7 +262,8 @@ assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
 assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
 assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
-assert.match(worker, /vela_id: z\.string\(\)/, 'MCP input uses vela_id');
+assert.match(worker, /const VELA_ID = z\.string\(\)\.regex\(\/\^b_\[0-9a-f\]\{8\}\$\/\)/, 'vela_id is b_ + 8 hex');
+assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
 assert.match(worker, /createGraph\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
@@ -301,7 +302,8 @@ assert.match(FAVICON_SVG, /fill="#db4c84"/, 'svg uses the landing pink');
 assert.match(FAVICON_SVG, /fill="#ffd166"/, 'svg uses the landing yellow');
 
 const info = serverInfo({ PUBLIC_ORIGIN: 'https://mcp.luluvela.app' });
-assert.equal(info.websiteUrl, 'https://luluvela.app');
+assert.equal(PUBLIC_WEB_ORIGIN, 'https://luluvela.app');
+assert.equal(info.websiteUrl, PUBLIC_WEB_ORIGIN);
 assert.equal(info.icons[0].src, 'https://mcp.luluvela.app/favicon-32.png');
 assert.equal(info.icons[0].mimeType, 'image/png');
 assert.equal(info.icons[1].src, 'https://mcp.luluvela.app/favicon.svg');
