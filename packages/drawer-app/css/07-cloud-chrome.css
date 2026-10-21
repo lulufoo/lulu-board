@@ -2,7 +2,7 @@
 html[data-drawer-mode="vela"] .vela-dock-rail {
   padding-bottom: 72px;
 }
-html[data-drawer-mode="vela"] .board-account {
+html[data-drawer-mode="vela"] .shell-account-bar {
   position: absolute;
   right: 4px;
   bottom: 8px;
@@ -14,7 +14,7 @@ html[data-drawer-mode="vela"] .board-account {
   justify-content: flex-end;
   gap: 4px;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-btn {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn {
   box-sizing: border-box;
   width: 32px;
   height: 32px;
@@ -29,37 +29,37 @@ html[data-drawer-mode="vela"] .board-account .board-account-btn {
   align-items: center;
   justify-content: center;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-btn:hover {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn:hover {
   background: var(--panel-solid, #fff);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-html[data-drawer-mode="vela"] .board-account .board-account-btn:disabled {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn:disabled {
   opacity: 0.72;
   cursor: default;
   box-shadow: none;
 }
-html[data-drawer-mode="vela"] .board-account #btnBoardSignIn {
+html[data-drawer-mode="vela"] .shell-account-bar #btnShellSignIn {
   width: 26px;
   height: 26px;
   min-width: 26px;
   border-radius: 8px;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-sign-icon {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-sign-icon {
   width: 13px;
   height: 13px;
   display: block;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-sign-label,
-html[data-drawer-mode="vela"] .board-account .board-cloud-status-label,
-html[data-drawer-mode="vela"] .board-account .board-account-name,
-html[data-drawer-mode="vela"] .board-account .board-account-caret {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-sign-label,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status-label,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-name,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-caret {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
 }
-html[data-drawer-mode="vela"] .board-account .board-cloud-status {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status {
   width: 32px;
   height: 32px;
   min-width: 32px;
@@ -70,11 +70,11 @@ html[data-drawer-mode="vela"] .board-account .board-cloud-status {
   background: transparent;
   box-shadow: none;
 }
-html[data-drawer-mode="vela"] .board-account .board-cloud-status:hover {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status:hover {
   background: color-mix(in srgb, var(--text) 6%, transparent);
   box-shadow: none;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-chip {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-chip {
   width: 26px;
   height: 26px;
   max-width: 26px;
@@ -82,19 +82,19 @@ html[data-drawer-mode="vela"] .board-account .board-account-chip {
   justify-content: center;
   border-radius: 8px;
 }
-html[data-drawer-mode="vela"] .board-account .board-account-avatar {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-avatar {
   width: 18px;
   height: 18px;
   font-size: 8px;
 }
-html[data-drawer-mode="vela"] .board-account .board-auth-menu {
+html[data-drawer-mode="vela"] .shell-account-bar .shell-auth-menu {
   top: auto;
   bottom: 0;
   right: calc(100% + 6px);
   left: auto;
 }
-html[data-drawer-mode="vela"] .board-account #btnShareSync:not([hidden]),
-html[data-drawer-mode="vela"] .board-account #btnBoardSaveCopy:not([hidden]) {
+html[data-drawer-mode="vela"] .shell-account-bar #btnShareSync:not([hidden]),
+html[data-drawer-mode="vela"] .shell-account-bar #btnShellSaveCopy:not([hidden]) {
   position: absolute;
   right: 36px;
   bottom: 0;
@@ -103,7 +103,7 @@ html[data-drawer-mode="vela"] .board-account #btnBoardSaveCopy:not([hidden]) {
   padding: 0 10px;
   white-space: nowrap;
 }
-.board-session-name {
+.shell-session-name {
   padding: 7px 9px 2px;
   color: var(--text, #222);
   font-size: 12px;
@@ -113,12 +113,12 @@ html[data-drawer-mode="vela"] .board-account #btnBoardSaveCopy:not([hidden]) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.board-session-name:empty { display: none; }
-.board-session-name + .board-session-meta {
+.shell-session-name:empty { display: none; }
+.shell-session-name + .shell-session-meta {
   border-bottom: 0;
   padding-top: 0;
 }
-.board-session-name:not(:empty) + .board-session-meta {
+.shell-session-name:not(:empty) + .shell-session-meta {
   padding-bottom: 8px;
   margin-bottom: 2px;
   border-bottom: 1px solid var(--stroke, #e5e7eb);

@@ -1,4 +1,4 @@
-/* drawer-app/09-share-dialog.css — the Share dialog (shell: .board-sign-in in 06-sign-in.css) */
+/* drawer-app/09-share-dialog.css — the Share dialog (shell: .shell-dialog in 06-sign-in.css) */
 .share-sheet { width: min(440px, 100%); }
 .share-sheet .share-board { margin: 0 0 4px; color: var(--text); font: 600 14px/1.35 var(--font); overflow-wrap: anywhere; }
 .share-pane[hidden] { display: none; }

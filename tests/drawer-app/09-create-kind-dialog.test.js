@@ -14,7 +14,7 @@ const build = read('scripts/drawer-app-build/build.mjs');
 const sheet = html.slice(html.indexOf('id="createKindDialog"'));
 assert.match(sheet, /role="dialog" aria-modal="true" aria-labelledby="createKindTitle"/, 'a real modal dialog');
 assert.match(sheet, /class="create-kind-pop"/, 'search-style pop, not the sign-in sheet');
-assert.doesNotMatch(sheet, /board-sign-in-sheet/, 'create dialog does not reuse the small sign-in sheet');
+assert.doesNotMatch(sheet, /shell-dialog-sheet/, 'create dialog does not reuse the small sign-in sheet');
 assert.match(sheet, /id="createKindFilter"/, 'filter field');
 assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
 assert.match(sheet, /id="createKindList"/, 'type list');

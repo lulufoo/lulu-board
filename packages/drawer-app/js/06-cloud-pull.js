@@ -40,7 +40,7 @@ async function pullBoardFromCloud() {
 }
 
 (function wireCloudPull() {
-  var status = document.getElementById("boardCloudStatus");
+  var status = document.getElementById("shellCloudStatus");
   if (!status) return;
   if (typeof bindChromeTip === "function") {
     bindChromeTip(status, function () { return status.getAttribute("aria-label") || ""; });

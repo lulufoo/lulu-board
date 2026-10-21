@@ -199,7 +199,7 @@ function syncSharedOriginal() {
 }
 
 function syncShareChrome() {
-  var saveCopy = document.getElementById("btnBoardSaveCopy");
+  var saveCopy = document.getElementById("btnShellSaveCopy");
   var shareSync = document.getElementById("btnShareSync");
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   if (saveCopy) saveCopy.hidden = true;
@@ -212,6 +212,6 @@ function onShareClick(id, fn) {
   if (el) el.addEventListener("click", fn);
 }
 
-onShareClick("btnBoardSaveCopy", function () { void forkSharedBoard(); });
+onShareClick("btnShellSaveCopy", function () { void forkSharedBoard(); });
 onShareClick("btnShareSync", function () { void syncSharedOriginal(); });
 syncShareChrome();

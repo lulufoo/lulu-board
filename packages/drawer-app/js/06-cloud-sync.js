@@ -99,13 +99,13 @@ function applyLocalSignedInPreview() {
   if (!isLocalDrawerPreview()) return;
   if (cloudSession && cloudSession.user) return;
   cloudHideSignInDialog();
-  var signIn = document.getElementById("btnBoardSignIn");
-  var session = document.getElementById("boardSession");
-  var save = document.getElementById("btnBoardSaveCloud");
-  var status = document.getElementById("boardCloudStatus");
-  var chip = document.getElementById("btnBoardAccount");
-  var initialsEl = document.getElementById("boardAccountInitials");
-  var img = document.getElementById("boardAccountAvatarImg");
+  var signIn = document.getElementById("btnShellSignIn");
+  var session = document.getElementById("shellSession");
+  var save = document.getElementById("btnShellSaveCloud");
+  var status = document.getElementById("shellCloudStatus");
+  var chip = document.getElementById("btnShellSession");
+  var initialsEl = document.getElementById("shellSessionInitials");
+  var img = document.getElementById("shellSessionAvatarImg");
   if (signIn) signIn.hidden = true;
   if (session) session.hidden = false;
   if (status) status.hidden = true;
@@ -152,14 +152,14 @@ function cloudAccountProfile(user) {
 }
 
 function cloudSignInDialog() {
-  return document.getElementById("boardSignInDialog");
+  return document.getElementById("shellSignInDialog");
 }
 
 function cloudShowSignInDialog() {
   var dialog = cloudSignInDialog();
   if (!dialog) return;
   dialog.hidden = false;
-  var first = dialog.querySelector("[data-board-oauth]");
+  var first = dialog.querySelector("[data-shell-oauth]");
   if (first && typeof first.focus === "function") first.focus();
 }
 
@@ -182,10 +182,10 @@ async function cloudDeclineCloudBoard() {
 }
 
 function cloudCloseAccountMenus() {
-  var signIn = document.getElementById("btnBoardSignIn");
-  var authMenu = document.getElementById("boardAuthMenu");
-  var chip = document.getElementById("btnBoardAccount");
-  var sessionMenu = document.getElementById("boardSessionMenu");
+  var signIn = document.getElementById("btnShellSignIn");
+  var authMenu = document.getElementById("shellCanvasAuthMenu");
+  var chip = document.getElementById("btnShellSession");
+  var sessionMenu = document.getElementById("shellSessionMenu");
   if (authMenu) authMenu.hidden = true;
   if (signIn) signIn.setAttribute("aria-expanded", "false");
   if (sessionMenu) sessionMenu.hidden = true;
@@ -229,8 +229,8 @@ function cloudSetSaveSignedOut(save) {
 }
 
 function syncCloudSaveChrome() {
-  var save = document.getElementById("btnBoardSaveCloud");
-  var status = document.getElementById("boardCloudStatus");
+  var save = document.getElementById("btnShellSaveCloud");
+  var status = document.getElementById("shellCloudStatus");
   if (!save || !status) return;
   if (typeof syncBoardDeleteChrome === "function") syncBoardDeleteChrome();
   var signedIn = !!(cloudSession && cloudSession.user);
@@ -265,14 +265,14 @@ function syncCloudSaveChrome() {
 function cloudSetAccountUi() {
   var configured = cloudConfigured();
   var signedIn = !!(cloudSession && cloudSession.user);
-  var signIn = document.getElementById("btnBoardSignIn");
-  var session = document.getElementById("boardSession");
-  var chip = document.getElementById("btnBoardAccount");
-  var nameEl = document.getElementById("boardAccountName");
-  var sessionName = document.getElementById("boardSessionName");
-  var emailEl = document.getElementById("boardSessionEmail");
-  var img = document.getElementById("boardAccountAvatarImg");
-  var initialsEl = document.getElementById("boardAccountInitials");
+  var signIn = document.getElementById("btnShellSignIn");
+  var session = document.getElementById("shellSession");
+  var chip = document.getElementById("btnShellSession");
+  var nameEl = document.getElementById("shellSessionName");
+  var sessionName = document.getElementById("shellSessionLabel");
+  var emailEl = document.getElementById("shellSessionEmail");
+  var img = document.getElementById("shellSessionAvatarImg");
+  var initialsEl = document.getElementById("shellSessionInitials");
   var profile = signedIn ? cloudAccountProfile(cloudSession.user) : null;
 
   cloudCloseAccountMenus();
@@ -380,7 +380,7 @@ function cloudOpenSignInFromLanding() {
     void cloudSignIn("github");
     return;
   }
-  var signIn = document.getElementById("btnBoardSignIn");
+  var signIn = document.getElementById("btnShellSignIn");
   if (intent && signIn && !signIn.hidden && !signIn.disabled) signIn.click();
 }
 
@@ -752,10 +752,10 @@ async function deleteCloudGroup(groupId, boardIds) {
 }
 
 (function wireCloudAuth() {
-  var signIn = document.getElementById("btnBoardSignIn");
-  var menu = document.getElementById("boardAuthMenu");
-  var chip = document.getElementById("btnBoardAccount");
-  var sessionMenu = document.getElementById("boardSessionMenu");
+  var signIn = document.getElementById("btnShellSignIn");
+  var menu = document.getElementById("shellCanvasAuthMenu");
+  var chip = document.getElementById("btnShellSession");
+  var sessionMenu = document.getElementById("shellSessionMenu");
   if (signIn && menu) {
     signIn.addEventListener("click", function () {
       if (signIn.disabled) return;
@@ -773,17 +773,17 @@ async function deleteCloudGroup(groupId, boardIds) {
       chip.setAttribute("aria-expanded", open ? "true" : "false");
     });
   }
-  document.querySelectorAll("[data-board-oauth]").forEach(function (button) {
+  document.querySelectorAll("[data-shell-oauth]").forEach(function (button) {
     button.addEventListener("click", function () {
       cloudCloseAccountMenus();
       void cloudSignIn(button.dataset.boardOauth);
     });
   });
-  var closeDialog = document.getElementById("btnBoardSignInClose");
-  var backdrop = document.getElementById("boardSignInBackdrop");
+  var closeDialog = document.getElementById("btnShellSignInClose");
+  var backdrop = document.getElementById("shellSignInBackdrop");
   if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
   if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
-  var save = document.getElementById("btnBoardSaveCloud");
+  var save = document.getElementById("btnShellSaveCloud");
   if (save && typeof bindChromeTip === "function") {
     bindChromeTip(save, function () { return save.getAttribute("aria-label") || ""; });
   }
@@ -799,13 +799,13 @@ async function deleteCloudGroup(groupId, boardIds) {
     }
     void saveBoardToCloud({ explicit: true });
   });
-  var signOut = document.getElementById("btnBoardSignOut");
+  var signOut = document.getElementById("btnShellSessionOut");
   if (signOut) signOut.addEventListener("click", function () {
     cloudCloseAccountMenus();
     void cloudSignOut();
   });
   document.addEventListener("click", function (event) {
-    var account = document.getElementById("boardAccount");
+    var account = document.getElementById("shellAccount");
     if (!account || account.contains(event.target)) return;
     cloudCloseAccountMenus();
   });

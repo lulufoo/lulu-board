@@ -43,7 +43,7 @@ html[data-drawer-mode="vela"] .group-tab-float {
 html[data-drawer-mode="vela"] .board-edit-tool:hover:not(:disabled) { background: #fff !important; }
 html[data-drawer-mode="vela"] .board-edit-tool:disabled { opacity: .5; }
 html[data-drawer-mode="vela"] .zoom-float .btn { color: var(--ink); }
-html[data-drawer-mode="vela"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
 /* ---- canvas ground: white with faint dots ---- */
 html[data-drawer-mode="vela"][data-theme="light"] .canvas-shell {
@@ -352,19 +352,19 @@ html[data-drawer-mode="vela"] .vela-dock-tab.is-active::before { display: none; 
 html[data-drawer-mode="vela"] .vela-dock-tab-icon { width: 20px; height: 20px; }
 html[data-drawer-mode="vela"] .vela-dock-help-glyph { font-size: 16px; }
 html[data-drawer-mode="vela"] .group-tab-float { right: calc(var(--rail-w) + 8px); }
-html[data-drawer-mode="vela"] .board-account { right: 8px; width: 40px; bottom: 12px; gap: 6px; }
-html[data-drawer-mode="vela"] .board-account .board-cloud-status,
-html[data-drawer-mode="vela"] .board-account .board-account-btn,
-html[data-drawer-mode="vela"] .board-account #btnBoardSignIn {
+html[data-drawer-mode="vela"] .shell-account-bar { right: 8px; width: 40px; bottom: 12px; gap: 6px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn,
+html[data-drawer-mode="vela"] .shell-account-bar #btnShellSignIn {
   width: 40px; height: 40px; min-width: 40px; border: 0; border-radius: 12px;
   background: var(--fill); box-shadow: none;
 }
-html[data-drawer-mode="vela"] .board-account .board-cloud-status:hover,
-html[data-drawer-mode="vela"] .board-account .board-account-btn:hover { background: var(--fill-hover); }
-html[data-drawer-mode="vela"] .board-account .board-account-chip { width: 40px; height: 40px; max-width: 40px; border-radius: 12px; background: var(--fill); }
-html[data-drawer-mode="vela"] .board-account .board-account-avatar { width: 26px; height: 26px; font-size: 11px; }
-html[data-drawer-mode="vela"] .board-account .board-account-sign-icon { width: 17px; height: 17px; }
-html[data-drawer-mode="vela"] .board-account .board-cloud-status-icon { width: 18px; height: 18px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status:hover,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-chip { width: 40px; height: 40px; max-width: 40px; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-avatar { width: 26px; height: 26px; font-size: 11px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-sign-icon { width: 17px; height: 17px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status-icon { width: 18px; height: 18px; }
 
 /* panels */
 html[data-drawer-mode="vela"] .vela-dock-panel { padding: 20px 20px 24px; gap: 14px; }

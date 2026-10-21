@@ -1,4 +1,4 @@
-/* drawer-app/09-shortcuts.css — Keyboard shortcuts dialog (shell: .board-sign-in in 06-sign-in.css) */
+/* drawer-app/09-shortcuts.css — Keyboard shortcuts dialog (shell: .shell-dialog in 06-sign-in.css) */
 .shortcuts-sheet {
   width: min(760px, 100%);
   max-height: calc(100vh - 48px);

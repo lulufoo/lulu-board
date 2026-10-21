@@ -11,7 +11,7 @@
     ".board-inspector",
     ".vela-dock",
     ".vela-dock-resize",
-    ".board-account",
+    ".shell-account-bar",
     ".props-panel",
     ".top-float",
     ".zoom-float",

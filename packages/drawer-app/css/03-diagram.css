@@ -715,7 +715,7 @@ html[data-drawer-mode="vela"] .top-float {
   z-index: 5;
 }
 html[data-drawer-mode="vela"] .top-float > * { pointer-events: auto; }
-.board-account {
+.shell-account-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -723,7 +723,7 @@ html[data-drawer-mode="vela"] .top-float > * { pointer-events: auto; }
   min-width: 0;
   position: relative;
 }
-html[data-drawer-mode="vela"] .top-float .board-account-btn {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn {
   height: 32px;
   min-width: 32px;
   padding: 0 12px;
@@ -735,19 +735,19 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn {
   font-weight: 550;
   color: var(--text, #222);
 }
-html[data-drawer-mode="vela"] .top-float .board-account-btn:hover {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:hover {
   background: var(--panel-solid, #fff);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:disabled {
   opacity: 0.72;
   cursor: default;
   box-shadow: none;
 }
-html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:disabled:hover {
   border-color: var(--stroke);
 }
-.board-cloud-status {
+.shell-cloud-status {
   appearance: none;
   -webkit-appearance: none;
   position: relative;
@@ -769,48 +769,48 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   line-height: 1;
   user-select: none;
 }
-.board-cloud-status[hidden] { display: none !important; }
-.board-cloud-status-icon { width: 18px; height: 18px; display: block; }
-.board-cloud-status-label {
+.shell-cloud-status[hidden] { display: none !important; }
+.shell-cloud-status-icon { width: 18px; height: 18px; display: block; }
+.shell-cloud-status-label {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
 }
-.board-cloud-status.is-current {
+.shell-cloud-status.is-current {
   color: var(--ok);
   border: 0;
   cursor: pointer;
 }
-.board-cloud-status.is-pending {
+.shell-cloud-status.is-pending {
   color: var(--warn);
   border: 0;
   cursor: pointer;
 }
-.board-cloud-status:hover {
+.shell-cloud-status:hover {
   background: color-mix(in srgb, var(--text) 6%, transparent);
   box-shadow: none;
 }
-.board-cloud-status.is-pending.is-uncreated {
+.shell-cloud-status.is-pending.is-uncreated {
   color: var(--muted, #64748b);
 }
-.board-cloud-status.is-pending.is-signed-out {
+.shell-cloud-status.is-pending.is-signed-out {
   color: var(--muted, #64748b);
   opacity: .5;
   cursor: default;
 }
-.board-cloud-status.is-pending.is-signed-out:active { transform: none; }
-.board-cloud-status.is-pending:active,
-.board-cloud-status.is-current:active {
+.shell-cloud-status.is-pending.is-signed-out:active { transform: none; }
+.shell-cloud-status.is-pending:active,
+.shell-cloud-status.is-current:active {
   transform: scale(.98);
 }
-.board-session {
+.shell-session {
   position: relative;
   min-width: 0;
 }
-.board-session[hidden] { display: none !important; }
-.board-account-chip {
+.shell-session[hidden] { display: none !important; }
+.shell-account-chip {
   appearance: none;
   height: 32px;
   max-width: 16rem;
@@ -827,15 +827,15 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   min-width: 0;
   font: 12px/1.2 inherit;
 }
-.board-account-chip:hover,
-.board-account-chip[aria-expanded="true"] {
+.shell-account-chip:hover,
+.shell-account-chip[aria-expanded="true"] {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-.board-account-chip:focus-visible {
+.shell-account-chip:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
   outline-offset: 2px;
 }
-.board-account-avatar {
+.shell-account-avatar {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -850,15 +850,15 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   font-weight: 700;
   letter-spacing: 0.02em;
 }
-.board-account-avatar img {
+.shell-account-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.board-account-avatar img[hidden],
-.board-account-initials[hidden] { display: none; }
-.board-account-name {
+.shell-account-avatar img[hidden],
+.shell-account-initials[hidden] { display: none; }
+.shell-account-name {
   max-width: 9.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -866,7 +866,7 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   min-width: 0;
   font-weight: 560;
 }
-.board-account-caret {
+.shell-account-caret {
   width: 0;
   height: 0;
   border-left: 3.5px solid transparent;
@@ -875,7 +875,7 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   flex: 0 0 auto;
   margin-left: 1px;
 }
-.board-auth-menu {
+.shell-auth-menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
@@ -889,8 +889,8 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   box-shadow: 0 10px 28px rgba(15, 23, 42, .16);
   z-index: 30;
 }
-.board-auth-menu[hidden] { display: none; }
-.board-session-meta {
+.shell-auth-menu[hidden] { display: none; }
+.shell-session-meta {
   padding: 7px 9px 8px;
   margin: 0 0 2px;
   border-bottom: 1px solid var(--stroke, #e5e7eb);
@@ -901,8 +901,8 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.board-session-meta:empty { display: none; }
-.board-auth-provider {
+.shell-session-meta:empty { display: none; }
+.shell-auth-provider {
   appearance: none;
   border: 0;
   border-radius: 7px;
@@ -913,8 +913,8 @@ html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   font: 12px/1.3 inherit;
   text-align: left;
 }
-.board-auth-provider:hover,
-.board-auth-provider:focus-visible {
+.shell-auth-provider:hover,
+.shell-auth-provider:focus-visible {
   background: color-mix(in srgb, var(--accent, #2563eb) 10%, transparent);
   outline: none;
 }
@@ -2115,7 +2115,7 @@ html[data-drawer-mode="vela"] .top-float {
   right: 48px !important;
   width: auto !important;
 }
-html[data-drawer-mode="vela"] .board-account {
+html[data-drawer-mode="vela"] .shell-account-bar {
   margin-left: auto;
   flex: 0 1 auto;
 }
@@ -2124,10 +2124,10 @@ html[data-drawer-mode="vela"] .board-account {
     left: 6px !important;
     right: 42px !important;
   }
-  .board-account-name {
+  .shell-account-name {
     max-width: 6rem;
   }
-  .board-account-chip {
+  .shell-account-chip {
     max-width: 11rem;
     padding-right: 8px;
   }

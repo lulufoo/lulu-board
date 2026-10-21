@@ -82,7 +82,7 @@ var shellShares = shellShares || [];
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
   // Signed out: the account row is the sign-in entry. It opens a small menu to pick Google or GitHub
-  // (the provider buttons carry data-board-oauth, so 06-cloud-sync starts the flow). Signed in: the row is inert.
+  // (the provider buttons carry data-shell-oauth, so 06-cloud-sync starts the flow). Signed in: the row is inert.
   var account = document.getElementById("btnShellAccount");
   var authMenu = document.getElementById("shellAuthMenu");
   function setAuthMenu(on) {

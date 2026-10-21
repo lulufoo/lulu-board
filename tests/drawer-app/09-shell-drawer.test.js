@@ -81,10 +81,12 @@ console.log('ok 09-shell-drawer');
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  assert.doesNotMatch(html, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
+  const drawerStart = html.indexOf('id="shellDrawer"');
+  const drawerHtml = html.slice(drawerStart, html.indexOf('</aside>', drawerStart));
+  assert.doesNotMatch(drawerHtml, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
   assert.match(html, /id="btnShellAccount"[\s\S]{0,200}id="shellAccountAvatar"[\s\S]{0,200}id="shellAccountName"/, 'avatar + name live in one clickable account row');
   assert.doesNotMatch(src, /cloudSignIn\("google"\)/, 'the account row no longer jumps straight to Google');
-  assert.match(html, /id="shellAuthMenu"[\s\S]{0,300}data-board-oauth="google"[\s\S]{0,200}data-board-oauth="github"/, 'the row opens a Google / GitHub choice');
+  assert.match(html, /id="shellAuthMenu"[\s\S]{0,300}data-shell-oauth="google"[\s\S]{0,200}data-shell-oauth="github"/, 'the row opens a Google / GitHub choice');
   assert.match(src, /classList\.contains\("is-signin"\)[\s\S]{0,160}setAuthMenu\(/, 'signed-out row toggles the choice menu');
   assert.match(src, /function closeAll[\s\S]{0,120}shellCloseAuthMenu/, 'closing the drawer closes the menu');
   assert.match(src, /classList\.toggle\("is-signin", !profile\)/, 'row is only interactive while signed out');
