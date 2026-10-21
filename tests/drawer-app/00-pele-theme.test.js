@@ -51,9 +51,10 @@ assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
 
 const chrome = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 const boardJs = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+const velaJs = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
 assert.match(chrome, /applyPeleThemeVars/, 'host maps Board packs onto Pele');
 assert.match(boardJs, /persistMermaidStyle/, 'flowchart writes %% style');
 assert.doesNotMatch(boardJs, /MermaidFlowchartThemes/, 'mermaid-ext does not own theme packs');
-assert.doesNotMatch(boardJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
+assert.doesNotMatch(velaJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
 
 console.log('ok pele-theme');

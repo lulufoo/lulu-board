@@ -13,7 +13,7 @@ const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
 const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
 const chromeCss = read('packages/drawer-app/css/02-chrome.css');
 const dockCss = read('packages/drawer-app/css/03-diagram.css');
-const boardJs = read('packages/drawer-app/js/02-board.js');
+const boardJs = read('packages/drawer-app/js/02-vela.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 
 assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');

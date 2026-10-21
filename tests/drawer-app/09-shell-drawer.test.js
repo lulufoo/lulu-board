@@ -137,7 +137,7 @@ console.log('ok 09-shell-drawer');
 // ---- blank #z waits for kind ----
 {
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
   assert.match(src, /function shellOfferBlankStartKind/, 'blank start opens the kind dialog');
   assert.match(src, /onCancel: function \(\) \{ open\(\); \}/, 'blank start Esc keeps the dialog open');
   assert.match(board, /function shouldWaitForCreateKind/, 'empty hash does not seed while waiting for kind');
