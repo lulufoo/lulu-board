@@ -7,10 +7,11 @@ const { spawnSync } = require('child_process');
 const root = path.join(__dirname, '../..');
 const ctl = path.join(root, 'skill/mermaid/scripts/drawer_control.py');
 const viewer = fs.readFileSync(path.join(root, 'skill/mermaid/references/viewer.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8');
 
-assert.match(viewer, /`preview` encodes `\{bmd, version\}`/, 'viewer encodes the hash envelope');
-assert.match(viewer, /CLI preview never mints `#b:`/, 'preview stays unsigned');
+assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
+assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
 assert.match(viewer, /`--kind flowchart`/, 'viewer pins flowchart kind');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');
@@ -29,7 +30,7 @@ const emptyJson = JSON.parse(empty.stdout);
 assert.strictEqual(emptyJson.ok, true);
 assert.strictEqual(emptyJson.kind, 'flowchart');
 assert.strictEqual(emptyJson.open, 'current');
-assert.strictEqual(emptyJson.url, 'https://preview.luluvela.app/');
+assert.strictEqual(emptyJson.url, 'https://luluvela.app/');
 
 const drawn = run(['preview', '--kind', 'flowchart', '--no-open'], 'flowchart LR\n  A --> B\n');
 assert.strictEqual(drawn.status, 0, drawn.stderr);
@@ -37,7 +38,7 @@ const drawnJson = JSON.parse(drawn.stdout);
 assert.strictEqual(drawnJson.ok, true);
 assert.strictEqual(drawnJson.kind, 'flowchart');
 assert.strictEqual(drawnJson.open, 'created');
-assert.match(drawnJson.url, /^https:\/\/preview\.luluvela\.app\/#z:/);
+assert.match(drawnJson.url, /^https:\/\/luluvela\.app\/#z:/);
 assert.strictEqual(drawnJson.version, 1);
 
 const titled = run(

@@ -5,7 +5,9 @@ import { z } from "zod";
 import { getGraph, createGraph, saveGraph } from "./graphs.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
-import { brandResponse, isBrandPath, serverInfo } from "./brand.js";
+import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
+
+const VELA_ID = z.string().regex(/^b_[0-9a-f]{8}$/).describe("Cloud row id: b_ + 8 lowercase hex");
 
 function toolText(data) {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };
@@ -27,6 +29,7 @@ function mcpDoc(row) {
     version: row.version,
     updated_at: row.updated_at,
     group_id: row.group_id,
+    url: PUBLIC_WEB_ORIGIN + "/#b:" + row.graph_id,
   };
 }
 
@@ -36,17 +39,17 @@ function createServer(env, identity, token) {
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
   server.registerTool("get_vela", {
-    description: "Load one owned Vela by id. group_id in the result is the group this vela_id belongs to.",
-    inputSchema: { vela_id: z.string() },
+    description: "Load one owned Vela by id. Returns url plus vela_id. group_id is the group this vela_id belongs to.",
+    inputSchema: { vela_id: VELA_ID },
   }, async ({ vela_id }) => {
     try { return toolText(mcpDoc(await getGraph(env, token, vela_id))); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_vela", {
-    description: "Insert a new owned Vela and return its cloud id. group_id in the result is the group this vela_id belongs to. Optional group_id joins that group on the current account so this Vela is classified with other Vela that share it. Omit group_id to create a new group.",
+    description: "Insert a new owned Vela and return url plus vela_id. group_id is the group this vela_id belongs to. Optional group_id joins that group on the current account so this Vela is classified with other Vela that share it. Omit group_id to create a new group.",
     inputSchema: {
       bmd: z.string(),
-      vela_id: z.string().optional(),
+      vela_id: VELA_ID.optional(),
       group_id: z.string().optional().describe(
         "If set, join this group on the current account so this vela_id is classified with other Vela that share the same group_id. Omit to create a new group."
       ),
@@ -56,8 +59,8 @@ function createServer(env, identity, token) {
     catch (error) { return toolError(error); }
   });
   server.registerTool("save_vela", {
-    description: "Update an owned Vela when expected_version still matches. row.group_id is the group this vela_id belongs to.",
-    inputSchema: { vela_id: z.string(), bmd: z.string(), expected_version: z.number() },
+    description: "Update an owned Vela when expected_version still matches. row includes url and vela_id. row.group_id is the group this vela_id belongs to.",
+    inputSchema: { vela_id: VELA_ID, bmd: z.string(), expected_version: z.number() },
   }, async ({ vela_id, bmd, expected_version }) => {
     try {
       var result = await saveGraph(env, token, vela_id, bmd, expected_version);

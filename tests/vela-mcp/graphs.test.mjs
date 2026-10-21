@@ -15,7 +15,7 @@ import {
 } from '../../packages/vela-mcp/src/graphs.js';
 import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
 import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
-import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/vela-mcp/src/brand.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/vela-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
@@ -23,6 +23,7 @@ const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-documen
 const graphsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
+const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('item X\n'), '');
@@ -262,7 +263,8 @@ assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
 assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
 assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
-assert.match(worker, /vela_id: z\.string\(\)/, 'MCP input uses vela_id');
+assert.match(worker, /const VELA_ID = z\.string\(\)\.regex\(\/\^b_\[0-9a-f\]\{8\}\$\/\)/, 'vela_id is b_ + 8 hex');
+assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
 assert.match(worker, /createGraph\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
@@ -285,10 +287,10 @@ assert.doesNotMatch(worker, /list_recent/, 'list_recent stays out of v1');
 assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no service key');
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
-assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
-assert.match(skill, /group this\s+`vela_id` belongs to/, 'skill says group_id is the Vela group');
-assert.match(skill, /current\s+account/, 'skill joins on the current account');
-assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
+assert.match(cloud, /[Oo]ptional\s+`group_id`/, 'cloud create can join a group');
+assert.match(cloud, /group this `vela_id` belongs to/, 'cloud says group_id is the Vela group');
+assert.match(cloud, /current account/, 'cloud joins on the current account');
+assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
 
 const brandDir = path.join(root, 'packages/drawer-app/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
@@ -301,7 +303,8 @@ assert.match(FAVICON_SVG, /fill="#db4c84"/, 'svg uses the landing pink');
 assert.match(FAVICON_SVG, /fill="#ffd166"/, 'svg uses the landing yellow');
 
 const info = serverInfo({ PUBLIC_ORIGIN: 'https://mcp.luluvela.app' });
-assert.equal(info.websiteUrl, 'https://luluvela.app');
+assert.equal(PUBLIC_WEB_ORIGIN, 'https://luluvela.app');
+assert.equal(info.websiteUrl, PUBLIC_WEB_ORIGIN);
 assert.equal(info.icons[0].src, 'https://mcp.luluvela.app/favicon-32.png');
 assert.equal(info.icons[0].mimeType, 'image/png');
 assert.equal(info.icons[1].src, 'https://mcp.luluvela.app/favicon.svg');

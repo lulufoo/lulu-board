@@ -10,6 +10,7 @@ const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 const board = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'packages/drawer-app/skill-assets/vocab.md'), 'utf8');
 const themes = fs.readFileSync(path.join(root, 'packages/board/themes/index.js'), 'utf8');
 
@@ -31,10 +32,11 @@ assert.ok(/dockWidth/.test(shell), 'sidebar width is persisted');
 assert.ok(!/Copy BMD ID|Copy MMD ID/.test(html + shell + boot), 'visible copy labels drop BMD/MMD');
 assert.ok(/function syncSourceIdChrome/.test(shell), 'ID chrome syncs with live meta');
 assert.ok(/btnSourceCopyId/.test(boot), 'Copy ID is wired');
-assert.ok(!fs.existsSync(path.join(root, 'skill/SKILL.md')), 'no pack SKILL at skill root');
-assert.ok(/\*\*BMD ID\*\*/.test(board) && /\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD terms');
+assert.ok(fs.existsSync(path.join(root, 'skill/SKILL.md')), 'pack SKILL at skill root');
+assert.ok(/\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD Source');
+assert.ok(/vela_id/.test(pointers), 'pointers name vela_id');
 assert.ok(/Keep `url` first/.test(board), 'board flow keeps the public URL first');
-assert.ok(/`preview` encodes `\{bmd, version\}`/.test(viewer), 'viewer encodes a JSON envelope');
+assert.ok(/`preview` encodes `\{bmd, version\}`/.test(pointers), 'pointers encode a JSON envelope');
 assert.ok(/`--id` \| leftover; ignored/.test(viewer), 'viewer ignores leftover --id');
 assert.ok(!/mermaid:\s*'default'/.test(themes), 'theme map drops mermaid alias');
 assert.ok(/They are not the Drawer BMD ID/.test(vocab), 'vocab node IDs are not BMD ID');
