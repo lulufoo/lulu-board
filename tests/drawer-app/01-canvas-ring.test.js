@@ -21,6 +21,10 @@ assert.doesNotMatch(css, /\.canvas-hover[\s\S]{0,120}outline:\s*2px solid/, 'hov
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'flowchart selected halo reads the same token');
 assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'flowchart hover halo reads the soft token');
 assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-dasharray/, 'flowchart hover halo is dashed');
+assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'group stroke leaves the hover halo alone');
+assert.match(css, /g\.pele-node > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'node stroke leaves the hover halo alone');
+assert.match(css, /g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart hover does not also paint the HTML outline');
+assert.match(css, /g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-diagram-kind="flowchart"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart selection does not also paint the HTML outline');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{[\s\S]*stroke:\s*var\(--accent/, 'flowchart halo no longer uses --accent');
 assert.doesNotMatch(css, /\.board-selection \{[^}]*outline:\s*2px solid var\(--bf-ring/, 'Board selected outline left the old class');
 
@@ -29,6 +33,9 @@ assert.match(flow, /classList\.add\("flowchart-selection", "canvas-selected"\)/,
 assert.match(flow, /function applyFlowchartHover/, 'Flowchart has hover');
 assert.match(flow, /classList\.add\("canvas-hover"\)/, 'Flowchart hangs the public hover class');
 assert.match(flow, /paintFlowchartHalo\(g, "canvas-hover-halo"\)/, 'SVG hover uses a token halo, not outline');
+assert.match(flow, /FLOWCHART_HOVER_HALO_GAP = 3/, 'flowchart hover ring sits 3px out, same as Board outline-offset');
+assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke-dasharray:\s*none/, 'flowchart selection ring is solid');
+assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-width:\s*1px/, 'flowchart hover ring is 1px, same as Board');
 assert.match(flow, /if \(g\.classList\.contains\("canvas-selected"\) \|\| g\.classList\.contains\("flowchart-selection"\)\) return/, 'selected nodes do not also hover');
 
 console.log('ok canvas-ring');

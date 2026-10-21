@@ -35,6 +35,7 @@ function peleDataId(el) {
   return el.getAttribute("data-id") || el.getAttribute("data-edge-dom-id") || el.id || "";
 }
 
+var FLOWCHART_HOVER_HALO_GAP = 3;
 var FLOWCHART_SEL_HALO_GAP = 2.5;
 
 function flowchartSelectionShape(g) {
@@ -100,7 +101,7 @@ function paintFlowchartHalo(g, className) {
   halo.removeAttribute("id");
   halo.setAttribute("fill", "none");
   halo.setAttribute("pointer-events", "none");
-  var gap = FLOWCHART_SEL_HALO_GAP;
+  var gap = ringClass === "canvas-hover-halo" ? FLOWCHART_HOVER_HALO_GAP : FLOWCHART_SEL_HALO_GAP;
   var tag = String(shape.tagName || "").toLowerCase();
   var hostCls = (shape.parentNode && shape.parentNode.getAttribute && shape.parentNode.getAttribute("class")) || "";
   if (/pele-shape-diam/.test(hostCls) && typeof FlowchartShapes !== "undefined") {

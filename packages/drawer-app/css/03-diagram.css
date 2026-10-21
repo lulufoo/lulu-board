@@ -149,15 +149,15 @@ html[data-diagram-kind="flowchart"] #preview g.pele-edge-label,
 html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
   cursor: pointer;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect {
+html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
   pointer-events: all;
   rx: var(--_r);
   ry: var(--_r);
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node > rect,
-html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon,
+html[data-diagram-kind="flowchart"] #preview g.pele-node > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo),
+html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon:not(.canvas-hover-halo):not(.flowchart-selection-halo),
 html[data-diagram-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
@@ -220,21 +220,21 @@ html[data-diagram-kind="flowchart"] #preview g.pele-edge tspan {
   font-size: var(--fc-font-link, 13px);
 }
 html[data-diagram-kind="flowchart"] g.flowchart-selection,
-html[data-diagram-kind="flowchart"] g.canvas-selected,
+html[data-diagram-kind="flowchart"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
 html[data-diagram-kind="flowchart"] g.canvas-hover {
-  outline: none;
+  outline: none !important;
   overflow: visible;
 }
 html[data-diagram-kind="flowchart"] .flowchart-selection-halo {
-  /* Offset ring, same geometry as local mermaid mermaid-selection-halo. */
   fill: none !important;
   stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: var(--canvas-ring-width, 2px) !important;
+  stroke-dasharray: none;
   pointer-events: none !important;
 }
 html[data-diagram-kind="flowchart"] .canvas-hover-halo {
   fill: none !important;
-  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .45)) !important;
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .4)) !important;
   stroke-width: 1px !important;
   stroke-dasharray: 4 3;
   pointer-events: none !important;
