@@ -120,7 +120,7 @@ function b64(obj) {
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
-  assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
+  assert.ok(/stripDocumentMeta/.test(shell) && !/joinDocument/.test(shell), 'wrap strips leftover meta and does not rejoin');
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
   assert.ok(/mermaidStyleToken\(theme, step, viewport\)/.test(boardJs), 'mermaid persist writes theme, type_step, viewport');
   assert.strictEqual(

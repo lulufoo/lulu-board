@@ -235,15 +235,9 @@ function commitBoardNodeFont(persist, rerender) {
   if (!persist) return;
   try {
     var raw = velaSourceEl.value;
-    var meta = null;
-    var body = raw;
-    try {
-      var doc = splitDocument(raw);
-      meta = doc.meta;
-      body = doc.body;
-    } catch (_e) {}
+    var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
     var nextBody = BoardRender.updateNodeTypeStep(body, selectedBoardNode, n);
-    var next = meta ? joinDocument(meta, nextBody) : nextBody;
+    var next = nextBody;
     if (next !== velaSourceEl.value) {
       velaSourceEl.value = next;
       updateVelaChars();
@@ -1251,13 +1245,7 @@ function persistBoardStyle(patch) {
   if (document.documentElement.dataset.drawerMode !== "vela") return;
   try {
     var raw = velaSourceEl.value;
-    var meta = null;
-    var body = raw;
-    try {
-      var doc = splitDocument(raw);
-      meta = doc.meta;
-      body = doc.body;
-    } catch (_e) {}
+    var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
     var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
       ? DrawerStyleLine.bodyKind(body)
       : "board";
@@ -1269,7 +1257,7 @@ function persistBoardStyle(patch) {
       if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
       nextBody = BoardRender.updateStyle(body, patch || {});
     }
-    var next = meta ? joinDocument(meta, nextBody) : nextBody;
+    var next = nextBody;
     if (next !== velaSourceEl.value) {
       velaSourceEl.value = next;
       updateVelaChars();

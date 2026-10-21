@@ -47,8 +47,10 @@ assert.ok(/liveDocumentVersion/.test(shell), 'Source title reads document versio
 assert.ok(/id="sourceDockVersion"/.test(html) && /function formatVersionLabel/.test(shell), 'version sits beside the type name');
 assert.ok(/function liveDiagramTypeLabel/.test(shell) && /title.textContent !== label/.test(shell), 'Source title follows the live diagram type');
 assert.ok(/function setCharsLabel/.test(shell), 'chars use a formatted count');
-assert.ok(shell.includes("if (!/^\\s*meta\\s+/.test(text))"), 'API wrap only peels meta envelopes');
-assert.ok(/var doc = splitDocument\(text\)/.test(shell), 'API wrap still splits a meta document');
-assert.ok(/document meta required/.test(fs.readFileSync(path.join(__dirname, '../../../skill/board/scripts/document_meta.py'), 'utf8')), 'hard-cut lives in document_meta');
+assert.ok(/stripDocumentMeta/.test(shell), 'API wrap strips leftover meta');
+assert.ok(!/joinDocument/.test(shell), 'API wrap does not rejoin');
+const persist = fs.readFileSync(path.join(__dirname, '../../../skill/board/scripts/drawer_ctl/document.py'), 'utf8');
+assert.ok(!/document meta required/.test(persist), 'persist does not require envelope');
+assert.ok(!/join_document/.test(persist), 'persist does not join envelope');
 
 console.log('ok bmd-id-first');

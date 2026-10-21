@@ -1,7 +1,8 @@
-"""Document envelope: first non-empty line is `meta <base64>`.
+"""Leftover document envelope: first non-empty line may be `meta <base64>`.
 
-Board writes `meta …`. Legacy `meta {…}` JSON is accepted on read; write is
-always a single base64 token.
+Identity no longer lives in the body. Production writes strip a leading
+`meta` line and never join one back. `split_document` / `join_document`
+remain for leftover fixtures.
 """
 from __future__ import annotations
 
@@ -93,12 +94,17 @@ def validate_meta(data: dict, kind: str | None = None) -> dict:
     return {"id": doc_id, "version": int(version)}
 
 
-def has_envelope(text: str, kind: str | None = None) -> bool:
+def leftover_envelope(text: str, kind: str | None = None) -> dict | None:
+    """Read a leftover identity line. None when the body has no envelope."""
     try:
-        split_document(text, kind)
-        return True
+        meta, _ = split_document(text, kind)
+        return meta
     except DocumentMetaError:
-        return False
+        return None
+
+
+def has_envelope(text: str, kind: str | None = None) -> bool:
+    return leftover_envelope(text, kind) is not None
 
 
 def mint_envelope(text: str, kind: str, doc_id: str) -> tuple[str, dict]:

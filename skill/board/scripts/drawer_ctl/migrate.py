@@ -1,7 +1,7 @@
-"""Legacy envelope backfill (called from pointer models)."""
+"""Legacy history lift and leftover envelope strip (called from pointer models)."""
 from __future__ import annotations
 
-from document_meta import ID_RE, correct_envelope
+from document_meta import strip_leading_meta_lines
 from drawer_ctl import paths
 from drawer_ctl import util
 from drawer_ctl import document
@@ -40,7 +40,7 @@ def lift_nested_board_history() -> int:
 
 
 def migrate_document_envelopes() -> dict:
-    """One-shot: canonicalize envelope tokens; mint when a record has none."""
+    """One-shot: peel leftover envelope lines; keep id/version on the sidecar."""
     lift_nested_board_history()
     n_board = 0
     for dsl in paths.board_history_records():
@@ -54,13 +54,12 @@ def migrate_document_envelopes() -> dict:
         raw = util.read_text_capped(dsl)
         if not raw:
             continue
-        side = board._read_board_history_sidecar(dsl)
-        sid = str(side.get("id") or "").strip()
-        if not ID_RE["board"].match(sid):
-            sid = util.new_board_id()
-        out, changed = correct_envelope(raw, "board", sid)
-        if changed:
-            util.write_text_atomic(dsl, out)
+        board.ensure_board_history_entry_meta(dsl)
+        stripped = strip_leading_meta_lines(raw)
+        if stripped != raw:
+            if stripped and not stripped.endswith("\n"):
+                stripped += "\n"
+            util.write_text_atomic(dsl, stripped)
             n_board += 1
         board.ensure_board_history_entry_meta(dsl)
     board_meta = board.read_board_meta()
@@ -68,8 +67,10 @@ def migrate_document_envelopes() -> dict:
     if rec is not None:
         live = document.envelope_live_fields(rec, "board")
         if live:
-            board_meta["id"] = live["id"]
-            board_meta["version"] = live["version"]
-            board_meta["rev"] = live["version"]
+            if live.get("id"):
+                board_meta["id"] = live["id"]
+            if live.get("version"):
+                board_meta["version"] = live["version"]
+                board_meta["rev"] = live["version"]
             board.write_board_meta(board_meta)
     return {"ok": True, "board": n_board}

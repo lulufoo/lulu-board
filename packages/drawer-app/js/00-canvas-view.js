@@ -99,7 +99,7 @@ function readDocumentView() {
   try {
     if (!velaSourceEl || typeof DrawerStyleLine === "undefined") return null;
     var raw = velaSourceEl.value;
-    try { raw = splitDocument(raw).body; } catch (_e) {}
+    if (typeof stripDocumentMeta === "function") raw = stripDocumentMeta(raw);
     var styled = DrawerStyleLine.splitRendererStyle(raw);
     var data = typeof DrawerStyleLine.decodeStyleTokenJson === "function"
       ? DrawerStyleLine.decodeStyleTokenJson(styled.token)

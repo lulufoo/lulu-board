@@ -320,7 +320,11 @@ async function saveBoardToFile() {
     }
     return saveVelaToHash();
   }
-  const text = velaSourceEl.value, seq = ++boardSaveSeq, baseRev = velaLocalRev;
+  var text = typeof stripDocumentMeta === "function"
+    ? stripDocumentMeta(velaSourceEl.value)
+    : velaSourceEl.value;
+  if (velaSourceEl && text !== velaSourceEl.value) velaSourceEl.value = text;
+  const seq = ++boardSaveSeq, baseRev = velaLocalRev;
   try {
     const headers = {
       'Content-Type': 'text/plain; charset=utf-8',
@@ -332,10 +336,9 @@ async function saveBoardToFile() {
     if (typeof getBoardTitle === 'function') headers['X-Board-Title'] = headerByteString(getBoardTitle(cloudOpenBoardId()));
     const res = await fetch('./board.bmd', { method: 'PUT', headers, body: text });
     if (seq !== boardSaveSeq) return;
-    if (res.status === 409) { const payload = await res.json(); velaLocalRev = Number(payload.version != null ? payload.version : payload.rev) || velaLocalRev; boardDirty = false; if (typeof payload.source === 'string') { velaSourceEl.value = payload.source; renderVela(); } setBoardSyncUI('conflict'); setStatus(`Board version conflict → loaded v ${velaLocalRev}`, true); return; }
+    if (res.status === 409) { const payload = await res.json(); velaLocalRev = Number(payload.version != null ? payload.version : payload.rev) || velaLocalRev; boardDirty = false; if (typeof payload.source === 'string') { velaSourceEl.value = typeof stripDocumentMeta === "function" ? stripDocumentMeta(payload.source) : payload.source; renderVela(); } setBoardSyncUI('conflict'); setStatus(`Board version conflict → loaded v ${velaLocalRev}`, true); return; }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     velaLocalRev = Number(res.headers.get('X-Board-Rev')) || baseRev + 1; boardDirty = false; setBoardSyncUI('ok');
-    try { var saved = splitDocument(text); velaSourceEl.value = joinDocument({ id: saved.meta.id, version: velaLocalRev }, saved.body); } catch (_e) {}
     setStatus(`Board saved v ${velaLocalRev}`);
     try {
       const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
@@ -352,7 +355,9 @@ async function loadBoardPolled() {
     if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
     if (remoteRev <= velaLocalRev) { setBoardSyncUI('ok'); return; }
     const res = await fetch(`./board.bmd?ts=${Date.now()}`, { cache: 'no-store' }); if (!res.ok) return;
-    const text = await res.text(); velaLocalRev = Number(res.headers.get('X-Board-Rev')) || remoteRev; boardDirty = false;
+    var text = await res.text();
+    if (typeof stripDocumentMeta === "function") text = stripDocumentMeta(text);
+    velaLocalRev = Number(res.headers.get('X-Board-Rev')) || remoteRev; boardDirty = false;
     if (velaSourceEl.value !== text) { velaSourceEl.value = text; renderVela({ fit: false }); setStatus(`Board loaded r${velaLocalRev}`); }
     setBoardSyncUI('ok');
   } catch (_) {}
@@ -435,7 +440,7 @@ async function bootstrapVela() {
   if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
     await bootstrapVelaFromHash();
   } else {
-    try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { velaSourceEl.value = await res.text(); velaLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else velaSourceEl.value = ''; }
+    try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { var loaded = await res.text(); velaSourceEl.value = typeof stripDocumentMeta === "function" ? stripDocumentMeta(loaded) : loaded; velaLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else velaSourceEl.value = ''; }
     catch (_) { velaSourceEl.value = ''; }
     try {
       const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
