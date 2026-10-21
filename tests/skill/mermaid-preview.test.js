@@ -12,9 +12,10 @@ const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8')
 
 assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
 assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
-assert.match(viewer, /`--kind flowchart`/, 'viewer pins flowchart kind');
+assert.match(viewer, /`--kind flowchart` or `--kind mindmap`/, 'viewer pins open kinds');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');
+assert.match(skill, /\$DRAWER_CTL preview --kind mindmap/, 'skill still calls mindmap preview');
 
 function run(args, input) {
   return spawnSync('python3', [ctl, ...args], {
@@ -40,6 +41,14 @@ assert.strictEqual(drawnJson.kind, 'flowchart');
 assert.strictEqual(drawnJson.open, 'created');
 assert.match(drawnJson.url, /^https:\/\/luluvela\.app\/#z:/);
 assert.strictEqual(drawnJson.version, 1);
+
+const mindmapDrawn = run(['preview', '--kind', 'mindmap', '--no-open'], 'mindmap\n  Topic\n');
+assert.strictEqual(mindmapDrawn.status, 0, mindmapDrawn.stderr);
+const mindmapJson = JSON.parse(mindmapDrawn.stdout);
+assert.strictEqual(mindmapJson.ok, true);
+assert.strictEqual(mindmapJson.kind, 'mindmap');
+assert.strictEqual(mindmapJson.open, 'created');
+assert.match(mindmapJson.url, /^https:\/\/luluvela\.app\/#z:/);
 
 const titled = run(
   ['preview', '--kind', 'flowchart', '--no-open'],
