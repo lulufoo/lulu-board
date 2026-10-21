@@ -133,7 +133,7 @@ html[data-diagram-kind="flowchart"] {
   --_a: var(--pele-surface-alt, #f3ece6);
   --_b: var(--pele-border, #d4c4b0);
   --_c: var(--pele-accent, #5b7bd5);
-  --_r: var(--pele-radius, 12px);
+  --_r: 4px;
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-node,
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster,

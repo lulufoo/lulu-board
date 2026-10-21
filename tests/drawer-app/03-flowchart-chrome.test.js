@@ -31,6 +31,8 @@ assert.match(js, /flowchartTypeEditor/);
 assert.match(js, /judgment/, 'Type list includes judgment/diamond');
 assert.match(js, /paintFlowchartSelectionHalo/, 'selection halo follows the Pele shape');
 assert.match(js, /function flowchartUsedRadius/, 'halo rx resolves Pele style rx:var(--_r)');
+assert.match(js, /pele-shape-diam/, 'diamond halo follows the rounded rhombus');
+assert.match(css, /--_r: 4px/, 'flowchart default corner is a small box radius');
 assert.match(css, /flowchart-selection-halo/);
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--accent/, 'selected node keeps the offset pink halo');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo stays visible');

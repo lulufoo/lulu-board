@@ -1757,6 +1757,7 @@ function renderFlowchart(opts) {
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
+    if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
     showBoardError("");
     setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
     if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();

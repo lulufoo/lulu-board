@@ -32,6 +32,7 @@ assert.strictEqual(defaultMapped.css['--pele-border'], '#d4c4b0', 'default node 
 assert.strictEqual(defaultMapped.themeVariables.primaryBorderColor, '#d4c4b0');
 assert.strictEqual(defaultMapped.themeVariables.clusterBorder, '#c4b8a8');
 assert.strictEqual(defaultMapped.css['--pele-muted'], '#8b7358');
+assert.strictEqual(defaultMapped.css['--pele-radius'], '4px', 'Pele node radius is not the Board card 12px');
 assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
 
 const chrome = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');

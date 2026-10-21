@@ -68,6 +68,7 @@ const domain = [
   '00-canvas-view.js',
   '01-shell-state.js',
   '02-board.js',
+  '03-flowchart-shapes.js',
   '03-flowchart.js',
   '05-render-io.js',
   '05-board-file.js',

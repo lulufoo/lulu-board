@@ -39,7 +39,7 @@
     var clusterBorder = chrome.clusterBorder || border;
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
-    var radius = (theme.types && theme.types.card && theme.types.card.radius) || "12px";
+    var radius = "4px";
     var css = {
       "--pele-bg": "transparent",
       "--pele-fg": color,
