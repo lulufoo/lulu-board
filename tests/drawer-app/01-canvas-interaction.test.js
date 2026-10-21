@@ -39,12 +39,20 @@ assert.doesNotMatch(boot, /stageEl\.addEventListener\('pointerdown'/, 'chrome-bo
 assert.match(src, /setCanvasZoom\(scale \* factor\)/, 'wheel still uses the live camera');
 assert.match(src, /panX = event\.clientX - panOrigin\.x/, 'pan still writes panX / panY');
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
-assert.doesNotMatch(src, /dblclick|openPropsPanel/, 'blank dblclick is the next Issue');
+assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
+assert.match(src, /openBlankProps/, 'blank dblclick opens Props');
+let props = 0;
+globalThis.openPropsPanel = function () { props += 1; };
+Interaction.openBlankProps();
+assert.strictEqual(props, 1, 'blank dblclick calls openPropsPanel');
+delete globalThis.openPropsPanel;
 
 const board = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
 const flow = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-flowchart.js'), 'utf8');
 assert.match(board, /registerKind\("board"/, 'Board registers hit / clear');
 assert.doesNotMatch(board, /previewEl\.addEventListener\("pointerdown"/, 'Board blank pointerdown is not a second path');
 assert.doesNotMatch(flow, /else clearFlowchartInteraction\(\)/, 'flowchart miss is not a second blank path');
+assert.match(board, /if \(!hit \|\| !canvas\.contains\(hit\)\) return;/, 'Board blank dblclick does not open Props');
+assert.doesNotMatch(flow, /addEventListener\("dblclick"/, 'flowchart has no own blank dblclick');
 
 console.log('ok canvas-interaction');

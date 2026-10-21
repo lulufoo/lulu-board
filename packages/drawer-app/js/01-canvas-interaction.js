@@ -74,6 +74,20 @@
     else if (typeof onBlank === "function") onBlank();
   }
 
+  function openBlankProps() {
+    var fn = typeof openPropsPanel === "function"
+      ? openPropsPanel
+      : (typeof globalThis !== "undefined" && typeof globalThis.openPropsPanel === "function"
+        ? globalThis.openPropsPanel
+        : null);
+    if (fn) fn();
+  }
+
+  function onDblClick(event) {
+    if (isBlockedTarget(event.target)) return;
+    openBlankProps();
+  }
+
   function onWheel(event) {
     event.preventDefault();
     var factor = wheelFactor(event.deltaY, event.deltaMode);
@@ -143,6 +157,7 @@
     stage.addEventListener("pointermove", onPointerMove);
     stage.addEventListener("pointerup", onPointerUp);
     stage.addEventListener("selectstart", onSelectStart);
+    stage.addEventListener("dblclick", onDblClick);
   }
 
   if (typeof stageEl !== "undefined" && stageEl) bind(stageEl);
@@ -155,6 +170,7 @@
     isBlockedTarget: isBlockedTarget,
     wheelFactor: wheelFactor,
     leaveBlank: leaveBlank,
+    openBlankProps: openBlankProps,
     bind: bind,
   };
 });
