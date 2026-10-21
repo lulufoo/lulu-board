@@ -55,6 +55,13 @@ function token(id, version) {
 }
 
 {
+  const seed = Meta.blankHashMindmapSource();
+  assert.strictEqual(seed, '%% title Untitled\nmindmap\n  Topic\n');
+  assert.strictEqual(Style.bodyKind(seed), 'mindmap');
+  assert.strictEqual(Meta.velaTitleFromBody(seed), 'Untitled');
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');

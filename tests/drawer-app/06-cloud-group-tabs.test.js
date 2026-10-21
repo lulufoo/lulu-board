@@ -33,6 +33,7 @@ assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
 assert.match(tabs, /openCreateKindDialog/, 'plus opens the kind dialog before writing');
 assert.match(tabs, /shellCloseDrawer/, 'picking a type from plus closes the left drawer');
 assert.match(tabs, /blankHashFlowchartSource\("Untitled"\)/, 'plus can seed flowchart');
+assert.match(tabs, /blankHashMindmapSource\("Untitled"\)/, 'plus can seed mindmap');
 assert.match(tabs, /onCancel: function \(\) \{\}/, 'plus cancel does not create a draft');
 assert.match(tabs, /saveVelaToHash/, 'plus writes a blank #z: envelope');
 assert.match(tabs, /cloudGroupMembers\.length \+ 1/, 'plus shows the next numbered tab');
