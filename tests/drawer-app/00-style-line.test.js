@@ -68,8 +68,25 @@ function b64(obj) {
   assert.strictEqual(Style.bodyKind('style default\nflowchart TD\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('mindmap\nroot((A))\n'), 'mermaid-unsupported');
   assert.strictEqual(Style.bodyKind('sequenceDiagram\nA->>B: hi\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('block\ncolumns 1\nA\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('xychart\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('sankey\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('packet\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('swimlane-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('agentflow-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('treeView-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('usecase-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('eventmodeling\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('railroad-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('railroad-ebnf-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('cynefin-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('wardley-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('venn-beta\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('ishikawa\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('treemap\n'), 'mermaid-unsupported');
   assert.strictEqual(Style.bodyKind(''), 'empty');
   assert.strictEqual(Style.bodyKind('not a diagram\n'), 'unknown');
+  assert.strictEqual(Style.bodyKind('info\n'), 'unknown');
 }
 
 {
