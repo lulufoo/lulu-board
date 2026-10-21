@@ -1728,7 +1728,7 @@ function syncMermaidStyleChrome(body) {
   } else if (typeof applyPeleThemeVars === "function") {
     applyPeleThemeVars(theme);
   }
-  if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, true);
+  if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, false);
 }
 
 function renderFlowchart(opts) {

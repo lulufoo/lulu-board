@@ -64,6 +64,14 @@ assert.match(shellCss, /btnFlowchartLink\.is-active/, 'Link tool active state is
 assert.match(css, /html\.flowchart-link-mode/, 'link mode cursor is on the canvas');
 assert.match(board, /isBoardCanvasKind/);
 assert.match(board, /restoreFlowchartSelection/);
+assert.match(shell, /typeSec\.hidden = kind === "mermaid-unsupported"/, 'flowchart keeps Font Size visible');
+assert.match(shell, /capSec\.classList\.toggle\("is-disabled", flowchart\)/, 'flowchart greys Max Width');
+assert.match(shell, /capSlider\.disabled = flowchart/, 'flowchart Max Width cannot move');
+assert.match(shell, /board\.hidden = mermaid/, 'Link stays Board-only');
+assert.doesNotMatch(board, /wrappingWidth/, 'this slice does not wire wrappingWidth');
+assert.match(board, /applyBoardTypeStep\(step, false, false\)/, 'read-back does not re-enter render');
+assert.match(boot, /function applyBoardTypeStep/, 'Font Size slider persist plus rerender');
+assert.match(shellCss, /\.style-block\.is-disabled/, 'disabled Max Width is visibly grey');
 assert.match(build, /03-flowchart\.js/);
 assert.match(shell, /wrapEditorApi\(typeof FlowchartEdit/);
 

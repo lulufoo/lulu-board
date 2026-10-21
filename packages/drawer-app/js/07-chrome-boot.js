@@ -190,13 +190,24 @@ function currentBoardItemCap() {
   return Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(n)));
 }
 function applyBoardItemCap(rem, rerender, persist) {
+  const kind = document.documentElement && document.documentElement.dataset.diagramKind;
+  if (kind === "flowchart" || kind === "mermaid-unsupported") {
+    if (boardItemCapSlider) {
+      boardItemCapSlider.disabled = kind === "flowchart";
+      paintStyleRange(boardItemCapSlider);
+    }
+    return;
+  }
   const n = rem == null
     ? currentBoardItemCap()
     : Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(Number(rem) || ITEM_CAP_DEFAULT)));
   localStorage.setItem(ITEM_CAP_KEY, String(n));
   const css = n + 'rem';
   document.documentElement.style.setProperty('--board-item-cap', css);
-  if (boardItemCapSlider) boardItemCapSlider.value = String(n);
+  if (boardItemCapSlider) {
+    boardItemCapSlider.disabled = false;
+    boardItemCapSlider.value = String(n);
+  }
   paintStyleRange(boardItemCapSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ item_cap: n });
   if (rerender && document.documentElement.dataset.drawerMode === 'board'

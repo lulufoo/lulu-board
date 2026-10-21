@@ -347,12 +347,22 @@ function applyBoardLiveMeta(meta = {}) {
 function syncStyleLayoutSections() {
   var kind = document.documentElement && document.documentElement.dataset.diagramKind;
   var mermaid = kind === "flowchart" || kind === "mermaid-unsupported";
+  var flowchart = kind === "flowchart";
   var board = document.getElementById("boardLayoutSection");
   if (board) board.hidden = mermaid;
-  var capSec = document.getElementById("boardItemCapSection");
-  if (capSec) capSec.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
-  if (typeSec) typeSec.hidden = mermaid;
+  if (typeSec) typeSec.hidden = kind === "mermaid-unsupported";
+  var capSec = document.getElementById("boardItemCapSection");
+  var capSlider = document.getElementById("boardItemCapSlider");
+  if (capSec) {
+    capSec.hidden = kind === "mermaid-unsupported";
+    capSec.classList.toggle("is-disabled", flowchart);
+  }
+  if (capSlider) {
+    capSlider.disabled = flowchart;
+    if (flowchart) capSlider.setAttribute("aria-disabled", "true");
+    else capSlider.removeAttribute("aria-disabled");
+  }
 }
 
 function syncSourceDockLabel() {
