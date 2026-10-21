@@ -51,21 +51,21 @@ assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share 
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
 assert.match(html, /id="vela-group-tabs"/, 'canvas keeps a group tab strip');
 assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
-assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
-assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
+assert.match(shareJs, /rpc\("get_shared_graph"/, 'shared read uses get_shared_graph');
+assert.match(shareJs, /p_graph_id: boardId/, 'share mutations pass the cloud board id');
 assert.match(read('packages/drawer-app/js/06-cloud-shares.js') + read('packages/drawer-app/js/09-shell-drawer.js') + read('packages/drawer-app/js/09-share-dialog.js'), /set_share_role/, 'owner access uses set_share_role');
-assert.match(shareJs, /save_shared_board/, 'shared editors save through save_shared_board');
+assert.match(shareJs, /save_shared_graph/, 'shared editors save through save_shared_graph');
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
 assert.match(shareJs, /showVelaError\(message\)/, 'a missing share token surfaces an error');
-assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
+assert.doesNotMatch(shareJs, /from\("graphs"\)/, 'share module does not select boards as anon');
 assert.match(read('packages/drawer-app/js/09-shell-drawer.js'), /isShareGuest\(\)\) && \w|isShareGuest/, 'guests cannot use Share this board');
 assert.doesNotMatch(boardJs, /dataset\.shareView === "on"\) return/, 'share view still lets the guest edit locally');
 assert.doesNotMatch(boardJs, /saveSharedBoard\(\{ explicit: false \}\)/, 'autosave does not write the shared original');
 {
   const start = boardJs.indexOf('async function saveBoardToFile');
-  const guest = boardJs.slice(start, boardJs.indexOf('if (typeof cloudBoardId', start));
+  const guest = boardJs.slice(start, boardJs.indexOf('if (typeof cloudVelaId', start));
   assert.match(guest, /isShareGuest\(\)/, 'hash persist sees share guests');
   assert.match(guest, /return Promise\.resolve\(\)/, 'share guests stay in memory');
   assert.doesNotMatch(guest, /forkSharedBoard|saveSharedBoard/, 'autosave does not create a share copy');
@@ -87,7 +87,7 @@ assert.match(html, /id="shellCloudStatus"/, 'aligned save state is a status chip
 assert.match(html, /shell-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
 assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
 assert.match(cloud, /copy\.pending/, 'unsaved chrome keeps the pending chip');
-assert.match(boardJs, /cloudBoardId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
+assert.match(boardJs, /cloudVelaId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
 assert.match(html, /id="btnShellSessionOut"[\s\S]*shellSessionMenu|id="shellSessionMenu"[\s\S]*id="btnShellSessionOut"/, 'Sign out lives in the account menu');
 assert.match(html, /data-shell-oauth="google"/, 'Google is an available provider');
 assert.match(html, /data-shell-oauth="github"/, 'GitHub is an available provider');
@@ -100,10 +100,10 @@ assert.match(webBuild, /supabase-client\.js/, 'public site build verifies the cl
 assert.match(webBuild, /\.cache\/web/, 'public site output is temporary cached web assets');
 assert.match(workerConfig, /name = "lulu-board"/, 'Workers Builds deploys the existing Worker');
 assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys the generated cache directory');
-assert.match(cloud, /rpc\("create_owned_board_with_group"/, 'first insert writes board, group, and membership together');
+assert.match(cloud, /rpc\("create_owned_graph_with_group"/, 'first insert writes board, group, and membership together');
 assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
-assert.match(cloud, /\.update\([\s\S]*\.select\("board_id,title,bmd,version,share_id,updated_at"\)/, 'update returns the saved source');
-assert.match(cloud, /\.select\("board_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
+assert.match(cloud, /\.update\([\s\S]*\.select\("graph_id,title,bmd,version,share_id,updated_at"\)/, 'update returns the saved source');
+assert.match(cloud, /\.select\("graph_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
 sqlAssert.match(versionSql, /add column if not exists version/, 'version column is added');
 sqlAssert.match(versionSql, /new\.version = coalesce\(old\.version, 1\) \+ 1/, 'update increments version');
@@ -186,7 +186,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
       var boardServerRev = env.server, velaLocalRev = env.client;
       var document = { getElementById: (id) => id === 'btnShellSaveCloud' ? save : status };
       function isLocalDrawerPreview() { return !!env.local; }
-      function cloudBoardId() { return env.id || ''; }
+      function cloudVelaId() { return env.id || ''; }
       ${cloud.slice(start, end)}
       syncCloudSaveChrome();`)(env, save, status);
     return { save, status };
@@ -222,7 +222,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
   const env = {
     save: { classList: { contains: (c) => c === 'is-signed-out' } },
     showCopyTip: (m) => calls.push(['toast', m]),
-    saveBoardToCloud: () => calls.push(['save']),
+    saveVelaToCloud: () => calls.push(['save']),
     forkSharedBoard: () => calls.push(['fork']),
     isShareGuest: () => false,
     cloudCloseAccountMenus: () => calls.push(['menus']),
@@ -278,7 +278,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const start = cloud.indexOf('async function cloudSignOut');
-  const end = cloud.indexOf('async function saveBoardToCloud');
+  const end = cloud.indexOf('async function saveVelaToCloud');
   assert.ok(start >= 0 && end > start, 'cloudSignOut is a closed function');
   const body = cloud.slice(start, end);
   assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
@@ -289,24 +289,24 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 {
   const start = cloud.indexOf('function groupBoardRowsByGroup');
   const sib = cloud.indexOf('function loadSiblingBoardIds');
-  const save = cloud.indexOf('async function saveBoardToCloud');
+  const save = cloud.indexOf('async function saveVelaToCloud');
   assert.ok(start >= 0 && sib > start && save > sib, 'group helpers are closed functions');
   const helpers = new Function(
     cloud.slice(start, save) + '\nreturn { groupBoardRowsByGroup, loadSiblingBoardIds };'
   )();
-  const a = { board_id: 'b_11111111', title: 'A', updated_at: '2026-10-04T12:00:00Z' };
-  const b = { board_id: 'b_22222222', title: 'B', updated_at: '2026-10-04T11:00:00Z' };
-  const c = { board_id: 'b_33333333', title: 'C', updated_at: '2026-10-03T10:00:00Z' };
+  const a = { graph_id: 'b_11111111', title: 'A', updated_at: '2026-10-04T12:00:00Z' };
+  const b = { graph_id: 'b_22222222', title: 'B', updated_at: '2026-10-04T11:00:00Z' };
+  const c = { graph_id: 'b_33333333', title: 'C', updated_at: '2026-10-03T10:00:00Z' };
   const memberships = [
-    { board_id: 'b_11111111', group_id: 'g_aaaa0001' },
-    { board_id: 'b_22222222', group_id: 'g_aaaa0001' },
-    { board_id: 'b_33333333', group_id: 'g_bbbb0002' },
+    { graph_id: 'b_11111111', group_id: 'g_aaaa0001' },
+    { graph_id: 'b_22222222', group_id: 'g_aaaa0001' },
+    { graph_id: 'b_33333333', group_id: 'g_bbbb0002' },
   ];
   const grouped = helpers.groupBoardRowsByGroup([a, b, c], memberships);
   assert.strictEqual(grouped.length, 2);
   assert.strictEqual(grouped[0].group_id, 'g_aaaa0001');
-  assert.deepStrictEqual(grouped[0].members.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
-  assert.strictEqual(grouped[1].members[0].board_id, 'b_33333333');
+  assert.deepStrictEqual(grouped[0].members.map((row) => row.graph_id), ['b_11111111', 'b_22222222']);
+  assert.strictEqual(grouped[1].members[0].graph_id, 'b_33333333');
   const solo = helpers.groupBoardRowsByGroup([c], [memberships[2]]);
   assert.strictEqual(solo.length, 1);
   assert.strictEqual(solo[0].members.length, 1);
@@ -316,7 +316,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const groups = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-groups.js'), 'utf8');
-  assert.match(groups, /from\("boards"\)\.select\("board_id,group_id"\)/, 'groups load membership from boards');
+  assert.match(groups, /from\("graphs"\)\.select\("graph_id,group_id"\)/, 'groups load membership from boards');
   assert.doesNotMatch(groups, /group_members/, 'group_members is gone');
   assert.match(groups, /groupBoardRowsByGroup/, 'groups are built by group');
   const refresh = cloud.slice(cloud.indexOf('async function cloudRefreshGroups'), cloud.indexOf('async function deleteCloudGroup'));
@@ -329,13 +329,13 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
     cloud.indexOf('async function deleteCloudGroup'),
     cloud.indexOf('(function wireCloudAuth')
   );
-  assert.match(del, /from\("boards"\)\.delete\(\)\.in\("board_id"/, 'group delete removes every board');
+  assert.match(del, /from\("graphs"\)\.delete\(\)\.in\("graph_id"/, 'group delete removes every board');
   assert.doesNotMatch(del, /from\("groups"\)/, 'group delete no longer touches the groups table');
 }
 
 {
   const load = cloud.slice(
-    cloud.indexOf('async function loadCloudBoardByHash'),
+    cloud.indexOf('async function loadCloudVelaByHash'),
     cloud.indexOf('async function cloudRefreshGroups')
   );
   const reject = load.indexOf('if (!boardId) return false');
@@ -348,10 +348,10 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(load, /if \(!known\) void cloudRefreshGroups/, 'known sibling skips the group list refresh');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
-  assert.match(load, /from\("boards"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
+  assert.match(load, /from\("graphs"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
-  assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_board/);
+  assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_graph/);
 }
 
 {
@@ -360,7 +360,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(start >= 0 && end > start, 'cloudCachePut is a closed helper');
   const helpers = new Function(cloud.slice(start, end) + '\nreturn { cloudCachePut, cloudCacheGet };')();
   const store = {};
-  helpers.cloudCachePut(store, { board_id: 'b_11111111', title: 'One', bmd: 'board "One"\n', version: 2, dirty: true, localRev: 3 });
+  helpers.cloudCachePut(store, { graph_id: 'b_11111111', title: 'One', bmd: 'board "One"\n', version: 2, dirty: true, localRev: 3 });
   assert.strictEqual(helpers.cloudCacheGet(store, 'b_11111111').bmd, 'board "One"\n');
   assert.strictEqual(helpers.cloudCacheGet(store, 'b_11111111').dirty, true);
   assert.strictEqual(helpers.cloudCacheGet(store, 'b_22222222'), null);
@@ -368,25 +368,25 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const save = cloud.slice(
-    cloud.indexOf('async function saveBoardToCloud'),
-    cloud.indexOf('async function loadCloudBoardByHash')
+    cloud.indexOf('async function saveVelaToCloud'),
+    cloud.indexOf('async function loadCloudVelaByHash')
   );
   const minted = save.indexOf('if (!boardId)');
   const updated = save.indexOf('} else {');
   assert.ok(minted >= 0 && updated > minted);
   const insertBranch = save.slice(minted, updated);
   const updateBranch = save.slice(updated);
-  assert.match(insertBranch, /rpc\("create_owned_board_with_group"/);
-  assert.match(insertBranch, /p_board_id:\s*boardId/);
+  assert.match(insertBranch, /rpc\("create_owned_graph_with_group"/);
+  assert.match(insertBranch, /p_graph_id:\s*boardId/);
   assert.match(insertBranch, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
   assert.match(insertBranch, /p_group_id:\s*joinGroupId/);
   assert.match(save, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
-  assert.doesNotMatch(insertBranch, /from\("boards"\)\.insert|from\("group_members"\)/);
+  assert.doesNotMatch(insertBranch, /from\("graphs"\)\.insert|from\("group_members"\)/);
   assert.match(insertBranch, /cloudSetBoardHash\(boardId/);
   assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);
-  assert.doesNotMatch(updateBranch, /create_owned_board_with_group|from\("group_members"\)/);
+  assert.doesNotMatch(updateBranch, /create_owned_graph_with_group|from\("group_members"\)/);
   assert.doesNotMatch(updateBranch, /share_id\s*:/);
-  assert.doesNotMatch(save, /from\("boards"\)\.(insert|update)\([\s\S]*group_id/);
+  assert.doesNotMatch(save, /from\("graphs"\)\.(insert|update)\([\s\S]*group_id/);
 }
 
 {
@@ -397,10 +397,10 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(start >= 0 && end > start, 'sortBoardRowsByGroupOrder is a closed function');
   const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByGroupOrder };')();
   const sorted = helpers.sortBoardRowsByGroupOrder(
-    [{ board_id: 'b_22222222' }, { board_id: 'b_11111111' }],
-    [{ board_id: 'b_22222222', sort_order: 2 }, { board_id: 'b_11111111', sort_order: 1 }]
+    [{ graph_id: 'b_22222222' }, { graph_id: 'b_11111111' }],
+    [{ graph_id: 'b_22222222', sort_order: 2 }, { graph_id: 'b_11111111', sort_order: 1 }]
   );
-  assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
+  assert.deepStrictEqual(sorted.map((row) => row.graph_id), ['b_11111111', 'b_22222222']);
   assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
   assert.match(tabs, /askConfirm/, 'dirty saved tabs use the in-app confirm');
   assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');

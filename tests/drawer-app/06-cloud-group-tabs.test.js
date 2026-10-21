@@ -55,7 +55,7 @@ assert.match(cloud, /p_group_id:\s*joinGroupId/);
 assert.match(cloud, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
 assert.match(tabs, /function cloudOpenBoardById/, 'tab switch loads one board id');
 assert.match(tabs, /cloudSetBoardHash\(id, true\)/, 'tab switch replaces the hash without hashchange');
-assert.match(tabs, /loadCloudBoardByHash/, 'tab switch does not wait for hashchange bootstrap');
+assert.match(tabs, /loadCloudVelaByHash/, 'tab switch does not wait for hashchange bootstrap');
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
 assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
@@ -74,29 +74,29 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.ok(start >= 0 && end > start, 'sort helpers are a closed block');
   const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByGroupOrder, cloudMembersInclude };')();
   const sorted = helpers.sortBoardRowsByGroupOrder(
-    [{ board_id: 'b_11111111' }, { board_id: 'b_22222222' }, { board_id: 'b_33333333' }],
+    [{ graph_id: 'b_11111111' }, { graph_id: 'b_22222222' }, { graph_id: 'b_33333333' }],
     [
-      { board_id: 'b_11111111', sort_order: 3 },
-      { board_id: 'b_22222222', sort_order: 1 },
-      { board_id: 'b_33333333', sort_order: 2 },
+      { graph_id: 'b_11111111', sort_order: 3 },
+      { graph_id: 'b_22222222', sort_order: 1 },
+      { graph_id: 'b_33333333', sort_order: 2 },
     ]
   );
-  assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_22222222', 'b_33333333', 'b_11111111']);
+  assert.deepStrictEqual(sorted.map((row) => row.graph_id), ['b_22222222', 'b_33333333', 'b_11111111']);
   const tied = helpers.sortBoardRowsByGroupOrder(
-    [{ board_id: 'b_bbbbbbbb' }, { board_id: 'b_aaaaaaaa' }],
-    [{ board_id: 'b_bbbbbbbb', sort_order: 1 }, { board_id: 'b_aaaaaaaa', sort_order: 1 }]
+    [{ graph_id: 'b_bbbbbbbb' }, { graph_id: 'b_aaaaaaaa' }],
+    [{ graph_id: 'b_bbbbbbbb', sort_order: 1 }, { graph_id: 'b_aaaaaaaa', sort_order: 1 }]
   );
-  assert.deepStrictEqual(tied.map((row) => row.board_id), ['b_aaaaaaaa', 'b_bbbbbbbb'], 'ties break by board_id');
-  const members = [{ board_id: 'b_11111111' }, { board_id: 'b_22222222' }];
+  assert.deepStrictEqual(tied.map((row) => row.graph_id), ['b_aaaaaaaa', 'b_bbbbbbbb'], 'ties break by graph_id');
+  const members = [{ graph_id: 'b_11111111' }, { graph_id: 'b_22222222' }];
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
-  assert.match(tabs, /select\("board_id,group_id,sort_order,title"\)/, 'tabs read the stored order and title');
+  assert.match(tabs, /select\("graph_id,group_id,sort_order,title"\)/, 'tabs read the stored order and title');
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
-assert.match(tabs, /from\("boards"\)\.select\("board_id,group_id,sort_order,title"\)/, 'tabs read group, order and title from boards');
-assert.strictEqual((tabs.match(/cloudClient\.from\("boards"\)/g) || []).length, 1, 'one boards query feeds the tabs');
+assert.match(tabs, /from\("graphs"\)\.select\("graph_id,group_id,sort_order,title"\)/, 'tabs read group, order and title from boards');
+assert.strictEqual((tabs.match(/cloudClient\.from\("graphs"\)/g) || []).length, 1, 'one boards query feeds the tabs');
 assert.doesNotMatch(tabs, /\.title = /, 'number tabs drop the slow native title');
 assert.match(tabs, /bindGroupTabTip\(btn, relabel\)/, 'number tabs show the self-drawn tip');
 assert.match(tabs, /function bindGroupTabTip\(btn, label\) \{\n  bindChromeTip\(btn, label, function \(\) \{ return btn\.parentElement; \}\);/, 'tab tip is the shared chrome tip, 6px off the strip');
@@ -104,7 +104,7 @@ assert.match(tabCss, /\.chrome-tip \{[\s\S]*pointer-events: none/, 'tip never st
 assert.match(tabCss, /\.chrome-tip \{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis/, 'tip is a block box so the ellipsis renders');
 assert.match(tabCss, /prefers-reduced-motion/, 'tip honors reduced motion');
 assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
-assert.match(tabs, /getBoardTitle\(row\.board_id, row\.title\)/, 'tabs take the title only from getBoardTitle');
+assert.match(tabs, /getBoardTitle\(row\.graph_id, row\.title\)/, 'tabs take the title only from getBoardTitle');
 assert.match(tabs, /addEventListener\("mouseenter", show\)/, 'title is re-read on hover');
 assert.match(tabs, /addEventListener\("focus", show\)/, 'title is re-read on focus');
 assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; \}\)/, 'unsaved draft tab hovers Untitled');
@@ -116,7 +116,7 @@ assert.match(tabs, /"Add board"/, 'plus keeps Add board');
   assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
   assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
-  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudVelaId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
     body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
     (id) => (env.cache || {})[id] || null,
     (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });

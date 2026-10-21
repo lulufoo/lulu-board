@@ -9,7 +9,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
+  var GRAPH_ID_RE = /^b_[0-9a-f]{8}$/;
   var SHARE_ID_RE = /^s_[0-9a-f]{32}$/;
 
   function cloudBoardIdFromHash(raw) {
@@ -20,7 +20,7 @@
 
   function cloudBoardHash(boardId) {
     var id = String(boardId || "").trim();
-    if (!BOARD_ID_RE.test(id)) throw new Error("invalid cloud board id");
+    if (!GRAPH_ID_RE.test(id)) throw new Error("invalid cloud graph id");
     return "#b:" + id;
   }
 

@@ -19,16 +19,16 @@ assert.match(pull, /bindChromeTip\(status,/, 'green control uses the self-drawn 
 assert.match(appBuild, /06-cloud-sync\.js[\s\S]*06-cloud-pull\.js[\s\S]*06-cloud-group-tabs\.js/, 'pull module is built after sync');
 
 assert.match(pull, /getElementById\("shellCloudStatus"\)/, 'pull is wired to the green control');
-assert.match(pull, /from\("boards"\)[\s\S]*\.eq\("board_id", boardId\)[\s\S]*maybeSingle/, 'pull reads the boards row by id');
+assert.match(pull, /from\("graphs"\)[\s\S]*\.eq\("graph_id", boardId\)[\s\S]*maybeSingle/, 'pull reads the boards row by id');
 assert.doesNotMatch(pull, /cloudCachedBoardRow/, 'pull never reads the memory cache');
 assert.match(pull, /cloudForgetBoardCache\(\[boardId\]\)/, 'pull drops the stale cache slot');
 assert.match(pull, /cloudPlusDraftActive\) return false/, 'plus draft has nothing to pull');
 assert.match(pull, /isShareGuest/, 'share guests do not pull');
 assert.match(pull, /boardDirty && typeof askConfirm/, 'dirty local edits ask before overwrite');
-assert.doesNotMatch(pull, /saveBoardToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
+assert.doesNotMatch(pull, /saveVelaToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
 
 // brown stays upload
 const wire = sync.slice(sync.indexOf('var save = document.getElementById("btnShellSaveCloud");', sync.indexOf('function wireCloudAuth')));
-assert.match(wire, /saveBoardToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
+assert.match(wire, /saveVelaToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
 
 console.log('ok cloud-pull');

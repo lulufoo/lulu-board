@@ -67,17 +67,17 @@ async function loadSharedBoardByHash(raw) {
   var seq = ++cloudLoadSeq;
   setStatus("Loading shared board…");
   try {
-    var result = await cloudClient.rpc("get_shared_board", { p_share_id: shareId }).maybeSingle();
+    var result = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Shared board not found");
-    if (result.data.is_owner && result.data.board_id) {
+    if (result.data.is_owner && result.data.graph_id) {
       setShareView(false);
       setShareEdit(false);
       rememberOwnerShareId(shareId);
-      if (typeof cloudSetBoardHash === "function") cloudSetBoardHash(result.data.board_id, true);
-      if (typeof loadCloudBoardByHash === "function") {
-        await loadCloudBoardByHash("#b:" + result.data.board_id);
+      if (typeof cloudSetBoardHash === "function") cloudSetBoardHash(result.data.graph_id, true);
+      if (typeof loadCloudVelaByHash === "function") {
+        await loadCloudVelaByHash("#b:" + result.data.graph_id);
       }
       return true;
     }
@@ -118,10 +118,10 @@ async function runShareRpc(name, args) {
   return row || null;
 }
 async function refreshOwnShareState() {
-  var boardId = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var boardId = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   if (!boardId || !cloudClient || !cloudSession || !cloudSession.user) return;
   try {
-    var row = await runShareRpc("own_share_state", { p_board_id: boardId });
+    var row = await runShareRpc("own_share_state", { p_graph_id: boardId });
     if (!row) return;
     ownerShareRole = row.role === "edit" ? "edit" : "view";
     ownerIsPublic = !!row.is_public;
@@ -145,7 +145,7 @@ async function saveSharedBoard(opts) {
   var seq = ++cloudSaveSeq;
   setBoardSyncUI("saving");
   try {
-    var result = await cloudClient.rpc("save_shared_board", {
+    var result = await cloudClient.rpc("save_shared_graph", {
       p_share_id: shareId,
       p_title: title,
       p_bmd: source,
@@ -155,7 +155,7 @@ async function saveSharedBoard(opts) {
     if (seq !== cloudSaveSeq) return false;
     var row = Array.isArray(result.data) ? result.data[0] : result.data;
     if (!row) {
-      var latest = await cloudClient.rpc("get_shared_board", { p_share_id: shareId }).maybeSingle();
+      var latest = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
       if (latest.error) throw latest.error;
       if (!latest.data) throw new Error("Shared board not found");
       applySharedBoardRow(latest.data);
@@ -186,7 +186,7 @@ async function forkSharedBoard() {
   setShareView(false);
   setShareEdit(false);
   liveBoardId = "";
-  var saved = await saveBoardToCloud({ explicit: true });
+  var saved = await saveVelaToCloud({ explicit: true });
   if (!saved) {
     if (wasEdit) setShareEdit(true);
     else if (wasView) setShareView(true);

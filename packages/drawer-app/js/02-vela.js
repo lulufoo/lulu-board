@@ -233,7 +233,7 @@ function renderVela(opts) {
 function scheduleVelaRender() { clearTimeout(boardRenderTimer); boardRenderTimer = setTimeout(renderVela, 220); }
 function setBoardSyncUI(state = 'ok') { const pill = $('#boardSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${velaLocalRev}</b>`; }
 // Cloud saves hit Supabase; debounce them longer than local/URL saves.
-function boardSaveDelay() { return typeof cloudBoardId === "function" && cloudBoardId() ? 3000 : 350; }
+function boardSaveDelay() { return typeof cloudVelaId === "function" && cloudVelaId() ? 3000 : 350; }
 function bumpClientRevIfSynced() {
   var server = Number(boardServerRev);
   var client = Number(velaLocalRev);
@@ -314,8 +314,8 @@ async function saveBoardToFile() {
     if (typeof isShareGuest === "function" && isShareGuest()) {
       return Promise.resolve();
     }
-    if (typeof cloudBoardId === "function" && cloudBoardId()) {
-      return saveBoardToCloud({ explicit: false });
+    if (typeof cloudVelaId === "function" && cloudVelaId()) {
+      return saveVelaToCloud({ explicit: false });
     }
     return saveVelaToHash();
   }
@@ -375,7 +375,7 @@ function shouldWaitForCreateKind() {
 async function bootstrapVelaFromHash() {
   var raw = String(location.hash || "").replace(/^#/, "");
   if (typeof cloudBoardIdFromHash === "function" && cloudBoardIdFromHash(raw)) {
-    await loadCloudBoardByHash(raw);
+    await loadCloudVelaByHash(raw);
     return;
   }
   if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(raw)) {

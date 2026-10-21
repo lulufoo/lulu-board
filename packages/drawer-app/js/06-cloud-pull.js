@@ -2,7 +2,7 @@
 async function pullBoardFromCloud() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return false;
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
-  var boardId = cloudBoardId();
+  var boardId = cloudVelaId();
   if (!boardId || cloudPlusDraftActive) return false;
   if (boardDirty && typeof askConfirm === "function") {
     var ok = await askConfirm({
@@ -16,9 +16,9 @@ async function pullBoardFromCloud() {
   var seq = ++cloudLoadSeq;
   setBoardSyncUI("saving");
   try {
-    var result = await cloudClient.from("boards")
-      .select("board_id,title,bmd,version,share_id,created_at,updated_at")
-      .eq("board_id", boardId)
+    var result = await cloudClient.from("graphs")
+      .select("graph_id,title,bmd,version,share_id,created_at,updated_at")
+      .eq("graph_id", boardId)
       .maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return false;

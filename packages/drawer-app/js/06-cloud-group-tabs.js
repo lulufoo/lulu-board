@@ -2,15 +2,15 @@
 function sortBoardRowsByGroupOrder(boardRows, memberships) {
   var orderOf = {};
   (memberships || []).forEach(function (row) {
-    if (row && row.board_id) orderOf[row.board_id] = Number(row.sort_order);
+    if (row && row.graph_id) orderOf[row.graph_id] = Number(row.sort_order);
   });
   function rank(row) {
-    var n = orderOf[row && row.board_id];
+    var n = orderOf[row && row.graph_id];
     return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
   }
   return (boardRows || []).slice().sort(function (a, b) {
     if (rank(a) !== rank(b)) return rank(a) < rank(b) ? -1 : 1;
-    return String(a && a.board_id || "").localeCompare(String(b && b.board_id || ""));
+    return String(a && a.graph_id || "").localeCompare(String(b && b.graph_id || ""));
   });
 }
 
@@ -19,7 +19,7 @@ function cloudMembersInclude(boardId, groupId, members) {
   if (!id || !groupId) return false;
   var rows = members || [];
   for (var i = 0; i < rows.length; i += 1) {
-    if (rows[i] && rows[i].board_id === id) return true;
+    if (rows[i] && rows[i].graph_id === id) return true;
   }
   return false;
 }
@@ -27,7 +27,7 @@ function cloudMembersInclude(boardId, groupId, members) {
 // Group tab label: title comes only from getBoardTitle (06-cloud-sync), read
 // again on hover/focus so an unsaved rename shows at once.
 function cloudLabelGroupTab(btn, row, number) {
-  var t = typeof getBoardTitle === "function" ? getBoardTitle(row.board_id, row.title) : (row.title || "Untitled");
+  var t = typeof getBoardTitle === "function" ? getBoardTitle(row.graph_id, row.title) : (row.title || "Untitled");
   btn.setAttribute("aria-label", "Board " + number + ": " + t);
   return t;
 }
@@ -103,7 +103,7 @@ function cloudGroupTabsVisible() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   if (!cloudSession || !cloudSession.user) return false;
   if (!cloudGroupId || !cloudGroupMembers.length) return false;
-  if (!cloudPlusDraft && !cloudBoardId()) return false;
+  if (!cloudPlusDraft && !cloudVelaId()) return false;
   return true;
 }
 
@@ -158,7 +158,7 @@ function renderCloudGroupTabs() {
   clearChromeTip();
   if (!show) return;
   var viewingDraft = !!cloudPlusDraftActive;
-  var current = viewingDraft ? "" : cloudBoardId();
+  var current = viewingDraft ? "" : cloudVelaId();
   var last = cloudGroupMembers.length - 1;
   if (last >= 0) appendGroupDropLine(root, "is-start");
   cloudGroupMembers.forEach(function (row, index) {
@@ -166,14 +166,14 @@ function renderCloudGroupTabs() {
     btn.type = "button";
     btn.className = "group-tab";
     btn.textContent = String(index + 1);
-    btn.dataset.boardId = row.board_id;
+    btn.dataset.boardId = row.graph_id;
     btn.draggable = true;
     cloudLabelGroupTab(btn, row, index + 1);
     var relabel = function () { return cloudLabelGroupTab(btn, row, index + 1); };
     bindGroupTabTip(btn, relabel);
-    btn.setAttribute("aria-current", !viewingDraft && row.board_id === current ? "true" : "false");
-    btn.classList.toggle("is-active", !viewingDraft && row.board_id === current);
-    btn.addEventListener("click", function () { void cloudSwitchToBoard(row.board_id); });
+    btn.setAttribute("aria-current", !viewingDraft && row.graph_id === current ? "true" : "false");
+    btn.classList.toggle("is-active", !viewingDraft && row.graph_id === current);
+    btn.addEventListener("click", function () { void cloudSwitchToBoard(row.graph_id); });
     root.appendChild(btn);
     appendGroupDropLine(root, index === last ? "is-end" : "");
   });
@@ -210,7 +210,7 @@ function cloudClearGroupTabs() {
 
 async function cloudConfirmLeaveBoard() {
   if (cloudPlusDraftActive) return true;
-  if (boardDirty && cloudBoardId()) {
+  if (boardDirty && cloudVelaId()) {
     if (typeof askConfirm === "function") {
       return askConfirm({
         title: "Not saved yet",
@@ -235,7 +235,7 @@ async function refreshCloudGroupMembers(boardId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("boards").select("board_id,group_id,sort_order,title");
+  var members = await cloudClient.from("graphs").select("graph_id,group_id,sort_order,title");
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -244,7 +244,7 @@ async function refreshCloudGroupMembers(boardId) {
   cloudSiblingBoardIds = loadSiblingBoardIds(id, rows);
   var groupId = "";
   rows.forEach(function (row) {
-    if (row && row.board_id === id) groupId = row.group_id;
+    if (row && row.graph_id === id) groupId = row.group_id;
   });
   if (!groupId) {
     if (!cloudPlusDraft) {
@@ -259,9 +259,9 @@ async function refreshCloudGroupMembers(boardId) {
   }
   cloudGroupId = groupId;
   var inGroup = rows.filter(function (row) {
-    return row && row.group_id === groupId && row.board_id;
+    return row && row.group_id === groupId && row.graph_id;
   }).map(function (row) {
-    return { board_id: row.board_id, title: row.title || "" };
+    return { graph_id: row.graph_id, title: row.title || "" };
   });
   cloudGroupMembers = sortBoardRowsByGroupOrder(inGroup, rows);
   renderCloudGroupTabs();
@@ -271,9 +271,9 @@ function cloudOpenBoardById(boardId) {
   var id = String(boardId || "");
   if (!id) return;
   cloudSetBoardHash(id, true);
-  if (typeof loadCloudBoardByHash !== "function") return;
+  if (typeof loadCloudVelaByHash !== "function") return;
   var hash = typeof cloudBoardHash === "function" ? cloudBoardHash(id) : "#b:" + id;
-  void loadCloudBoardByHash(hash);
+  void loadCloudVelaByHash(hash);
 }
 
 async function cloudSwitchToBoard(boardId) {
@@ -284,9 +284,9 @@ async function cloudSwitchToBoard(boardId) {
     cloudOpenBoardById(id);
     return;
   }
-  if (id === cloudBoardId()) return;
+  if (id === cloudVelaId()) return;
   if (!(await cloudConfirmLeaveBoard())) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();
@@ -296,7 +296,7 @@ async function cloudSwitchToBoard(boardId) {
 async function cloudSwitchToPlusDraft() {
   if (!cloudPlusDraft || cloudPlusDraftActive) return;
   if (!(await cloudConfirmLeaveBoard())) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();
@@ -340,7 +340,7 @@ async function cloudStartPlusDraft() {
 async function cloudCommitPlusDraft(kind) {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (cloudPlusDraft) return;
-  if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
+  if (boardDirty && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();

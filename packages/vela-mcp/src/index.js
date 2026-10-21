@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
-import { getBoard, createBoard, saveBoard } from "./boards.js";
+import { getGraph, createGraph, saveGraph } from "./graphs.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, serverInfo } from "./brand.js";
@@ -21,7 +21,7 @@ function toolError(error) {
 function mcpDoc(row) {
   if (!row) return row;
   return {
-    vela_id: row.board_id,
+    vela_id: row.graph_id,
     title: row.title,
     bmd: row.bmd,
     version: row.version,
@@ -39,7 +39,7 @@ function createServer(env, identity, token) {
     description: "Load one owned Vela by id. group_id in the result is the group this vela_id belongs to.",
     inputSchema: { vela_id: z.string() },
   }, async ({ vela_id }) => {
-    try { return toolText(mcpDoc(await getBoard(env, token, vela_id))); }
+    try { return toolText(mcpDoc(await getGraph(env, token, vela_id))); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_vela", {
@@ -52,7 +52,7 @@ function createServer(env, identity, token) {
       ),
     },
   }, async ({ bmd, vela_id, group_id }) => {
-    try { return toolText(mcpDoc(await createBoard(env, token, identity.user_id, bmd, vela_id, group_id))); }
+    try { return toolText(mcpDoc(await createGraph(env, token, identity.user_id, bmd, vela_id, group_id))); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("save_vela", {
@@ -60,7 +60,7 @@ function createServer(env, identity, token) {
     inputSchema: { vela_id: z.string(), bmd: z.string(), expected_version: z.number() },
   }, async ({ vela_id, bmd, expected_version }) => {
     try {
-      var result = await saveBoard(env, token, vela_id, bmd, expected_version);
+      var result = await saveGraph(env, token, vela_id, bmd, expected_version);
       return toolText({ conflict: result.conflict, row: mcpDoc(result.row) });
     }
     catch (error) { return toolError(error); }

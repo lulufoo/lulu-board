@@ -12,7 +12,7 @@ function cloudSearchSplit(rows) {
     var item = {
       title: row.title || "",
       shareId: row.share_id || "",
-      boardId: row.board_id || "",
+      boardId: row.graph_id || "",
       note: row.category === "public" ? "Public" : "Mine",
     };
     if (row.category === "public") pub.push(item);
@@ -24,7 +24,7 @@ function cloudSearchSplit(rows) {
 async function cloudSearchBoards(query) {
   var q = String(query || "").trim();
   if (!q || !cloudSearchSignedIn() || !cloudClient) return { mine: [], public: [] };
-  var result = await cloudClient.rpc("search_boards", { p_query: q });
+  var result = await cloudClient.rpc("search_graphs", { p_query: q });
   if (result.error) throw result.error;
   return cloudSearchSplit(result.data);
 }

@@ -29,7 +29,7 @@ function shareDialogCurrentItem(wantNew) {
     if (wantNew) copy.shareId = "";
     return copy;
   }
-  var boardId = cloudBoardId();
+  var boardId = cloudVelaId();
   var known = shareDialogFind(boardId);
   if (known) return known;
   return { boardId: boardId, title: getBoardTitle(cloudOpenBoardId()), shareId: "", role: "view", isPublic: false, isCurrent: true };

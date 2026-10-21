@@ -6,7 +6,7 @@
   root.joinDocument = api.joinDocument;
   root.stripDocumentMeta = api.stripDocumentMeta;
   root.sourceBody = api.sourceBody;
-  root.newBoardId = api.newBoardId;
+  root.newGraphId = api.newGraphId;
   root.blankHashBoardSource = api.blankHashBoardSource;
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
   root.velaTitleFromBody = api.velaTitleFromBody;
@@ -93,7 +93,7 @@
     return stripDocumentMeta(text);
   }
 
-  function newBoardId() {
+  function newGraphId() {
     var bytes;
     if (typeof crypto !== "undefined" && crypto.getRandomValues) {
       bytes = new Uint8Array(4);
@@ -139,7 +139,7 @@
     joinDocument: joinDocument,
     stripDocumentMeta: stripDocumentMeta,
     sourceBody: sourceBody,
-    newBoardId: newBoardId,
+    newGraphId: newGraphId,
     blankHashBoardSource: blankHashBoardSource,
     blankHashFlowchartSource: blankHashFlowchartSource,
     velaTitleFromBody: velaTitleFromBody,
@@ -149,7 +149,7 @@ var splitDocument = globalThis.splitDocument;
 var joinDocument = globalThis.joinDocument;
 var stripDocumentMeta = globalThis.stripDocumentMeta;
 var sourceBody = globalThis.sourceBody;
-var newBoardId = globalThis.newBoardId;
+var newGraphId = globalThis.newGraphId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
 var velaTitleFromBody = globalThis.velaTitleFromBody;

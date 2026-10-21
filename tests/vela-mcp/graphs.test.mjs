@@ -4,15 +4,15 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   boardTitleFromBody,
-  newBoardId,
+  newGraphId,
   newGroupId,
-  assertBoardId,
+  assertGraphId,
   assertGroupId,
-  getBoard,
-  createBoard,
-  saveBoard,
+  getGraph,
+  createGraph,
+  saveGraph,
   stripPersistedMeta,
-} from '../../packages/vela-mcp/src/boards.js';
+} from '../../packages/vela-mcp/src/graphs.js';
 import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
 import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
 import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/vela-mcp/src/brand.js';
@@ -20,7 +20,7 @@ import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../.
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
-const boardsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/boards.js'), 'utf8');
+const graphsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 
@@ -36,21 +36,21 @@ assert.equal(
 );
 assert.match(drawerTitle, /function velaTitleFromBody/, 'drawer still owns the title regex');
 assert.match(drawerTitle, /%%\\s\*title/, 'drawer reads mermaid %% title');
-assert.equal(newBoardId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
+assert.equal(newGraphId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');
-assert.equal(assertBoardId('b_0fc10001'), 'b_0fc10001');
+assert.equal(assertGraphId('b_0fc10001'), 'b_0fc10001');
 assert.equal(assertGroupId('g_0fc10001'), 'g_0fc10001');
-assert.throws(() => assertBoardId('s_deadbeef'), /invalid board id/);
+assert.throws(() => assertGraphId('s_deadbeef'), /invalid board id/);
 assert.throws(() => assertGroupId('b_0fc10001'), /invalid group id/);
 assert.throws(() => assertGroupId(''), /invalid group id/);
 assert.match(drawerId, /return "b_" \+ hex/, 'drawer mints b_ + 8 hex');
-assert.match(boardsSrc, /return "b_" \+ hex/, 'MCP still mints b_ + 8 hex');
-assert.doesNotMatch(boardsSrc, /\/rest\/v1\/boards", \{\s*method: "POST"/, 'create does not POST boards rows');
+assert.match(graphsSrc, /return "b_" \+ hex/, 'MCP still mints b_ + 8 hex');
+assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'create does not POST graphs rows');
 
 const env = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'pub' };
 const calls = [];
 const latest = {
-  board_id: 'b_0fc10001',
+  graph_id: 'b_0fc10001',
   title: 'Now',
   bmd: 'board "Now"\n',
   version: 4,
@@ -58,7 +58,7 @@ const latest = {
   group_id: 'g_99aabbcc',
 };
 const arrayEmbed = {
-  board_id: 'b_0fc10002',
+  graph_id: 'b_0fc10002',
   title: 'Arr',
   bmd: 'board "Arr"\n',
   version: 1,
@@ -67,7 +67,7 @@ const arrayEmbed = {
   group_id: 'g_99aabbcc',
 };
 const missingEmbed = {
-  board_id: 'b_0fc10003',
+  graph_id: 'b_0fc10003',
   title: 'Bare',
   bmd: 'board "Bare"\n',
   version: 1,
@@ -76,14 +76,14 @@ const missingEmbed = {
 const ownedGroupId = 'g_abcdef01';
 const missingGroupId = 'g_ffffffff';
 
-function rowForBoardId(href) {
-  if (href.includes('board_id=eq.b_0fc10002')) return arrayEmbed;
-  if (href.includes('board_id=eq.b_0fc10003')) return missingEmbed;
+function rowForGraphId(href) {
+  if (href.includes('graph_id=eq.b_0fc10002')) return arrayEmbed;
+  if (href.includes('graph_id=eq.b_0fc10003')) return missingEmbed;
   return latest;
 }
 
-function isBoardsInsert(call) {
-  return call.method === 'POST' && /\/rest\/v1\/boards(?:\?|$)/.test(call.url);
+function isGraphsInsert(call) {
+  return call.method === 'POST' && /\/rest\/v1\/(?:boards|graphs)(?:\?|$)/.test(call.url);
 }
 
 const prevFetch = globalThis.fetch;
@@ -92,7 +92,7 @@ globalThis.fetch = async (url, init) => {
   const method = (init && init.method) || 'GET';
   const body = init && init.body;
   calls.push({ url: href, method, body });
-  if (href.includes('/rpc/create_owned_board_with_group')) {
+  if (href.includes('/rpc/create_owned_graph_with_group')) {
     const payload = JSON.parse(body);
     if (payload.p_group_id && payload.p_group_id !== ownedGroupId) {
       return { ok: false, text: async () => JSON.stringify({ message: 'group not found' }) };
@@ -100,7 +100,7 @@ globalThis.fetch = async (url, init) => {
     return {
       ok: true,
       text: async () => JSON.stringify([{
-        board_id: payload.p_board_id,
+        graph_id: payload.p_graph_id,
         title: payload.p_title,
         bmd: payload.p_bmd,
         version: 1,
@@ -117,7 +117,7 @@ globalThis.fetch = async (url, init) => {
     return {
       ok: true,
       text: async () => JSON.stringify([{
-        board_id: 'b_0fc10001',
+        graph_id: 'b_0fc10001',
         title: patch.title,
         bmd: patch.bmd,
         version: 5,
@@ -126,59 +126,59 @@ globalThis.fetch = async (url, init) => {
       }]),
     };
   }
-  return { ok: true, text: async () => JSON.stringify([rowForBoardId(href)]) };
+  return { ok: true, text: async () => JSON.stringify([rowForGraphId(href)]) };
 };
 
 try {
   const beforeEmpty = calls.length;
   await assert.rejects(
-    () => createBoard(env, 'tok', 'user-1', '  \n', 'b_aabbccdd'),
+    () => createGraph(env, 'tok', 'user-1', '  \n', 'b_aabbccdd'),
     /board source must not be empty/
   );
   assert.equal(calls.length, beforeEmpty, 'empty bmd writes no board, group, or membership');
 
-  const created = await createBoard(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd');
-  assert.equal(created.board_id, 'b_aabbccdd');
+  const created = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd');
+  assert.equal(created.graph_id, 'b_aabbccdd');
   assert.equal(created.version, 1);
   assert.equal(created.group_id, 'g_11223344');
-  assert.ok(calls[0].url.includes('/rpc/create_owned_board_with_group'), 'create uses t1 RPC');
+  assert.ok(calls[0].url.includes('/rpc/create_owned_graph_with_group'), 'create uses t1 RPC');
   const createBody = JSON.parse(calls[0].body);
-  assert.equal(createBody.p_board_id, 'b_aabbccdd');
+  assert.equal(createBody.p_graph_id, 'b_aabbccdd');
   assert.equal(createBody.p_title, 'Fresh');
   assert.equal(createBody.p_bmd, 'board "Fresh"\n');
   assert.equal(createBody.p_group_id, null);
   assert.ok(!('owner_id' in createBody), 'RPC owner comes from the user JWT');
   assert.ok(!('share_id' in createBody), 'create does not move share_id');
-  assert.ok(!calls.some(isBoardsInsert), 'create does not POST /rest/v1/boards');
+  assert.ok(!calls.some(isGraphsInsert), 'create does not POST /rest/v1/graphs');
 
-  const joined = await createBoard(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd', ownedGroupId);
-  assert.equal(joined.board_id, 'b_aabbccdd');
+  const joined = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd', ownedGroupId);
+  assert.equal(joined.graph_id, 'b_aabbccdd');
   assert.equal(joined.group_id, ownedGroupId);
   const joinBody = JSON.parse(calls[1].body);
   assert.equal(joinBody.p_group_id, ownedGroupId);
 
-  const minted = await createBoard(env, 'tok', 'user-1', 'board "Fresh"\n');
-  assert.match(minted.board_id, /^b_[0-9a-f]{8}$/);
+  const minted = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n');
+  assert.match(minted.graph_id, /^b_[0-9a-f]{8}$/);
   assert.match(minted.group_id, /^g_[0-9a-f]{8}$/);
   const mintBody = JSON.parse(calls[2].body);
-  assert.match(mintBody.p_board_id, /^b_[0-9a-f]{8}$/);
+  assert.match(mintBody.p_graph_id, /^b_[0-9a-f]{8}$/);
   assert.equal(mintBody.p_group_id, null);
 
-  const flowCreated = await createBoard(
+  const flowCreated = await createGraph(
     env,
     'tok',
     'user-1',
     '%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n',
     'b_ff00aa11'
   );
-  assert.equal(flowCreated.board_id, 'b_ff00aa11');
+  assert.equal(flowCreated.graph_id, 'b_ff00aa11');
   const flowCreate = JSON.parse(calls[3].body);
-  assert.equal(flowCreate.p_board_id, 'b_ff00aa11');
+  assert.equal(flowCreate.p_graph_id, 'b_ff00aa11');
   assert.equal(flowCreate.p_bmd, 'flowchart TD\n  A-->B\n');
   assert.doesNotMatch(flowCreate.p_bmd, /m_[0-9a-f]{8}/);
   assert.equal(flowCreate.p_title, 'Untitled');
 
-  const titledFlow = await createBoard(
+  const titledFlow = await createGraph(
     env,
     'tok',
     'user-1',
@@ -190,31 +190,31 @@ try {
   assert.equal(titledBody.p_title, 'Demo');
 
   await assert.rejects(
-    () => createBoard(env, 'tok', 'user-1', 'board "X"\n', 'b_aabbccdd', missingGroupId),
+    () => createGraph(env, 'tok', 'user-1', 'board "X"\n', 'b_aabbccdd', missingGroupId),
     /group not found/
   );
-  assert.ok(!calls.some(isBoardsInsert), 'failed group create leaves no boards row');
+  assert.ok(!calls.some(isGraphsInsert), 'failed group create leaves no boards row');
 
-  const got = await getBoard(env, 'tok', 'b_0fc10001');
-  assert.equal(got.board_id, 'b_0fc10001');
+  const got = await getGraph(env, 'tok', 'b_0fc10001');
+  assert.equal(got.graph_id, 'b_0fc10001');
   assert.equal(got.title, 'Now');
   assert.equal(got.bmd, 'board "Now"\n');
   assert.equal(got.version, 4);
   assert.equal(got.updated_at, latest.updated_at);
   assert.equal(got.group_id, 'g_99aabbcc');
-  assert.ok(calls.some((c) => c.url.includes('select=board_id,title,bmd,version,updated_at,group_id')));
+  assert.ok(calls.some((c) => c.url.includes('select=graph_id,title,bmd,version,updated_at,group_id')));
   assert.ok(!calls.some((c) => c.url.includes('group_members')));
 
-  const fromArray = await getBoard(env, 'tok', 'b_0fc10002');
+  const fromArray = await getGraph(env, 'tok', 'b_0fc10002');
   assert.equal(fromArray.group_id, 'g_99aabbcc');
 
-  await assert.rejects(() => getBoard(env, 'tok', 'b_0fc10003'), /missing group id/);
+  await assert.rejects(() => getGraph(env, 'tok', 'b_0fc10003'), /missing group id/);
 
   const beforeInvalidGet = calls.length;
-  await assert.rejects(() => getBoard(env, 'tok', 'nope'), /invalid board id/);
+  await assert.rejects(() => getGraph(env, 'tok', 'nope'), /invalid board id/);
   assert.equal(calls.length, beforeInvalidGet);
 
-  const saved = await saveBoard(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 4);
+  const saved = await saveGraph(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 4);
   assert.equal(saved.conflict, false);
   assert.equal(saved.row.group_id, 'g_99aabbcc');
   assert.equal(saved.row.version, 5);
@@ -222,12 +222,12 @@ try {
   assert.ok(patch);
   assert.deepEqual(JSON.parse(patch.body), { title: 'Mine', bmd: 'board "Mine"\n' });
 
-  const flowSaved = await saveBoard(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
+  const flowSaved = await saveGraph(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
   const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
   assert.ok(flowPatch, 'save_vela stores flowchart in bmd');
 
-  const conflict = await saveBoard(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
+  const conflict = await saveGraph(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
   assert.equal(conflict.row.version, 4);
   assert.equal(conflict.row.bmd, 'board "Now"\n');
@@ -264,7 +264,7 @@ assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered')
 assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
 assert.match(worker, /vela_id: z\.string\(\)/, 'MCP input uses vela_id');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
-assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
+assert.match(worker, /createGraph\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
 assert.match(worker, /group this vela_id belongs to/, 'get/create say group_id is the Vela group');
 assert.match(worker, /row\.group_id is the group this vela_id belongs to/, 'save describes row.group_id');
@@ -320,4 +320,4 @@ assert.deepEqual(
   readFileSync(path.join(brandDir, 'favicon-32.png'))
 );
 
-console.log('ok vela-mcp boards');
+console.log('ok vela-mcp graphs');

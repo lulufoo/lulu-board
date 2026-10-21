@@ -5,15 +5,15 @@ function cloudShareSummaries(boardRows, roles, currentBoardId, publics) {
   var current = String(currentBoardId || "");
   var out = [];
   (boardRows || []).forEach(function (row) {
-    if (!row || !row.board_id || !row.share_id) return;
+    if (!row || !row.graph_id || !row.share_id) return;
     out.push({
-      boardId: row.board_id,
+      boardId: row.graph_id,
       title: row.title || "",
       shareId: row.share_id,
       role: roles && roles[row.share_id] === "edit" ? "edit" : "view",
       isPublic: !!(publics && publics[row.share_id]),
       updatedAt: String(row.updated_at || row.created_at || ""),
-      isCurrent: !!current && row.board_id === current,
+      isCurrent: !!current && row.graph_id === current,
     });
   });
   out.sort(function (a, b) { return a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0; });
@@ -28,27 +28,27 @@ function cloudShareLinkFor(shareId) {
 // Throws on a cloud error. Signed out: [].
 async function cloudFetchOwnShares() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return [];
-  var boards = await cloudClient.from("boards")
-    .select("board_id,title,share_id,created_at,updated_at")
+  var boards = await cloudClient.from("graphs")
+    .select("graph_id,title,share_id,created_at,updated_at")
     .not("share_id", "is", null);
   if (boards.error) throw boards.error;
   var rows = boards.data || [];
   var roles = {};
   var publics = {};
   await Promise.all(rows.map(async function (row) {
-    var state = await runShareRpc("own_share_state", { p_board_id: row.board_id });
+    var state = await runShareRpc("own_share_state", { p_graph_id: row.graph_id });
     if (state && state.role) roles[row.share_id] = state.role;
     if (state && state.is_public) publics[row.share_id] = true;
   }));
-  var current = typeof cloudBoardId === "function" ? cloudBoardId() : "";
+  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
   return cloudShareSummaries(rows, roles, current, publics);
 }
 
 // One RPC on one board. Keeps the open board's own share state (status chrome) in step.
 async function cloudShareMutate(boardId, name, args, okStatus) {
   try {
-    var row = await runShareRpc(name, Object.assign({ p_board_id: boardId }, args || {}));
-    if (boardId === cloudBoardId()) {
+    var row = await runShareRpc(name, Object.assign({ p_graph_id: boardId }, args || {}));
+    if (boardId === cloudVelaId()) {
       if (name === "unshare") { ownerShareRole = "view"; ownerIsPublic = false; rememberOwnerShareId(""); }
       else if (row) {
         ownerShareRole = row.role === "edit" ? "edit" : "view";
