@@ -325,6 +325,14 @@ html[data-drawer-mode="vela"] .group-tab:hover { background: var(--fill-hover); 
 html[data-drawer-mode="vela"] .group-tab.is-active { background: rgba(219, 76, 132, .14); }
 html[data-drawer-mode="vela"] .zoom-float .btn { height: 32px; min-width: 32px; font-size: 13px; }
 html[data-drawer-mode="vela"] .zoom-float .btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] #btnZoomReset {
+  width: 4ch;
+  min-width: 4ch;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+html[data-drawer-mode="vela"] .zoom-float .zoom-type { font-weight: 550; white-space: nowrap; }
+html[data-drawer-mode="vela"] .zoom-float .zoom-type[hidden] { display: none !important; }
 .shell-drawer { top: 64px; }
 
 /* ---- right dock in the same language: wider rail, borderless fills, bigger controls ---- */

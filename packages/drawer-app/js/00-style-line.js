@@ -22,6 +22,41 @@
 
   var FLOWCHART_RE = /^(flowchart|graph|flowchart-elk)\b/i;
   var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
+  var TYPE_NAMES = {
+    board: "Board",
+    flowchart: "Flowchart",
+    block: "Block",
+    mindmap: "Mindmap",
+    architecture: "Architecture",
+    swimlane: "Swimlane",
+    agentflow: "Agentflow",
+    treeview: "Tree View",
+    sequence: "Sequence",
+    class: "Class",
+    state: "State",
+    er: "ER",
+    requirement: "Requirement",
+    c4: "C4",
+    usecase: "Use Case",
+    eventmodeling: "Event Modeling",
+    railroad: "Railroad",
+    gantt: "Gantt",
+    journey: "Journey",
+    timeline: "Timeline",
+    gitgraph: "Git Graph",
+    kanban: "Kanban",
+    pie: "Pie",
+    quadrant: "Quadrant",
+    xychart: "XY Chart",
+    sankey: "Sankey",
+    packet: "Packet",
+    radar: "Radar",
+    treemap: "Treemap",
+    cynefin: "Cynefin",
+    wardley: "Wardley",
+    venn: "Venn",
+    ishikawa: "Ishikawa",
+  };
 
   function firstDiagramLine(body) {
     var lines = String(body == null ? "" : body).split(/\r?\n/);
@@ -49,6 +84,37 @@
     if (FLOWCHART_RE.test(line)) return "flowchart";
     if (MERMAID_RE.test(line)) return "mermaid-unsupported";
     return "unknown";
+  }
+
+  function bodyTypeKeyword(body) {
+    var line = firstDiagramLine(body);
+    if (!line) return "";
+    if (/^board\s+/i.test(line)) return "board";
+    var flow = FLOWCHART_RE.exec(line);
+    if (flow) return flow[1];
+    var mermaid = MERMAID_RE.exec(line);
+    return mermaid ? mermaid[1] : "";
+  }
+
+  function normalizeTypeKey(keyword) {
+    var key = String(keyword || "").toLowerCase();
+    if (!key) return "";
+    if (key === "board") return "board";
+    if (key === "graph" || key === "flowchart" || key === "flowchart-elk") return "flowchart";
+    if (/^c4/.test(key)) return "c4";
+    key = key.replace(/-v2$/, "").replace(/-beta$/, "").replace(/-(?:ebnf|abnf|peg)$/, "").replace(/diagram$/, "");
+    if (key === "quadrantchart") return "quadrant";
+    return key;
+  }
+
+  function bodyTypeLabel(body) {
+    var kind = bodyKind(body);
+    if (kind === "empty" || kind === "unknown") return "Source";
+    var name = TYPE_NAMES[normalizeTypeKey(bodyTypeKeyword(body))];
+    if (name) return name;
+    if (kind === "board") return "Board";
+    if (kind === "flowchart") return "Flowchart";
+    return "Mermaid";
   }
 
   function splitRendererStyle(body) {
@@ -154,6 +220,8 @@
     firstDiagramLine: firstDiagramLine,
     bodyIsBoard: bodyIsBoard,
     bodyKind: bodyKind,
+    bodyTypeKeyword: bodyTypeKeyword,
+    bodyTypeLabel: bodyTypeLabel,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     resolveThemeId: resolveThemeId,

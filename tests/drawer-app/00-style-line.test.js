@@ -90,6 +90,23 @@ function b64(obj) {
 }
 
 {
+  const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
+  Create.CREATE_KIND_ITEMS.forEach((item) => {
+    const src = item.kind === 'board' ? 'board "X"\n' : item.kind + '\n';
+    assert.strictEqual(Style.bodyTypeLabel(src), item.name, item.kind);
+  });
+  assert.strictEqual(Style.bodyTypeLabel('flowchart LR\nA-->B\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyTypeLabel('graph TD\nA-->B\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyTypeLabel('%% style classic\nflowchart TD\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyTypeLabel('classDiagram-v2\n'), 'Class');
+  assert.strictEqual(Style.bodyTypeLabel('stateDiagram-v2\n'), 'State');
+  assert.strictEqual(Style.bodyTypeLabel('C4Container\n'), 'C4');
+  assert.strictEqual(Style.bodyTypeLabel('railroad-ebnf-beta\n'), 'Railroad');
+  assert.strictEqual(Style.bodyTypeLabel(''), 'Source');
+  assert.strictEqual(Style.bodyTypeLabel('not a diagram\n'), 'Source');
+}
+
+{
   const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
   const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
   assert.match(drawerBuild, /board\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
