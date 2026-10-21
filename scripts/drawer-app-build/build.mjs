@@ -68,6 +68,7 @@ const domain = [
   '00-hash-persist.js',
   '00-canvas-view.js',
   '01-shell-state.js',
+  '01-canvas-interaction.js',
   '02-board.js',
   '03-flowchart-shapes.js',
   '03-flowchart.js',

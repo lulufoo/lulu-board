@@ -311,8 +311,6 @@ document.addEventListener("visibilitychange", function() {
   handle.addEventListener("pointercancel", endDrag);
 })();
 
-let panning = false, panOrigin = null, panMoved = false;
-
 function setStatus(msg, isError = false) {
   const el = $('#statusFloat');
   if (!el) return; // status chrome removed — keep API for callers
