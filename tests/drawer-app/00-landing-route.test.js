@@ -112,17 +112,20 @@ assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '?ws=1', hash:
 
 const planOut = Head.blankStartPlan({ search: '?ws=1', hash: '', storage: empty });
 assert.ok(planOut);
-assert.strictEqual(planOut.hash, Head.BLANK_Z_HASH);
+assert.strictEqual(planOut.hash, undefined, 'blank-start does not write #z');
+assert.strictEqual(planOut.pickKind, true);
 assert.strictEqual(planOut.openDrawer, true, 'unsigned blank-start opens left drawer');
 
 const planIn = Head.blankStartPlan({ search: '?ws=1', hash: '', storage: session });
 assert.ok(planIn);
-assert.strictEqual(planIn.hash, Head.BLANK_Z_HASH);
+assert.strictEqual(planIn.hash, undefined, 'blank-start does not write #z');
+assert.strictEqual(planIn.pickKind, true);
 assert.strictEqual(planIn.openDrawer, true, 'signed-in blank-start opens left drawer (LB-360)');
 
 const planRootIn = Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: session });
 assert.ok(planRootIn);
-assert.strictEqual(planRootIn.hash, Head.BLANK_Z_HASH);
+assert.strictEqual(planRootIn.hash, undefined, 'blank-start does not write #z');
+assert.strictEqual(planRootIn.pickKind, true);
 assert.strictEqual(planRootIn.openDrawer, true, 'signed-in / blank-start opens left drawer (LB-360)');
 
 assert.strictEqual(Head.blankStartPlan({ search: '?ws=1', hash: BOARD, storage: empty }), null);
@@ -140,7 +143,8 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/', search: '', hash: '', st
 {
   const p = Head.blankStartPlan({ pathname: '/', search: '', hash: '', storage: session });
   assert.ok(p, 'LB-357: signed-in / → blank-start');
-  assert.strictEqual(p.hash, Head.BLANK_Z_HASH);
+  assert.strictEqual(p.hash, undefined, 'LB-357: blank-start does not write #z');
+  assert.strictEqual(p.pickKind, true);
   assert.strictEqual(p.openDrawer, true, 'LB-360: signed-in blank-start opens drawer');
   assert.strictEqual(route({ pathname: '/', search: '', hash: '', storage: session }), false, 'LB-357: signed-in / stays on workspace');
 }
@@ -195,6 +199,9 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/start/', search: '', hash: 
   const early = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/00-early-head.js'), 'utf8');
   assert.doesNotMatch(early, /function isStartPath|function rewriteStartToRoot/, 'LB-357: early-head source has no /start helpers');
   assert.doesNotMatch(early, /location\.replace\(\s*\/\s*\+|pathname\s*===\s*["']\/start/, 'LB-357: early-head does not redirect /start');
+  assert.match(early, /pickKind: true/, 'blank-start asks for a kind instead of writing #z');
+  assert.match(early, /if \(plan\.hash\)/, 'early-head only writes a hash when the plan has one');
+  assert.match(early, /dataset\.blankStartKind = "1"/, 'blank-start flags the kind dialog');
 }
 
 console.log('ok landing-route');

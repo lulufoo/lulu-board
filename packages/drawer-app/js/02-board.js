@@ -1945,6 +1945,22 @@ async function loadBoardPolled() {
     setBoardSyncUI('ok');
   } catch (_) {}
 }
+function shouldWaitForCreateKind() {
+  if (typeof document !== "undefined" && document.documentElement && document.documentElement.dataset.blankStartKind === "1") {
+    return true;
+  }
+  if (typeof DrawerEarlyHead === "undefined") return false;
+  var ctx = {
+    pathname: typeof location !== "undefined" ? location.pathname : "/",
+    hash: typeof location !== "undefined" ? location.hash : "",
+    search: typeof location !== "undefined" ? location.search : "",
+    storage: DrawerEarlyHead.safeStorage(typeof globalThis !== "undefined" ? globalThis : this),
+  };
+  if (DrawerEarlyHead.isLegalHash(ctx.hash)) return false;
+  if (DrawerEarlyHead.shouldBlankStart(ctx)) return true;
+  return !!(DrawerEarlyHead.isAuthReturn && DrawerEarlyHead.isAuthReturn(ctx.search));
+}
+
 async function bootstrapBoardFromHash() {
   var raw = String(location.hash || "").replace(/^#/, "");
   if (typeof cloudBoardIdFromHash === "function" && cloudBoardIdFromHash(raw)) {
@@ -1960,6 +1976,14 @@ async function bootstrapBoardFromHash() {
   if (!raw) {
     if (typeof setShareView === "function") setShareView(false);
     if (typeof setShareEdit === "function") setShareEdit(false);
+    if (typeof shouldWaitForCreateKind === "function" && shouldWaitForCreateKind()) {
+      if (boardSourceEl) boardSourceEl.value = "";
+      boardLocalRev = 1;
+      boardServerRev = 0;
+      if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", version: 1 });
+      setStatus("Choose a type");
+      return;
+    }
     boardSourceEl.value = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
       : "board \"Untitled\"\n";

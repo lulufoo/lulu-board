@@ -66,6 +66,7 @@ var shellShares = shellShares || [];
     setDrawer(true);
     delete document.documentElement.dataset.blankStartDrawer;
   }
+  if (typeof shellOfferBlankStartKind === "function") shellOfferBlankStartKind();
   document.addEventListener("keydown", function (event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
@@ -315,6 +316,39 @@ async function shellCommitBlankBoard(kind) {
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
 }
+
+var shellKindPromptOpen = false;
+
+function shellOfferBlankStartKind() {
+  if (typeof DrawerEarlyHead === "undefined" || typeof openCreateKindDialog !== "function") return;
+  if (shellKindPromptOpen) return;
+  var ctx = {
+    pathname: location.pathname,
+    hash: location.hash,
+    search: location.search,
+    storage: DrawerEarlyHead.safeStorage(typeof globalThis !== "undefined" ? globalThis : this),
+  };
+  if (DrawerEarlyHead.isLegalHash(ctx.hash)) return;
+  var flagged = typeof document !== "undefined" && document.documentElement && document.documentElement.dataset.blankStartKind === "1";
+  if (!flagged && !DrawerEarlyHead.shouldBlankStart(ctx) && !(DrawerEarlyHead.isAuthReturn && DrawerEarlyHead.isAuthReturn(ctx.search))) {
+    return;
+  }
+  shellKindPromptOpen = true;
+  function open() {
+    openCreateKindDialog({
+      onPick: function (kind) {
+        shellKindPromptOpen = false;
+        if (typeof document !== "undefined" && document.documentElement) {
+          delete document.documentElement.dataset.blankStartKind;
+        }
+        void shellCommitBlankBoard(kind);
+      },
+      onCancel: function () { open(); },
+    });
+  }
+  open();
+}
+window.shellOfferBlankStartKind = shellOfferBlankStartKind;
 
 function shellIsPreview() {
   return typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
