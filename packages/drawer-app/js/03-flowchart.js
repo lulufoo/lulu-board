@@ -92,124 +92,47 @@ function flowchartUsedRadius(shape, axis) {
   return NaN;
 }
 
-function paintFlowchartHalo(g, className) {
-  if (!g) return;
-  var ringClass = className || "flowchart-selection-halo";
-  g.querySelectorAll("." + ringClass).forEach(function (el) { el.remove(); });
-  var shape = flowchartSelectionShape(g);
-  if (!shape) return;
-  var halo = shape.cloneNode(true);
-  halo.setAttribute("class", ringClass);
-  halo.removeAttribute("id");
-  halo.setAttribute("fill", "none");
-  halo.setAttribute("pointer-events", "none");
-  var gap = ringClass === "canvas-hover-halo" ? FLOWCHART_HOVER_HALO_GAP : FLOWCHART_SEL_HALO_GAP;
-  var tag = String(shape.tagName || "").toLowerCase();
+function paintFlowchartDiamondHalo(g, shape, ringClass, gap) {
+  if (!shape || typeof FlowchartShapes === "undefined") return false;
   var hostCls = (shape.parentNode && shape.parentNode.getAttribute && shape.parentNode.getAttribute("class")) || "";
-  if (/pele-shape-diam/.test(hostCls) && typeof FlowchartShapes !== "undefined") {
-    var cx = parseFloat(shape.getAttribute("data-flowchart-cx") || "");
-    var cy = parseFloat(shape.getAttribute("data-flowchart-cy") || "");
-    var a = parseFloat(shape.getAttribute("data-flowchart-a") || "");
-    var b = parseFloat(shape.getAttribute("data-flowchart-b") || "");
-    var r = parseFloat(shape.getAttribute("data-flowchart-r") || "");
-    if (![cx, cy, a, b, r].every(isFinite) && shape.getAttribute("points")) {
-      var geo = FlowchartShapes.diamondPathFromPoints(shape.getAttribute("points"));
-      if (geo) {
-        cx = geo.cx; cy = geo.cy; a = geo.a; b = geo.b; r = geo.r;
-      }
-    }
-    var haloD = FlowchartShapes.diamondHaloPath(cx, cy, a, b, r, gap);
-    if (haloD) {
-      if (tag !== "path") {
-        var doc = shape.ownerDocument || document;
-        halo = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-        halo.setAttribute("class", ringClass);
-        halo.setAttribute("fill", "none");
-        halo.setAttribute("pointer-events", "none");
-      }
-      halo.setAttribute("d", haloD);
-      halo.removeAttribute("points");
-      halo.removeAttribute("transform");
-      if (shape.parentNode) shape.parentNode.insertBefore(halo, shape);
-      return;
+  if (!/pele-shape-diam/.test(hostCls)) return false;
+  var tag = String(shape.tagName || "").toLowerCase();
+  var cx = parseFloat(shape.getAttribute("data-flowchart-cx") || "");
+  var cy = parseFloat(shape.getAttribute("data-flowchart-cy") || "");
+  var a = parseFloat(shape.getAttribute("data-flowchart-a") || "");
+  var b = parseFloat(shape.getAttribute("data-flowchart-b") || "");
+  var r = parseFloat(shape.getAttribute("data-flowchart-r") || "");
+  if (![cx, cy, a, b, r].every(isFinite) && shape.getAttribute("points")) {
+    var geo = FlowchartShapes.diamondPathFromPoints(shape.getAttribute("points"));
+    if (geo) {
+      cx = geo.cx; cy = geo.cy; a = geo.a; b = geo.b; r = geo.r;
     }
   }
-  if (tag === "rect") {
-    var x = parseFloat(shape.getAttribute("x") || 0);
-    var y = parseFloat(shape.getAttribute("y") || 0);
-    var w = parseFloat(shape.getAttribute("width") || 0);
-    var h = parseFloat(shape.getAttribute("height") || 0);
-    if (!(w > 0 && h > 0)) {
-      try {
-        var bb = shape.getBBox();
-        x = bb.x; y = bb.y; w = bb.width; h = bb.height;
-      } catch (_e) { return; }
-    }
-    halo.setAttribute("x", String(x - gap));
-    halo.setAttribute("y", String(y - gap));
-    halo.setAttribute("width", String(w + gap * 2));
-    halo.setAttribute("height", String(h + gap * 2));
-    var rxN = flowchartUsedRadius(shape, "rx");
-    var ryN = flowchartUsedRadius(shape, "ry");
-    if (isFinite(rxN)) {
-      var rxNext = String(Math.max(0, rxN + gap));
-      halo.setAttribute("rx", rxNext);
-      halo.style.rx = rxNext + "px";
-    }
-    if (isFinite(ryN)) {
-      var ryNext = String(Math.max(0, ryN + gap));
-      halo.setAttribute("ry", ryNext);
-      halo.style.ry = ryNext + "px";
-    } else if (isFinite(rxN)) {
-      halo.setAttribute("ry", rxNext);
-      halo.style.ry = rxNext + "px";
-    }
-  } else if (tag === "circle") {
-    var r = parseFloat(shape.getAttribute("r") || 0);
-    if (r > 0) halo.setAttribute("r", String(r + gap));
-  } else if (tag === "ellipse") {
-    var erx = parseFloat(shape.getAttribute("rx") || 0);
-    var ery = parseFloat(shape.getAttribute("ry") || 0);
-    if (erx > 0) halo.setAttribute("rx", String(erx + gap));
-    if (ery > 0) halo.setAttribute("ry", String(ery + gap));
-  } else if (tag === "polygon") {
-    var raw = String(shape.getAttribute("points") || "").trim().split(/\s+/);
-    var pairs = [];
-    var i;
-    for (i = 0; i < raw.length; i += 1) {
-      var xy = raw[i].split(",");
-      if (xy.length < 2) continue;
-      var px = parseFloat(xy[0]);
-      var py = parseFloat(xy[1]);
-      if (!isFinite(px) || !isFinite(py)) continue;
-      pairs.push([px, py]);
-    }
-    if (!pairs.length) return;
-    var minX = pairs[0][0], maxX = pairs[0][0], minY = pairs[0][1], maxY = pairs[0][1];
-    for (i = 1; i < pairs.length; i += 1) {
-      if (pairs[i][0] < minX) minX = pairs[i][0];
-      if (pairs[i][0] > maxX) maxX = pairs[i][0];
-      if (pairs[i][1] < minY) minY = pairs[i][1];
-      if (pairs[i][1] > maxY) maxY = pairs[i][1];
-    }
-    var cx = (minX + maxX) / 2;
-    var cy = (minY + maxY) / 2;
-    var bw = maxX - minX || 1;
-    var bh = maxY - minY || 1;
-    halo.setAttribute("points", pairs.map(function (p) {
-      return (cx + (p[0] - cx) * ((bw + gap * 2) / bw)) + "," + (cy + (p[1] - cy) * ((bh + gap * 2) / bh));
-    }).join(" "));
+  var haloD = FlowchartShapes.diamondHaloPath(cx, cy, a, b, r, gap);
+  if (!haloD) return false;
+  var halo;
+  if (tag !== "path") {
+    var doc = shape.ownerDocument || document;
+    halo = doc.createElementNS("http://www.w3.org/2000/svg", "path");
   } else {
-    try {
-      var box = shape.getBBox();
-      var pcx = box.x + box.width / 2;
-      var pcy = box.y + box.height / 2;
-      var psx = box.width ? (box.width + gap * 2) / box.width : 1;
-      var psy = box.height ? (box.height + gap * 2) / box.height : 1;
-      halo.setAttribute("transform", "translate(" + pcx + " " + pcy + ") scale(" + psx + " " + psy + ") translate(" + (-pcx) + " " + (-pcy) + ")");
-    } catch (_err) {}
+    halo = shape.cloneNode(true);
   }
+  mermaidHaloBase(halo, ringClass);
+  halo.setAttribute("d", haloD);
+  halo.removeAttribute("points");
+  halo.removeAttribute("transform");
   if (shape.parentNode) shape.parentNode.insertBefore(halo, shape);
+  return true;
+}
+
+function paintFlowchartHalo(g, className) {
+  var ringClass = className || "flowchart-selection-halo";
+  mermaidPaintHalo(g, ringClass, {
+    gap: ringClass === "canvas-hover-halo" ? FLOWCHART_HOVER_HALO_GAP : FLOWCHART_SEL_HALO_GAP,
+    findShape: flowchartSelectionShape,
+    usedRadius: flowchartUsedRadius,
+    paintSpecial: paintFlowchartDiamondHalo
+  });
 }
 
 function paintFlowchartSelectionHalo(g) {

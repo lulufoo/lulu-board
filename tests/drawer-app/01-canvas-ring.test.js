@@ -9,6 +9,8 @@ const tokens = read('packages/drawer-app/css/04-board-form.css');
 const css = read('packages/drawer-app/css/03-diagram.css');
 const board = read('packages/drawer-app/js/02-board.js');
 const flow = read('packages/drawer-app/js/03-flowchart.js');
+const halo = read('packages/drawer-app/js/01-mermaid-halo.js');
+const build = read('scripts/drawer-app-build/build.mjs');
 
 assert.match(tokens, /--canvas-ring:\s*var\(--bf-ring\)/, 'selected ring aliases Board pink');
 assert.match(tokens, /--canvas-ring-soft:\s*var\(--bf-ring-soft\)/, 'hover ring aliases Board soft pink');
@@ -35,6 +37,13 @@ assert.match(flow, /classList\.add\("canvas-hover"\)/, 'Flowchart hangs the publ
 assert.match(flow, /paintFlowchartHalo\(g, "canvas-hover-halo"\)/, 'SVG hover uses a token halo, not outline');
 assert.match(flow, /FLOWCHART_HOVER_HALO_GAP = 3/, 'flowchart hover ring sits 3px out, same as Board outline-offset');
 assert.match(flow, /FLOWCHART_SEL_HALO_GAP = 3/, 'selection path sits 3px out so the 2px stroke leaves Board outline-offset');
+assert.match(halo, /function mermaidPaintHalo/, 'halo painter lives at mermaid level');
+assert.match(halo, /function mermaidPaintBBoxHalo/, 'text-only nodes can ring from getBBox');
+assert.match(halo, /MERMAID_HOVER_HALO_GAP = 3/, 'shared hover gap stays 3px');
+assert.match(halo, /MERMAID_SEL_HALO_GAP = 3/, 'shared selection gap stays 3px');
+assert.match(flow, /mermaidPaintHalo\(g, ringClass/, 'flowchart calls the shared painter');
+assert.doesNotMatch(flow, /function mermaidPaintHalo/, 'flowchart no longer owns the halo painter');
+assert.match(build, /01-mermaid-halo\.js/, 'shared halo is in the drawer bundle');
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke-dasharray:\s*none/, 'flowchart selection ring is solid');
 assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-width:\s*1px/, 'flowchart hover ring is 1px, same as Board');
 assert.match(flow, /if \(g\.classList\.contains\("canvas-selected"\) \|\| g\.classList\.contains\("flowchart-selection"\)\) return/, 'selected nodes do not also hover');
