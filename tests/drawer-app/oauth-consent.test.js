@@ -35,8 +35,8 @@ assert.match(js, /redirectTo: location\.href/, 'login returns to this consent UR
 assert.match(webBuild, /oauth\/consent/, 'web-build copies the consent page');
 assert.doesNotMatch(js, /service_role|SERVICE_ROLE/, 'consent holds no service key');
 assert.match(siteWorker, /directory = "\.\/\.cache\/web\/"/, 'static Worker still serves generated assets');
-assert.doesNotMatch(siteWorker, /vela-mcp|mcp\.luluboard/, 'static Worker stays off the MCP host');
+assert.doesNotMatch(siteWorker, /vela-mcp|mcp\.lulu/, 'static Worker stays off the MCP host');
 assert.match(mcpWorker, /name = "lulu-vela-mcp"/, 'MCP is a separate Worker');
-assert.match(mcpWorker, /PUBLIC_ORIGIN = "https:\/\/mcp\.luluboard\.app"/, 'MCP origin is the hosted hostname');
+assert.match(mcpWorker, /PUBLIC_ORIGIN = "https:\/\/mcp\.luluvela\.app"/, 'MCP origin is the hosted hostname');
 
 console.log('ok oauth-consent');

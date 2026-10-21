@@ -29,7 +29,7 @@ const emptyJson = JSON.parse(empty.stdout);
 assert.strictEqual(emptyJson.ok, true);
 assert.strictEqual(emptyJson.kind, 'flowchart');
 assert.strictEqual(emptyJson.open, 'current');
-assert.strictEqual(emptyJson.url, 'https://luluboard.app/');
+assert.strictEqual(emptyJson.url, 'https://preview.luluvela.app/');
 
 const drawn = run(['preview', '--kind', 'flowchart', '--no-open'], 'flowchart LR\n  A --> B\n');
 assert.strictEqual(drawn.status, 0, drawn.stderr);
@@ -37,7 +37,7 @@ const drawnJson = JSON.parse(drawn.stdout);
 assert.strictEqual(drawnJson.ok, true);
 assert.strictEqual(drawnJson.kind, 'flowchart');
 assert.strictEqual(drawnJson.open, 'created');
-assert.match(drawnJson.url, /^https:\/\/luluboard\.app\/#z:/);
+assert.match(drawnJson.url, /^https:\/\/preview\.luluvela\.app\/#z:/);
 assert.strictEqual(drawnJson.version, 1);
 
 const titled = run(

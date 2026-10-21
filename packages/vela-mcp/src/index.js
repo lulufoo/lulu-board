@@ -78,7 +78,7 @@ const handler = createMcpHandler((context) => {
   return createServer(extra.env, extra.identity, extra.token);
 }, {
   route: "/mcp",
-  allowedHostnames: ["mcp.luluboard.app", "localhost", "127.0.0.1"],
+  allowedHostnames: ["mcp.luluvela.app", "mcp.luluboard.app", "localhost", "127.0.0.1"],
   allowedOriginHostnames: ["localhost", "127.0.0.1"],
 });
 

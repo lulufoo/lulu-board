@@ -12,7 +12,7 @@ export const FAVICON_PNG_BASE64 =
 
 function origin(env) {
   var fromEnv = String(env && env.PUBLIC_ORIGIN || "").replace(/\/$/, "");
-  return fromEnv || "https://mcp.luluboard.app";
+  return fromEnv || "https://mcp.luluvela.app";
 }
 
 export function serverInfo(env) {
@@ -20,7 +20,7 @@ export function serverInfo(env) {
   return {
     name: "lulu-board",
     version: "1.0.0",
-    websiteUrl: "https://luluboard.app",
+    websiteUrl: "https://luluvela.app",
     icons: [
       { src: root + "/favicon-32.png", mimeType: "image/png", sizes: ["32x32"] },
       { src: root + "/favicon.svg", mimeType: "image/svg+xml", sizes: ["any"] },

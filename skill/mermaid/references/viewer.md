@@ -32,4 +32,4 @@ Public hash preview for Mermaid. Loaded from `/mermaid` only.
 ## Open
 
 stdout `open` is `created` | `current`.
-stdout `url` is the public hash link on `https://luluboard.app/`, or the bare site when there is no source.
+stdout `url` is the public hash link on `https://preview.luluvela.app/`, or the bare site when there is no source.

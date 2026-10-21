@@ -63,7 +63,7 @@ function load(opts) {
       querySelectorAll: (sel) => (sel === '[data-share-role]' ? roleBtns : []),
       addEventListener() {},
     },
-    location: { origin: 'https://luluboard.app', search: opts.search || '' },
+    location: { origin: 'https://preview.luluvela.app', search: opts.search || '' },
     window: {}, setTimeout() {}, console,
     shellIsPreview: () => !!opts.preview,
     shellShares: opts.shares || [],
@@ -71,7 +71,7 @@ function load(opts) {
     cloudVelaId: () => 'b_open',
     cloudOpenBoardId: () => 'b_open',
     getBoardTitle: (id) => (id === 'b_open' ? 'Open board title' : 'Untitled'),
-    cloudShareLinkFor: (id) => 'https://luluboard.app/#s:' + id,
+    cloudShareLinkFor: (id) => 'https://preview.luluvela.app/#s:' + id,
     cloudShareMutate: async (boardId, rpc, args) => { calls.push({ boardId, rpc, args }); if (opts.after) opts.after(ctx, rpc, args); return {}; },
     cloudShareCopyLink: async (id) => { calls.push({ copy: id }); },
   };

@@ -7,7 +7,7 @@ argument-hint: "[scene intent]"
 # board
 
 Define one diagram with the Board protocol and open it on the public viewer.
-Done when a `luluboard.app` URL is shown — `#z:` from preview, or `#b:` from
+Done when a `preview.luluvela.app` URL is shown — `#z:` from preview, or `#b:` from
 MCP — or chat-only BMD Source is delivered.
 
 ## Identity
@@ -61,7 +61,7 @@ Load the authoring contract before writing.
 2. New Vela: author BMD Source → `create_vela`. `group_id` is the group this
    `vela_id` belongs to. Optional `group_id` joins that group on the current
    account (other Vela that share it). Omit `group_id` to create a new group.
-   Show `https://luluboard.app/#b:<id>` for that account.
+   Show `https://preview.luluvela.app/#b:<id>` for that account.
 3. Update: `get_vela` for this session’s last `vela_id`, or a `#b:` the user pasted →
    edit the returned BMD Source → `save_vela` with that `version`.
 4. On `conflict`, redo the edit on the returned row and save once. Still
@@ -79,7 +79,7 @@ Say one line with the URL, from stdout `open` in hash mode, or after MCP write:
 
 ## Boundaries
 
-stdout `url` is the public hash link (`https://luluboard.app/#z:…`). Cloud mode
+stdout `url` is the public hash link (`https://preview.luluvela.app/#z:…`). Cloud mode
 shows `#b:<id>` instead. CLI success or MCP write completes the skill; do not
 open the URL, drive the viewer, or screenshot the layout unless the user
 explicitly requests visual verification.
