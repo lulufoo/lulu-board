@@ -11,4 +11,6 @@ Themes.ORDER.forEach((id) => {
   ['swatches', 'ramp', 'autoTone'].forEach((k) => assert.strictEqual(theme[k], undefined, id + ' has no ' + k));
 });
 assert.strictEqual(Themes.get('default').colors[0], '#fffdf9', 'default starts with the card colour');
+assert.strictEqual(Themes.edgeTint('default'), 'rgba(74, 53, 36, .14)');
+assert.strictEqual(Themes.kitFor('default', 'card').cardBorder, Themes.edgeTint('default', Themes.EDGE_DASH_ALPHA));
 console.log('ok theme-colors');

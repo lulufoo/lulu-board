@@ -14,12 +14,17 @@
     return null;
   }
 
-  // Node stroke is not Board bandBorder. Local mermaid SoT:
-  // packages/mermaid-themes/flowchart/default.js themeVariables.
   var PELE_FONT = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
-  var FLOWCHART_CHROME = {
-    default: { border: "#d4c4b0", clusterBorder: "#c4b8a8", muted: "#8b7358" },
-  };
+  var EDGE_RGB_FALLBACK = "74, 53, 36";
+
+  function edgeTintOf(theme, alpha) {
+    var Themes = typeof BoardThemes !== "undefined" ? BoardThemes : null;
+    if (Themes && typeof Themes.edgeTint === "function") return Themes.edgeTint(theme, alpha);
+    var rgb = (theme && theme.edgeRgb) || EDGE_RGB_FALLBACK;
+    var a = alpha == null ? 0.14 : alpha;
+    var token = String(a).replace(/^0\./, ".");
+    return "rgba(" + rgb + ", " + token + ")";
+  }
 
   function mapPack(themeOrId) {
     var theme = themeOf(themeOrId);
@@ -33,14 +38,16 @@
     var colors = Array.isArray(theme.colors) ? theme.colors.slice() : [];
     var color = theme.color || "#4a3524";
     var edge = theme.edgeStroke || color;
-    var chrome = FLOWCHART_CHROME[theme.id] || {};
-    var muted = chrome.muted || theme.edgeLabel || color;
-    var border = chrome.border || theme.bandBorder || color;
-    var clusterBorder = chrome.clusterBorder || border;
+    var muted = theme.edgeLabel || color;
+    var border = edgeTintOf(theme);
+    var Themes = typeof BoardThemes !== "undefined" ? BoardThemes : null;
+    var dash = Themes && Themes.EDGE_DASH_ALPHA != null ? Themes.EDGE_DASH_ALPHA : 0.3;
+    var clusterBorder = edgeTintOf(theme, dash);
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
     var radius = "4px";
     var css = {
+      "--bf-rgb": theme.edgeRgb || EDGE_RGB_FALLBACK,
       "--pele-bg": "transparent",
       "--pele-fg": color,
       "--pele-muted": muted,
@@ -64,7 +71,7 @@
     css["--_l"] = "var(--pele-line, #1f1f1f)";
     css["--_s"] = "var(--pele-surface, #f3f3f3)";
     css["--_a"] = "var(--pele-surface-alt, #e6e6e6)";
-    css["--_b"] = "var(--pele-border, #8a8a8a)";
+    css["--_b"] = "var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14))";
     css["--_c"] = "var(--pele-accent, #5b7bd5)";
     css["--_r"] = "var(--pele-radius, 4px)";
     return {

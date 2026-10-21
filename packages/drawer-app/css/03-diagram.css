@@ -131,7 +131,7 @@ html[data-diagram-kind="flowchart"] {
   --_l: var(--pele-line, #1f1f1f);
   --_s: var(--pele-surface, #fffdf9);
   --_a: var(--pele-surface-alt, #f3ece6);
-  --_b: var(--pele-border, #d4c4b0);
+  --_b: var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14));
   --_c: var(--pele-accent, #5b7bd5);
   --_r: 4px;
 }

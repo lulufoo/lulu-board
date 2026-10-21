@@ -25,13 +25,26 @@ assert.ok(!ids.includes('kami'));
   assert.strictEqual(mapped.themeVariables.lineColor, pack.edgeStroke);
   assert.strictEqual(mapped.themeVariables.nodeTextColor, pack.color);
   assert.deepStrictEqual(mapped.series, pack.colors);
+  assert.strictEqual(
+    mapped.css['--pele-border'],
+    BoardThemes.edgeTint(pack),
+    id + ' node stroke is Board edge over fill',
+  );
+  assert.strictEqual(
+    mapped.themeVariables.primaryBorderColor,
+    BoardThemes.edgeTint(pack),
+  );
+  assert.strictEqual(
+    mapped.themeVariables.clusterBorder,
+    BoardThemes.edgeTint(pack, BoardThemes.EDGE_DASH_ALPHA),
+  );
+  assert.strictEqual(mapped.css['--bf-rgb'], pack.edgeRgb);
 });
 
 const defaultMapped = Pele.mapPack('default');
-assert.strictEqual(defaultMapped.css['--pele-border'], '#d4c4b0', 'default node stroke matches local mermaid pack');
-assert.strictEqual(defaultMapped.themeVariables.primaryBorderColor, '#d4c4b0');
-assert.strictEqual(defaultMapped.themeVariables.clusterBorder, '#c4b8a8');
-assert.strictEqual(defaultMapped.css['--pele-muted'], '#8b7358');
+assert.strictEqual(defaultMapped.css['--pele-border'], 'rgba(74, 53, 36, .14)');
+assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'rgba(74, 53, 36, .3)');
+assert.strictEqual(defaultMapped.css['--pele-muted'], BoardThemes.get('default').edgeLabel);
 assert.strictEqual(defaultMapped.css['--pele-radius'], '4px', 'Pele node radius is not the Board card 12px');
 assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
 

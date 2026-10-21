@@ -66,6 +66,22 @@
 
   const ORDER = ['default', 'classic', 'pastel'];
   const LEGACY_IDS = { minimal: 'classic', slate: 'pastel' };
+  const EDGE_RING_ALPHA = 0.14;
+  const EDGE_DASH_ALPHA = 0.3;
+  const EDGE_RGB_FALLBACK = '74, 53, 36';
+
+  function formatAlpha(alpha) {
+    const n = Number(alpha);
+    if (!Number.isFinite(n)) return '.14';
+    return String(n).replace(/^0\./, '.');
+  }
+
+  function edgeTint(themeOrId, alpha) {
+    const theme = typeof themeOrId === 'string' ? get(themeOrId) : (themeOrId || get());
+    const rgb = (theme && theme.edgeRgb) || EDGE_RGB_FALLBACK;
+    const a = alpha == null ? EDGE_RING_ALPHA : Number(alpha);
+    return 'rgba(' + rgb + ', ' + formatAlpha(a) + ')';
+  }
 
   function resolveId(id) {
     const raw = String(id == null || id === '' ? 'default' : id);
@@ -94,8 +110,7 @@
     const theme = typeof themeOrId === 'string' ? get(themeOrId) : themeOrId;
     const chrome = typeChromeOf(theme, typeName);
     const fill = theme.colors[0];
-    // same depth in every theme: the pack's edge colour at .3
-    const edge = 'rgba(' + theme.edgeRgb + ', .3)';
+    const edge = edgeTint(theme, EDGE_DASH_ALPHA);
     const kit = {
       zoneBg: fill,
       zoneBorder: edge,
@@ -209,6 +224,7 @@
 
   return {
     THEMES, ORDER, BOX_TYPES, LEGACY_IDS,
-    get, list, resolveId, kitFor, applyTo,
+    EDGE_RING_ALPHA, EDGE_DASH_ALPHA,
+    get, list, resolveId, kitFor, edgeTint, applyTo,
   };
 });
