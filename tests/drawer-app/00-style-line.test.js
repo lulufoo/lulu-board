@@ -97,7 +97,7 @@ function b64(obj) {
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
-  assert.ok(/Mint without meta or style/.test(boardSkill), 'board SKILL names stash rule');
+  assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
   const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');

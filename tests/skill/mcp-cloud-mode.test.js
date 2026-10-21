@@ -14,7 +14,7 @@ assert.match(readme, /https:\/\/mcp\.luluvela\.app\/mcp/, 'readme documents the 
 assert.match(skill, /## Hash flow/, 'hash flow remains');
 assert.match(skill, /\$DRAWER_CTL preview --kind board/, 'hash mode still uses preview');
 assert.match(skill, /Keep `url` first/, 'hash mode still prints url first');
-assert.match(skill, /Mint without meta or style/, 'stash rule remains');
+assert.match(skill, /Mint without style/, 'stash rule remains');
 assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');
 assert.match(skill, /## Cloud flow/, 'cloud flow is named');
 assert.match(cloud, /create_vela/, 'cloud create uses MCP');
