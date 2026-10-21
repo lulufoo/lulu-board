@@ -9,10 +9,6 @@ argument-hint: "[scene intent]"
 Define one diagram with the Board protocol and open it on the public viewer.
 Done when a tool `url` is shown, or chat-only BMD Source is delivered.
 
-## Identity
-
-**BMD Source** is the `.bmd` body. The file has no identity.
-
 ## Script Macros
 
 | Macro | CLI |
@@ -21,39 +17,48 @@ Done when a tool `url` is shown, or chat-only BMD Source is delivered.
 
 ## References
 
-Load the authoring contract before writing.
+Load what the current write needs.
 
-1. Keep this file at start.
-2. Run `$DRAWER_CTL assets`. If it fails, stop and report.
-3. Load vocab from `files["vocab.md"].path`; it is the authoring contract.
-4. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
-5. When using an icon, load `files["icons.json"].path`.
-6. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
-7. Load [pointers](../references/pointers.md) when a viewer link is pasted.
-8. Load [cloud](../references/cloud.md) in cloud mode.
+1. Run `$DRAWER_CTL assets`. If it fails, stop and report.
+2. Load vocab from `files["vocab.md"].path`.
+3. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
+4. When using an icon, load `files["icons.json"].path`.
+5. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
+
+## Author
+
+What to write.
+
+1. **BMD Source** is the `.bmd` body. The file has no identity.
+2. Author one BMD Source string that follows vocab.
+3. Mint without meta or style. On update, leave those lines unchanged.
 
 ## Mode
 
-1. If the `whoami` MCP tool is listed, use **cloud mode**. Load cloud.md.
+Pick hash or cloud.
+
+1. If the `whoami` MCP tool is listed, use **cloud mode**. Load [cloud](../references/cloud.md).
 2. If it is missing, use **hash mode**. Do not mention MCP.
 3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
-4. If the user pastes a viewer URL in hash mode, load pointers.md.
+4. If the user pastes a viewer URL in hash mode, load [pointers](../references/pointers.md).
 
 ## Hash flow
 
+Publish unsigned.
+
 1. Use the public viewer unless the user explicitly requests chat-only output.
-2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
-   with no `--file` and no stdin body. Keep `url` first, then `open`. Show the
-   URL and stop.
-3. For an update, edit this session’s last BMD Source text. If none yet, run
-   step 2 first.
-4. Infer the scene and author one BMD Source string that follows vocab.
+2. After any preview, Keep `url` first, then `open`. Show the URL and stop.
+3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
+   with no `--file` and no stdin body.
+4. For an update, edit this session’s last BMD Source text. If none yet, run
+   step 3 first.
 5. For the public viewer, run `$DRAWER_CTL preview --kind board` with stdin or
    `--file`. If it reports a DSL error, correct the BMD Source and rerun.
-   Keep `url` first, then `open`. Show the URL and stop.
 6. For chat-only output, return one `board`-fenced block and stop.
 
 ## Cloud flow
+
+Publish owned.
 
 Follow [cloud](../references/cloud.md). Chat-only: one `board`-fenced block.
 
@@ -68,9 +73,7 @@ Say one line with the URL, from stdout `open` or MCP `url`:
 
 ## Boundaries
 
-CLI stdout contract: `$DRAWER_CTL --help`.
-CLI success or MCP write completes the skill; do not open the URL, drive the
-viewer, or screenshot the layout unless the user explicitly requests visual
-verification.
-Mint without meta or style. On update, leave those lines unchanged.
-`preview` does not write `~/.cache/board/history`.
+1. CLI stdout contract: `$DRAWER_CTL --help`.
+2. CLI success or MCP write completes the skill; do not open the URL, drive the
+   viewer, or screenshot the layout unless the user explicitly requests visual
+   verification.
