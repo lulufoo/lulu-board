@@ -53,7 +53,7 @@ assert.match(css, /--_r: 4px/, 'flowchart default corner is a small box radius')
 assert.match(css, /g\.pele-cluster > rect \{[\s\S]*rx: var\(--_r/, 'group uses the node corner');
 assert.match(css, /g\.pele-cluster > rect \{[\s\S]*stroke: var\(--_b\)/, 'group stroke matches node');
 assert.match(css, /flowchart-selection-halo/);
-assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--accent/, 'selected node keeps the offset pink halo');
+assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--canvas-ring/, 'selected node keeps the shared canvas ring');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo stays visible');
 const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
 assert.match(shellCss, /btnFlowchartDelete:not\(:disabled\)/, 'Delete armed state is visible');

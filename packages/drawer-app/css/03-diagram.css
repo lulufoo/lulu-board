@@ -1,6 +1,17 @@
-/* board diagram surfaces */
-.board-selection { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
-.board-selection-tree { outline: 2px dashed var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+/* Shared canvas rings. HTML uses outline; SVG uses a halo with the same tokens. */
+.canvas-selected:not(.board-item-diamond):not(.board-diamond) {
+  outline: var(--canvas-ring-width, 2px) solid var(--canvas-ring, #db4c84) !important;
+  outline-offset: var(--canvas-ring-offset, 2px);
+}
+.canvas-hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .board-zone:not(.board-type-layout):hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree):not(:has(.board-zone:hover)):not(:has(.board-item:hover)),
+.board-render .board-item:hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree) {
+  outline: 1px dashed var(--canvas-ring-soft, rgba(219, 76, 132, .45));
+  outline-offset: 3px;
+}
+.board-selection-tree { outline: var(--canvas-ring-width, 2px) dashed var(--canvas-ring, #db4c84) !important; outline-offset: var(--canvas-ring-offset, 2px); }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
 .board-reorder-caret {
   position: absolute;
@@ -51,27 +62,22 @@
   position: relative;
   z-index: 1;
 }
-.board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection),
-.board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection) {
-  outline: 1px dashed var(--bf-ring-soft, rgba(219, 76, 132, .45));
-  outline-offset: 3px;
-}
 .board-render .box.board-type-container > .box-content,
 .board-render .board-zone.board-type-container > .box-content,
 .board-render .board-container > .box-content {
   pointer-events: auto;
 }
 .board-render .box.board-type-container.board-selection,
-.board-render .board-zone.board-type-container.board-selection {
-  /* Selection ring (brand pink); keep dashed group border visible underneath. */
-  outline: 2px solid var(--bf-ring, #db4c84) !important;
-  outline-offset: 2px;
+.board-render .box.board-type-container.canvas-selected,
+.board-render .board-zone.board-type-container.board-selection,
+.board-render .board-zone.board-type-container.canvas-selected {
+  /* Ring comes from .canvas-selected; keep the dashed group border visible. */
   background: transparent !important;
 }
 .board-render .box.board-type-layout.board-selection,
-.board-render .board-zone.board-type-layout.board-selection {
-  outline: 2px solid var(--bf-ring, #db4c84) !important;
-  outline-offset: 2px;
+.board-render .box.board-type-layout.canvas-selected,
+.board-render .board-zone.board-type-layout.board-selection,
+.board-render .board-zone.board-type-layout.canvas-selected {
   border-color: transparent !important;
   background: transparent !important;
 }
@@ -193,24 +199,35 @@ html[data-diagram-kind="flowchart"] #preview g.pele-edge text,
 html[data-diagram-kind="flowchart"] #preview g.pele-edge tspan {
   font-size: var(--fc-font-link, 13px);
 }
-html[data-diagram-kind="flowchart"] g.flowchart-selection {
+html[data-diagram-kind="flowchart"] g.flowchart-selection,
+html[data-diagram-kind="flowchart"] g.canvas-selected,
+html[data-diagram-kind="flowchart"] g.canvas-hover {
   outline: none;
   overflow: visible;
 }
 html[data-diagram-kind="flowchart"] .flowchart-selection-halo {
   /* Offset ring, same geometry as local mermaid mermaid-selection-halo. */
   fill: none !important;
-  stroke: var(--accent, #db4c84) !important;
-  stroke-width: 2px !important;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
   pointer-events: none !important;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit) {
-  stroke: var(--accent, #db4c84) !important;
+html[data-diagram-kind="flowchart"] .canvas-hover-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .45)) !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 4 3;
+  pointer-events: none !important;
+}
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
+html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
+  stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: 2.6px !important;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker {
-  stroke: var(--accent, #db4c84) !important;
-  fill: var(--accent, #db4c84) !important;
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker,
+html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path.pele-marker {
+  stroke: var(--canvas-ring, #db4c84) !important;
+  fill: var(--canvas-ring, #db4c84) !important;
 }
 html.flowchart-link-mode,
 html.flowchart-link-mode #preview {
@@ -1084,14 +1101,26 @@ html[data-drawer-mode="vela"] #preview.board-preview {
   justify-content: center;
   align-items: center;
 }
-.board-item-diamond-halo { visibility: hidden; }
-.board-item-diamond.board-selection { outline: none !important; }
-.board-item-diamond.board-selection > .board-item-diamond-visual { outline: none !important; }
-.board-item-diamond.board-selection .board-item-diamond-halo { visibility: visible; }
+.board-item-diamond-halo {
+  visibility: hidden;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
+}
+.board-item-diamond.board-selection,
+.board-item-diamond.canvas-selected { outline: none !important; }
+.board-item-diamond.board-selection > .board-item-diamond-visual,
+.board-item-diamond.canvas-selected > .board-item-diamond-visual { outline: none !important; }
+.board-item-diamond.board-selection .board-item-diamond-halo,
+.board-item-diamond.canvas-selected .board-item-diamond-halo { visibility: visible; }
 .board-diamond { display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: 0; box-shadow: none; overflow: visible; }
 .board-diamond-visual { position: relative; flex: 0 0 auto; }
-.board-diamond.board-selection { outline: none !important; }
-.board-diamond.board-selection > .board-diamond-visual { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+.board-diamond.board-selection,
+.board-diamond.canvas-selected { outline: none !important; }
+.board-diamond.board-selection > .board-diamond-visual,
+.board-diamond.canvas-selected > .board-diamond-visual {
+  outline: var(--canvas-ring-width, 2px) solid var(--canvas-ring, #db4c84) !important;
+  outline-offset: var(--canvas-ring-offset, 2px);
+}
 .board-diamond-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .board-diamond .box-content { padding: 0; gap: 6px; align-items: stretch; flex: 0 0 auto; width: max-content; max-width: 100%; }
 .board-diamond .box-content > .board-item { width: 100%; box-sizing: border-box; }
@@ -2008,9 +2037,9 @@ html[data-theme="dark"] #flowchartDirEditor {
 .props-icon-num { width: 3ch; flex: 0 0 auto; font-variant-numeric: tabular-nums; color: var(--muted, #64748b); }
 .props-icon-gloss { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-render .board-title-node { cursor: pointer; border-radius: 10px; padding: 6px 14px !important; }
-.board-render .board-title-node.board-selection {
-  outline: 2px solid var(--accent, #2563eb); outline-offset: 2px;
-  background: color-mix(in srgb, var(--accent, #2563eb) 8%, transparent);
+.board-render .board-title-node.board-selection,
+.board-render .board-title-node.canvas-selected {
+  background: color-mix(in srgb, var(--canvas-ring, #db4c84) 8%, transparent);
 }
 
 /* Keep left sheet above any stray overlay */

@@ -696,7 +696,7 @@ function clearBoardSelection() {
   selectedBoardEdge = null;
   delete velaSourceEl.dataset.boardSelectionKey;
   delete velaSourceEl.dataset.boardEdgeSelectionKey;
-  document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); });
+  document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); });
   document.querySelectorAll(".board-edge-selected").forEach(function(el) {
     el.classList.remove("board-edge-selected");
     restoreBoardEdgeMarker(el);
@@ -724,17 +724,17 @@ function boardItemSelectionFromEl(el) {
     index: Number(el.dataset.boardItemIndex)
   };
 }
-function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); }); if (restoreFromDataset && !selectedBoardNode && velaSourceEl.dataset.boardSelectionKey) { var parts = velaSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(velaSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
+function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); }); if (restoreFromDataset && !selectedBoardNode && velaSourceEl.dataset.boardSelectionKey) { var parts = velaSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(velaSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
   if (!match && selectedBoardNode.kind === "title") {
     match = (typeof boardPinnedTitleNode === "function" && boardPinnedTitleNode())
       || document.querySelector("#boardTitlePin [data-board-key=\"title:board\"]")
       || document.querySelector("#boardTitlePin .board-title-node, #boardTitlePin .board-html-header");
   }
   if (!match) { clearBoardSelection(); return; }
-  match.classList.add("board-selection");
+  match.classList.add("board-selection", "canvas-selected");
   if (selectedBoardNode.kind === "box" && selectedBoardNode.scope === "tree") {
     match.classList.add("board-selection-tree");
-    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection"); });
+    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection", "canvas-selected"); });
   }
   if (boardTitleEditor && selectedBoardNode) {
     var isTitle = selectedBoardNode.kind === "title";
@@ -1169,7 +1169,7 @@ function wireBoardDrag(root, board) {
       if (liveRoot && typeof BoardRender.refreshEdges === "function") {
         BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
         applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
-        done.hit.classList.add("board-selection");
+        done.hit.classList.add("board-selection", "canvas-selected");
       }
       setStatus("Moved · saved layout");
     } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showVelaError(err instanceof Error ? err.message : String(err)); }
@@ -1527,7 +1527,7 @@ function boardWriteLivePosition(el, x, y) {
   if (liveRoot && typeof BoardRender.refreshEdges === "function") {
     BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
     applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
-    el.classList.add("board-selection");
+    el.classList.add("board-selection", "canvas-selected");
   }
 }
 function boardNudgeTopLevel(dx, dy) {

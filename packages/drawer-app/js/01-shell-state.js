@@ -172,7 +172,7 @@ const boardDeleteButton = $("#btnBoardDelete");
 const boardLinkButton = $("#btnBoardLink");
 const previewEl = $('#preview');
 const stageEl = $('#preview-stage');
-const boardSelectionObserver = new MutationObserver(() => { var key = velaSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
+const boardSelectionObserver = new MutationObserver(() => { var key = velaSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection", "canvas-selected"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
 let velaLocalRev = 0;
@@ -438,7 +438,7 @@ function fitBoardView() {
     var key = velaSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
-    if (retained) retained.classList.add("board-selection");
+    if (retained) retained.classList.add("board-selection", "canvas-selected");
   });
 }
 function escapeHtml(value) {
