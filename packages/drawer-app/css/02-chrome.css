@@ -134,8 +134,8 @@ html[data-drawer-mode="vela"] #preview * {
   user-select: none;
   -webkit-user-select: none;
 }
-html[data-drawer-mode="vela"] .board-dock input,
-html[data-drawer-mode="vela"] .board-dock textarea,
+html[data-drawer-mode="vela"] .vela-dock input,
+html[data-drawer-mode="vela"] .vela-dock textarea,
 html[data-drawer-mode="vela"] .sheet textarea,
 html[data-drawer-mode="vela"] .sheet input {
   user-select: text;

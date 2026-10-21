@@ -1,5 +1,5 @@
 /* Account chrome sits on the rail foot. */
-html[data-drawer-mode="vela"] .board-dock-rail {
+html[data-drawer-mode="vela"] .vela-dock-rail {
   padding-bottom: 72px;
 }
 html[data-drawer-mode="vela"] .board-account {

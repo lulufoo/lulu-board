@@ -18,7 +18,7 @@ assert.doesNotMatch(sheet, /board-sign-in-sheet/, 'create dialog does not reuse 
 assert.match(sheet, /id="createKindFilter"/, 'filter field');
 assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
 assert.match(sheet, /id="createKindList"/, 'type list');
-assert.match(build, /06-board-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
+assert.match(build, /06-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
 assert.match(css, /\.create-kind-label/, 'two class headers live in CSS');
 assert.match(js, /cls: "Board"/, 'Board class');
 assert.match(js, /cls: "Mermaid"/, 'Mermaid class');

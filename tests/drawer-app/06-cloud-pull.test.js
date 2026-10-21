@@ -24,7 +24,7 @@ assert.doesNotMatch(pull, /cloudCachedBoardRow/, 'pull never reads the memory ca
 assert.match(pull, /cloudForgetBoardCache\(\[boardId\]\)/, 'pull drops the stale cache slot');
 assert.match(pull, /cloudPlusDraftActive\) return false/, 'plus draft has nothing to pull');
 assert.match(pull, /isShareGuest/, 'share guests do not pull');
-assert.match(pull, /boardDirty && typeof boardAskConfirm/, 'dirty local edits ask before overwrite');
+assert.match(pull, /boardDirty && typeof askConfirm/, 'dirty local edits ask before overwrite');
 assert.doesNotMatch(pull, /saveBoardToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
 
 // brown stays upload

@@ -30,7 +30,7 @@ function cloudDropPlusDraft() {
 async function cloudDeleteSavedBoard() {
   var boardId = cloudBoardId();
   if (!cloudClient || !boardId) return false;
-  var confirmed = await boardAskConfirm({
+  var confirmed = await askConfirm({
     title: "Delete this Vela?",
     copy: "This board will be deleted from the cloud.",
     ok: "Delete",

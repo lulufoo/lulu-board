@@ -724,8 +724,8 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
   var ids = (boardIds || []).filter(Boolean);
   if (!ids.length) return;
-  if (typeof boardAskConfirm !== "function") return;
-  if (!(await boardAskConfirm({
+  if (typeof askConfirm !== "function") return;
+  if (!(await askConfirm({
     title: "Delete this group?",
     copy: "All boards in the group will be deleted.",
     ok: "Delete",

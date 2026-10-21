@@ -462,7 +462,7 @@ function shellRenderShared(shares) {
     // Everything else about a share (link, who can do what, a new link) lives in the Share dialog.
     var stop = shellShareAction("Stop", "Stop sharing this Vela", async function () {
       if (!live) return;
-      if (typeof boardAskConfirm === "function" && !(await boardAskConfirm({
+      if (typeof askConfirm === "function" && !(await askConfirm({
         title: "Stop sharing this Vela?",
         copy: "Anyone with the link will lose access.",
         ok: "Stop sharing",

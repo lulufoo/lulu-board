@@ -86,8 +86,8 @@ if (boardIconSec) boardIconSec.addEventListener("change", function() {
 });
 
 (function(){
-  if (boardDock) {
-    boardDock.querySelectorAll("[data-dock]").forEach(function(btn) {
+  if (velaDock) {
+    velaDock.querySelectorAll("[data-dock]").forEach(function(btn) {
       btn.addEventListener("click", function() { toggleDock(btn.getAttribute("data-dock")); });
     });
   }

@@ -14,8 +14,8 @@ const pack = read('scripts/examples-templates-build/build.mjs');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 const src = read('packages/drawer-app/onboarding.bmd');
 
-assert.match(html, /id="boardHelpMenu"[\s\S]*id="btnBoardOnboarding"[^>]*role="menuitem"/, 'help menu exposes the welcome board');
-assert.match(html, /board-dock-help/, 'onboarding help sits on the dock rail');
+assert.match(html, /id="velaHelpMenu"[\s\S]*id="btnBoardOnboarding"[^>]*role="menuitem"/, 'help menu exposes the welcome board');
+assert.match(html, /vela-dock-help/, 'onboarding help sits on the dock rail');
 assert.match(appBuild, /onboarding\.bmd/, 'drawer app build copies onboarding');
 assert.match(webBuild, /onboarding\.bmd/, 'web build requires onboarding in .cache/web');
 assert.doesNotMatch(boardBuild, /examples-templates-build/, 'board build does not pack examples into skill');

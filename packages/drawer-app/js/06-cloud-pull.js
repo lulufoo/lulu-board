@@ -4,8 +4,8 @@ async function pullBoardFromCloud() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   var boardId = cloudBoardId();
   if (!boardId || cloudPlusDraftActive) return false;
-  if (boardDirty && typeof boardAskConfirm === "function") {
-    var ok = await boardAskConfirm({
+  if (boardDirty && typeof askConfirm === "function") {
+    var ok = await askConfirm({
       title: "Replace local edits?",
       copy: "The board will be reloaded from the cloud.",
       ok: "Pull",

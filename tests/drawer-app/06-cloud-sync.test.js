@@ -38,7 +38,7 @@ assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions'
 assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays with the account cluster');
 assert.match(html, /id="boardAccount"[\s\S]*id="btnBoardSignIn"/, 'Sign in lives in the account cluster');
 assert.match(html, /id="shellMineList"/, 'signed-in groups are listed in the left drawer');
-assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardHelp"/, 'Source is dock tab 3, Export is tab 4');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnVelaHelp"/, 'Source is dock tab 3, Export is tab 4');
 assert.doesNotMatch(html, /id="btnDockShare"|id="sharePanel"|data-dock-panel="share"/, 'Share left the right dock for the left drawer');
 assert.doesNotMatch(dockCss, /data-open="share"/, 'no dock width rule for a Share tab');
 assert.match(html, /id="shellShareBoard"/, 'the drawer has a Share this board button');
@@ -49,7 +49,7 @@ assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
 assert.match(html, /id="btnShareSync"/, 'share guests with edit access get Share sync');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
-assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
+assert.match(html, /id="vela-group-tabs"/, 'canvas keeps a group tab strip');
 assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
@@ -402,7 +402,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   );
   assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
   assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
-  assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
+  assert.match(tabs, /askConfirm/, 'dirty saved tabs use the in-app confirm');
   assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
   assert.match(tabCss, /\.group-tab-float/, 'group tabs are canvas chrome');
   assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');

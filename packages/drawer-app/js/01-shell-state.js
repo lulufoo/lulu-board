@@ -65,7 +65,7 @@ function wrapEditorApi(api) {
 const $ = (s) => document.querySelector(s);
 const velaSourceEl = $('#velaSource');
 const velaError = $("#velaError");
-const boardDock = $("#boardDock");
+const velaDock = $("#velaDock");
 const propsPanel = $("#propsPanel");
 const propsEmpty = $("#propsEmpty");
 const propsFields = $("#propsFields");
@@ -123,15 +123,15 @@ const boardIconSec = $("#boardIconSec");
 var boardIconPick = 1;
 var boardIconSecId = ""; // first section comes from BoardIcons / icons.json
 function currentDockTab() {
-  return (boardDock && boardDock.getAttribute("data-open")) || "";
+  return (velaDock && velaDock.getAttribute("data-open")) || "";
 }
 function openDock(tab) {
-  if (!boardDock) return;
+  if (!velaDock) return;
   var next = tab || "";
   if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style") next = "";
-  boardDock.setAttribute("data-open", next);
+  velaDock.setAttribute("data-open", next);
   if (propsPanel) propsPanel.setAttribute("data-collapsed", next === "props" ? "false" : "true");
-  Array.from(boardDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
+  Array.from(velaDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
     var on = btn.getAttribute("data-dock") === next && next !== "";
     btn.setAttribute("aria-selected", on ? "true" : "false");
     btn.classList.toggle("is-active", on);
@@ -216,13 +216,13 @@ function clampDockWidth(n) {
 }
 function applyDockWidth(n, persist) {
   var w = clampDockWidth(n);
-  if (boardDock) boardDock.style.setProperty("--dock-open-width", w + "px");
+  if (velaDock) velaDock.style.setProperty("--dock-open-width", w + "px");
   if (persist) saveDrawerUi({ dockWidth: w });
   return w;
 }
 function currentDockWidth() {
-  if (boardDock) {
-    var raw = boardDock.style.getPropertyValue("--dock-open-width");
+  if (velaDock) {
+    var raw = velaDock.style.getPropertyValue("--dock-open-width");
     var n = parseInt(raw, 10);
     if (isFinite(n) && n > 0) return clampDockWidth(n);
   }
@@ -287,15 +287,15 @@ document.addEventListener("visibilitychange", function() {
   applyDockWidth(loadDrawerUi().dockWidth, false);
 })();
 (function wireDockResize() {
-  var handle = document.getElementById("boardDockResize");
-  if (!handle || !boardDock) return;
+  var handle = document.getElementById("velaDockResize");
+  if (!handle || !velaDock) return;
   var drag = null;
   handle.addEventListener("pointerdown", function(e) {
-    if (!boardDock.getAttribute("data-open")) return;
+    if (!velaDock.getAttribute("data-open")) return;
     e.preventDefault();
     try { handle.setPointerCapture(e.pointerId); } catch (_e) {}
     drag = { x: e.clientX, w: currentDockWidth() };
-    boardDock.classList.add("is-resizing");
+    velaDock.classList.add("is-resizing");
   });
   handle.addEventListener("pointermove", function(e) {
     if (!drag) return;
@@ -304,7 +304,7 @@ document.addEventListener("visibilitychange", function() {
   function endDrag() {
     if (!drag) return;
     drag = null;
-    boardDock.classList.remove("is-resizing");
+    velaDock.classList.remove("is-resizing");
     saveDrawerUi({ dockWidth: currentDockWidth() });
   }
   handle.addEventListener("pointerup", endDrag);

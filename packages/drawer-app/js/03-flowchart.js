@@ -556,7 +556,7 @@ function flowchartSelectionFromEvent(event) {
 }
 
 function flowchartEventOnChrome(event) {
-  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .board-dock, .zoom-float, .props-panel, button, input, textarea, select"));
+  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .vela-dock, .zoom-float, .props-panel, button, input, textarea, select"));
 }
 
 function flowchartHitSelect(event) {
@@ -672,7 +672,7 @@ if (previewEl) {
 document.addEventListener("pointerdown", function (event) {
   if (!isFlowchartKind() || event.button !== 0) return;
   if (!event.target.closest) return;
-  if (event.target.closest(".flowchart-edit-tools, .props-panel, .board-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
+  if (event.target.closest(".flowchart-edit-tools, .props-panel, .vela-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
   if (event.target.closest(".top-float, .zoom-float, .shell-search, .menu")) {
     clearFlowchartInteraction();
   }

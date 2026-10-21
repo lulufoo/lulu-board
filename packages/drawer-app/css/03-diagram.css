@@ -1511,7 +1511,7 @@ html[data-drawer-mode="vela"] .app {
   grid-template-columns: minmax(0, 1fr);
 }
 .sheet { display: none !important; }
-.board-dock {
+.vela-dock {
   position: absolute;
   top: 0;
   right: 0;
@@ -1530,20 +1530,20 @@ html[data-drawer-mode="vela"] .app {
   pointer-events: auto;
   transition: none; /* avoid open/close width jitter */
 }
-html[data-drawer-mode="vela"] .board-dock { display: flex; }
+html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 /* Layout tab hidden; settings live in Style */
 [data-dock="layout"] {
   display: none !important;
 }
-.board-dock[data-open="props"],
-.board-dock[data-open="layout"],
-.board-dock[data-open="source"],
-.board-dock[data-open="export"],
-.board-dock[data-open="style"] {
+.vela-dock[data-open="props"],
+.vela-dock[data-open="layout"],
+.vela-dock[data-open="source"],
+.vela-dock[data-open="export"],
+.vela-dock[data-open="style"] {
   width: var(--dock-open-width, 400px);
   box-shadow: -12px 0 32px rgba(15, 23, 42, .05);
 }
-.board-dock-resize {
+.vela-dock-resize {
   display: none;
   position: absolute;
   left: 0;
@@ -1555,7 +1555,7 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   touch-action: none;
   background: transparent;
 }
-.board-dock-resize::after {
+.vela-dock-resize::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1566,19 +1566,19 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   pointer-events: none;
   transition: width .12s ease, background-color .12s ease;
 }
-.board-dock[data-open="props"] .board-dock-resize,
-.board-dock[data-open="layout"] .board-dock-resize,
-.board-dock[data-open="source"] .board-dock-resize,
-.board-dock[data-open="export"] .board-dock-resize,
-.board-dock[data-open="style"] .board-dock-resize {
+.vela-dock[data-open="props"] .vela-dock-resize,
+.vela-dock[data-open="layout"] .vela-dock-resize,
+.vela-dock[data-open="source"] .vela-dock-resize,
+.vela-dock[data-open="export"] .vela-dock-resize,
+.vela-dock[data-open="style"] .vela-dock-resize {
   display: block;
 }
-.board-dock-resize:hover::after,
-.board-dock.is-resizing .board-dock-resize::after {
+.vela-dock-resize:hover::after,
+.vela-dock.is-resizing .vela-dock-resize::after {
   width: 2px;
   background: var(--accent);
 }
-.board-dock-rail {
+.vela-dock-rail {
   flex: 0 0 40px;
   width: 40px;
   display: flex;
@@ -1589,7 +1589,7 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   border-left: 1px solid var(--stroke);
   background: color-mix(in srgb, var(--canvas) 35%, var(--panel-solid));
 }
-.board-dock-tab {
+.vela-dock-tab {
   position: relative;
   flex: 0 0 auto;
   width: 32px;
@@ -1607,12 +1607,12 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   justify-content: center;
   box-sizing: border-box;
 }
-.board-dock-tab:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
-.board-dock-tab.is-active {
+.vela-dock-tab:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.vela-dock-tab.is-active {
   background: color-mix(in srgb, var(--accent) 10%, var(--panel-solid));
   color: var(--accent);
 }
-.board-dock-tab.is-active::before {
+.vela-dock-tab.is-active::before {
   content: "";
   position: absolute;
   left: -4px;
@@ -1622,9 +1622,9 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   border-radius: 2px;
   background: var(--accent);
 }
-.board-dock-tab-icon { width: 18px; height: 18px; display: block; }
-.board-dock-intro { text-decoration: none; }
-.board-dock-help-glyph {
+.vela-dock-tab-icon { width: 18px; height: 18px; display: block; }
+.vela-dock-intro { text-decoration: none; }
+.vela-dock-help-glyph {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1632,7 +1632,7 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   font-weight: 600;
   line-height: 1;
 }
-.board-dock-tab-label {
+.vela-dock-tab-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1643,7 +1643,7 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   white-space: nowrap;
   border: 0;
 }
-.board-dock-panel {
+.vela-dock-panel {
   display: none;
   flex: 1 1 auto;
   min-width: 0;
@@ -1652,22 +1652,22 @@ html[data-drawer-mode="vela"] .board-dock { display: flex; }
   gap: 12px;
   overflow: auto;
 }
-.board-dock[data-open="props"] [data-dock-panel="props"],
-.board-dock[data-open="layout"] [data-dock-panel="layout"],
-.board-dock[data-open="source"] [data-dock-panel="source"],
-.board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.vela-dock[data-open="props"] [data-dock-panel="props"],
+.vela-dock[data-open="layout"] [data-dock-panel="layout"],
+.vela-dock[data-open="source"] [data-dock-panel="source"],
+.vela-dock[data-open="export"] [data-dock-panel="export"],
+.vela-dock[data-open="style"] [data-dock-panel="style"] {
   display: flex;
 }
-.board-dock[data-open="source"] [data-dock-panel="source"] {
+.vela-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 16px 0 16px;
 }
-.board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.vela-dock[data-open="export"] [data-dock-panel="export"],
+.vela-dock[data-open="style"] [data-dock-panel="style"] {
   padding: 14px;
 }
-.board-dock[data-open="export"] [data-dock-panel="export"] .dock-source-head,
-.board-dock[data-open="style"] [data-dock-panel="style"] .dock-source-head {
+.vela-dock[data-open="export"] [data-dock-panel="export"] .dock-source-head,
+.vela-dock[data-open="style"] [data-dock-panel="style"] .dock-source-head {
   padding: 0; /* panel already pads; avoid title drifting right */
 }
 .dock-source-body {

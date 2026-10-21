@@ -150,7 +150,7 @@ function appendGroupDropLine(root, edge) {
 }
 
 function renderCloudGroupTabs() {
-  var root = document.getElementById("board-group-tabs");
+  var root = document.getElementById("vela-group-tabs");
   if (!root) return;
   var show = cloudGroupTabsVisible();
   root.hidden = !show;
@@ -211,8 +211,8 @@ function cloudClearGroupTabs() {
 async function cloudConfirmLeaveBoard() {
   if (cloudPlusDraftActive) return true;
   if (boardDirty && cloudBoardId()) {
-    if (typeof boardAskConfirm === "function") {
-      return boardAskConfirm({
+    if (typeof askConfirm === "function") {
+      return askConfirm({
         title: "Not saved yet",
         copy: "Switch anyway?",
         ok: "Switch",

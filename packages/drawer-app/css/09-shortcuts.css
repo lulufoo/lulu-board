@@ -71,7 +71,7 @@
 }
 
 /* the one "?" dock entry opens this small menu, to the left of the button */
-.board-help-menu {
+.vela-help-menu {
   position: fixed;
   z-index: 170;
   display: flex;
@@ -83,7 +83,7 @@
   background: #fbf7f0;
   box-shadow: 0 10px 28px rgba(120, 80, 40, .16);
 }
-.board-help-menu[hidden] { display: none; }
+.vela-help-menu[hidden] { display: none; }
 .board-help-item {
   display: flex;
   align-items: center;

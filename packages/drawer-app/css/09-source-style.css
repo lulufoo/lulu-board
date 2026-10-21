@@ -7,7 +7,7 @@
   --src-num-on: #db4c84;
   --src-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 }
-html[data-drawer-mode="vela"] .board-dock[data-open="source"] [data-dock-panel="source"] {
+html[data-drawer-mode="vela"] .vela-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 0;
   gap: 0;
   background: var(--src-paper);

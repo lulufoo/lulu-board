@@ -75,7 +75,7 @@ const domain = [
   '03-flowchart.js',
   '05-render-io.js',
   '05-export-png.js',
-  '06-board-confirm.js',
+  '06-confirm.js',
   '09-create-kind-dialog.js',
   '06-cloud-sync.js',
   '06-cloud-pull.js',

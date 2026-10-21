@@ -132,8 +132,8 @@ if (typeof module === "object" && module.exports) {
 
 // One "?" dock entry: a small menu with Welcome and Keyboard shortcuts.
 function wireHelpMenu() {
-  var trigger = document.getElementById("btnBoardHelp");
-  var menu = document.getElementById("boardHelpMenu");
+  var trigger = document.getElementById("btnVelaHelp");
+  var menu = document.getElementById("velaHelpMenu");
   if (!trigger || !menu) return;
   function items() { return Array.prototype.slice.call(menu.querySelectorAll('[role="menuitem"]')); }
   function place() {
