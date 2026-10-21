@@ -1820,6 +1820,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   gap: 10px;
   min-width: 0;
 }
+#flowchartDirField { margin: 4px 0 10px; }
 .props-control {
   display: flex;
   flex-direction: column;
@@ -1844,7 +1845,8 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 #boardIdEditor,
 #flowchartTypeEditor,
 #flowchartTitleEditor,
-#flowchartIdEditor {
+#flowchartIdEditor,
+#flowchartDirEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
@@ -1891,7 +1893,8 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 #boardIdEditor:focus,
 #flowchartTypeEditor:focus,
 #flowchartTitleEditor:focus,
-#flowchartIdEditor:focus {
+#flowchartIdEditor:focus,
+#flowchartDirEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 #diagramThemeSelect,
@@ -1902,7 +1905,8 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
 #boardJustifyEditor,
 #boardArrowEditor,
 #boardCapEditor,
-#flowchartTypeEditor {
+#flowchartTypeEditor,
+#flowchartDirEditor {
   appearance: none; -webkit-appearance: none;
   padding-right: 32px;
   background-color: var(--panel-solid);
@@ -1919,7 +1923,8 @@ html[data-theme="dark"] #boardAlignEditor,
 html[data-theme="dark"] #boardJustifyEditor,
 html[data-theme="dark"] #boardArrowEditor,
 html[data-theme="dark"] #boardCapEditor,
-html[data-theme="dark"] #flowchartTypeEditor {
+html[data-theme="dark"] #flowchartTypeEditor,
+html[data-theme="dark"] #flowchartDirEditor {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='none' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5L6 8l3.5-3.5'/></svg>");
 }
 #boardTypeEditor:disabled { opacity: .65; cursor: not-allowed; }

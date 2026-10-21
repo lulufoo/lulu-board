@@ -88,7 +88,7 @@
         <button class="btn flowchart-edit-tool" id="btnFlowchartAddSubgraph" type="button" title="Add group"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Group</span></button>
         <button class="btn flowchart-edit-tool" id="btnFlowchartAddNode" type="button" title="Add node"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Node</span></button>
         <button class="btn flowchart-edit-tool" id="btnFlowchartLink" type="button" title="Link mode: click source node, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
-        <button class="btn flowchart-edit-tool" id="btnFlowchartDelete" type="button" title="Delete selected node, link, or subgraph" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+        <button class="btn flowchart-edit-tool" id="btnFlowchartDelete" type="button" title="Delete selected group, node, or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
       </div>
     </div>
 
@@ -253,6 +253,15 @@
           </div>
         </div>
         <p class="props-hint" id="propsHint"></p>
+      </div>
+      <div class="props-field" id="flowchartDirField" hidden>
+        <label class="props-label" for="flowchartDirEditor" id="flowchartDirLabel">Direction</label>
+        <div class="props-control">
+          <select id="flowchartDirEditor" aria-label="Direction">
+            <option value="TD">TD</option>
+            <option value="LR">LR</option>
+          </select>
+        </div>
       </div>
       <div class="props-fields" id="flowchartPropsFields" hidden>
         <div class="props-field" id="flowchartTypeField">

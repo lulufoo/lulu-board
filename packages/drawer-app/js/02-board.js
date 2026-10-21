@@ -1679,11 +1679,13 @@ function applyDrawerKind(kind) {
   if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
-      ? "Select a node, link, or subgraph"
+      ? "Select a group, node, or link"
       : "Select a title, box, or item";
   }
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
+  var flowDir = document.getElementById("flowchartDirField");
+  if (flowDir && kind !== "flowchart") flowDir.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {

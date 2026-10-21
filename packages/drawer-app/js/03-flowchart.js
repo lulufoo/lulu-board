@@ -18,6 +18,8 @@ var flowchartTypeField = document.getElementById("flowchartTypeField");
 var flowchartIdEditor = document.getElementById("flowchartIdEditor");
 var flowchartIdLabel = document.getElementById("flowchartIdLabel");
 var flowchartIdWrap = document.getElementById("flowchartIdWrap");
+var flowchartDirField = document.getElementById("flowchartDirField");
+var flowchartDirEditor = document.getElementById("flowchartDirEditor");
 var flowchartPropsHint = document.getElementById("flowchartPropsHint");
 
 function isFlowchartKind() {
@@ -253,15 +255,31 @@ function syncFlowchartLinkChrome() {
   }
 }
 
+function flowchartDirectionOf(source) {
+  if (typeof FlowchartEdit === "undefined" || typeof FlowchartEdit.getDirection !== "function") return "TD";
+  return FlowchartEdit.getDirection(source || flowchartSource());
+}
+
+function showFlowchartDir(dir) {
+  if (flowchartDirField) flowchartDirField.hidden = false;
+  if (flowchartDirEditor) flowchartDirEditor.value = dir === "LR" ? "LR" : "TD";
+}
+
+function hideFlowchartDir() {
+  if (flowchartDirField) flowchartDirField.hidden = true;
+}
+
 function showFlowchartPropsEmpty() {
   if (flowchartPropsFields) flowchartPropsFields.hidden = true;
   if (propsEmpty && isFlowchartKind()) {
     propsEmpty.hidden = false;
     propsEmpty.textContent = flowchartLinkMode
       ? "Link mode · click source, then target"
-      : "Select a node, link, or subgraph";
+      : "Select a group, node, or link";
   }
   if (propsKindLabel && isFlowchartKind()) propsKindLabel.textContent = "—";
+  if (isFlowchartKind()) showFlowchartDir(flowchartDirectionOf());
+  else hideFlowchartDir();
 }
 
 function clearFlowchartSelectionVisual() {
@@ -388,8 +406,7 @@ function flowchartLinkPick(selection) {
 function fillFlowchartProps() {
   if (!isFlowchartKind()) return;
   if (!selectedFlowchart || typeof FlowchartEdit === "undefined") {
-    if (flowchartPropsFields) flowchartPropsFields.hidden = true;
-    if (propsEmpty) propsEmpty.hidden = false;
+    showFlowchartPropsEmpty();
     return;
   }
   flowchartPropsFill = true;
@@ -430,6 +447,7 @@ function fillFlowchartPropsBody() {
     }
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = node.id || selectedFlowchart.id;
+    hideFlowchartDir();
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Type changes the shape: default box, start/end rounded, judgment diamond";
     return;
   }
@@ -444,6 +462,7 @@ function fillFlowchartPropsBody() {
       flowchartTypeEditor.value = (link.stroke === "dotted" || link.stroke === "dashed") ? "dotted" : "solid";
     }
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
+    hideFlowchartDir();
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Edit the link title and stroke";
     return;
   }
@@ -454,6 +473,7 @@ function fillFlowchartPropsBody() {
     if (flowchartTypeField) flowchartTypeField.hidden = true;
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = sg.id || selectedFlowchart.id;
+    showFlowchartDir(sg.direction || flowchartDirectionOf());
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Group selected · Node adds inside this group";
   }
 }
@@ -468,6 +488,17 @@ function commitFlowchartTitle() {
   } else if (selectedFlowchart.kind === "subgraph") {
     flowchartEditAction(function () { return FlowchartEdit.updateSubgraphTitle(flowchartSource(), selectedFlowchart, next); });
   }
+}
+
+function commitFlowchartDirection() {
+  if (flowchartPropsFill || typeof FlowchartEdit === "undefined") return;
+  var next = flowchartDirEditor ? String(flowchartDirEditor.value || "").trim() : "TD";
+  if (selectedFlowchart && selectedFlowchart.kind === "subgraph") {
+    flowchartEditAction(function () { return FlowchartEdit.updateSubgraphDirection(flowchartSource(), selectedFlowchart, next); });
+    return;
+  }
+  if (selectedFlowchart) return;
+  flowchartEditAction(function () { return FlowchartEdit.updateDirection(flowchartSource(), next); });
 }
 
 function commitFlowchartType() {
@@ -609,6 +640,7 @@ if (flowchartTitleEditor) {
   flowchartTitleEditor.addEventListener("blur", commitFlowchartTitle);
 }
 if (flowchartTypeEditor) flowchartTypeEditor.addEventListener("change", commitFlowchartType);
+if (flowchartDirEditor) flowchartDirEditor.addEventListener("change", commitFlowchartDirection);
 if (flowchartIdEditor) {
   flowchartIdEditor.addEventListener("change", commitFlowchartId);
   flowchartIdEditor.addEventListener("blur", commitFlowchartId);

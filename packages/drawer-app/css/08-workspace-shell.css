@@ -407,7 +407,8 @@ html[data-drawer-mode="board"] .board-dock #boardCapEditor,
 html[data-drawer-mode="board"] .board-dock #boardIdEditor,
 html[data-drawer-mode="board"] .board-dock #flowchartTypeEditor,
 html[data-drawer-mode="board"] .board-dock #flowchartTitleEditor,
-html[data-drawer-mode="board"] .board-dock #flowchartIdEditor {
+html[data-drawer-mode="board"] .board-dock #flowchartIdEditor,
+html[data-drawer-mode="board"] .board-dock #flowchartDirEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
 }
@@ -423,7 +424,8 @@ html[data-drawer-mode="board"] .board-dock #boardCapEditor:focus,
 html[data-drawer-mode="board"] .board-dock #boardIdEditor:focus,
 html[data-drawer-mode="board"] .board-dock #flowchartTypeEditor:focus,
 html[data-drawer-mode="board"] .board-dock #flowchartTitleEditor:focus,
-html[data-drawer-mode="board"] .board-dock #flowchartIdEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="board"] .board-dock #flowchartIdEditor:focus,
+html[data-drawer-mode="board"] .board-dock #flowchartDirEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
 html[data-drawer-mode="board"] .board-dock .props-arrow-reverse,
 html[data-drawer-mode="board"] .board-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
 
