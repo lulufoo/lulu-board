@@ -262,10 +262,12 @@ assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
 assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
 assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
-assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, board_id, group_id\)/);
+assert.match(worker, /vela_id: z\.string\(\)/, 'MCP input uses vela_id');
+assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
+assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
-assert.match(worker, /group this board_id belongs to/, 'get/create say group_id is the board group');
-assert.match(worker, /row\.group_id is the group this board_id belongs to/, 'save describes row.group_id');
+assert.match(worker, /group this vela_id belongs to/, 'get/create say group_id is the Vela group');
+assert.match(worker, /row\.group_id is the group this vela_id belongs to/, 'save describes row.group_id');
 assert.match(worker, /current account/, 'create joins a group on the current account');
 assert.match(worker, /Omit group_id to create a new group/, 'create says omit mints a group');
 assert.doesNotMatch(worker, /create_mermaid/, 'MCP stays one persist set');
@@ -284,7 +286,7 @@ assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no servic
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
 assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
-assert.match(skill, /group this\s+board id belongs to/, 'skill says group_id is the board group');
+assert.match(skill, /group this\s+`vela_id` belongs to/, 'skill says group_id is the Vela group');
 assert.match(skill, /current\s+account/, 'skill joins on the current account');
 assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
 
