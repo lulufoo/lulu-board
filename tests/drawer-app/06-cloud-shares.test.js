@@ -18,7 +18,7 @@ assert.match(shares, /own_share_state/, 'each link role comes from own_share_sta
 for (const rpc of ['open_share', 'rotate_share', 'unshare', 'set_share_role']) {
   assert.match(shares + drawer + dialog, new RegExp(rpc), rpc + ' is reachable from the drawer or the Share dialog');
 }
-assert.match(drawer, /Stop sharing this board\?/, 'Stop asks first: the link stops working');
+assert.match(drawer, /Stop sharing this Vela\?/, 'Stop asks first: the link stops working');
 assert.match(sync, /cloudRefreshShares\(\)/, 'the group refresh also refreshes the shared list');
 
 const { cloudShareSummaries } = new Function(

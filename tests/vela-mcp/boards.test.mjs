@@ -12,16 +12,16 @@ import {
   createBoard,
   saveBoard,
   stripPersistedMeta,
-} from '../../packages/board-mcp/src/boards.js';
-import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
-import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
-import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/board-mcp/src/brand.js';
+} from '../../packages/vela-mcp/src/boards.js';
+import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
+import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/vela-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/05-board-file.js'), 'utf8');
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
-const boardsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/boards.js'), 'utf8');
-const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
+const boardsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/boards.js'), 'utf8');
+const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
@@ -225,7 +225,7 @@ try {
   const flowSaved = await saveBoard(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
   const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
-  assert.ok(flowPatch, 'save_board stores flowchart in bmd');
+  assert.ok(flowPatch, 'save_vela stores flowchart in bmd');
 
   const conflict = await saveBoard(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
@@ -259,13 +259,15 @@ assert.equal(denied.status, 401);
 assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\/\/mcp\.luluboard\.app\/\.well-known\/oauth-protected-resource"/);
 
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
-assert.match(worker, /registerTool\("get_board"/, 'get_board is registered');
-assert.match(worker, /registerTool\("create_board"/, 'create_board is registered');
-assert.match(worker, /registerTool\("save_board"/, 'save_board is registered');
-assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, board_id, group_id\)/);
+assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
+assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
+assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
+assert.match(worker, /vela_id: z\.string\(\)/, 'MCP input uses vela_id');
+assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
+assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, vela_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
-assert.match(worker, /group this board_id belongs to/, 'get/create say group_id is the board group');
-assert.match(worker, /row\.group_id is the group this board_id belongs to/, 'save describes row.group_id');
+assert.match(worker, /group this vela_id belongs to/, 'get/create say group_id is the Vela group');
+assert.match(worker, /row\.group_id is the group this vela_id belongs to/, 'save describes row.group_id');
 assert.match(worker, /current account/, 'create joins a group on the current account');
 assert.match(worker, /Omit group_id to create a new group/, 'create says omit mints a group');
 assert.doesNotMatch(worker, /create_mermaid/, 'MCP stays one persist set');
@@ -284,7 +286,7 @@ assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no servic
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
 assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
-assert.match(skill, /group this\s+board id belongs to/, 'skill says group_id is the board group');
+assert.match(skill, /group this\s+`vela_id` belongs to/, 'skill says group_id is the Vela group');
 assert.match(skill, /current\s+account/, 'skill joins on the current account');
 assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
 
@@ -318,4 +320,4 @@ assert.deepEqual(
   readFileSync(path.join(brandDir, 'favicon-32.png'))
 );
 
-console.log('ok board-mcp boards');
+console.log('ok vela-mcp boards');

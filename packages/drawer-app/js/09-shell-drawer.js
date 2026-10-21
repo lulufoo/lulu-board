@@ -236,7 +236,7 @@ function shellRenderMine(groups) {
     title.textContent = group.title || "Untitled";
     var meta = document.createElement("span");
     var when = shellWhen(group.updatedAt);
-    meta.textContent = group.boardCount + (group.boardCount === 1 ? " board" : " boards") + (when ? " · " + when : "");
+    meta.textContent = group.boardCount + " Vela" + (when ? " · " + when : "");
     row.appendChild(title);
     row.appendChild(meta);
     row.addEventListener("click", function () {
@@ -375,7 +375,7 @@ function shellSyncShareButton() {
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   var own = typeof cloudBoardId === "function" && !!cloudBoardId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
-  btn.title = btn.disabled ? "Save this board to the cloud to share it" : "Share this board";
+  btn.title = btn.disabled ? "Save this Vela to the cloud to share it" : "Share this Vela";
 }
 
 // Functions, not vars: the first render can run before this file's var initialisers do.
@@ -460,10 +460,10 @@ function shellRenderShared(shares) {
     acts.className = "shell-row-acts";
     var live = !preview && typeof cloudShareMutate === "function";
     // Everything else about a share (link, who can do what, a new link) lives in the Share dialog.
-    var stop = shellShareAction("Stop", "Stop sharing this board", async function () {
+    var stop = shellShareAction("Stop", "Stop sharing this Vela", async function () {
       if (!live) return;
       if (typeof boardAskConfirm === "function" && !(await boardAskConfirm({
-        title: "Stop sharing this board?",
+        title: "Stop sharing this Vela?",
         copy: "Anyone with the link will lose access.",
         ok: "Stop sharing",
         cancel: "Cancel",
@@ -505,7 +505,7 @@ function shellSearchMatches(query, groups, source) {
   (groups || []).forEach(function (group) {
     var members = group.members && group.members.length ? group.members : [{ board_id: group.faceBoardId, title: group.title }];
     if (!q) {
-      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + (group.boardCount === 1 ? " board" : " boards"), boardId: group.faceBoardId });
+      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + " Vela", boardId: group.faceBoardId });
       return;
     }
     var groupHit = String(group.title || "").toLowerCase().indexOf(q) >= 0;
@@ -515,7 +515,7 @@ function shellSearchMatches(query, groups, source) {
     boards.push({
       groupId: group.groupId,
       title: group.title,
-      note: viaBoard ? "board · " + boardHit.title : group.boardCount + (group.boardCount === 1 ? " board" : " boards"),
+      note: viaBoard ? "Vela · " + boardHit.title : group.boardCount + " Vela",
       boardId: viaBoard ? boardHit.board_id : group.faceBoardId,
     });
   });
@@ -556,7 +556,7 @@ function shellPaintSearchResults(query, found, remote) {
       row.setAttribute("role", "option");
       var title = document.createElement("b");
       var note = document.createElement("span");
-      if (kind === "line") { title.textContent = item.text; note.textContent = "line " + (item.line + 1) + " of this board"; }
+      if (kind === "line") { title.textContent = item.text; note.textContent = "line " + (item.line + 1) + " of this Vela"; }
       else { title.textContent = item.title || "Untitled"; note.textContent = item.note; }
       row.appendChild(title);
       row.appendChild(note);
@@ -566,10 +566,10 @@ function shellPaintSearchResults(query, found, remote) {
       frag.appendChild(row);
     });
   }
-  section(String(query).trim() ? "Boards" : "Recent", found.boards, "board");
+  section(String(query).trim() ? "Vela" : "Recent", found.boards, "board");
   section("Mine", (remote && remote.mine) || [], "mine");
   section("Public", (remote && remote.public) || [], "public");
-  section("In this board", found.lines, "line");
+  section("In this Vela", found.lines, "line");
   if (!shellSearchHits.length) {
     var none = document.createElement("p");
     none.className = "shell-empty";

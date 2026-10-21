@@ -22,7 +22,7 @@ assert.doesNotMatch(boardBuild, /examples-templates-build/, 'board build does no
 assert.match(pack, /skip examples-templates-build/, 'example packer is a no-op');
 assert.match(boot, /function openOnboardingHash/, 'hash persist can open onboarding');
 assert.match(boot, /encodeBoardHash/, 'onboarding is encoded into #z:');
-assert.match(src, /board "Lulu Board"/, 'onboarding source is the welcome board');
+assert.match(src, /board "Lulu Vela"/, 'onboarding source is the welcome Vela');
 assert.ok(!fs.existsSync(path.join(root, 'skill/board/templates/onboarding.bmd')), 'skill no longer holds onboarding');
 assert.ok(fs.existsSync(path.join(root, 'skill/board/templates/demo.bmd')), 'AI demo template stays');
 

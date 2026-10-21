@@ -16,6 +16,7 @@ assert.match(sheet, /role="dialog" aria-modal="true" aria-labelledby="createKind
 assert.match(sheet, /class="create-kind-pop"/, 'search-style pop, not the sign-in sheet');
 assert.doesNotMatch(sheet, /board-sign-in-sheet/, 'create dialog does not reuse the small sign-in sheet');
 assert.match(sheet, /id="createKindFilter"/, 'filter field');
+assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
 assert.match(sheet, /id="createKindList"/, 'type list');
 assert.match(build, /06-board-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
 assert.match(css, /\.create-kind-label/, 'two class headers live in CSS');

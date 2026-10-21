@@ -889,7 +889,7 @@ function pinBoardTitle() {
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
   var kind = document.documentElement.dataset.diagramKind || "";
   if (kind && kind !== "board") {
-    if (document.title !== "Lulu Board") document.title = "Lulu Board";
+    if (document.title !== "Lulu Vela") document.title = "Lulu Vela";
     return;
   }
   var title = "";
@@ -900,7 +900,7 @@ function pinBoardTitle() {
     var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
     title = heading ? String(heading.textContent || "").trim() : "";
   }
-  var next = title || "Lulu Board";
+  var next = title || "Lulu Vela";
   if (document.title !== next) document.title = next;
 }
 function boardPinnedTitleNode() {
@@ -2040,7 +2040,7 @@ async function bootstrapBoardFromHash() {
       applyBoardLiveMeta({ id: "", version: 1 });
     }
     await saveBoardToHash({ bump: false });
-    setStatus("New board");
+    setStatus("New Vela");
     return;
   }
   try {
