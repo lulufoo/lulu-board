@@ -73,6 +73,7 @@ const domain = [
   '05-board-file.js',
   '05-export-png.js',
   '06-board-confirm.js',
+  '09-create-kind-dialog.js',
   '06-cloud-sync.js',
   '06-cloud-pull.js',
   '06-cloud-groups.js',
