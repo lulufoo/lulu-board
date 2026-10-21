@@ -1694,9 +1694,8 @@ function fixSvgIntrinsic(svg) {
     svg.setAttribute("width", String(Math.ceil(vb[2])));
     svg.setAttribute("height", String(Math.ceil(vb[3])));
   }
-  svg.style.width = "auto";
-  svg.style.height = "auto";
-  svg.style.maxWidth = "none";
+  // Do not write svg.style.* — on this host that rebuilds the style
+  // attribute and drops Pele's --_s / --_fg aliases (nodes paint black).
 }
 
 function finishCanvasView(opts) {
@@ -1750,7 +1749,8 @@ function renderFlowchart(opts) {
   }
   try {
     var result = window.pele.render(body.trim(), {
-      fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
+      fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
+      fontSize: 16,
       autoDirection: false,
       responsive: false,
     });

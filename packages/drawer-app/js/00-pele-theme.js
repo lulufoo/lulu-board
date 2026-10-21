@@ -14,6 +14,13 @@
     return null;
   }
 
+  // Node stroke is not Board bandBorder. Local mermaid SoT:
+  // packages/mermaid-themes/flowchart/default.js themeVariables.
+  var PELE_FONT = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
+  var FLOWCHART_CHROME = {
+    default: { border: "#d4c4b0", clusterBorder: "#c4b8a8", muted: "#8b7358" },
+  };
+
   function mapPack(themeOrId) {
     var theme = themeOf(themeOrId);
     if (!theme) {
@@ -26,8 +33,10 @@
     var colors = Array.isArray(theme.colors) ? theme.colors.slice() : [];
     var color = theme.color || "#4a3524";
     var edge = theme.edgeStroke || color;
-    var muted = theme.edgeLabel || color;
-    var border = theme.bandBorder || color;
+    var chrome = FLOWCHART_CHROME[theme.id] || {};
+    var muted = chrome.muted || theme.edgeLabel || color;
+    var border = chrome.border || theme.bandBorder || color;
+    var clusterBorder = chrome.clusterBorder || border;
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
     var radius = (theme.types && theme.types.card && theme.types.card.radius) || "12px";
@@ -40,13 +49,24 @@
       "--pele-surface-alt": alt,
       "--pele-border": border,
       "--pele-accent": edge,
-      "--pele-font": theme.fontFamily || '"SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif',
+      "--pele-font": theme.fontFamily || PELE_FONT,
       "--pele-radius": radius,
     };
     var i;
     for (i = 0; i < colors.length && i < 8; i += 1) {
       css["--pele-series-" + (i + 1)] = colors[i];
     }
+    // Pele nodes fill with var(--_s), not --pele-surface. Keep aliases on the
+    // host: writing svg.style.* on this page drops the SVG's own --_s map.
+    css["--_bg"] = "var(--pele-bg, #fff)";
+    css["--_fg"] = "var(--pele-fg, #1f1f1f)";
+    css["--_m"] = "var(--pele-muted, #6e6e6e)";
+    css["--_l"] = "var(--pele-line, #1f1f1f)";
+    css["--_s"] = "var(--pele-surface, #f3f3f3)";
+    css["--_a"] = "var(--pele-surface-alt, #e6e6e6)";
+    css["--_b"] = "var(--pele-border, #8a8a8a)";
+    css["--_c"] = "var(--pele-accent, #5b7bd5)";
+    css["--_r"] = "var(--pele-radius, 4px)";
     return {
       css: css,
       series: colors,
@@ -60,7 +80,7 @@
         tertiaryColor: colors[2] || alt,
         tertiaryTextColor: muted,
         clusterBkg: alt,
-        clusterBorder: border,
+        clusterBorder: clusterBorder,
         titleColor: color,
         nodeTextColor: color,
         edgeLabelBackground: surface,

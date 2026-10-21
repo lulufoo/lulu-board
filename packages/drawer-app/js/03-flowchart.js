@@ -46,6 +46,51 @@ function flowchartSelectionShape(g) {
   return g.querySelector(":scope > rect:not(.mermaid-edge-label-hit):not(.flowchart-selection-halo), :scope > polygon, :scope > path:not(.pele-marker):not(.mermaid-edge-hit), :scope > circle, :scope > ellipse");
 }
 
+function flowchartThemeRadius() {
+  var host = document.documentElement;
+  if (!host || !window.getComputedStyle) return NaN;
+  var cs = getComputedStyle(host);
+  var n = parseFloat(cs.getPropertyValue("--_r") || cs.getPropertyValue("--pele-radius") || "");
+  return isFinite(n) ? n : NaN;
+}
+
+function flowchartUsedRadius(shape, axis) {
+  if (!shape) return NaN;
+  var attr = parseFloat(shape.getAttribute(axis) || "");
+  if (isFinite(attr)) return attr;
+  var cs = window.getComputedStyle ? getComputedStyle(shape) : null;
+  if (cs) {
+    var raw = axis === "ry"
+      ? (cs.ry || cs.getPropertyValue("ry"))
+      : (cs.rx || cs.getPropertyValue("rx"));
+    var n = parseFloat(raw);
+    if (isFinite(n)) return n;
+  }
+  var styleVal = (shape.style && shape.style[axis]) || "";
+  var styleAttr = String(shape.getAttribute("style") || "");
+  var m = styleAttr.match(new RegExp("(?:^|;)\\s*" + axis + "\\s*:\\s*([^;]+)"));
+  var token = styleVal || (m ? m[1].trim() : "");
+  if (token) {
+    var sn = parseFloat(token);
+    if (isFinite(sn)) return sn;
+    if (/--_r|--pele-radius/.test(token)) {
+      sn = flowchartThemeRadius();
+      if (isFinite(sn)) return sn;
+    }
+  }
+  var g = shape.parentNode;
+  var cls = (g && g.getAttribute && g.getAttribute("class")) || "";
+  if (/pele-shape-stadium/.test(cls)) {
+    var hh = parseFloat(shape.getAttribute("height") || (cs && cs.height) || "");
+    if (isFinite(hh) && hh > 0) return hh / 2;
+  }
+  if (/pele-shape-rect/.test(cls)) {
+    var theme = flowchartThemeRadius();
+    if (isFinite(theme)) return theme;
+  }
+  return NaN;
+}
+
 function paintFlowchartSelectionHalo(g) {
   if (!g) return;
   g.querySelectorAll(".flowchart-selection-halo").forEach(function (el) { el.remove(); });
@@ -73,11 +118,21 @@ function paintFlowchartSelectionHalo(g) {
     halo.setAttribute("y", String(y - gap));
     halo.setAttribute("width", String(w + gap * 2));
     halo.setAttribute("height", String(h + gap * 2));
-    var rxN = parseFloat(shape.getAttribute("rx") || "");
-    var ryN = parseFloat(shape.getAttribute("ry") || "");
-    if (isFinite(rxN)) halo.setAttribute("rx", String(Math.max(0, rxN + gap)));
-    if (isFinite(ryN)) halo.setAttribute("ry", String(Math.max(0, ryN + gap)));
-    else if (isFinite(rxN)) halo.setAttribute("ry", String(Math.max(0, rxN + gap)));
+    var rxN = flowchartUsedRadius(shape, "rx");
+    var ryN = flowchartUsedRadius(shape, "ry");
+    if (isFinite(rxN)) {
+      var rxNext = String(Math.max(0, rxN + gap));
+      halo.setAttribute("rx", rxNext);
+      halo.style.rx = rxNext + "px";
+    }
+    if (isFinite(ryN)) {
+      var ryNext = String(Math.max(0, ryN + gap));
+      halo.setAttribute("ry", ryNext);
+      halo.style.ry = ryNext + "px";
+    } else if (isFinite(rxN)) {
+      halo.setAttribute("ry", rxNext);
+      halo.style.ry = rxNext + "px";
+    }
   } else if (tag === "circle") {
     var r = parseFloat(shape.getAttribute("r") || 0);
     if (r > 0) halo.setAttribute("r", String(r + gap));
@@ -113,6 +168,15 @@ function paintFlowchartSelectionHalo(g) {
     halo.setAttribute("points", pairs.map(function (p) {
       return (cx + (p[0] - cx) * ((bw + gap * 2) / bw)) + "," + (cy + (p[1] - cy) * ((bh + gap * 2) / bh));
     }).join(" "));
+  } else {
+    try {
+      var box = shape.getBBox();
+      var pcx = box.x + box.width / 2;
+      var pcy = box.y + box.height / 2;
+      var psx = box.width ? (box.width + gap * 2) / box.width : 1;
+      var psy = box.height ? (box.height + gap * 2) / box.height : 1;
+      halo.setAttribute("transform", "translate(" + pcx + " " + pcy + ") scale(" + psx + " " + psy + ") translate(" + (-pcx) + " " + (-pcy) + ")");
+    } catch (_err) {}
   }
   if (shape.parentNode) shape.parentNode.insertBefore(halo, shape);
 }
@@ -288,7 +352,7 @@ function fillFlowchartPropsBody() {
       if (FlowchartEdit.normalizeNodeKind) cur = FlowchartEdit.normalizeNodeKind(cur);
       flowchartTypeEditor.value = cur || "default";
     }
-    if (flowchartIdWrap) flowchartIdWrap.hidden = false;
+    if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = node.id || selectedFlowchart.id;
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Type changes the shape: default box, start/end rounded, judgment diamond";
     return;
@@ -312,7 +376,7 @@ function fillFlowchartPropsBody() {
     if (flowchartTitleLabel) flowchartTitleLabel.textContent = "Title";
     if (flowchartTitleEditor) flowchartTitleEditor.value = sg.title || "";
     if (flowchartTypeField) flowchartTypeField.hidden = true;
-    if (flowchartIdWrap) flowchartIdWrap.hidden = false;
+    if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = sg.id || selectedFlowchart.id;
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Group selected · Node adds inside this group";
   }
