@@ -503,7 +503,7 @@ function shellSearchMatches(query, groups, source) {
   var q = String(query || "").trim().toLowerCase();
   var boards = [];
   (groups || []).forEach(function (group) {
-    var members = group.members && group.members.length ? group.members : [{ board_id: group.faceBoardId, title: group.title }];
+    var members = group.members && group.members.length ? group.members : [{ graph_id: group.faceBoardId, title: group.title }];
     if (!q) {
       boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + " Vela", boardId: group.faceBoardId });
       return;
@@ -516,7 +516,7 @@ function shellSearchMatches(query, groups, source) {
       groupId: group.groupId,
       title: group.title,
       note: viaBoard ? "Vela · " + boardHit.title : group.boardCount + " Vela",
-      boardId: viaBoard ? boardHit.board_id : group.faceBoardId,
+      boardId: viaBoard ? boardHit.graph_id : group.faceBoardId,
     });
   });
   var lines = [];
@@ -532,7 +532,7 @@ function shellSearchMatches(query, groups, source) {
 function shellSearchGroups() {
   if (shellIsPreview()) {
     return shellSampleGroups().map(function (g) {
-      return { groupId: g.groupId, title: g.title, boardCount: g.boardCount, faceBoardId: "", members: [{ board_id: "", title: g.title }] };
+      return { groupId: g.groupId, title: g.title, boardCount: g.boardCount, faceBoardId: "", members: [{ graph_id: "", title: g.title }] };
     });
   }
   return shellGroups;

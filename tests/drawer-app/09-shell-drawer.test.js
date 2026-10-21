@@ -38,8 +38,8 @@ console.log('ok 09-shell-drawer');
   const end = src.indexOf('function shellSearchGroups');
   const shellSearchMatches = new Function(src.slice(start, end) + '\nreturn shellSearchMatches;')();
   const groups = [
-    { groupId: 'g1', title: 'Payments retry flow', boardCount: 2, faceBoardId: 'b_1', members: [{ board_id: 'b_1', title: 'Flow' }, { board_id: 'b_2', title: 'Retry notes' }] },
-    { groupId: 'g2', title: 'Onboarding', boardCount: 1, faceBoardId: 'b_3', members: [{ board_id: 'b_3', title: 'Welcome' }] },
+    { groupId: 'g1', title: 'Payments retry flow', boardCount: 2, faceBoardId: 'b_1', members: [{ graph_id: 'b_1', title: 'Flow' }, { graph_id: 'b_2', title: 'Retry notes' }] },
+    { groupId: 'g2', title: 'Onboarding', boardCount: 1, faceBoardId: 'b_3', members: [{ graph_id: 'b_3', title: 'Welcome' }] },
   ];
   const empty = shellSearchMatches('', groups, 'a\nb');
   assert.equal(empty.boards.length, 2, 'empty query lists recent groups');

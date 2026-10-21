@@ -26,7 +26,7 @@ const { cloudShareSummaries } = new Function(
   '\nreturn { cloudShareSummaries };'
 )();
 
-const row = (id, share, updated) => ({ board_id: id, title: 'T ' + id, share_id: share, updated_at: updated });
+const row = (id, share, updated) => ({ graph_id: id, title: 'T ' + id, share_id: share, updated_at: updated });
 assert.deepStrictEqual(cloudShareSummaries([], {}, 'b_1'), []);
 {
   const out = cloudShareSummaries(

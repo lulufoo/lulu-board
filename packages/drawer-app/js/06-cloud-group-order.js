@@ -20,16 +20,16 @@ async function cloudReorderGroupTabs(fromId, toId, after) {
   if (!cloudClient || !cloudGroupId) return false;
   var groupId = cloudGroupId;
   var before = cloudGroupMembers.slice();
-  var ids = before.map(function (row) { return row.board_id; });
+  var ids = before.map(function (row) { return row.graph_id; });
   var next = moveBoardId(ids, fromId, toId, after);
   if (next.join(",") === ids.join(",")) return false;
   var byId = {};
-  before.forEach(function (row) { byId[row.board_id] = row; });
+  before.forEach(function (row) { byId[row.graph_id] = row; });
   cloudGroupMembers = next.map(function (id) { return byId[id]; });
   renderCloudGroupTabs();
-  var result = await cloudClient.rpc("reorder_group_boards", {
+  var result = await cloudClient.rpc("reorder_group_graphs", {
     p_group_id: groupId,
-    p_board_ids: next,
+    p_graph_ids: next,
   });
   if (groupId !== cloudGroupId) return false;
   if (result.error) {
@@ -38,7 +38,7 @@ async function cloudReorderGroupTabs(fromId, toId, after) {
     setStatus(result.error.message || "Reorder failed", true);
     return false;
   }
-  var saved = (result.data || []).map(function (row) { return byId[row.board_id]; }).filter(Boolean);
+  var saved = (result.data || []).map(function (row) { return byId[row.graph_id]; }).filter(Boolean);
   if (saved.length === before.length) cloudGroupMembers = saved;
   renderCloudGroupTabs();
   setStatus("Reordered");

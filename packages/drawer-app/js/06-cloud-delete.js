@@ -11,14 +11,14 @@ function syncBoardDeleteChrome() {
 }
 
 function cloudNextBoardAfterDelete(boardId) {
-  var ids = cloudGroupMembers.map(function (row) { return row.board_id; });
+  var ids = cloudGroupMembers.map(function (row) { return row.graph_id; });
   var rest = ids.filter(function (id) { return id !== boardId; });
   if (!rest.length) return "";
   return rest[Math.min(ids.indexOf(boardId), rest.length - 1)];
 }
 
 function cloudDropPlusDraft() {
-  var last = cloudGroupMembers.length ? cloudGroupMembers[cloudGroupMembers.length - 1].board_id : "";
+  var last = cloudGroupMembers.length ? cloudGroupMembers[cloudGroupMembers.length - 1].graph_id : "";
   cloudClearDirtyLeave();
   cloudClearPlusDraftSlot();
   if (last) cloudOpenBoardById(last);
@@ -40,11 +40,11 @@ async function cloudDeleteSavedBoard() {
   var nextId = cloudNextBoardAfterDelete(boardId);
   cloudClearDirtyLeave();
   try {
-    var board = await cloudClient.from("boards").delete().eq("board_id", boardId);
+    var board = await cloudClient.from("graphs").delete().eq("graph_id", boardId);
     if (board.error) throw board.error;
     cloudForgetBoardCache([boardId]);
     if (nextId) {
-      cloudGroupMembers = cloudGroupMembers.filter(function (row) { return row.board_id !== boardId; });
+      cloudGroupMembers = cloudGroupMembers.filter(function (row) { return row.graph_id !== boardId; });
       cloudOpenBoardById(nextId);
     } else {
       history.replaceState(null, "", location.pathname + location.search);

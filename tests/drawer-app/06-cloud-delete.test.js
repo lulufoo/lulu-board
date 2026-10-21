@@ -32,7 +32,7 @@ assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows fo
   const start = del.indexOf('function cloudNextBoardAfterDelete');
   const end = del.indexOf('function cloudDropPlusDraft');
   const src = del.slice(start, end);
-  const next = (members, id) => new Function('cloudGroupMembers', src + '\nreturn cloudNextBoardAfterDelete;')(members.map((b) => ({ board_id: b })))(id);
+  const next = (members, id) => new Function('cloudGroupMembers', src + '\nreturn cloudNextBoardAfterDelete;')(members.map((b) => ({ graph_id: b })))(id);
   assert.strictEqual(next(['b_1', 'b_2', 'b_3'], 'b_2'), 'b_3', 'middle opens the next tab');
   assert.strictEqual(next(['b_1', 'b_2', 'b_3'], 'b_3'), 'b_2', 'last opens the previous tab');
   assert.strictEqual(next(['b_1', 'b_2'], 'b_1'), 'b_2', 'first opens the next tab');
@@ -42,14 +42,14 @@ assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows fo
 const draft = del.slice(del.indexOf('function cloudDropPlusDraft'), del.indexOf('async function cloudDeleteSavedBoard'));
 assert.doesNotMatch(draft, /askConfirm|cloudClient/, 'dropping a draft neither asks nor hits the cloud');
 assert.match(draft, /cloudClearPlusDraftSlot\(\)/, 'dropping a draft clears the memory slot');
-assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.board_id/, 'draft drop returns to the last saved board');
+assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.graph_id/, 'draft drop returns to the last saved board');
 
 const saved = del.slice(del.indexOf('async function cloudDeleteSavedBoard'), del.indexOf('async function cloudDeleteCurrentBoard'));
 assert.match(saved, /askConfirm\(\{[\s\S]*Delete this Vela\?/, 'saved board asks first, in English');
-assert.match(saved, /from\("boards"\)\.delete\(\)\.eq\("board_id", boardId\)/, 'deletes the boards row');
+assert.match(saved, /from\("graphs"\)\.delete\(\)\.eq\("graph_id", boardId\)/, 'deletes the boards row');
 assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
 assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');
-assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*from\("boards"\)\.delete/, 'pending autosave is cancelled before delete');
+assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*from\("graphs"\)\.delete/, 'pending autosave is cancelled before delete');
 assert.match(saved, /cloudForgetBoardCache\(\[boardId\]\)/, 'cached row is dropped');
 assert.match(sync.slice(sync.indexOf('async function deleteCloudGroup')), /Delete this group\?/, 'History x still deletes the whole group');
 // Source footer spacing: a hairline closes the editor, Delete has room, the char count lines up with it

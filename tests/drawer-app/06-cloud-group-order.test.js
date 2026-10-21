@@ -58,9 +58,9 @@ assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outline
 }
 
 const reorder = order.slice(order.indexOf('async function cloudReorderGroupTabs'), order.indexOf('function cloudTabFromEvent'));
-assert.match(reorder, /rpc\("reorder_group_boards"/, 'drop saves through the reorder rpc');
+assert.match(reorder, /rpc\("reorder_group_graphs"/, 'drop saves through the reorder rpc');
 assert.match(reorder, /p_group_id:\s*groupId/, 'rpc carries the group id');
-assert.match(reorder, /p_board_ids:\s*next/, 'rpc carries the full new order');
+assert.match(reorder, /p_graph_ids:\s*next/, 'rpc carries the full new order');
 assert.match(reorder, /moveBoardId\(ids, fromId, toId, after\)/, 'rpc uses the before\/after slot');
 assert.match(reorder, /cloudGroupMembers = before/, 'a failed save restores the old order');
 assert.match(reorder, /groupId !== cloudGroupId/, 'a group switch mid-save leaves state alone');

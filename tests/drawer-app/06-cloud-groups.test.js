@@ -21,16 +21,16 @@ const { cloudGroupSummaries } = new Function(
   '\nreturn { cloudGroupSummaries };'
 )();
 
-const b = (id, title, updated) => ({ board_id: id, title, created_at: '2026-01-01T00:00:00Z', updated_at: updated });
+const b = (id, title, updated) => ({ graph_id: id, title, created_at: '2026-01-01T00:00:00Z', updated_at: updated });
 
 assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no groups');
 
 {
   const rows = [b('b_3', 'Payments', '2026-10-03T00:00:00Z'), b('b_2', 'Retry', '2026-10-02T00:00:00Z'), b('b_1', 'LLM', '2026-10-01T00:00:00Z'), b('b_9', 'Orphan', '2026-10-04T00:00:00Z')];
   const members = [
-    { board_id: 'b_1', group_id: 'g_a' },
-    { board_id: 'b_2', group_id: 'g_b' },
-    { board_id: 'b_3', group_id: 'g_b' },
+    { graph_id: 'b_1', group_id: 'g_a' },
+    { graph_id: 'b_2', group_id: 'g_b' },
+    { graph_id: 'b_3', group_id: 'g_b' },
   ];
   const out = cloudGroupSummaries(rows, members, 'b_2');
   assert.deepStrictEqual(out.map((g) => g.groupId), ['g_b', 'g_a'], 'newest-edited group first; a board without a group is not listed');
@@ -44,8 +44,8 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
 }
 {
   const rows = [b('b_1', 'LLM', '2026-10-01T00:00:00Z')];
-  const out = cloudGroupSummaries(rows, [{ board_id: 'b_1', group_id: 'g_a' }], '');
+  const out = cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], '');
   assert.strictEqual(out[0].isCurrent, false, 'no current board: nothing marked');
-  assert.strictEqual(cloudGroupSummaries(rows, [{ board_id: 'b_1', group_id: 'g_a' }], 'b_404')[0].isCurrent, false, 'current board outside every group: nothing marked');
+  assert.strictEqual(cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], 'b_404')[0].isCurrent, false, 'current board outside every group: nothing marked');
 }
 console.log('ok 06-cloud-groups');
