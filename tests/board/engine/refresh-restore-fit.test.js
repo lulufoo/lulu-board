@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
+const canvas = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/00-canvas-view.js'), 'utf8');
 const board = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/02-board.js'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 
@@ -26,13 +27,15 @@ assert.ok(!/scheduleDrawerUiSave/.test(shell + boot), 'canvas moves do not write
 }
 assert.ok(/let scale = 1, panX = 0, panY = 0;/.test(shell), 'live camera starts at 100%');
 
-// An empty board has no world bounds: it must still reset the camera to 100% centred,
-// instead of keeping whatever the previous board left behind.
+// An empty world has no bounds: it must still reset the camera to 100% centred,
+// instead of keeping whatever the previous document left behind.
 {
-  const fit = shell.slice(shell.indexOf('function fitBoardView'), shell.indexOf('\nfunction escapeHtml'));
+  const fit = canvas.slice(canvas.indexOf('function fitWorld'), canvas.indexOf('\nfunction restoreOrFit'));
   const empty = fit.indexOf('applyCamera({ scale: 1, cx: 0, cy: 0 })');
-  assert.ok(/if \(!b\) \{ applyCamera\(\{ scale: 1, cx: 0, cy: 0 \}\); return; \}/.test(fit), 'empty board resets camera to 100% centred');
+  assert.ok(/if \(!b\) \{ applyCamera\(\{ scale: 1, cx: 0, cy: 0 \}\); return; \}/.test(fit), 'empty world resets camera to 100% centred');
   assert.ok(empty >= 0 && empty < fit.indexOf('applyCamera({ scale: next'), 'empty branch comes before the fit branch');
+  assert.ok(/function applyRestoredBoardView/.test(shell) && /Canvas\.restoreOrFit/.test(shell), 'restore helper calls Canvas');
+  assert.ok(/function fitBoardView/.test(shell) && /Canvas\.fitWorld/.test(shell), 'fit helper calls Canvas');
 }
 
 console.log('ok refresh-restore-fit');

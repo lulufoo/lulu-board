@@ -74,7 +74,6 @@ function setBoardLinkMode(active) {
     selectedBoardEdge = null;
     delete boardSourceEl.dataset.boardEdgeSelectionKey;
     clearBoardSelection();
-    closePropsPanel();
     showPropsForLinkMode();
     setStatus("Link mode · type and title, then click source / target box or item");
   } else {
@@ -636,8 +635,6 @@ function applyBoardEdgeSelection(root) {
 }
 function selectBoardEdge(root, index) {
   var nextKey = "link:" + index;
-  var alreadySelected = !!(selectedBoardEdge && selectedBoardEdge.key === nextKey);
-  if (!alreadySelected && !boardLinkMode) closePropsPanel();
   selectedBoardNode = null; selectedBoardEdge = { kind: "link", key: nextKey, index: index };
   delete boardSourceEl.dataset.boardSelectionKey; boardSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
   var title = "control";
@@ -707,7 +704,6 @@ function clearBoardSelection() {
   if (!boardLinkMode) {
     hidePropsLinkOnlyChrome();
     if (boardInspector) boardInspector.hidden = true;
-    closePropsPanel();
   }
   syncBoardEditControls();
 }
@@ -853,7 +849,6 @@ function selectBoardElement(el, root, board, event) {
   } else {
     next = isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell");
   }
-  if (next.key !== currentBoardSelectionKey() && !boardLinkMode) closePropsPanel();
   selectedBoardEdge = null;
   selectedBoardNode = next;
   delete boardSourceEl.dataset.boardEdgeSelectionKey;
@@ -1205,7 +1200,7 @@ function wireBoardDrag(root, board) {
   canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
 }
 function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardClickWired === "1") return; canvas.dataset.boardClickWired = "1"; canvas.addEventListener("click", function(event) { var edge = event.target.closest ? event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link") : null; var hit = event.target.closest ? event.target.closest(".board-title-node, .board-item, .board-zone") : null; if (boardLinkMode) { event.preventDefault(); event.stopPropagation(); return; } if (boardEventIsItemMdLink(event)) return; /* pick happens on pointerdown */
-      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) { clearBoardSelection(); return; } var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
+      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
 
 function commitBoardArrow() {
   if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
@@ -1257,7 +1252,19 @@ function persistMermaidStyle(body, patch) {
   var theme = patch && patch.theme != null
     ? DrawerStyleLine.resolveThemeId(patch.theme)
     : DrawerStyleLine.themeFromStyleToken(styled.token);
-  var token = DrawerStyleLine.mermaidStyleToken(theme);
+  var step = patch && patch.type_step != null
+    ? DrawerStyleLine.clampMermaidTypeStep(patch.type_step)
+    : DrawerStyleLine.typeStepFromStyleToken(styled.token);
+  var viewport;
+  if (patch && Object.prototype.hasOwnProperty.call(patch, "viewport")) {
+    viewport = patch.viewport;
+  } else {
+    var prev = typeof DrawerStyleLine.decodeStyleTokenJson === "function"
+      ? DrawerStyleLine.decodeStyleTokenJson(styled.token)
+      : null;
+    viewport = prev && (prev.viewport || prev.view);
+  }
+  var token = DrawerStyleLine.mermaidStyleToken(theme, step, viewport);
   return DrawerStyleLine.joinRendererStyle(token, styled.body);
 }
 
@@ -1278,7 +1285,7 @@ function persistBoardStyle(patch) {
       : "board";
     var nextBody;
     if (kind === "flowchart" || kind === "mermaid-unsupported") {
-      if (!patch || patch.theme == null) return;
+      if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
       if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
@@ -1619,31 +1626,10 @@ document.addEventListener("keydown", function(event) {
   boardNudgeOrder(delta);
 });
 
-function boardClickIsOnNode(event) {
-  return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .top-float, .menu, .sheet, button, input, select, textarea, label"));
-}
 function boardEventIsItemMdLink(event) {
   var a = event.target && event.target.closest ? event.target.closest("a") : null;
   return !!(a && a.closest && a.closest(".board-item-md"));
 }
-// Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
-previewEl.addEventListener("pointerdown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
-  if (event.button !== 0) return;
-  if (boardClickIsOnNode(event)) return;
-  if (boardLinkMode) { setBoardLinkMode(false); return; }
-  clearBoardSelection();
-}, true);
-previewEl.addEventListener("click", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
-  if (boardLinkMode) return;
-  if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return;
-  var canvas = event.target.closest(".board-canvas");
-  var root = event.target.closest(".board-render");
-  var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
-  if (hit && canvas && canvas.contains(hit)) return;
-  if (!boardClickIsOnNode(event)) clearBoardSelection();
-});
 previewEl.addEventListener("dblclick", function(event) {
   if (!isBoardCanvasKind()) return;
   if (boardEventIsItemMdLink(event)) return;
@@ -1671,6 +1657,19 @@ function isBoardCanvasKind() {
   return kind !== "flowchart" && kind !== "mermaid-unsupported";
 }
 
+function boardCanvasHit(target) {
+  return !!(target && target.closest && target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link"));
+}
+
+function boardCanvasClear() {
+  if (boardLinkMode) setBoardLinkMode(false);
+  else clearBoardSelection();
+}
+
+if (typeof CanvasInteraction !== "undefined" && typeof CanvasInteraction.registerKind === "function") {
+  CanvasInteraction.registerKind("board", { isHit: boardCanvasHit, clear: boardCanvasClear });
+}
+
 function applyDrawerKind(kind) {
   var html = document.documentElement;
   if (!html) return;
@@ -1680,11 +1679,13 @@ function applyDrawerKind(kind) {
   if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
-      ? "Select a node, link, or subgraph"
+      ? "Select a group, node, or link"
       : "Select a title, box, or item";
   }
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
+  var flowDir = document.getElementById("flowchartDirField");
+  if (flowDir && kind !== "flowchart") flowDir.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {
@@ -1696,6 +1697,24 @@ function fixSvgIntrinsic(svg) {
   }
   // Do not write svg.style.* — on this host that rebuilds the style
   // attribute and drops Pele's --_s / --_fg aliases (nodes paint black).
+}
+
+function bindCanvasWorld(rootEl, boundsFn) {
+  if (typeof Canvas !== "undefined" && typeof Canvas.setWorld === "function") {
+    Canvas.setWorld(rootEl || null, boundsFn || null);
+  }
+}
+
+function canvasSvgBounds(svg) {
+  if (!svg) return null;
+  var w = parseFloat(svg.getAttribute("width") || "");
+  var h = parseFloat(svg.getAttribute("height") || "");
+  if (!(w > 0 && h > 0) && svg.viewBox && svg.viewBox.baseVal) {
+    w = svg.viewBox.baseVal.width;
+    h = svg.viewBox.baseVal.height;
+  }
+  if (!(w > 0 && h > 0)) return null;
+  return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
 }
 
 function finishCanvasView(opts) {
@@ -1719,11 +1738,13 @@ function syncMermaidStyleChrome(body) {
   if (typeof DrawerStyleLine === "undefined") return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
   var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
+  var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
   if (typeof applyDiagramTheme === "function") {
     applyDiagramTheme(theme, { persist: false, skipRender: true });
   } else if (typeof applyPeleThemeVars === "function") {
     applyPeleThemeVars(theme);
   }
+  if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, false);
 }
 
 function renderFlowchart(opts) {
@@ -1735,6 +1756,7 @@ function renderFlowchart(opts) {
   updateBoardChars();
   if (!body.trim()) {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError("");
     setStatus("No flowchart source");
     finishCanvasView(opts);
@@ -1742,26 +1764,40 @@ function renderFlowchart(opts) {
   }
   if (!window.pele || typeof window.pele.render !== "function") {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError("Pele renderer missing");
     setStatus("Pele renderer missing", true);
     finishCanvasView(opts);
     return;
   }
   try {
+    var typeStep = 0;
+    if (typeof DrawerStyleLine !== "undefined") {
+      typeStep = DrawerStyleLine.typeStepFromStyleToken(
+        DrawerStyleLine.splitRendererStyle(boardSourceEl ? boardSourceEl.value : "").token
+      );
+    }
+    var peleFont = typeof FlowchartTypeScale !== "undefined"
+      ? FlowchartTypeScale.px("default", typeStep)
+      : 16;
     var result = window.pele.render(body.trim(), {
       fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
-      fontSize: 16,
+      fontSize: peleFont,
       autoDirection: false,
       responsive: false,
     });
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
+    bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
+    if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
+    if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
     showBoardError("");
     setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
     if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
   } catch (err) {
     previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
     showBoardError(err instanceof Error ? err.message : String(err));
     setStatus("Invalid flowchart source", true);
   }
@@ -1772,6 +1808,7 @@ function refuseUnsupportedMermaid() {
   syncBoardEditControls();
   previewEl.classList.remove("board-preview");
   previewEl.innerHTML = "";
+  bindCanvasWorld(null, null);
   updateBoardChars();
   showBoardError("Only flowchart can be rendered.");
   setStatus("Only flowchart can be rendered.", true);
@@ -1790,9 +1827,19 @@ function renderBoard(opts) {
   syncBoardEditControls();
   previewEl.classList.add('board-preview');
   const text = boardSourceEl.value.trim(); updateBoardChars();
-  if (!text) { previewEl.innerHTML = ''; if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
+  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
   BoardRender.render(text, previewEl).then((rendered) => {
     try {
+      var worldRoot = rendered && rendered.root && rendered.root.querySelector
+        ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
+          ? rendered.root
+          : rendered.root.querySelector(".board-canvas"))
+        : null;
+      bindCanvasWorld(worldRoot, function () {
+        return typeof BoardRender !== "undefined" && typeof BoardRender.worldBounds === "function"
+          ? BoardRender.worldBounds(rendered.root)
+          : null;
+      });
       syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardDomSelectionKey(boardSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection");
       // Repaint the live root after any mode/bootstrap render race.
       if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
@@ -1945,6 +1992,22 @@ async function loadBoardPolled() {
     setBoardSyncUI('ok');
   } catch (_) {}
 }
+function shouldWaitForCreateKind() {
+  if (typeof document !== "undefined" && document.documentElement && document.documentElement.dataset.blankStartKind === "1") {
+    return true;
+  }
+  if (typeof DrawerEarlyHead === "undefined") return false;
+  var ctx = {
+    pathname: typeof location !== "undefined" ? location.pathname : "/",
+    hash: typeof location !== "undefined" ? location.hash : "",
+    search: typeof location !== "undefined" ? location.search : "",
+    storage: DrawerEarlyHead.safeStorage(typeof globalThis !== "undefined" ? globalThis : this),
+  };
+  if (DrawerEarlyHead.isLegalHash(ctx.hash)) return false;
+  if (DrawerEarlyHead.shouldBlankStart(ctx)) return true;
+  return !!(DrawerEarlyHead.isAuthReturn && DrawerEarlyHead.isAuthReturn(ctx.search));
+}
+
 async function bootstrapBoardFromHash() {
   var raw = String(location.hash || "").replace(/^#/, "");
   if (typeof cloudBoardIdFromHash === "function" && cloudBoardIdFromHash(raw)) {
@@ -1960,6 +2023,14 @@ async function bootstrapBoardFromHash() {
   if (!raw) {
     if (typeof setShareView === "function") setShareView(false);
     if (typeof setShareEdit === "function") setShareEdit(false);
+    if (typeof shouldWaitForCreateKind === "function" && shouldWaitForCreateKind()) {
+      if (boardSourceEl) boardSourceEl.value = "";
+      boardLocalRev = 1;
+      boardServerRev = 0;
+      if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", version: 1 });
+      setStatus("Choose a type");
+      return;
+    }
     boardSourceEl.value = typeof blankHashBoardSource === "function"
       ? blankHashBoardSource("Untitled")
       : "board \"Untitled\"\n";

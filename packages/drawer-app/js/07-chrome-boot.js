@@ -8,16 +8,6 @@ function flashChrome(ms = 900) {
   chromeTimer = setTimeout(() => shell.classList.remove('show-chrome'), ms);
 }
 
-stageEl.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
-  const factor = Math.exp(-(e.deltaY * unit) * 0.0012);
-  setCanvasZoom(scale * factor);
-  if (typeof noteUserCanvasView === "function") noteUserCanvasView();
-  flashChrome();
-}, { passive: false });
-
-
 (function wireBoardTitlePin() {
   var pin = boardTitlePinEl();
   if (!pin || pin.dataset.wired === "1") return;
@@ -45,43 +35,6 @@ stageEl.addEventListener('wheel', (e) => {
     if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
   });
 })();
-
-stageEl.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0) return;
-  // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
-  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label, g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit")) return;
-  if (boardLinkMode) setBoardLinkMode(false);
-  else clearBoardSelection();
-  e.preventDefault();
-  try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
-  panning = true;
-  panMoved = false;
-  stageEl.classList.add('panning');
-  panOrigin = { x: e.clientX - panX, y: e.clientY - panY, startX: e.clientX, startY: e.clientY };
-  stageEl.setPointerCapture(e.pointerId);
-});
-stageEl.addEventListener('pointermove', (e) => {
-  if (!panning || !panOrigin) return;
-  if (!panMoved && panOrigin.startX != null) {
-    var dx0 = e.clientX - panOrigin.startX;
-    var dy0 = e.clientY - panOrigin.startY;
-    if (dx0 * dx0 + dy0 * dy0 >= 25) panMoved = true;
-  }
-  panX = e.clientX - panOrigin.x;
-  panY = e.clientY - panOrigin.y;
-  applyTransform();
-});
-stageEl.addEventListener('pointerup', () => {
-  var wasPanning = panning;
-  var moved = panMoved;
-  panning = false; panOrigin = null; panMoved = false;
-  stageEl.classList.remove('panning');
-  try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}
-  if (wasPanning && moved && typeof noteUserCanvasView === "function") noteUserCanvasView();
-});
-stageEl.addEventListener('selectstart', (e) => {
-  if (panning) e.preventDefault();
-});
 
 boardSourceEl.addEventListener('input', () => {
   if (typeof updateBoardChars === "function") updateBoardChars();
@@ -188,13 +141,24 @@ function currentBoardItemCap() {
   return Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(n)));
 }
 function applyBoardItemCap(rem, rerender, persist) {
+  const kind = document.documentElement && document.documentElement.dataset.diagramKind;
+  if (kind === "flowchart" || kind === "mermaid-unsupported") {
+    if (boardItemCapSlider) {
+      boardItemCapSlider.disabled = kind === "flowchart";
+      paintStyleRange(boardItemCapSlider);
+    }
+    return;
+  }
   const n = rem == null
     ? currentBoardItemCap()
     : Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(Number(rem) || ITEM_CAP_DEFAULT)));
   localStorage.setItem(ITEM_CAP_KEY, String(n));
   const css = n + 'rem';
   document.documentElement.style.setProperty('--board-item-cap', css);
-  if (boardItemCapSlider) boardItemCapSlider.value = String(n);
+  if (boardItemCapSlider) {
+    boardItemCapSlider.disabled = false;
+    boardItemCapSlider.value = String(n);
+  }
   paintStyleRange(boardItemCapSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ item_cap: n });
   if (rerender && document.documentElement.dataset.drawerMode === 'board'

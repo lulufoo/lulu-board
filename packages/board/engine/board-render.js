@@ -12,6 +12,7 @@
   const Icons = root.BoardIcons || (typeof require === 'function' ? require('../item/icons.js') : null);
   const Themes = root.BoardThemes || null;
   const Rotation = root.BoardRotation || (typeof require === 'function' ? require('../themes/rotation') : null);
+  const StyleToken = root.BoardStyleToken || (typeof require === 'function' ? require('./style-token') : null);
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
   const DIRECTIONS = new Set(['row', 'column']);
@@ -23,13 +24,6 @@
   const CHIP_SHAPES = new Set(['rect', 'diamond']);
   const ITEM_CAPS = new Set(['on', 'off']);
   const LINK_TYPES = new Set(['solid', 'dashed']);
-  const STYLE_THEMES = new Set(['default', 'classic', 'pastel']);
-  const STYLE_ROUTES = new Set(['trunk', 'stagger', 'straight']);
-  const STYLE_DEFAULTS = { theme: 'default', item_cap: 16, link_route: 'stagger', type_step: 0 };
-  const STYLE_CAP_MIN = 8;
-  const STYLE_CAP_MAX = 24;
-  const STYLE_TYPE_MIN = -3;
-  const STYLE_TYPE_MAX = 3;
   function normalizeBoxType(raw, lineNo) {
     const key = String(raw || 'card').toLowerCase();
     if (key === 'diamond') return 'diamond';
@@ -47,69 +41,27 @@
     fail('cap must be on or off', lineNo);
   }
   function encodeStylePayload(obj) {
-    const json = JSON.stringify(obj || {});
-    if (typeof Buffer !== 'undefined') return Buffer.from(json, 'utf8').toString('base64');
-    return btoa(unescape(encodeURIComponent(json)));
+    return StyleToken.encodeStylePayload(obj);
   }
   function decodeStylePayload(b64) {
-    try {
-      const raw = String(b64 || '').replace(/\s+/g, '');
-      if (!raw) return {};
-      const json = typeof Buffer !== 'undefined'
-        ? Buffer.from(raw, 'base64').toString('utf8')
-        : decodeURIComponent(escape(atob(raw)));
-      const data = JSON.parse(json);
-      if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
-      return data;
-    } catch (_) {
-      return {};
-    }
+    return StyleToken.decodeStylePayload(b64);
   }
   function clampItemCap(value) {
-    const n = Math.round(Number(value));
-    if (!Number.isFinite(n)) return STYLE_DEFAULTS.item_cap;
-    return Math.min(STYLE_CAP_MAX, Math.max(STYLE_CAP_MIN, n));
+    return StyleToken.clampItemCap(value);
   }
   function clampTypeStep(value) {
-    const Scale = root.BoardTypeScale;
-    if (Scale && typeof Scale.clampStep === 'function') return Scale.clampStep(value);
-    const n = Math.round(Number(value));
-    if (!Number.isFinite(n)) return STYLE_DEFAULTS.type_step;
-    return Math.min(STYLE_TYPE_MAX, Math.max(STYLE_TYPE_MIN, n));
+    return StyleToken.clampTypeStep(value);
   }
-  // Camera: the world point (cx, cy) shown at the stage centre, plus zoom.
-  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-    const scale = Number(raw.scale);
-    const cx = Number(raw.cx);
-    const cy = Number(raw.cy);
-    if (!Number.isFinite(scale) || !Number.isFinite(cx) || !Number.isFinite(cy)) return null;
-    return {
-      scale: Math.min(3, Math.max(0.2, scale)),
-      cx: Math.round(cx),
-      cy: Math.round(cy),
-    };
+    return StyleToken.authoredViewport(raw);
   }
   function authoredStyle(raw) {
     const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    const out = {};
-    if (STYLE_THEMES.has(src.theme) && src.theme !== STYLE_DEFAULTS.theme) out.theme = src.theme;
-    if (src.item_cap != null && src.item_cap !== '') {
-      const n = clampItemCap(src.item_cap);
-      if (n !== STYLE_DEFAULTS.item_cap) out.item_cap = n;
-    }
-    if (STYLE_ROUTES.has(src.link_route) && src.link_route !== STYLE_DEFAULTS.link_route) out.link_route = src.link_route;
-    if (src.type_step != null && src.type_step !== '') {
-      const n = clampTypeStep(src.type_step);
-      if (n !== STYLE_DEFAULTS.type_step) out.type_step = n;
-    }
-    const viewport = authoredViewport(src.viewport || src.view);
-    if (viewport) out.viewport = viewport;
+    const out = Object.assign({}, StyleToken.authoredFields(src));
     const ids = authoredIds(src.ids);
     if (ids) out.ids = ids;
     Object.keys(src).forEach((key) => {
-      if (key === 'theme' || key === 'item_cap' || key === 'link_route' || key === 'type_step' || key === 'view' || key === 'viewport' || key === 'ids') return;
+      if (StyleToken.isFieldKey(key) || key === 'view' || key === 'viewport' || key === 'ids') return;
       if (src[key] == null) return;
       out[key] = src[key];
     });
@@ -202,12 +154,7 @@
     const src = board && board.style && typeof board.style === 'object' && !Array.isArray(board.style)
       ? board.style
       : {};
-    return {
-      theme: STYLE_THEMES.has(src.theme) ? src.theme : STYLE_DEFAULTS.theme,
-      item_cap: src.item_cap == null || src.item_cap === '' ? STYLE_DEFAULTS.item_cap : clampItemCap(src.item_cap),
-      link_route: STYLE_ROUTES.has(src.link_route) ? src.link_route : STYLE_DEFAULTS.link_route,
-      type_step: src.type_step == null || src.type_step === '' ? STYLE_DEFAULTS.type_step : clampTypeStep(src.type_step),
-    };
+    return StyleToken.resolveFields(src);
   }
   function writeStyleLine(raw) {
     const authored = authoredStyle(raw);
@@ -2056,7 +2003,7 @@
   // Renderer-global link routing (not DSL): 'stagger' (default) | 'trunk' | 'straight'
   var linkRouteStyle = 'stagger';
   function setLinkRouteStyle(style) {
-    linkRouteStyle = STYLE_ROUTES.has(style) ? style : 'stagger';
+    linkRouteStyle = StyleToken.resolveLinkRoute(style);
     return linkRouteStyle;
   }
   function getLinkRouteStyle() { return linkRouteStyle; }

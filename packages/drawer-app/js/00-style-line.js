@@ -5,7 +5,6 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var RENDERER_STYLE_RE = /^(?:%%\s*)?style\s+(\S+)\s*$/i;
-  var THEME_IDS = { default: 1, classic: 1, pastel: 1 };
 
   function isRendererStyleLine(line) {
     return RENDERER_STYLE_RE.test(String(line || "").trim());
@@ -70,31 +69,68 @@
     return { token: token, body: out.join("\n") };
   }
 
-  function resolveThemeId(id) {
-    var raw = String(id == null ? "" : id).trim();
-    if (raw === "minimal") return "classic";
-    if (raw === "slate" || raw === "kami") return "default";
-    return THEME_IDS[raw] ? raw : "default";
+  function styleTokenApi() {
+    if (typeof BoardStyleToken !== "undefined") return BoardStyleToken;
+    if (typeof require === "function") {
+      try { return require("../../board/engine/style-token.js"); } catch (_e) {}
+    }
+    return null;
   }
 
-  function mermaidStyleToken(theme) {
-    var t = resolveThemeId(theme);
-    return t === "default" ? "" : t;
+  function resolveThemeId(id) {
+    return styleTokenApi().resolveThemeId(id);
+  }
+
+  function clampMermaidTypeStep(raw) {
+    return styleTokenApi().clampTypeStep(raw);
+  }
+
+  function encodeStylePayload(obj) {
+    return styleTokenApi().encodeStylePayload(obj);
+  }
+
+  function decodeStylePayload(b64) {
+    return styleTokenApi().decodeStylePayload(b64);
+  }
+
+  function isShortStyleName(token) {
+    var raw = String(token == null ? "" : token).trim();
+    var Token = styleTokenApi();
+    return !!(Token.THEMES[raw] || raw === "kami" || raw === "minimal" || raw === "slate");
+  }
+
+  function decodeStyleTokenJson(token) {
+    var raw = String(token == null ? "" : token).trim();
+    if (!raw || isShortStyleName(raw)) return null;
+    var data = decodeStylePayload(raw);
+    return data && Object.keys(data).length ? data : null;
+  }
+
+  function fieldsFromStyleToken(token) {
+    var raw = String(token == null ? "" : token).trim();
+    var Token = styleTokenApi();
+    if (!raw) return Token.resolveFields({});
+    if (isShortStyleName(raw)) return Token.resolveFields({ theme: raw });
+    return Token.resolveFields(Token.decodeStylePayload(raw));
+  }
+
+  function mermaidStyleToken(theme, typeStep, viewport) {
+    var Token = styleTokenApi();
+    var data = Token.authoredFields({
+      theme: Token.resolveThemeId(theme),
+      type_step: Token.clampTypeStep(typeStep),
+      viewport: viewport,
+    });
+    if (!Object.keys(data).length) return "";
+    return Token.encodeStylePayload(data);
   }
 
   function themeFromStyleToken(token) {
-    var raw = String(token == null ? "" : token).trim();
-    if (!raw) return "default";
-    if (THEME_IDS[raw]) return raw;
-    if (raw === "kami") return "default";
-    try {
-      var json = typeof Buffer !== "undefined"
-        ? Buffer.from(raw.replace(/\s+/g, ""), "base64").toString("utf8")
-        : decodeURIComponent(escape(atob(raw.replace(/\s+/g, ""))));
-      var data = JSON.parse(json);
-      if (data && data.theme) return resolveThemeId(data.theme);
-    } catch (_e) {}
-    return "default";
+    return fieldsFromStyleToken(token).theme;
+  }
+
+  function typeStepFromStyleToken(token) {
+    return fieldsFromStyleToken(token).type_step;
   }
 
   function joinRendererStyle(token, body) {
@@ -107,19 +143,9 @@
     return line + "\n" + rest;
   }
 
-  // Camera viewport: world point at the stage centre + zoom.
-  // Legacy {scale, x, y} pan-pixel viewports are not a camera and read as null.
   function authoredViewport(raw) {
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-    var scale = Number(raw.scale);
-    var cx = Number(raw.cx);
-    var cy = Number(raw.cy);
-    if (!isFinite(scale) || !isFinite(cx) || !isFinite(cy)) return null;
-    return {
-      scale: Math.min(3, Math.max(0.2, scale)),
-      cx: Math.round(cx),
-      cy: Math.round(cy),
-    };
+    var Token = styleTokenApi();
+    return Token && typeof Token.authoredViewport === "function" ? Token.authoredViewport(raw) : null;
   }
 
   return {
@@ -131,8 +157,15 @@
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     resolveThemeId: resolveThemeId,
+    encodeStylePayload: encodeStylePayload,
+    decodeStylePayload: decodeStylePayload,
+    authoredFields: function (raw) { return styleTokenApi().authoredFields(raw); },
+    resolveFields: function (raw) { return styleTokenApi().resolveFields(raw); },
     mermaidStyleToken: mermaidStyleToken,
+    decodeStyleTokenJson: decodeStyleTokenJson,
     themeFromStyleToken: themeFromStyleToken,
+    typeStepFromStyleToken: typeStepFromStyleToken,
+    clampMermaidTypeStep: clampMermaidTypeStep,
     authoredViewport: authoredViewport,
   };
 });

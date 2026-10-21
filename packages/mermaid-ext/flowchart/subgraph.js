@@ -1,7 +1,7 @@
 /** Subgraph parse / mutate + deleteSelection. */
 
 import { fail, linesOf, joinLines, quoteLabel, escapeRegExp } from './util.js';
-import { ensureFlowchart, collectIds, nextId, rewriteIdEverywhere, findSubgraphRange } from './source.js';
+import { ensureFlowchart, collectIds, nextId, rewriteIdEverywhere, findSubgraphRange, normalizeDirection, getDirection } from './source.js';
 import { deleteNode } from './node.js';
 import { deleteLink } from './link.js';
 import { unwrapLabel } from './kinds.js';
@@ -71,6 +71,26 @@ function addSubgraph(source, opts) {
   return { source: text, selection: { kind: "subgraph", id: id, key: "subgraph:" + id } };
 }
 
+function subgraphAuthoredDirection(lines, range) {
+  if (!range) return "";
+  var depth = 1;
+  for (var i = range.start + 1; i < range.end; i++) {
+    var trimmed = String(lines[i] || "").trim();
+    if (/^subgraph\b/i.test(trimmed)) {
+      depth += 1;
+      continue;
+    }
+    if (/^end\b/i.test(trimmed)) {
+      depth -= 1;
+      continue;
+    }
+    if (depth !== 1) continue;
+    var m = trimmed.match(/^direction\s+(TD|TB|BT|LR|RL)\b/i);
+    if (m) return normalizeDirection(m[1]);
+  }
+  return "";
+}
+
 function getSubgraph(source, id) {
   id = String(id || "").trim();
   var lines = linesOf(source);
@@ -84,9 +104,48 @@ function getSubgraph(source, id) {
       if (rest.charAt(0) === "[") title = unwrapLabel(rest);
       else title = rest.replace(/^["']|["']$/g, "");
     }
-    return { id: id, title: title, line: i, indent: m[1] };
+    var range = findSubgraphRange(lines, id);
+    var authored = subgraphAuthoredDirection(lines, range);
+    return {
+      id: id,
+      title: title,
+      line: i,
+      indent: m[1],
+      direction: authored || getDirection(source),
+      authoredDirection: authored,
+    };
   }
   return null;
+}
+
+function updateSubgraphDirection(source, selection, dir) {
+  if (!selection || selection.kind !== "subgraph" || !selection.id) fail("select a subgraph");
+  dir = normalizeDirection(dir);
+  var text = ensureFlowchart(source);
+  var lines = linesOf(text);
+  var range = findSubgraphRange(lines, selection.id);
+  if (!range) fail("subgraph not found");
+  var depth = 1;
+  for (var i = range.start + 1; i < range.end; i++) {
+    var raw = String(lines[i] || "");
+    var trimmed = raw.trim();
+    if (/^subgraph\b/i.test(trimmed)) {
+      depth += 1;
+      continue;
+    }
+    if (/^end\b/i.test(trimmed)) {
+      depth -= 1;
+      continue;
+    }
+    if (depth !== 1) continue;
+    var m = raw.match(/^(\s*)direction\s+(TD|TB|BT|LR|RL)\b(.*)$/i);
+    if (!m) continue;
+    lines[i] = m[1] + "direction " + dir;
+    return { source: joinLines(lines), selection: selection };
+  }
+  var indent = range.indent + "  ";
+  lines.splice(range.start + 1, 0, indent + "direction " + dir);
+  return { source: joinLines(lines), selection: selection };
 }
 
 function updateSubgraphTitle(source, selection, title) {
@@ -175,6 +234,7 @@ export {
   getSubgraph,
   updateSubgraphTitle,
   updateSubgraphId,
+  updateSubgraphDirection,
   deleteSubgraph,
   deleteSelection,
 };

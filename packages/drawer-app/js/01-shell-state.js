@@ -311,8 +311,6 @@ document.addEventListener("visibilitychange", function() {
   handle.addEventListener("pointercancel", endDrag);
 })();
 
-let panning = false, panOrigin = null, panMoved = false;
-
 function setStatus(msg, isError = false) {
   const el = $('#statusFloat');
   if (!el) return; // status chrome removed — keep API for callers
@@ -347,12 +345,22 @@ function applyBoardLiveMeta(meta = {}) {
 function syncStyleLayoutSections() {
   var kind = document.documentElement && document.documentElement.dataset.diagramKind;
   var mermaid = kind === "flowchart" || kind === "mermaid-unsupported";
+  var flowchart = kind === "flowchart";
   var board = document.getElementById("boardLayoutSection");
   if (board) board.hidden = mermaid;
-  var capSec = document.getElementById("boardItemCapSection");
-  if (capSec) capSec.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
-  if (typeSec) typeSec.hidden = mermaid;
+  if (typeSec) typeSec.hidden = kind === "mermaid-unsupported";
+  var capSec = document.getElementById("boardItemCapSection");
+  var capSlider = document.getElementById("boardItemCapSlider");
+  if (capSec) {
+    capSec.hidden = kind === "mermaid-unsupported";
+    capSec.classList.toggle("is-disabled", flowchart);
+  }
+  if (capSlider) {
+    capSlider.disabled = flowchart;
+    if (flowchart) capSlider.setAttribute("aria-disabled", "true");
+    else capSlider.removeAttribute("aria-disabled");
+  }
 }
 
 function syncSourceDockLabel() {
@@ -414,50 +422,19 @@ function setCanvasZoom(nextScale) {
   scale = nextScale;
   applyTransform();
 }
-function boardWorldBounds() {
-  var root = previewEl && previewEl.querySelector(".board-render");
-  if (!root || typeof BoardRender === "undefined" || typeof BoardRender.worldBounds !== "function") return null;
-  return BoardRender.worldBounds(root);
-}
-/* Does the camera's visible world rect touch any content? */
-function boardContentOnStage() {
-  var cam = typeof readCamera === "function" ? readCamera() : null;
-  var stage = typeof stageSize === "function" ? stageSize() : null;
-  var b = boardWorldBounds();
-  if (!cam || !stage || !b) return false;
-  var halfW = stage.w / 2 / cam.scale, halfH = stage.h / 2 / cam.scale;
-  return b.maxX > cam.cx - halfW && b.minX < cam.cx + halfW && b.maxY > cam.cy - halfH && b.minY < cam.cy + halfH;
-}
-/* Camera for a freshly rendered board: the document's own style.viewport when it has one,
- * otherwise fit (content) or 100% centred (empty). Never reuses the previous board's camera. */
 function applyRestoredBoardView() {
-  var view = typeof readDocumentView === "function" ? readDocumentView() : null;
-  if (view && typeof applyDocumentView === "function") {
-    applyDocumentView(view, function (ok) {
-      if (!ok || (typeof boardContentOnStage === "function" && !boardContentOnStage())) {
-        fitBoardView();
-      }
-    });
+  if (typeof pinBoardTitle === "function") pinBoardTitle();
+  if (typeof Canvas !== "undefined" && typeof Canvas.restoreOrFit === "function") {
+    Canvas.restoreOrFit();
     return;
   }
-  fitBoardView();
 }
 function fitBoardView() {
   if (!previewEl) return;
   pinBoardTitle();
-  const content = previewEl.querySelector(".board-render");
-  if (!content) return;
-  requestAnimationFrame(() => {
-    var stage = typeof stageSize === "function" ? stageSize() : null;
-    if (!stage) return;
-    var b = boardWorldBounds();
-    /* Empty board: nothing to frame, so 100% with the world origin at the stage centre. */
-    if (!b) { applyCamera({ scale: 1, cx: 0, cy: 0 }); return; }
-    /* Board title is document.title — do not reserve a canvas band for it */
-    var topBand = 12;
-    const pad = 24;
-    var next = Math.max(0.2, Math.min(1, (stage.w - pad) / Math.max(1, b.width), (stage.h - topBand - pad) / Math.max(1, b.height)));
-    if (!applyCamera({ scale: next, cx: b.cx, cy: b.cy })) return;
+  if (typeof Canvas !== "undefined" && typeof Canvas.fitWorld === "function") Canvas.fitWorld();
+  requestAnimationFrame(function () {
+    if (!previewEl || !boardSourceEl) return;
     var key = boardSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });

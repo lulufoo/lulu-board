@@ -21,6 +21,44 @@ function isFlowchart(source) {
   return k === "flowchart" || k === "graph";
 }
 
+function normalizeDirection(raw) {
+  var d = String(raw == null ? "" : raw).trim().toUpperCase();
+  if (d === "LR" || d === "RL") return "LR";
+  return "TD";
+}
+
+function findHeaderLine(lines) {
+  for (var i = 0; i < lines.length; i++) {
+    var line = String(lines[i] || "");
+    var trim = line.trim();
+    if (!trim || trim.indexOf("%%") === 0 || trim.charAt(0) === "#") continue;
+    if (/^---/.test(trim)) continue;
+    if (/^(?:%%\s*)?style\s+/i.test(trim)) continue;
+    var m = line.match(/^(\s*)(flowchart(?:-elk)?|graph(?:-elk)?)(?:\s+(TD|TB|BT|LR|RL))?(.*)$/i);
+    if (m) {
+      return { index: i, indent: m[1], keyword: m[2], dir: m[3] || "", rest: m[4] || "" };
+    }
+    return null;
+  }
+  return null;
+}
+
+function getDirection(source) {
+  var header = findHeaderLine(linesOf(source));
+  return normalizeDirection(header && header.dir);
+}
+
+function updateDirection(source, dir) {
+  dir = normalizeDirection(dir);
+  var text = ensureFlowchart(source);
+  var lines = linesOf(text);
+  var header = findHeaderLine(lines);
+  if (!header) fail("flowchart header not found");
+  var rest = String(header.rest || "").replace(/^\s+/, "");
+  lines[header.index] = header.indent + header.keyword + " " + dir + (rest ? " " + rest : "");
+  return { source: joinLines(lines) };
+}
+
 function ensureFlowchart(source) {
   var text = String(source == null ? "" : source);
   if (!String(text).trim()) return "flowchart TD\n";
@@ -102,6 +140,9 @@ export {
   firstDiagramKeyword,
   isFlowchart,
   ensureFlowchart,
+  normalizeDirection,
+  getDirection,
+  updateDirection,
   collectIds,
   nextId,
   rewriteIdEverywhere,

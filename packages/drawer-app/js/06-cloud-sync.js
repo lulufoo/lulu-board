@@ -414,6 +414,7 @@ function cloudInit() {
       cloudSetAccountUi();
       if (cloudSession) void cloudRefreshGroups();
       else cloudOpenSignInFromLanding();
+      if (typeof shellOfferBlankStartKind === "function") shellOfferBlankStartKind();
       return cloudSession;
     }).catch(function () {
       cloudSession = null;

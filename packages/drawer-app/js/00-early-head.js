@@ -22,13 +22,17 @@
     // Blank start: /?ws=1 (any auth) or signed-in / (LB-355); plan from blankStartPlan.
     var plan = api.blankStartPlan(ctx);
     if (plan) {
-      var next = location.pathname + location.search + "#" + plan.hash;
-      if (typeof history !== "undefined" && typeof history.replaceState === "function") {
-        history.replaceState(null, "", next);
-      } else {
-        location.hash = plan.hash;
+      var next = location.pathname + location.search;
+      if (plan.hash) next += "#" + plan.hash;
+      if (next !== location.pathname + location.search + location.hash) {
+        if (typeof history !== "undefined" && typeof history.replaceState === "function") {
+          history.replaceState(null, "", next);
+        } else if (plan.hash) {
+          location.hash = plan.hash;
+        }
       }
       if (plan.openDrawer) doc.dataset.blankStartDrawer = "1";
+      if (plan.pickKind) doc.dataset.blankStartKind = "1";
     }
   }
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
@@ -98,8 +102,8 @@
   function blankStartPlan(ctx) {
     if (!shouldBlankStart(ctx)) return null;
     return {
-      hash: BLANK_Z_HASH,
       openDrawer: true, // LB-360: signed-in and unsigned both open drawer
+      pickKind: true,
     };
   }
 

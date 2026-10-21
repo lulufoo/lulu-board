@@ -19,8 +19,12 @@ assert.ok(/style\.viewport/.test(canvas), 'one viewport field');
 assert.ok(/function cameraToPan/.test(canvas), 'camera -> pan is a pure function');
 assert.ok(/function panToCamera/.test(canvas), 'pan -> camera is a pure function');
 assert.ok(/function worldOriginLayout/.test(canvas), 'measures the world origin inside #preview');
+assert.ok(/function setWorld/.test(canvas), 'kinds register a world root and bounds');
+assert.ok(/function fitWorld/.test(canvas), 'fit lives on Canvas');
 assert.ok(/persistDocumentView/.test(canvas), 'writes viewport into document style');
 assert.ok(/forgetDocumentView/.test(canvas), 'Fit clears document viewport');
+assert.ok(!/querySelector\("\.board-canvas"\)/.test(canvas), 'Canvas does not query a kind root');
+assert.ok(!/function fitBoardView|BoardRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
 assert.ok(!/measureDiagramOnCanvas|panAfterScaleAroundPoint/.test(canvas), 'no diagram-rect pan math left');
 assert.ok(!/id="boardView/.test(html), 'Style panel does not expose viewport');
 assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into three style keys');
@@ -50,15 +54,18 @@ assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into thr
 
 {
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
+  const interact = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-canvas-interaction.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
+  const boardSrc = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
   assert.ok(/function setCanvasZoom/.test(shell), 'zoom keeps the camera point at the stage centre');
   assert.ok(/setCanvasZoom\(scale \* 1\.08\)/.test(chrome), 'plus zooms about the stage centre');
   assert.ok(/setCanvasZoom\(scale \/ 1\.08\)/.test(chrome), 'minus zooms about the stage centre');
-  assert.ok(/setCanvasZoom\(scale \* factor\)/.test(chrome), 'wheel zooms about the stage centre');
+  assert.ok(/setCanvasZoom\(scale \* factor\)/.test(interact), 'wheel zooms about the stage centre');
   assert.ok(/\$\('#btnZoomReset'\)\.onclick = \(\) => \{ centerView\(\)/.test(chrome), 'percent still fits');
-  assert.ok(/BoardRender\.worldBounds\(root\)/.test(shell), 'Fit frames the world bounds');
-  assert.ok(/applyCamera\(\{ scale: next, cx: b\.cx, cy: b\.cy \}\)/.test(shell), 'Fit centres the camera on the bounds');
-  assert.ok(!/setCanvasScaleAroundDiagram|measureDiagramCenterOnCanvas/.test(shell + chrome), 'no diagram-rect zoom left');
+  assert.ok(/function contentBounds/.test(canvas), 'Fit frames the registered world bounds');
+  assert.ok(/applyCamera\(\{ scale: next, cx: b\.cx, cy: b\.cy \}\)/.test(canvas), 'Fit centres the camera on the bounds');
+  assert.ok(/Canvas\.setWorld/.test(boardSrc), 'kinds register the world after render');
+  assert.ok(!/setCanvasScaleAroundDiagram|measureDiagramCenterOnCanvas/.test(shell + chrome + interact), 'no diagram-rect zoom left');
 }
 
 console.log('ok canvas-view');

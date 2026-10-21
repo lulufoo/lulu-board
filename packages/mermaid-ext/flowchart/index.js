@@ -1,5 +1,5 @@
 /** Mermaid flowchart source editor (Drawer). */
-import { isFlowchart } from './source.js';
+import { isFlowchart, normalizeDirection, getDirection, updateDirection } from './source.js';
 import { SHAPES, NODE_KINDS, nodeKinds, kindFromShape, shapeFromKind, normalizeNodeKind, shapeKeys } from './kinds.js';
 import { collectIds, findSubgraphRange, isEmptySubgraph } from './source.js';
 import {
@@ -9,12 +9,15 @@ import {
   addLink, getLink, updateLinkLabel, updateLinkStroke, deleteLink,
 } from './link.js';
 import {
-  listSubgraphs, resolveSubgraphRef, addSubgraph, getSubgraph, updateSubgraphTitle, updateSubgraphId, deleteSubgraph, deleteSelection,
+  listSubgraphs, resolveSubgraphRef, addSubgraph, getSubgraph, updateSubgraphTitle, updateSubgraphId, updateSubgraphDirection, deleteSubgraph, deleteSelection,
 } from './subgraph.js';
 import { selectionFromDom } from './selection.js';
 
 const FlowchartEdit = {
   isFlowchart,
+  normalizeDirection,
+  getDirection,
+  updateDirection,
   shapes: shapeKeys,
   nodeKinds,
   kindFromShape,
@@ -40,6 +43,7 @@ const FlowchartEdit = {
   updateLinkStroke,
   updateSubgraphTitle,
   updateSubgraphId,
+  updateSubgraphDirection,
   selectionFromDom,
   collectIds,
   findSubgraphRange,

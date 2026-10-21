@@ -1,0 +1,107 @@
+/* drawer-app/09-create-kind-dialog.css — create-kind list; search-pop chrome */
+.create-kind-pop {
+  position: relative;
+  box-sizing: border-box;
+  width: min(600px, 100%);
+  padding: 10px 10px 12px;
+  border: 1px solid var(--paper-line, rgba(120, 80, 40, .1));
+  border-radius: 16px;
+  background: var(--dock, #fdfaf4);
+  box-shadow: 0 24px 60px rgba(70, 45, 20, .2);
+}
+.create-kind-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 12px 4px;
+}
+.create-kind-head h2 {
+  margin: 0;
+  font: 650 16px/1.25 var(--font);
+  color: var(--ink, #4a3524);
+}
+.create-kind-head p {
+  margin: 0;
+  font: 12px/1.3 var(--font);
+  color: var(--ink-soft, #8b7358);
+}
+.create-kind-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 46px;
+  margin: 6px 0 4px;
+  padding: 0 12px;
+  border-radius: 11px;
+  background: var(--wash, rgba(80, 55, 30, .05));
+  color: var(--ink-soft, #8b7358);
+}
+.create-kind-box svg { width: 17px; height: 17px; flex: none; }
+.create-kind-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink, #4a3524);
+  font: 15px var(--font);
+}
+.create-kind-box kbd {
+  font: 600 11px var(--font);
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--ink-soft, #8b7358);
+  background: rgba(255, 255, 255, .7);
+}
+.create-kind-list {
+  max-height: min(420px, 60vh);
+  overflow: auto;
+  padding: 0 2px 4px;
+}
+.create-kind-label {
+  margin: 12px 0 2px;
+  padding: 0 12px;
+  font: 600 11px/1 var(--font);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--ink-soft, #8b7358);
+}
+.create-kind-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink, #4a3524);
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+.create-kind-row:hover:not(:disabled):not(.is-picked) { background: var(--wash, rgba(80, 55, 30, .05)); }
+.create-kind-row.is-picked { background: var(--accent-soft, rgba(219, 76, 132, .1)); }
+.create-kind-row.is-picked::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent, #db4c84);
+}
+.create-kind-row:disabled {
+  opacity: .45;
+  cursor: default;
+}
+.create-kind-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.create-kind-main b { font: 600 13.5px/1.25 var(--font); }
+.create-kind-main span { font: 12px/1.3 var(--font); color: var(--ink-soft, #8b7358); }
+.create-kind-empty {
+  margin: 10px 8px;
+  font: 12.5px/1.4 var(--font);
+  color: var(--ink-soft, #8b7358);
+}

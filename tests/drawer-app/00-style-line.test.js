@@ -2,6 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const Token = require('../../packages/board/engine/style-token.js');
 const Style = require('../../packages/drawer-app/js/00-style-line.js');
 
 function b64(obj) {
@@ -35,10 +36,28 @@ function b64(obj) {
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
   assert.strictEqual(Style.joinRendererStyle('classic', 'board "A"\n'), 'style classic\nboard "A"\n');
-  assert.strictEqual(Style.mermaidStyleToken('classic'), 'classic');
+  assert.strictEqual(Style.mermaidStyleToken('classic'), Token.encodeStylePayload({ theme: 'classic' }));
+  assert.strictEqual(Style.mermaidStyleToken('classic'), b64({ theme: 'classic' }));
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
   assert.strictEqual(Style.themeFromStyleToken('pastel'), 'pastel');
   assert.strictEqual(Style.themeFromStyleToken('kami'), 'default');
+  assert.strictEqual(Style.mermaidStyleToken('classic', 0), b64({ theme: 'classic' }));
+  assert.strictEqual(Style.mermaidStyleToken('default', 0), '');
+  assert.strictEqual(Style.typeStepFromStyleToken('classic'), 0);
+  assert.strictEqual(Style.typeStepFromStyleToken(''), 0);
+  const stepped = Style.mermaidStyleToken('classic', 2);
+  assert.strictEqual(stepped, b64({ theme: 'classic', type_step: 2 }));
+  assert.strictEqual(Style.themeFromStyleToken(stepped), 'classic');
+  assert.strictEqual(Style.typeStepFromStyleToken(stepped), 2);
+  const defaultStepped = Style.mermaidStyleToken('default', -1);
+  assert.ok(defaultStepped);
+  assert.strictEqual(Style.themeFromStyleToken(defaultStepped), 'default');
+  assert.strictEqual(Style.typeStepFromStyleToken(defaultStepped), -1);
+  const written = Style.joinRendererStyle(stepped, flow);
+  assert.match(written, /^%% style /);
+  const split = Style.splitRendererStyle(written);
+  assert.strictEqual(Style.typeStepFromStyleToken(split.token), 2);
+  assert.strictEqual(Style.themeFromStyleToken(split.token), 'classic');
 }
 
 {
@@ -54,6 +73,10 @@ function b64(obj) {
 }
 
 {
+  const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
+  const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
+  assert.match(drawerBuild, /board\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
+  assert.match(boardBuild, /engine\/style-token\.js/, 'board bundle loads the shared token');
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
@@ -64,6 +87,55 @@ function b64(obj) {
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
+  assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
+  assert.ok(/mermaidStyleToken\(theme, step, viewport\)/.test(boardJs), 'mermaid persist writes theme, type_step, viewport');
+  assert.strictEqual(
+    Style.encodeStylePayload({ theme: 'classic' }),
+    Token.encodeStylePayload({ theme: 'classic' }),
+    'mermaid encode is the shared token',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ theme: 'classic', type_step: 0, item_cap: 16 }),
+    { theme: 'classic' },
+    'shared fields omit defaults',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ theme: 'default', type_step: 2, item_cap: 20 }),
+    { type_step: 2, item_cap: 20 },
+    'shared fields keep non-default cap and step',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ viewport: { scale: 1, cx: 0, cy: 0 } }),
+    {},
+    'shared fields omit the default camera',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ viewport: { scale: 0.8, cx: 12, cy: 24 } }),
+    { viewport: { scale: 0.8, cx: 12, cy: 24 } },
+    'shared fields keep a moved camera',
+  );
+  assert.deepStrictEqual(Token.resolveFields({}), Token.DEFAULTS);
+  assert.deepStrictEqual(Token.resolveFields({}).viewport, { scale: 1, cx: 0, cy: 0 });
+  assert.strictEqual(
+    Style.mermaidStyleToken('classic', 2),
+    Token.encodeStylePayload(Token.authoredFields({ theme: 'classic', type_step: 2 })),
+    'mermaid token is shared authored fields',
+  );
+  assert.ok(
+    !Object.prototype.hasOwnProperty.call(
+      Token.decodeStylePayload(Style.mermaidStyleToken('classic', 2)),
+      'item_cap',
+    ),
+    'flowchart still does not write item_cap',
+  );
+  assert.ok(/patch\.theme == null && patch\.type_step == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts viewport without theme');
+  const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });
+  assert.deepStrictEqual(Token.decodeStylePayload(withView), {
+    theme: 'classic',
+    type_step: 2,
+    viewport: { scale: 0.8, cx: 10, cy: 20 },
+  });
+  assert.strictEqual(Style.mermaidStyleToken('default', 0, { scale: 1, cx: 0, cy: 0 }), '');
 }
 
 console.log('ok board-style-theme');

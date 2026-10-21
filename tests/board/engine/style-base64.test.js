@@ -25,6 +25,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    viewport: { scale: 1, cx: 0, cy: 0 },
   });
   assert.ok(!/^style /m.test(Render.serialize(board)), Render.serialize(board));
 }
@@ -41,6 +42,7 @@ item HERO type text "Hi"
     item_cap: 24,
     link_route: 'stagger',
     type_step: 0,
+    viewport: { scale: 1, cx: 0, cy: 0 },
   });
   const out = Render.serialize(board);
   assert.ok(out.startsWith('board "Demo"\nstyle '), out);
@@ -62,6 +64,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    viewport: { scale: 1, cx: 0, cy: 0 },
   });
 }
 
@@ -146,6 +149,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
@@ -287,6 +291,13 @@ box HERO "Hi"
   });
   const board = Render.parse(next);
   assert.strictEqual(Render.authoredNodeTypeStep(board, 'ITEM1'), 2);
+}
+
+{
+  const Token = require('../../../packages/board/engine/style-token.js');
+  const obj = { theme: 'classic', type_step: 2 };
+  assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');
+  assert.deepStrictEqual(Render.decodeStylePayload(Token.encodeStylePayload(obj)), obj);
 }
 
 console.log('ok style-base64');

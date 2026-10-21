@@ -66,6 +66,7 @@ var shellShares = shellShares || [];
     setDrawer(true);
     delete document.documentElement.dataset.blankStartDrawer;
   }
+  if (typeof shellOfferBlankStartKind === "function") shellOfferBlankStartKind();
   document.addEventListener("keydown", function (event) {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
@@ -276,22 +277,83 @@ function shellRenderMine(groups) {
   shellRenderShared();
 }
 
-// New board: a blank, unsaved board. The first save creates its group.
+// New board: pick Board vs Mermaid first. The first save creates its group.
 async function shellNewBlankBoard() {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user)) return;
   if (typeof cloudConfirmLeaveBoard === "function" && !(await cloudConfirmLeaveBoard())) return;
+  if (typeof openCreateKindDialog !== "function") return;
+  openCreateKindDialog({
+    onPick: function (kind) { void shellCommitBlankBoard(kind); },
+    onCancel: function () {},
+  });
+}
+
+function shellCloseAfterKindPick() {
+  if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
+}
+
+async function shellCommitBlankBoard(kind) {
+  shellCloseAfterKindPick();
   if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudBoardId === "function" && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
   history.replaceState(null, "", location.pathname + location.search);
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
+  var source = (kind === "flowchart" && typeof blankHashFlowchartSource === "function")
+    ? blankHashFlowchartSource("Untitled")
+    : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
+  if (typeof setShareView === "function") setShareView(false);
+  if (typeof setShareEdit === "function") setShareEdit(false);
+  if (typeof boardSourceEl !== "undefined" && boardSourceEl) {
+    boardSourceEl.value = source;
+    delete boardSourceEl.dataset.boardSelectionKey;
+    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  }
+  boardLocalRev = 1;
+  boardServerRev = 0;
+  if (typeof applyBoardLiveMeta === "function") {
+    applyBoardLiveMeta({ id: "", version: 1 });
+  }
+  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
   if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
 }
+
+var shellKindPromptOpen = false;
+
+function shellOfferBlankStartKind() {
+  if (typeof DrawerEarlyHead === "undefined" || typeof openCreateKindDialog !== "function") return;
+  if (shellKindPromptOpen) return;
+  var ctx = {
+    pathname: location.pathname,
+    hash: location.hash,
+    search: location.search,
+    storage: DrawerEarlyHead.safeStorage(typeof globalThis !== "undefined" ? globalThis : this),
+  };
+  if (DrawerEarlyHead.isLegalHash(ctx.hash)) return;
+  var flagged = typeof document !== "undefined" && document.documentElement && document.documentElement.dataset.blankStartKind === "1";
+  if (!flagged && !DrawerEarlyHead.shouldBlankStart(ctx) && !(DrawerEarlyHead.isAuthReturn && DrawerEarlyHead.isAuthReturn(ctx.search))) {
+    return;
+  }
+  shellKindPromptOpen = true;
+  function open() {
+    openCreateKindDialog({
+      onPick: function (kind) {
+        shellKindPromptOpen = false;
+        if (typeof document !== "undefined" && document.documentElement) {
+          delete document.documentElement.dataset.blankStartKind;
+        }
+        void shellCommitBlankBoard(kind);
+      },
+      onCancel: function () { open(); },
+    });
+  }
+  open();
+}
+window.shellOfferBlankStartKind = shellOfferBlankStartKind;
 
 function shellIsPreview() {
   return typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);

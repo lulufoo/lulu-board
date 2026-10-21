@@ -48,7 +48,7 @@ function stripExportInteractions(root) {
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .board-reorder-caret'
+    '.board-edge-hit, .board-reorder-caret, .mermaid-edge-hit, .flowchart-selection-halo'
   ).forEach((el) => el.remove());
 }
 

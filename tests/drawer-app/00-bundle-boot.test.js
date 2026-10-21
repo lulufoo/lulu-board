@@ -12,8 +12,9 @@ const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mj
 const start = build.indexOf('const domain = [');
 const files = [...build.slice(start, build.indexOf('];', start)).matchAll(/'([^']+\.js)'/g)].map((m) => m[1]);
 assert.ok(files.length > 20 && files.includes('01-shell-state.js') && files.includes('07-chrome-boot.js'), 'build list was read');
-const script = files
-  .map((f) => fs.readFileSync(path.join(root, 'packages/drawer-app/js', f), 'utf8'))
+const script = [
+  fs.readFileSync(path.join(root, 'packages/board/engine/style-token.js'), 'utf8'),
+].concat(files.map((f) => fs.readFileSync(path.join(root, 'packages/drawer-app/js', f), 'utf8')))
   .join('\n')
   .replace(/^import .*$/gm, 'var snapdom = {};');
 

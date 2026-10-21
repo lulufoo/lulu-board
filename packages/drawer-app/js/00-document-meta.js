@@ -8,6 +8,7 @@
   root.sourceBody = api.sourceBody;
   root.newBoardId = api.newBoardId;
   root.blankHashBoardSource = api.blankHashBoardSource;
+  root.blankHashFlowchartSource = api.blankHashFlowchartSource;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -110,6 +111,12 @@
     return "board \"" + name + "\"\n";
   }
 
+  function blankHashFlowchartSource(title) {
+    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
+    if (!name) name = "Untitled";
+    return "%% title " + name + "\nflowchart TD\n";
+  }
+
   return {
     encodeMetaPayload: encodeMetaPayload,
     decodeMetaPayload: decodeMetaPayload,
@@ -119,6 +126,7 @@
     sourceBody: sourceBody,
     newBoardId: newBoardId,
     blankHashBoardSource: blankHashBoardSource,
+    blankHashFlowchartSource: blankHashFlowchartSource,
   };
 });
 var splitDocument = globalThis.splitDocument;
@@ -127,3 +135,4 @@ var stripDocumentMeta = globalThis.stripDocumentMeta;
 var sourceBody = globalThis.sourceBody;
 var newBoardId = globalThis.newBoardId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
+var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;

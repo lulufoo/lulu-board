@@ -61,18 +61,22 @@ for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js']) {
 // Main module: concat domain files in order (still one ES module when loaded)
 const domain = [
   '00-style-line.js',
+  '00-flowchart-type-scale.js',
   '00-pele-theme.js',
   '00-document-meta.js',
   '00-cloud-route.js',
   '00-hash-persist.js',
   '00-canvas-view.js',
   '01-shell-state.js',
+  '01-canvas-interaction.js',
   '02-board.js',
+  '03-flowchart-shapes.js',
   '03-flowchart.js',
   '05-render-io.js',
   '05-board-file.js',
   '05-export-png.js',
   '06-board-confirm.js',
+  '09-create-kind-dialog.js',
   '06-cloud-sync.js',
   '06-cloud-pull.js',
   '06-cloud-groups.js',
@@ -90,14 +94,18 @@ const domain = [
   '09-shortcuts.js',
   '10-source-style.js',
 ];
-const parts = domain.map((f) => {
+const styleToken = path.join(packages, 'board/engine/style-token.js');
+if (!existsSync(styleToken)) throw new Error('missing ' + styleToken);
+const parts = [
+  `/* === board/engine/style-token.js === */\n` + readFileSync(styleToken, 'utf8'),
+].concat(domain.map((f) => {
   const p = path.join(jsDir, f);
   if (!existsSync(p)) throw new Error('missing ' + p);
   return `/* === ${f} === */\n` + readFileSync(p, 'utf8');
-});
+}));
 const mod = parts.join('\n');
 writeFileSync(path.join(vendorOut, 'drawer-app.js'), mod);
-console.log(`ok drawer-app.js (${mod.split('\n').length} lines, ${domain.length} domains)`);
+console.log(`ok drawer-app.js (${mod.split('\n').length} lines, ${domain.length + 1} domains)`);
 
 const require = createRequire(path.join(boardBuildDir, 'package.json'));
 const esbuild = require('esbuild');
