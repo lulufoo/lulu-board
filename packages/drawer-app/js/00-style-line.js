@@ -86,24 +86,27 @@
     return Math.min(3, Math.max(-3, n));
   }
 
+  function styleTokenApi() {
+    if (typeof BoardStyleToken !== "undefined") return BoardStyleToken;
+    if (typeof require === "function") {
+      try { return require("../../board/engine/style-token.js"); } catch (_e) {}
+    }
+    return null;
+  }
+
+  function encodeStylePayload(obj) {
+    return styleTokenApi().encodeStylePayload(obj);
+  }
+
+  function decodeStylePayload(b64) {
+    return styleTokenApi().decodeStylePayload(b64);
+  }
+
   function decodeStyleTokenJson(token) {
     var raw = String(token == null ? "" : token).trim();
     if (!raw || THEME_IDS[raw] || raw === "kami") return null;
-    try {
-      var json = typeof Buffer !== "undefined"
-        ? Buffer.from(raw.replace(/\s+/g, ""), "base64").toString("utf8")
-        : decodeURIComponent(escape(atob(raw.replace(/\s+/g, ""))));
-      var data = JSON.parse(json);
-      return data && typeof data === "object" && !Array.isArray(data) ? data : null;
-    } catch (_e) {
-      return null;
-    }
-  }
-
-  function encodeStyleTokenJson(data) {
-    var s = JSON.stringify(data);
-    if (typeof Buffer !== "undefined") return Buffer.from(s, "utf8").toString("base64");
-    return btoa(unescape(encodeURIComponent(s)));
+    var data = decodeStylePayload(raw);
+    return data && Object.keys(data).length ? data : null;
   }
 
   function mermaidStyleToken(theme, typeStep) {
@@ -113,7 +116,7 @@
     if (t !== "default") data.theme = t;
     if (step !== 0) data.type_step = step;
     if (!Object.keys(data).length) return "";
-    return encodeStyleTokenJson(data);
+    return encodeStylePayload(data);
   }
 
   function themeFromStyleToken(token) {
@@ -166,6 +169,8 @@
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     resolveThemeId: resolveThemeId,
+    encodeStylePayload: encodeStylePayload,
+    decodeStylePayload: decodeStylePayload,
     mermaidStyleToken: mermaidStyleToken,
     themeFromStyleToken: themeFromStyleToken,
     typeStepFromStyleToken: typeStepFromStyleToken,

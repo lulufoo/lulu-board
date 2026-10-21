@@ -12,6 +12,7 @@
   const Icons = root.BoardIcons || (typeof require === 'function' ? require('../item/icons.js') : null);
   const Themes = root.BoardThemes || null;
   const Rotation = root.BoardRotation || (typeof require === 'function' ? require('../themes/rotation') : null);
+  const StyleToken = root.BoardStyleToken || (typeof require === 'function' ? require('./style-token') : null);
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
   const DIRECTIONS = new Set(['row', 'column']);
@@ -47,23 +48,10 @@
     fail('cap must be on or off', lineNo);
   }
   function encodeStylePayload(obj) {
-    const json = JSON.stringify(obj || {});
-    if (typeof Buffer !== 'undefined') return Buffer.from(json, 'utf8').toString('base64');
-    return btoa(unescape(encodeURIComponent(json)));
+    return StyleToken.encodeStylePayload(obj);
   }
   function decodeStylePayload(b64) {
-    try {
-      const raw = String(b64 || '').replace(/\s+/g, '');
-      if (!raw) return {};
-      const json = typeof Buffer !== 'undefined'
-        ? Buffer.from(raw, 'base64').toString('utf8')
-        : decodeURIComponent(escape(atob(raw)));
-      const data = JSON.parse(json);
-      if (!data || typeof data !== 'object' || Array.isArray(data)) return {};
-      return data;
-    } catch (_) {
-      return {};
-    }
+    return StyleToken.decodeStylePayload(b64);
   }
   function clampItemCap(value) {
     const n = Math.round(Number(value));

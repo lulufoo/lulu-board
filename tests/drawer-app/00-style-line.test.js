@@ -2,6 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const Token = require('../../packages/board/engine/style-token.js');
 const Style = require('../../packages/drawer-app/js/00-style-line.js');
 
 function b64(obj) {
@@ -35,6 +36,7 @@ function b64(obj) {
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
   assert.strictEqual(Style.joinRendererStyle('classic', 'board "A"\n'), 'style classic\nboard "A"\n');
+  assert.strictEqual(Style.mermaidStyleToken('classic'), Token.encodeStylePayload({ theme: 'classic' }));
   assert.strictEqual(Style.mermaidStyleToken('classic'), b64({ theme: 'classic' }));
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
   assert.strictEqual(Style.themeFromStyleToken('pastel'), 'pastel');
@@ -71,6 +73,10 @@ function b64(obj) {
 }
 
 {
+  const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
+  const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
+  assert.match(drawerBuild, /board\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
+  assert.match(boardBuild, /engine\/style-token\.js/, 'board bundle loads the shared token');
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
@@ -83,6 +89,11 @@ function b64(obj) {
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
   assert.ok(/mermaidStyleToken\(theme, step\)/.test(boardJs), 'mermaid persist writes theme plus type_step');
+  assert.strictEqual(
+    Style.encodeStylePayload({ theme: 'classic' }),
+    Token.encodeStylePayload({ theme: 'classic' }),
+    'mermaid encode is the shared token',
+  );
   assert.ok(/patch\.theme == null && patch\.type_step == null/.test(boardJs), 'flowchart persist accepts type_step without theme');
 }
 

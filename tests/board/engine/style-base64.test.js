@@ -289,4 +289,11 @@ box HERO "Hi"
   assert.strictEqual(Render.authoredNodeTypeStep(board, 'ITEM1'), 2);
 }
 
+{
+  const Token = require('../../../packages/board/engine/style-token.js');
+  const obj = { theme: 'classic', type_step: 2 };
+  assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');
+  assert.deepStrictEqual(Render.decodeStylePayload(Token.encodeStylePayload(obj)), obj);
+}
+
 console.log('ok style-base64');

@@ -45,6 +45,7 @@ const SCRIPTS = [
   'engine/board-route/label.js',
   'engine/board-route/straight.js',
   'engine/board-route.js',
+  'engine/style-token.js',
   'engine/board-render.js',
 ];
 
