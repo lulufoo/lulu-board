@@ -134,3 +134,19 @@ console.log('ok 09-shell-drawer');
   assert.match(src, /delete document\.documentElement\.dataset\.blankStartDrawer/, 'clears one-shot blank-start flag');
 }
 
+// ---- New board picks kind before writing #z ----
+{
+  const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
+  const start = src.indexOf('async function shellNewBlankBoard');
+  const end = src.indexOf('async function shellCommitBlankBoard');
+  const open = src.slice(start, end);
+  assert.match(open, /cloudConfirmLeaveBoard/, 'leave-confirm stays before the kind dialog');
+  assert.match(open, /openCreateKindDialog/, 'New board opens the kind dialog');
+  assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
+  assert.doesNotMatch(open, /history\.replaceState|bootstrapBoardFromHash|saveBoardToHash/, 'does not write hash before pick');
+  const commit = src.slice(end, src.indexOf('function shellIsPreview'));
+  assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
+  assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
+  assert.match(commit, /saveBoardToHash\(\{ bump: false \}\)/, 'writes #z after pick');
+}
+

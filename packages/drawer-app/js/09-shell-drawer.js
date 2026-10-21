@@ -276,18 +276,41 @@ function shellRenderMine(groups) {
   shellRenderShared();
 }
 
-// New board: a blank, unsaved board. The first save creates its group.
+// New board: pick Board vs Mermaid first. The first save creates its group.
 async function shellNewBlankBoard() {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user)) return;
   if (typeof cloudConfirmLeaveBoard === "function" && !(await cloudConfirmLeaveBoard())) return;
+  if (typeof openCreateKindDialog !== "function") return;
+  openCreateKindDialog({
+    onPick: function (kind) { void shellCommitBlankBoard(kind); },
+    onCancel: function () {},
+  });
+}
+
+async function shellCommitBlankBoard(kind) {
   if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudBoardId === "function" && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
   history.replaceState(null, "", location.pathname + location.search);
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
+  var source = (kind === "flowchart" && typeof blankHashFlowchartSource === "function")
+    ? blankHashFlowchartSource("Untitled")
+    : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
+  if (typeof setShareView === "function") setShareView(false);
+  if (typeof setShareEdit === "function") setShareEdit(false);
+  if (typeof boardSourceEl !== "undefined" && boardSourceEl) {
+    boardSourceEl.value = source;
+    delete boardSourceEl.dataset.boardSelectionKey;
+    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  }
+  boardLocalRev = 1;
+  boardServerRev = 0;
+  if (typeof applyBoardLiveMeta === "function") {
+    applyBoardLiveMeta({ id: "", version: 1 });
+  }
+  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
   if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
