@@ -1257,7 +1257,10 @@ function persistMermaidStyle(body, patch) {
   var theme = patch && patch.theme != null
     ? DrawerStyleLine.resolveThemeId(patch.theme)
     : DrawerStyleLine.themeFromStyleToken(styled.token);
-  var token = DrawerStyleLine.mermaidStyleToken(theme);
+  var step = patch && patch.type_step != null
+    ? DrawerStyleLine.clampMermaidTypeStep(patch.type_step)
+    : DrawerStyleLine.typeStepFromStyleToken(styled.token);
+  var token = DrawerStyleLine.mermaidStyleToken(theme, step);
   return DrawerStyleLine.joinRendererStyle(token, styled.body);
 }
 
@@ -1278,7 +1281,7 @@ function persistBoardStyle(patch) {
       : "board";
     var nextBody;
     if (kind === "flowchart" || kind === "mermaid-unsupported") {
-      if (!patch || patch.theme == null) return;
+      if (!patch || (patch.theme == null && patch.type_step == null)) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
       if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
@@ -1719,11 +1722,13 @@ function syncMermaidStyleChrome(body) {
   if (typeof DrawerStyleLine === "undefined") return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
   var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
+  var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
   if (typeof applyDiagramTheme === "function") {
     applyDiagramTheme(theme, { persist: false, skipRender: true });
   } else if (typeof applyPeleThemeVars === "function") {
     applyPeleThemeVars(theme);
   }
+  if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, true);
 }
 
 function renderFlowchart(opts) {

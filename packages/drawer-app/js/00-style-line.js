@@ -77,9 +77,40 @@
     return THEME_IDS[raw] ? raw : "default";
   }
 
-  function mermaidStyleToken(theme) {
+  function clampMermaidTypeStep(raw) {
+    if (typeof FlowchartTypeScale !== "undefined" && FlowchartTypeScale.clampStep) {
+      return FlowchartTypeScale.clampStep(raw);
+    }
+    var n = Math.round(Number(raw));
+    if (!Number.isFinite(n)) return 0;
+    return Math.min(3, Math.max(-3, n));
+  }
+
+  function decodeStyleTokenJson(token) {
+    var raw = String(token == null ? "" : token).trim();
+    if (!raw || THEME_IDS[raw] || raw === "kami") return null;
+    try {
+      var json = typeof Buffer !== "undefined"
+        ? Buffer.from(raw.replace(/\s+/g, ""), "base64").toString("utf8")
+        : decodeURIComponent(escape(atob(raw.replace(/\s+/g, ""))));
+      var data = JSON.parse(json);
+      return data && typeof data === "object" && !Array.isArray(data) ? data : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  function encodeStyleTokenJson(data) {
+    var s = JSON.stringify(data);
+    if (typeof Buffer !== "undefined") return Buffer.from(s, "utf8").toString("base64");
+    return btoa(unescape(encodeURIComponent(s)));
+  }
+
+  function mermaidStyleToken(theme, typeStep) {
     var t = resolveThemeId(theme);
-    return t === "default" ? "" : t;
+    var step = clampMermaidTypeStep(typeStep);
+    if (step === 0) return t === "default" ? "" : t;
+    return encodeStyleTokenJson({ theme: t, type_step: step });
   }
 
   function themeFromStyleToken(token) {
@@ -87,14 +118,15 @@
     if (!raw) return "default";
     if (THEME_IDS[raw]) return raw;
     if (raw === "kami") return "default";
-    try {
-      var json = typeof Buffer !== "undefined"
-        ? Buffer.from(raw.replace(/\s+/g, ""), "base64").toString("utf8")
-        : decodeURIComponent(escape(atob(raw.replace(/\s+/g, ""))));
-      var data = JSON.parse(json);
-      if (data && data.theme) return resolveThemeId(data.theme);
-    } catch (_e) {}
+    var data = decodeStyleTokenJson(raw);
+    if (data && data.theme) return resolveThemeId(data.theme);
     return "default";
+  }
+
+  function typeStepFromStyleToken(token) {
+    var data = decodeStyleTokenJson(token);
+    if (!data || data.type_step == null || data.type_step === "") return 0;
+    return clampMermaidTypeStep(data.type_step);
   }
 
   function joinRendererStyle(token, body) {
@@ -133,6 +165,8 @@
     resolveThemeId: resolveThemeId,
     mermaidStyleToken: mermaidStyleToken,
     themeFromStyleToken: themeFromStyleToken,
+    typeStepFromStyleToken: typeStepFromStyleToken,
+    clampMermaidTypeStep: clampMermaidTypeStep,
     authoredViewport: authoredViewport,
   };
 });

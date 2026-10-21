@@ -39,6 +39,23 @@ function b64(obj) {
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
   assert.strictEqual(Style.themeFromStyleToken('pastel'), 'pastel');
   assert.strictEqual(Style.themeFromStyleToken('kami'), 'default');
+  assert.strictEqual(Style.mermaidStyleToken('classic', 0), 'classic');
+  assert.strictEqual(Style.mermaidStyleToken('default', 0), '');
+  assert.strictEqual(Style.typeStepFromStyleToken('classic'), 0);
+  assert.strictEqual(Style.typeStepFromStyleToken(''), 0);
+  const stepped = Style.mermaidStyleToken('classic', 2);
+  assert.notStrictEqual(stepped, 'classic');
+  assert.strictEqual(Style.themeFromStyleToken(stepped), 'classic');
+  assert.strictEqual(Style.typeStepFromStyleToken(stepped), 2);
+  const defaultStepped = Style.mermaidStyleToken('default', -1);
+  assert.ok(defaultStepped);
+  assert.strictEqual(Style.themeFromStyleToken(defaultStepped), 'default');
+  assert.strictEqual(Style.typeStepFromStyleToken(defaultStepped), -1);
+  const written = Style.joinRendererStyle(stepped, flow);
+  assert.match(written, /^%% style /);
+  const split = Style.splitRendererStyle(written);
+  assert.strictEqual(Style.typeStepFromStyleToken(split.token), 2);
+  assert.strictEqual(Style.themeFromStyleToken(split.token), 'classic');
 }
 
 {
@@ -64,6 +81,9 @@ function b64(obj) {
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
   assert.ok(/joinDocument\(doc\.meta/.test(shell), 'wrap rejoins board meta');
+  assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
+  assert.ok(/mermaidStyleToken\(theme, step\)/.test(boardJs), 'mermaid persist writes theme plus type_step');
+  assert.ok(/patch\.theme == null && patch\.type_step == null/.test(boardJs), 'flowchart persist accepts type_step without theme');
 }
 
 console.log('ok board-style-theme');
