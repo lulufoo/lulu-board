@@ -1753,9 +1753,18 @@ function renderFlowchart(opts) {
     return;
   }
   try {
+    var typeStep = 0;
+    if (typeof DrawerStyleLine !== "undefined") {
+      typeStep = DrawerStyleLine.typeStepFromStyleToken(
+        DrawerStyleLine.splitRendererStyle(boardSourceEl ? boardSourceEl.value : "").token
+      );
+    }
+    var peleFont = typeof FlowchartTypeScale !== "undefined"
+      ? FlowchartTypeScale.px("default", typeStep)
+      : 16;
     var result = window.pele.render(body.trim(), {
       fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
-      fontSize: 16,
+      fontSize: peleFont,
       autoDirection: false,
       responsive: false,
     });
@@ -1763,6 +1772,7 @@ function renderFlowchart(opts) {
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
     if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
+    if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
     showBoardError("");
     setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
     if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();

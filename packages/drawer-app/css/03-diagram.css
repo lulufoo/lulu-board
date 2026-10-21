@@ -168,7 +168,27 @@ html[data-diagram-kind="flowchart"] #preview svg,
 html[data-diagram-kind="flowchart"] #preview svg text,
 html[data-diagram-kind="flowchart"] #preview svg tspan {
   font-family: var(--pele-font, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif);
-  font-size: 16px;
+}
+html[data-diagram-kind="flowchart"] #preview svg {
+  font-size: var(--fc-font-default, 16px);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect text,
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect tspan {
+  font-size: var(--fc-font-default, 16px);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-stadium text,
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-stadium tspan {
+  font-size: var(--fc-font-start-end, 15px);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-diam text,
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-diam tspan {
+  font-size: var(--fc-font-judgment, 14px);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-edge-label text,
+html[data-diagram-kind="flowchart"] #preview g.pele-edge-label tspan,
+html[data-diagram-kind="flowchart"] #preview g.pele-edge text,
+html[data-diagram-kind="flowchart"] #preview g.pele-edge tspan {
+  font-size: var(--fc-font-link, 13px);
 }
 html[data-diagram-kind="flowchart"] g.flowchart-selection {
   outline: none;

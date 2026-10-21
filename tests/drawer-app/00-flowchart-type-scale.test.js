@@ -48,4 +48,64 @@ assert.ok(Scale.px('startEnd', 0) > Scale.px('judgment', 0));
 assert.ok(Scale.px('judgment', 0) > Scale.px('link', 0));
 assert.ok(Scale.px('link', -3) >= Scale.MIN_PX);
 
+function node(tag, cls, kids) {
+  const el = {
+    tagName: tag,
+    className: cls || '',
+    parentNode: null,
+    style: {},
+    attrs: cls ? { class: cls } : {},
+    kids: kids || [],
+    getAttribute(name) { return this.attrs[name] == null ? null : String(this.attrs[name]); },
+    setAttribute(name, value) { this.attrs[name] = String(value); },
+    querySelector(sel) { return this.querySelectorAll(sel)[0] || null; },
+    querySelectorAll(sel) {
+      const out = [];
+      const walk = (n) => {
+        const tagName = String(n.tagName || '').toLowerCase();
+        if (sel === 'svg' && tagName === 'svg') out.push(n);
+        if (sel === 'text, tspan' && (tagName === 'text' || tagName === 'tspan')) out.push(n);
+        (n.kids || []).forEach(walk);
+      };
+      (this.kids || []).forEach(walk);
+      if (sel === 'svg' && String(this.tagName || '').toLowerCase() === 'svg') out.unshift(this);
+      if (sel === 'text, tspan') {
+        const self = String(this.tagName || '').toLowerCase();
+        if (self === 'text' || self === 'tspan') out.unshift(this);
+      }
+      return out;
+    },
+  };
+  (el.kids || []).forEach((k) => { k.parentNode = el; });
+  return el;
+}
+
+const defaultText = node('text', '', []);
+const startText = node('text', '', []);
+const judgeText = node('text', '', []);
+const linkText = node('text', '', []);
+const svg = node('svg', '', [
+  node('g', 'pele-node pele-shape-rect', [defaultText]),
+  node('g', 'pele-node pele-shape-stadium', [startText]),
+  node('g', 'pele-node pele-shape-diam', [judgeText]),
+  node('g', 'pele-edge-label', [linkText]),
+]);
+
+Scale.applyToRoot(svg, 0);
+assert.strictEqual(defaultText.style.fontSize, '16px');
+assert.strictEqual(startText.style.fontSize, '15px');
+assert.strictEqual(judgeText.style.fontSize, '14px');
+assert.strictEqual(linkText.style.fontSize, '13px');
+assert.strictEqual(svg.getAttribute('data-fc-type-step'), '0');
+assert.notStrictEqual(defaultText.style.fontSize, startText.style.fontSize);
+assert.notStrictEqual(startText.style.fontSize, judgeText.style.fontSize);
+assert.notStrictEqual(judgeText.style.fontSize, linkText.style.fontSize);
+
+Scale.applyToRoot(svg, 2);
+assert.strictEqual(defaultText.style.fontSize, '20px');
+assert.strictEqual(startText.style.fontSize, '19px');
+assert.strictEqual(judgeText.style.fontSize, '18px');
+assert.strictEqual(linkText.style.fontSize, '16px');
+assert.strictEqual(svg.getAttribute('data-fc-type-step'), '2');
+
 console.log('ok flowchart-type-scale');
