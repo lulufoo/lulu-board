@@ -363,5 +363,5 @@ async function cloudCommitPlusDraft(kind) {
   if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
-  setStatus("New board in this group");
+  setStatus("New Vela in this group");
 }

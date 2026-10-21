@@ -62,7 +62,7 @@ class WebRenderTestServer(unittest.TestCase):
                 with opener.open(url, timeout=3) as response:
                     page = response.read().decode("utf-8")
                     self.assertEqual(response.status, 200)
-                    self.assertIn("Lulu Board", page)
+                    self.assertIn("Lulu Vela", page)
             finally:
                 if proc.poll() is None:
                     proc.send_signal(signal.SIGINT)

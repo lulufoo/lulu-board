@@ -583,7 +583,7 @@ async function saveBoardToCloud(opts) {
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var created = Array.isArray(result.data) ? result.data[0] : result.data;
-      if (!created) throw new Error("Could not create cloud board");
+      if (!created) throw new Error("Could not create cloud Vela");
       if (typeof cloudClearPlusDraftSlot === "function") cloudClearPlusDraftSlot();
       else {
         cloudPlusDraft = false;
@@ -650,7 +650,7 @@ async function loadCloudBoardByHash(raw) {
   if (!cloudSession || !cloudSession.user) {
     cloudClearOpenBoard();
     cloudShowSignInDialog();
-    setStatus("Sign in to open this cloud board", true);
+    setStatus("Sign in to open this cloud Vela", true);
     return true;
   }
   var seq = ++cloudLoadSeq;
@@ -672,7 +672,7 @@ async function loadCloudBoardByHash(raw) {
     if (!known) void cloudRefreshGroups();
     return true;
   }
-  setStatus("Loading cloud board…");
+  setStatus("Loading cloud Vela…");
   try {
     var result = await cloudClient.from("boards")
       .select("board_id,title,bmd,version,share_id,created_at,updated_at")

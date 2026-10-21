@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/readme/lulu-board-icon.webp" width="160" alt="Lulu Board" />
+  <img src="docs/readme/lulu-board-icon.webp" width="160" alt="Lulu Vela" />
 </p>
 
-<h1 align="center">Lulu Board</h1>
+<h1 align="center">Lulu Vela</h1>
 
 <p align="center"><b>Structured whiteboard. A way to collaborate visually with AI.</b></p>
 
@@ -14,15 +14,16 @@
 
 ---
 
-One text protocol for boards — the AI agent writes it, Lulu Board draws it, you work on the canvas; both stay in sync. A local loop.
+One text protocol — the AI agent writes it, Lulu Vela draws it, you work on the canvas; both stay in sync. A local loop.
 
-| Mode | Product | Source ID |
+| Kind | In Lulu Vela | Source ID |
 |---|---|---|
-| Board | **Lulu Board** — structured whiteboard text | BMD (`b_…`) |
+| Board | structured whiteboard text | BMD (`b_…`) |
+| Flowchart | Mermaid flowchart | same `#z:` / `#b:` |
 
 ## Why
 
-Diagrams go stale when only one side can edit them. Lulu Board keeps one text protocol as the source of truth: the agent writes it, you refine it on the canvas (or in Source), and both stay in sync.
+Diagrams go stale when only one side can edit them. Lulu Vela keeps one text protocol as the source of truth: the agent writes it, you refine it on the canvas (or in Source), and both stay in sync.
 
 ## Quick start
 
@@ -32,15 +33,15 @@ Chat entry is [`/board`](./skill/board/SKILL.md):
 /board
 ```
 
-The Drawer opens on a built-in template — the onboarding board — so you can see the loop right away:
+The Drawer opens on a built-in template — the onboarding Vela — so you can see the loop right away:
 
 <p align="center">
   <a href="./examples/board-onboarding/onboarding.bmd">
-    <img src="./docs/readme/lulu-board.webp" alt="Board · Onboarding" width="720" />
+    <img src="./docs/readme/lulu-board.webp" alt="Vela · Onboarding" width="720" />
   </a>
 </p>
 
-<p align="center"><strong>Onboarding</strong> — AI writes. Lulu Board draws. You work on the canvas.</p>
+<p align="center"><strong>Onboarding</strong> — AI writes. Lulu Vela draws. You work on the canvas.</p>
 
 **Source** (`<>`) → **History** to browse the built-in templates. New files are stored there too.
 
@@ -54,19 +55,19 @@ Describe what you want after `/board`:
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
 
-A signed-in owner can share a saved cloud board from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current board; Edit lets a signed-in visitor change that same row.
+A signed-in owner can share a saved cloud Vela from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current Vela; Edit lets a signed-in visitor change that same row.
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
-    <img src="./docs/readme/agent-chat.webp" alt="Board · Android MVI" width="720" />
+    <img src="./docs/readme/agent-chat.webp" alt="Vela · Android MVI" width="720" />
   </a>
 </p>
 
-<p align="center"><strong>Board · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
+<p align="center"><strong>Vela · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
 
 ## MCP configuration
 
-`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud board for your account, add the hosted MCP and Connect.
+`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud Vela for your account, add the hosted MCP and Connect.
 
 ```json
 {
@@ -80,7 +81,7 @@ A signed-in owner can share a saved cloud board from the Share dock. The first a
 
 In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://luluboard.app/#b:…` instead of `#z:`.
 
-Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
+Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Vela sign-in and consent page.
 
 ## Examples
 
@@ -92,7 +93,7 @@ Click a preview to open the source.
   <tr>
     <td valign="top" align="center">
       <a href="./examples/board-llm-architecture/llm-architecture.bmd">
-        <img src="./docs/readme/llm-technical-architecture.webp" alt="Board · LLM Architecture" />
+        <img src="./docs/readme/llm-technical-architecture.webp" alt="Board kind · LLM Architecture" />
       </a>
       <p>
         <strong>LLM Architecture</strong><br />

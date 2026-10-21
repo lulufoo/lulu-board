@@ -31,7 +31,7 @@ assert.match(html, /img-src[^"]*https:\/\/\*\.googleusercontent\.com/, 'CSP allo
 assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP allows GitHub avatars');
 assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
 assert.match(html, /id="boardSignInDialog"/, 'unsigned #b: has a sign-in dialog');
-assert.match(html, /Sign in to open this board/, 'dialog copy asks to sign in');
+assert.match(html, /Sign in to open this Vela/, 'dialog copy asks to sign in');
 assert.match(html, /id="btnBoardSignInClose"/, 'dialog can be dismissed');
 assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
 assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
