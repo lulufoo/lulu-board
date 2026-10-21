@@ -11,8 +11,10 @@ const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.j
 const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mjs'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'packages/drawer-app/js/01-shell-state.js'), 'utf8');
 
-assert.match(html, /id="btnFlowchartAddSubgraph"/);
-assert.match(html, /id="btnFlowchartAddNode"/);
+assert.match(html, /id="btnFlowchartAddSubgraph"[^>]*>[\s\S]*?<span>Box<\/span>/);
+assert.match(html, /id="btnFlowchartAddNode"[^>]*>[\s\S]*?<span>Item<\/span>/);
+assert.doesNotMatch(html, />Subgraph</);
+assert.doesNotMatch(html, />Node</);
 assert.match(html, /id="btnFlowchartLink"/);
 assert.match(html, /id="btnFlowchartDelete"/);
 assert.match(html, /id="flowchartTitleEditor"/);
