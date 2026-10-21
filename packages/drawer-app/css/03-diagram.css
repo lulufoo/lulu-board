@@ -138,8 +138,8 @@ html[data-diagram-kind="flowchart"] {
   --_s: var(--pele-surface, #fffdf9);
   --_a: var(--pele-surface-alt, #f3ece6);
   --_b: var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14));
-  --_c: var(--pele-accent, #5b7bd5);
-  --_r: 4px;
+  --_c: var(--pele-accent, var(--pele-line, #4a3524));
+  --_r: var(--pele-radius, var(--bf-radius-box, 12px));
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-node,
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster,
@@ -151,9 +151,29 @@ html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect {
   pointer-events: all;
-  rx: var(--_r, 4px);
-  ry: var(--_r, 4px);
-  stroke: var(--_b);
+  rx: var(--_r);
+  ry: var(--_r);
+  fill: var(--_s) !important;
+  stroke: var(--_b) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node > rect,
+html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon,
+html[data-diagram-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+  fill: var(--_s) !important;
+  stroke: var(--_b) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect > rect {
+  rx: var(--_r);
+  ry: var(--_r);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node text,
+html[data-diagram-kind="flowchart"] #preview g.pele-node tspan,
+html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title text,
+html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title tspan {
+  fill: var(--_fg) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-edge > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+  stroke: var(--_l);
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
 html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {

@@ -43,7 +43,7 @@
     var clusterBorder = border;
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
-    var radius = "4px";
+    var radius = "var(--bf-radius-box, 12px)";
     var css = {
       "--bf-rgb": theme.edgeRgb || EDGE_RGB_FALLBACK,
       "--pele-bg": "transparent",
@@ -70,8 +70,8 @@
     css["--_s"] = "var(--pele-surface, #f3f3f3)";
     css["--_a"] = "var(--pele-surface-alt, #e6e6e6)";
     css["--_b"] = "var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14))";
-    css["--_c"] = "var(--pele-accent, #5b7bd5)";
-    css["--_r"] = "var(--pele-radius, 4px)";
+    css["--_c"] = "var(--pele-accent)";
+    css["--_r"] = "var(--pele-radius)";
     return {
       css: css,
       series: colors,
@@ -84,7 +84,7 @@
         secondaryColor: colors[1] || surface,
         tertiaryColor: colors[2] || alt,
         tertiaryTextColor: muted,
-        clusterBkg: alt,
+        clusterBkg: surface,
         clusterBorder: clusterBorder,
         titleColor: color,
         nodeTextColor: color,

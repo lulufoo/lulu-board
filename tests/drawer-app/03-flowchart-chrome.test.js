@@ -49,9 +49,11 @@ assert.match(js, /function clearFlowchartInteraction/, 'blank and chrome share o
 assert.match(js, /flowchart-link-mode/, 'Link tool enters a visible mode');
 assert.doesNotMatch(js, /path\.style\.stroke\s*=/, 'selected link color is CSS class, not inline stroke');
 assert.doesNotMatch(js, /\[0, -10\].*\[0, 18\]/, 'blank near a link is not padded into a hit');
-assert.match(css, /--_r: 4px/, 'flowchart default corner is a small box radius');
+assert.match(css, /--_r: var\(--pele-radius, var\(--bf-radius-box, 12px\)\)/, 'flowchart corner follows the Board card');
+assert.doesNotMatch(css, /--_c: var\(--pele-accent, #5b7bd5\)/, 'no Pele blue fallback on the host');
 assert.match(css, /g\.pele-cluster > rect \{[\s\S]*rx: var\(--_r/, 'group uses the node corner');
 assert.match(css, /g\.pele-cluster > rect \{[\s\S]*stroke: var\(--_b\)/, 'group stroke matches node');
+assert.match(css, /g\.pele-cluster > rect \{[\s\S]*fill: var\(--_s\)/, 'group paper is the Board surface');
 assert.match(css, /flowchart-selection-halo/);
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--canvas-ring/, 'selected node keeps the shared canvas ring');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo stays visible');
