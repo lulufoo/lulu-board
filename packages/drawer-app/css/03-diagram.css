@@ -110,7 +110,7 @@
 
 .board-render .box.board-nested { position: relative !important; left: auto !important; top: auto !important; }
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
-html[data-drawer-mode="board"] .board-edit-tools { display: inline-flex; }
+html[data-drawer-mode="vela"] .board-edit-tools { display: inline-flex; }
 html[data-diagram-kind="flowchart"] .board-edit-tools,
 html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
 html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
@@ -230,7 +230,7 @@ html[data-diagram-kind="flowchart"] path.mermaid-edge-hit.flowchart-selection {
   pointer-events: none !important;
   user-select: none;
 }
-html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
+html[data-drawer-mode="vela"] .board-brand { display: inline-flex; }
 .board-brand-mark {
   width: 28px;
   height: 28px;
@@ -610,7 +610,7 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
 
 
 /* SOURCE_LEFT_12: dock source 12px from sheet/viewport; theme+more on right */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute !important;
   inset: 12px 12px auto 12px !important;
   left: 12px !important;
@@ -667,7 +667,7 @@ html[data-drawer-mode="board"] .top-float {
 .top-float-theme .menu-panel { right: 0; left: auto; }
 .top-float-theme .theme-item.is-active { font-weight: 650; color: var(--accent, #2563eb); }
 /* Shared grid canvas — no diagram chrome frame / white plate */
-html[data-drawer-mode="board"] .canvas-shell {
+html[data-drawer-mode="vela"] .canvas-shell {
   background-color: #f8fafc !important;
   background-image: linear-gradient(rgba(100,116,139,.12) 1px, transparent 1px),
     linear-gradient(90deg, rgba(100,116,139,.12) 1px, transparent 1px) !important;
@@ -685,7 +685,7 @@ html[data-drawer-mode="board"] .canvas-shell {
   background: transparent !important;
   border-radius: 0 !important;
 }
-html[data-drawer-mode="board"] #preview svg {
+html[data-drawer-mode="vela"] #preview svg {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -694,7 +694,7 @@ html[data-drawer-mode="board"] #preview svg {
   border-radius: 0 !important;
 }
 /* Top toolbar layout — Source hugs Lulu Drawer sheet; ⋯ far right */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -714,7 +714,7 @@ html[data-drawer-mode="board"] .top-float {
   pointer-events: none;
   z-index: 5;
 }
-html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
+html[data-drawer-mode="vela"] .top-float > * { pointer-events: auto; }
 .board-account {
   display: flex;
   align-items: center;
@@ -723,7 +723,7 @@ html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
   min-width: 0;
   position: relative;
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn {
+html[data-drawer-mode="vela"] .top-float .board-account-btn {
   height: 32px;
   min-width: 32px;
   padding: 0 12px;
@@ -735,16 +735,16 @@ html[data-drawer-mode="board"] .top-float .board-account-btn {
   font-weight: 550;
   color: var(--text, #222);
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:hover {
+html[data-drawer-mode="vela"] .top-float .board-account-btn:hover {
   background: var(--panel-solid, #fff);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:disabled {
+html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled {
   opacity: 0.72;
   cursor: default;
   box-shadow: none;
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
+html[data-drawer-mode="vela"] .top-float .board-account-btn:disabled:hover {
   border-color: var(--stroke);
 }
 .board-cloud-status {
@@ -941,17 +941,17 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 }
 /* Diagram theme */
 
-html[data-drawer-mode="board"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
-html[data-drawer-mode="board"] #preview .board-diamond-shape,
-html[data-drawer-mode="board"] #preview .board-item-diamond-shape,
-html[data-drawer-mode="board"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+html[data-drawer-mode="vela"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+html[data-drawer-mode="vela"] #preview .board-diamond-shape,
+html[data-drawer-mode="vela"] #preview .board-item-diamond-shape,
+html[data-drawer-mode="vela"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
 /* World layer: zero-size anchor; edges paint in world px and are never clipped */
 .board-render .board-canvas { width: 0 !important; height: 0 !important; min-height: 0 !important; }
 .board-render svg.board-edges { width: 1px !important; height: 1px !important; overflow: visible !important; }
 #preview.board-preview { width: max-content; min-width: 0; height: 100%; padding: 0; }
 /* Board: hit area fills the stage (not just content bbox), still grows with large boards */
-html[data-drawer-mode="board"] #preview,
-html[data-drawer-mode="board"] #preview.board-preview {
+html[data-drawer-mode="vela"] #preview,
+html[data-drawer-mode="vela"] #preview.board-preview {
   min-width: 100%;
   min-height: 100%;
   width: max-content;
@@ -1143,7 +1143,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-legend-evidence { border-top-color: #b85a68; border-top-style: dashed; }
 
 /* TOOLBAR_V3: canvas-shell already sits beside sheet — always left:12px; 3 buttons gap 8px */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute !important;
   top: 12px !important;
   left: 12px !important;
@@ -1166,7 +1166,7 @@ html[data-drawer-mode="board"] .top-float {
   z-index: 40 !important;
   overflow: visible !important;
 }
-html[data-drawer-mode="board"] .top-float > * {
+html[data-drawer-mode="vela"] .top-float > * {
   pointer-events: auto;
 }
 .top-float .btn-source,
@@ -1209,7 +1209,7 @@ html[data-drawer-mode="board"] .top-float > * {
 
 /* MENUS_NO_SHEET_OVERLAP: sheet above menus; panels stay in canvas */
 .sheet { z-index: 60 !important; }
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   z-index: 30 !important;
 }
 .top-float .menu-panel {
@@ -1507,7 +1507,7 @@ html[data-drawer-mode="board"] .top-float {
 .board-render .board-zone .board-modules { pointer-events: auto; }
 
 /* BOARD_DOCK: right rail — Layout / Props / Source; one panel at a time */
-html[data-drawer-mode="board"] .app {
+html[data-drawer-mode="vela"] .app {
   grid-template-columns: minmax(0, 1fr);
 }
 .sheet { display: none !important; }
@@ -1530,7 +1530,7 @@ html[data-drawer-mode="board"] .app {
   pointer-events: auto;
   transition: none; /* avoid open/close width jitter */
 }
-html[data-drawer-mode="board"] .board-dock { display: flex; }
+html[data-drawer-mode="vela"] .board-dock { display: flex; }
 /* Layout tab hidden; settings live in Style */
 [data-dock="layout"] {
   display: none !important;
@@ -2104,23 +2104,23 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
   font-weight: 550;
   color: var(--muted, #64748b);
 }
-.dock-source-body #boardSource {
+.dock-source-body #velaSource {
   min-height: 0;
   padding-bottom: 28px;
 }
 
 /* Keep editing controls left and account controls right. */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   left: 12px !important;
   right: 48px !important;
   width: auto !important;
 }
-html[data-drawer-mode="board"] .board-account {
+html[data-drawer-mode="vela"] .board-account {
   margin-left: auto;
   flex: 0 1 auto;
 }
 @media (max-width: 820px) {
-  html[data-drawer-mode="board"] .top-float {
+  html[data-drawer-mode="vela"] .top-float {
     left: 6px !important;
     right: 42px !important;
   }

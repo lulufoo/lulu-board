@@ -92,7 +92,7 @@
   transform: translate(0, -50%);
   transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s;
 }
-html[data-drawer-mode="board"] .chrome-tip {
+html[data-drawer-mode="vela"] .chrome-tip {
   height: 36px;
   border-radius: 9px;
   font: 500 14px/36px var(--font, var(--sans));

@@ -27,7 +27,7 @@ function isFlowchartKind() {
 }
 
 function flowchartSource() {
-  return boardSourceEl ? boardSourceEl.value : "";
+  return velaSourceEl ? velaSourceEl.value : "";
 }
 
 function peleDataId(el) {
@@ -220,20 +220,20 @@ function flowchartEditAction(action) {
     if (!result || typeof result.source !== "string") return;
     applyFlowchartEditResult(result);
   } catch (err) {
-    if (typeof showBoardError === "function") showBoardError(err instanceof Error ? err.message : String(err));
+    if (typeof showVelaError === "function") showVelaError(err instanceof Error ? err.message : String(err));
   }
 }
 
 function applyFlowchartEditResult(result) {
   if (!result || typeof result.source !== "string") return;
-  boardSourceEl.value = result.source;
+  velaSourceEl.value = result.source;
   selectedFlowchart = result.selection || null;
   flowchartLinkMode = false;
   flowchartLinkStart = null;
   syncFlowchartLinkChrome();
-  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof updateVelaChars === "function") updateVelaChars();
   if (typeof scheduleBoardSave === "function") scheduleBoardSave();
-  if (typeof renderBoard === "function") renderBoard({ fit: false });
+  if (typeof renderVela === "function") renderVela({ fit: false });
 }
 
 function restoreFlowchartSelection() {
@@ -651,7 +651,7 @@ document.addEventListener("keydown", function (event) {
   if (event.key !== "Delete" && event.key !== "Backspace") return;
   if (!selectedFlowchart) return;
   var target = event.target;
-  if (target === boardSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === velaSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   flowchartEditAction(function () { return FlowchartEdit.deleteSelection(flowchartSource(), selectedFlowchart); });
 });

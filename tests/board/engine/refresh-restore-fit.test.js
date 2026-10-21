@@ -9,7 +9,7 @@ const board = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 
 assert.ok(/function applyRestoredBoardView/.test(shell), 'restore helper');
-assert.ok(/opts\.restoreView\) \{\s*applyRestoredBoardView\(\)/.test(board), 'renderBoard restore uses helper');
+assert.ok(/opts\.restoreView\) \{\s*applyRestoredBoardView\(\)/.test(board), 'renderVela restore uses helper');
 assert.ok(/applyRestoredBoardView\(\)/.test(boot), 'setMode skipBoard uses helper');
 
 // The camera is per-board (style.viewport) only: nothing about it is stored in drawer.ui.

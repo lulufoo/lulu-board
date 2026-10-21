@@ -9,6 +9,7 @@
   root.newBoardId = api.newBoardId;
   root.blankHashBoardSource = api.blankHashBoardSource;
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
+  root.velaTitleFromBody = api.velaTitleFromBody;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -117,6 +118,20 @@
     return "%% title " + name + "\nflowchart TD\n";
   }
 
+  function velaTitleFromBody(body) {
+    var text = String(body || "");
+    var board = /^\s*board\s+"([^"]*)"/.exec(text);
+    if (board) return board[1];
+    var lines = text.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i += 1) {
+      var mermaid = /^%%\s*title\s*:?\s*(.+?)\s*$/i.exec(String(lines[i] || "").trim());
+      if (!mermaid) continue;
+      var title = mermaid[1].replace(/^["']|["']$/g, "").trim();
+      if (title) return title;
+    }
+    return "";
+  }
+
   return {
     encodeMetaPayload: encodeMetaPayload,
     decodeMetaPayload: decodeMetaPayload,
@@ -127,6 +142,7 @@
     newBoardId: newBoardId,
     blankHashBoardSource: blankHashBoardSource,
     blankHashFlowchartSource: blankHashFlowchartSource,
+    velaTitleFromBody: velaTitleFromBody,
   };
 });
 var splitDocument = globalThis.splitDocument;
@@ -136,3 +152,4 @@ var sourceBody = globalThis.sourceBody;
 var newBoardId = globalThis.newBoardId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
+var velaTitleFromBody = globalThis.velaTitleFromBody;

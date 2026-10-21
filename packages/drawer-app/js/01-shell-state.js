@@ -33,7 +33,7 @@ function setCharsLabel(el, n) {
   el.appendChild(document.createTextNode(" chars"));
 }
 function liveDocumentVersion() {
-  return Number.isFinite(boardLocalRev) && boardLocalRev > 0 ? boardLocalRev : 0;
+  return Number.isFinite(velaLocalRev) && velaLocalRev > 0 ? velaLocalRev : 0;
 }
 
 function wrapEditorApi(api) {
@@ -63,8 +63,8 @@ function wrapEditorApi(api) {
 
 /* drawer-app/01-shell-state.js — lines 1-699 of former inline module */
 const $ = (s) => document.querySelector(s);
-const boardSourceEl = $('#boardSource');
-const boardError = $("#boardError");
+const velaSourceEl = $('#velaSource');
+const velaError = $("#velaError");
 const boardDock = $("#boardDock");
 const propsPanel = $("#propsPanel");
 const propsEmpty = $("#propsEmpty");
@@ -172,10 +172,10 @@ const boardDeleteButton = $("#btnBoardDelete");
 const boardLinkButton = $("#btnBoardLink");
 const previewEl = $('#preview');
 const stageEl = $('#preview-stage');
-const boardSelectionObserver = new MutationObserver(() => { var key = boardSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
+const boardSelectionObserver = new MutationObserver(() => { var key = velaSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
-let boardLocalRev = 0;
+let velaLocalRev = 0;
 let boardServerRev = 0;
 let boardDirty = false;
 let boardSaveSeq = 0;
@@ -336,7 +336,7 @@ function applyBoardLiveMeta(meta = {}) {
   if (meta && meta.path) liveBoardPath = String(meta.path);
   else if (meta && meta.current && String(meta.current).startsWith("/")) liveBoardPath = String(meta.current);
   if (meta && Number.isFinite(Number(meta.version != null ? meta.version : meta.rev))) {
-    if (!Number.isFinite(boardLocalRev) || boardLocalRev <= 0) boardLocalRev = Number(meta.version != null ? meta.version : meta.rev);
+    if (!Number.isFinite(velaLocalRev) || velaLocalRev <= 0) velaLocalRev = Number(meta.version != null ? meta.version : meta.rev);
   }
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel("Board");
@@ -423,7 +423,7 @@ function setCanvasZoom(nextScale) {
   applyTransform();
 }
 function applyRestoredBoardView() {
-  if (typeof pinBoardTitle === "function") pinBoardTitle();
+  if (typeof pinVelaTitle === "function") pinVelaTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.restoreOrFit === "function") {
     Canvas.restoreOrFit();
     return;
@@ -431,11 +431,11 @@ function applyRestoredBoardView() {
 }
 function fitBoardView() {
   if (!previewEl) return;
-  pinBoardTitle();
+  pinVelaTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.fitWorld === "function") Canvas.fitWorld();
   requestAnimationFrame(function () {
-    if (!previewEl || !boardSourceEl) return;
-    var key = boardSourceEl.dataset.boardSelectionKey;
+    if (!previewEl || !velaSourceEl) return;
+    var key = velaSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
     if (retained) retained.classList.add("board-selection");
@@ -444,10 +444,10 @@ function fitBoardView() {
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
 }
-function updateBoardChars() {
-  setCharsLabel($('#boardCharsPill'), [...boardSourceEl.value].length);
+function updateVelaChars() {
+  setCharsLabel($('#velaCharsPill'), [...velaSourceEl.value].length);
 }
-function showBoardError(message) { boardError.textContent = message || ''; boardError.classList.toggle('show', !!message); }
+function showVelaError(message) { velaError.textContent = message || ''; velaError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
 wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);

@@ -10,7 +10,6 @@ const html = read('packages/drawer-app/index.html');
 const css = read('packages/drawer-app/css/03-diagram.css');
 const chromeCss = read('packages/drawer-app/css/07-cloud-chrome.css');
 const build = read('scripts/drawer-app-build/build.mjs');
-const boardFile = read('packages/drawer-app/js/05-board-file.js');
 const renderIo = read('packages/drawer-app/js/05-render-io.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
@@ -23,7 +22,7 @@ assert.doesNotMatch(cloud, /refreshCloudBoardHistory|cloudSetHistoryVisible|pain
 assert.match(cloud, /async function cloudRefreshGroups/, 'the drawer list refresh replaces the history refresh');
 assert.doesNotMatch(css, /\.history-(combo|item|pop|list|block)|#boardHistory/, 'history styles are gone');
 assert.doesNotMatch(chromeCss, /#boardHistory/, 'history chrome styles are gone');
-assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^}]*bottom:\s*8px/,
+assert.match(chromeCss, /html\[data-drawer-mode="vela"\] \.board-account\s*\{[^}]*bottom:\s*8px/,
   'account chrome sits on the sidebar foot');
 assert.doesNotMatch(chromeCss, /#boardCloudStatus \{\s*display:\s*none/,
   'Saved stays its own control');

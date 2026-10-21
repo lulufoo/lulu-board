@@ -27,7 +27,7 @@ assert.match(js, /name: "Mindmap"/, 'lists other mermaid types');
 assert.doesNotMatch(js, /Ready/, 'no Ready badge');
 assert.doesNotMatch(js + css, /create-kind-tag/, 'no per-row class tag');
 assert.match(js, /event\.key !== "Escape"/, 'Esc is cancel');
-assert.doesNotMatch(js, /saveBoardToHash|blankHashBoardSource|blankHashFlowchartSource|boardSourceEl/, 'does not write hash or source');
+assert.doesNotMatch(js, /saveVelaToHash|blankHashBoardSource|blankHashFlowchartSource|velaSourceEl/, 'does not write hash or source');
 
 function makeEl(id) {
   const attrs = {};

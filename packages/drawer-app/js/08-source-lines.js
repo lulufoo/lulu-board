@@ -1,4 +1,4 @@
-/* Logical line numbers beside #boardSource. Wrapped display still one number. */
+/* Logical line numbers beside #velaSource. Wrapped display still one number. */
 function sourceLineTwin() {
   var el = document.querySelector(".source-line-twin");
   if (el) return el;
@@ -96,4 +96,4 @@ function wireSourceLineEditor(textarea) {
   }
   schedule();
 }
-wireSourceLineEditor(typeof boardSourceEl !== "undefined" ? boardSourceEl : document.getElementById("boardSource"));
+wireSourceLineEditor(typeof velaSourceEl !== "undefined" ? velaSourceEl : document.getElementById("velaSource"));

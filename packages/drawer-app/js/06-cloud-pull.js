@@ -26,7 +26,7 @@ async function pullBoardFromCloud() {
     if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
     cloudForgetBoardCache([boardId]);
     applyCloudBoardRow(result.data);
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Pulled from cloud");
     if (typeof showCopyTip === "function") showCopyTip("Pulled from cloud");

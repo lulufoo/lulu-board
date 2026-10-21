@@ -97,8 +97,8 @@ function contentOnStage() {
 
 function readDocumentView() {
   try {
-    if (!boardSourceEl || typeof DrawerStyleLine === "undefined") return null;
-    var raw = boardSourceEl.value;
+    if (!velaSourceEl || typeof DrawerStyleLine === "undefined") return null;
+    var raw = velaSourceEl.value;
     try { raw = splitDocument(raw).body; } catch (_e) {}
     var styled = DrawerStyleLine.splitRendererStyle(raw);
     var data = typeof DrawerStyleLine.decodeStyleTokenJson === "function"

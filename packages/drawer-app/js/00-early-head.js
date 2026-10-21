@@ -16,7 +16,7 @@
       location.replace(api.LANDING_PATH);
       return;
     }
-    doc.dataset.drawerMode = "board";
+    doc.dataset.drawerMode = "vela";
     // Hide canvas until first transform is applied to avoid left-flash.
     doc.dataset.drawerBoot = "1";
     // Blank start: /?ws=1 (any auth) or signed-in / (LB-355); plan from blankStartPlan.

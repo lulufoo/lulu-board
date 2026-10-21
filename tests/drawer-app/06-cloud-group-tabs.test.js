@@ -32,7 +32,7 @@ assert.match(tabs, /openCreateKindDialog/, 'plus opens the kind dialog before wr
 assert.match(tabs, /shellCloseDrawer/, 'picking a type from plus closes the left drawer');
 assert.match(tabs, /blankHashFlowchartSource\("Untitled"\)/, 'plus can seed flowchart');
 assert.match(tabs, /onCancel: function \(\) \{\}/, 'plus cancel does not create a draft');
-assert.match(tabs, /saveBoardToHash/, 'plus writes a blank #z: envelope');
+assert.match(tabs, /saveVelaToHash/, 'plus writes a blank #z: envelope');
 assert.match(tabs, /cloudGroupMembers\.length \+ 1/, 'plus shows the next numbered tab');
 assert.match(tabs, /plus\.disabled = !!cloudPlusDraft/, 'plus stays disabled until the draft is saved');
 assert.match(tabs, /function cloudParkPlusDraft/, 'leaving the draft parks source in memory');
@@ -65,7 +65,7 @@ assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
 assert.match(cloud, /cloudForgetBoardCache/, 'sign out and group delete drop the memory cache');
 assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
 assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
-assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveBoardToHash/, 'plus draft edits persist in #z:');
+assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveVelaToHash/, 'plus draft edits persist in #z:');
 assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active plus draft');
 
 {
@@ -116,7 +116,7 @@ assert.match(tabs, /"Add board"/, 'plus keeps Add board');
   assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
   assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
-  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'boardSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
     body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
     (id) => (env.cache || {})[id] || null,
     (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });

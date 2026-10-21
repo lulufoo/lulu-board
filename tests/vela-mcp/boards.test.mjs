@@ -18,7 +18,7 @@ import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
 import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, serverInfo } from '../../packages/vela-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/05-board-file.js'), 'utf8');
+const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const boardsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/boards.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
@@ -34,7 +34,7 @@ assert.equal(
   stripPersistedMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
   'flowchart TD\n  A-->B\n'
 );
-assert.match(drawerTitle, /function boardTitleFromBody/, 'drawer still owns the title regex');
+assert.match(drawerTitle, /function velaTitleFromBody/, 'drawer still owns the title regex');
 assert.match(drawerTitle, /%%\\s\*title/, 'drawer reads mermaid %% title');
 assert.equal(newBoardId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');

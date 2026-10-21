@@ -58,7 +58,7 @@ assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo 
 const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
 assert.match(shellCss, /btnFlowchartDelete:not\(:disabled\)/, 'Delete armed state is visible');
 assert.match(shellCss, /flowchart-edit-tool/, 'flowchart tools share Board chrome');
-assert.match(shellCss, /html\[data-drawer-mode="board"\] \.flowchart-edit-tool \{[\s\S]*height: 40px/, 'flowchart tools use Board 40px fill pills');
+assert.match(shellCss, /html\[data-drawer-mode="vela"\] \.flowchart-edit-tool \{[\s\S]*height: 40px/, 'flowchart tools use Board 40px fill pills');
 assert.match(shellCss, /#flowchartTypeEditor/, 'flowchart Type uses fill-pill chrome');
 assert.match(shellCss, /#flowchartTitleEditor/, 'flowchart Label uses fill-pill chrome');
 assert.match(shellCss, /\.props-fields\[hidden\]/, 'hidden props fields stay hidden against display:flex');

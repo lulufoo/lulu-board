@@ -58,7 +58,7 @@ assert.match(shareJs, /save_shared_board/, 'shared editors save through save_sha
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
-assert.match(shareJs, /showBoardError\(message\)/, 'a missing share token surfaces an error');
+assert.match(shareJs, /showVelaError\(message\)/, 'a missing share token surfaces an error');
 assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
 assert.match(read('packages/drawer-app/js/09-shell-drawer.js'), /isShareGuest\(\)\) && \w|isShareGuest/, 'guests cannot use Share this board');
 assert.doesNotMatch(boardJs, /dataset\.shareView === "on"\) return/, 'share view still lets the guest edit locally');
@@ -137,7 +137,7 @@ assert.match(cloud, /cloudShowSignInDialog\(\)/, 'unsigned #b: load shows the di
 assert.match(cloud, /if \(signedIn\) cloudHideSignInDialog/, 'signed-in chrome closes the dialog');
 assert.match(cloud, /function cloudDeclineCloudBoard/, 'Not now leaves the cloud pointer');
 assert.match(cloud, /btnBoardSignInClose[\s\S]*cloudDeclineCloudBoard/, 'Not now resets the URL off #b:');
-assert.match(cloud, /async function cloudDeclineCloudBoard[\s\S]*bootstrapBoardFromHash/, 'declining seeds an unsigned #z: board');
+assert.match(cloud, /async function cloudDeclineCloudBoard[\s\S]*bootstrapVelaFromHash/, 'declining seeds an unsigned #z: board');
 assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force sign-in');
 
 {
@@ -183,7 +183,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
     const save = mkEl(), status = mkEl();
     new Function('env', 'save', 'status', `
       var cloudSession = env.signedIn ? { user: {} } : null, cloudPlusDraftActive = false, liveBoardId = '';
-      var boardServerRev = env.server, boardLocalRev = env.client;
+      var boardServerRev = env.server, velaLocalRev = env.client;
       var document = { getElementById: (id) => id === 'btnBoardSaveCloud' ? save : status };
       function isLocalDrawerPreview() { return !!env.local; }
       function cloudBoardId() { return env.id || ''; }
@@ -282,7 +282,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(start >= 0 && end > start, 'cloudSignOut is a closed function');
   const body = cloud.slice(start, end);
   assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
-  assert.match(body, /bootstrapBoardFromHash/, 'sign-out seeds a blank local board');
+  assert.match(body, /bootstrapVelaFromHash/, 'sign-out seeds a blank local board');
   assert.doesNotMatch(body, /cloudClearOpenBoard/, 'sign-out does not empty the source in place');
 }
 

@@ -1,7 +1,7 @@
 /* drawer-app/10-source-style.js — Source panel look: syntax colours, current line.
-   A highlighted <pre> sits behind the transparent #boardSource; the textarea stays the editor. */
+   A highlighted <pre> sits behind the transparent #velaSource; the textarea stays the editor. */
 (function wireSourceStyle() {
-  var ta = document.getElementById("boardSource");
+  var ta = document.getElementById("velaSource");
   var editor = ta && ta.closest(".source-line-editor");
   var gutter = editor && editor.querySelector(".source-gutter");
   if (!ta || !editor || !gutter || ta.dataset.hl === "1") return;
