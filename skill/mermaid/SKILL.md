@@ -25,12 +25,9 @@ Mermaid.js.
 
 Load only what the current interface needs.
 
-1. Keep this file at start.
-2. **list** — load [catalog](./references/catalog.md) only.
-3. **route** — after an **open** type is chosen, load that one file from catalog.
-4. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
-5. Load [pointers](../references/pointers.md) when a viewer link is pasted.
-6. Load [cloud](../references/cloud.md) in cloud mode.
+1. **list** — load [catalog](./references/catalog.md) only.
+2. **route** — after an **open** type is chosen, load that one file from catalog.
+3. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
 
 ## Interfaces
 
@@ -56,36 +53,40 @@ The catalog is the type boundary. **Open** is only `flowchart` (`flowchart` /
 
 ## Author
 
-After the open type file is loaded.
+What to write, after the open type file is loaded.
 
 1. Use one sample in that file (minimal default). Flowchart: one edge-meaning
    category.
 2. Replace labels; keep the sample's node and edge kinds.
 3. Prefer ≤ ~12 primary elements unless the user asked for more.
-4. Write-back follows Mode / Hash flow / Cloud flow.
+4. Mint without `%% style`. On update, leave those lines unchanged.
 
 ## Mode
 
-1. If the `whoami` MCP tool is listed, use **cloud mode**. Load cloud.md.
+Pick hash or cloud.
+
+1. If the `whoami` MCP tool is listed, use **cloud mode**. Load [cloud](../references/cloud.md).
 2. If it is missing, use **hash mode**. Do not mention MCP.
 3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
-4. If the user pastes a viewer URL in hash mode, load pointers.md.
+4. If the user pastes a viewer URL in hash mode, load [pointers](../references/pointers.md).
 
 ## Hash flow
 
+Publish unsigned.
+
 1. Use the public viewer unless the user explicitly requests chat-only output.
-2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind flowchart`
-   with no `--file` and no stdin body. Keep `url` first, then `open`. Show the
-   URL and stop.
-3. For an update, edit this session’s last Source text. If none yet, run
-   step 2 first.
-4. Infer the scene and author one Source string that follows the type file.
+2. After any preview, Keep `url` first, then `open`. Show the URL and stop.
+3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind flowchart`
+   with no `--file` and no stdin body.
+4. For an update, edit this session’s last Source text. If none yet, run
+   step 3 first.
 5. For the public viewer, run `$DRAWER_CTL preview --kind flowchart` with stdin
    or `--file`. If it reports a DSL error, correct the Source and rerun.
-   Keep `url` first, then `open`. Show the URL and stop.
 6. For chat-only output, return one mermaid-fenced block and stop.
 
 ## Cloud flow
+
+Publish owned.
 
 Follow [cloud](../references/cloud.md). Chat-only: one mermaid-fenced block.
 
@@ -100,12 +101,7 @@ Say one line with the URL, from stdout `open` or MCP `url`:
 
 ## Boundaries
 
-1. Types come from catalog only. Do not invent a diagram kind.
-2. Only open types may be authored for the drawer.
-3. Samples stay in `references/`. Do not copy them here.
-4. CLI stdout contract: `$DRAWER_CTL --help`.
-5. CLI success or MCP write completes the skill; do not open the URL, drive
+1. CLI stdout contract: `$DRAWER_CTL --help`.
+2. CLI success or MCP write completes the skill; do not open the URL, drive
    the viewer, or screenshot the layout unless the user explicitly requests
    visual verification.
-6. Mint without `%% meta` or `%% style`. On update, leave those lines unchanged.
-7. `preview` does not write local history.
