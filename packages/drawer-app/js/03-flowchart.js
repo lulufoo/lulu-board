@@ -36,7 +36,7 @@ function peleDataId(el) {
 }
 
 var FLOWCHART_HOVER_HALO_GAP = 3;
-var FLOWCHART_SEL_HALO_GAP = 2.5;
+var FLOWCHART_SEL_HALO_GAP = 3;
 
 function flowchartSelectionShape(g) {
   if (!g || !g.querySelector) return null;

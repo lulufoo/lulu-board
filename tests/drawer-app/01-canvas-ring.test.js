@@ -34,6 +34,7 @@ assert.match(flow, /function applyFlowchartHover/, 'Flowchart has hover');
 assert.match(flow, /classList\.add\("canvas-hover"\)/, 'Flowchart hangs the public hover class');
 assert.match(flow, /paintFlowchartHalo\(g, "canvas-hover-halo"\)/, 'SVG hover uses a token halo, not outline');
 assert.match(flow, /FLOWCHART_HOVER_HALO_GAP = 3/, 'flowchart hover ring sits 3px out, same as Board outline-offset');
+assert.match(flow, /FLOWCHART_SEL_HALO_GAP = 3/, 'selection path sits 3px out so the 2px stroke leaves Board outline-offset');
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke-dasharray:\s*none/, 'flowchart selection ring is solid');
 assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-width:\s*1px/, 'flowchart hover ring is 1px, same as Board');
 assert.match(flow, /if \(g\.classList\.contains\("canvas-selected"\) \|\| g\.classList\.contains\("flowchart-selection"\)\) return/, 'selected nodes do not also hover');
