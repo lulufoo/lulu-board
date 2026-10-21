@@ -9,6 +9,7 @@
   var CHROME_SEL = [
     ".board-inspector",
     ".board-dock",
+    ".board-dock-resize",
     ".board-account",
     ".props-panel",
     ".top-float",
@@ -68,7 +69,17 @@
     return Math.exp(-(Number(deltaY) * unit) * 0.0012);
   }
 
+  function hideBlankProps() {
+    var fn = typeof closePropsPanel === "function"
+      ? closePropsPanel
+      : (typeof globalThis !== "undefined" && typeof globalThis.closePropsPanel === "function"
+        ? globalThis.closePropsPanel
+        : null);
+    if (fn) fn();
+  }
+
   function leaveBlank() {
+    hideBlankProps();
     var rec = kinds[activeKindId()];
     if (rec && rec.clear) rec.clear();
     else if (typeof onBlank === "function") onBlank();

@@ -24,9 +24,13 @@ Interaction.registerKind('flowchart', {
 });
 assert.ok(Interaction.isBlockedTarget({ kind: 'pele-node', closest: () => null }), 'flowchart hit is registered');
 assert.ok(!Interaction.isBlockedTarget({ closest: () => null }), 'blank is still not a hit');
+let closed = 0;
+globalThis.closePropsPanel = function () { closed += 1; };
 Interaction.leaveBlank();
 assert.strictEqual(boardClear, 1, 'default kind is board');
 assert.strictEqual(flowClear, 0, 'inactive kind does not clear');
+assert.strictEqual(closed, 1, 'blank click hides Properties');
+delete globalThis.closePropsPanel;
 
 const build = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
@@ -42,8 +46,10 @@ const downAt = src.indexOf('function onPointerDown');
 const moveAt = src.indexOf('function onPointerMove');
 const endAt = src.indexOf('function endPan');
 assert.ok(downAt >= 0 && moveAt > downAt && endAt >= 0);
-assert.doesNotMatch(src.slice(downAt, moveAt), /leaveBlank/, 'pan start does not clear selection');
+assert.doesNotMatch(src.slice(downAt, moveAt), /leaveBlank|hideBlankProps|closePropsPanel/, 'pan start does not hide Properties');
 assert.match(src.slice(endAt), /!moved && leaveIfStill\) leaveBlank/, 'blank click without move still leaves');
+assert.match(src, /function hideBlankProps/, 'hide is on the shared canvas module');
+assert.match(src, /\.board-dock-resize/, 'dock resize is chrome, not a blank leave');
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
 assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
 assert.match(src, /openBlankProps/, 'blank dblclick opens Props');
@@ -61,5 +67,8 @@ assert.doesNotMatch(flow, /else clearFlowchartInteraction\(\)/, 'flowchart miss 
 assert.match(board, /if \(!hit \|\| !canvas\.contains\(hit\)\) return;/, 'Board blank dblclick does not open Props');
 assert.match(flow, /previewEl\.addEventListener\("dblclick"/, 'flowchart hit dblclick inspects');
 assert.doesNotMatch(flow, /openBlankProps/, 'flowchart does not own blank props');
+assert.doesNotMatch(flow, /closePropsPanel/, 'flowchart clear does not hide Properties');
+assert.doesNotMatch(board, /closePropsPanel/, 'Board clear does not hide Properties');
+assert.doesNotMatch(flow, /\.top-float, \.board-dock, \.zoom-float/, 'dock resize is not a flowchart leave');
 
 console.log('ok canvas-interaction');

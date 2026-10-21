@@ -74,7 +74,6 @@ function setBoardLinkMode(active) {
     selectedBoardEdge = null;
     delete boardSourceEl.dataset.boardEdgeSelectionKey;
     clearBoardSelection();
-    closePropsPanel();
     showPropsForLinkMode();
     setStatus("Link mode · type and title, then click source / target box or item");
   } else {
@@ -636,8 +635,6 @@ function applyBoardEdgeSelection(root) {
 }
 function selectBoardEdge(root, index) {
   var nextKey = "link:" + index;
-  var alreadySelected = !!(selectedBoardEdge && selectedBoardEdge.key === nextKey);
-  if (!alreadySelected && !boardLinkMode) closePropsPanel();
   selectedBoardNode = null; selectedBoardEdge = { kind: "link", key: nextKey, index: index };
   delete boardSourceEl.dataset.boardSelectionKey; boardSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
   var title = "control";
@@ -707,7 +704,6 @@ function clearBoardSelection() {
   if (!boardLinkMode) {
     hidePropsLinkOnlyChrome();
     if (boardInspector) boardInspector.hidden = true;
-    closePropsPanel();
   }
   syncBoardEditControls();
 }
@@ -853,7 +849,6 @@ function selectBoardElement(el, root, board, event) {
   } else {
     next = isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell");
   }
-  if (next.key !== currentBoardSelectionKey() && !boardLinkMode) closePropsPanel();
   selectedBoardEdge = null;
   selectedBoardNode = next;
   delete boardSourceEl.dataset.boardEdgeSelectionKey;

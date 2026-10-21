@@ -262,7 +262,6 @@ function showFlowchartPropsEmpty() {
       : "Select a node, link, or subgraph";
   }
   if (propsKindLabel && isFlowchartKind()) propsKindLabel.textContent = "—";
-  if (typeof closePropsPanel === "function" && isFlowchartKind()) closePropsPanel();
 }
 
 function clearFlowchartSelectionVisual() {
@@ -641,8 +640,8 @@ if (previewEl) {
 document.addEventListener("pointerdown", function (event) {
   if (!isFlowchartKind() || event.button !== 0) return;
   if (!event.target.closest) return;
-  if (event.target.closest(".flowchart-edit-tools, .props-panel, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
-  if (event.target.closest(".top-float, .board-dock, .zoom-float, .shell-search, .menu")) {
+  if (event.target.closest(".flowchart-edit-tools, .props-panel, .board-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
+  if (event.target.closest(".top-float, .zoom-float, .shell-search, .menu")) {
     clearFlowchartInteraction();
   }
 }, true);
