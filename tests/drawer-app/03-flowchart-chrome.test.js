@@ -58,7 +58,6 @@ assert.match(css, /--fc-font-link, 13px/, 'link rung is the smallest');
 assert.match(board, /FlowchartTypeScale\.px\("default", typeStep\)/, 'Pele still eats one number');
 assert.match(board, /FlowchartTypeScale\.applyToRoot/, 'render paints the four rungs');
 const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
-const interact = fs.readFileSync(path.join(root, 'packages/drawer-app/js/01-canvas-interaction.js'), 'utf8');
 assert.match(js, /flowchartCanvasHit/, 'flowchart registers its own hit test');
 assert.match(js, /registerKind\("flowchart"/, 'flowchart registers clear on the canvas module');
 assert.match(js, /g\.pele-node/, 'flowchart hit still includes Pele nodes');
