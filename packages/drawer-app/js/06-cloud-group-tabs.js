@@ -107,7 +107,10 @@ function cloudGroupTabsVisible() {
   return true;
 }
 
-function blankPlusDraftSource() {
+function blankPlusDraftSource(kind) {
+  if (kind === "flowchart" && typeof blankHashFlowchartSource === "function") {
+    return blankHashFlowchartSource("Untitled");
+  }
   return typeof blankHashBoardSource === "function"
     ? blankHashBoardSource("Untitled")
     : "board \"Untitled\"\n";
@@ -327,13 +330,22 @@ async function cloudStartPlusDraft() {
   if (!cloudGroupId || !cloudSession || !cloudSession.user) return;
   if (typeof isShareGuest === "function" && isShareGuest()) return;
   if (!(await cloudConfirmLeaveBoard())) return;
+  if (typeof openCreateKindDialog !== "function") return;
+  openCreateKindDialog({
+    onPick: function (kind) { void cloudCommitPlusDraft(kind); },
+    onCancel: function () {},
+  });
+}
+
+async function cloudCommitPlusDraft(kind) {
+  if (cloudPlusDraft) return;
   if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }
   cloudClearDirtyLeave();
   cloudPlusDraft = true;
   cloudPlusDraftActive = true;
-  cloudPlusDraftSource = blankPlusDraftSource();
+  cloudPlusDraftSource = blankPlusDraftSource(kind);
   cloudPlusDraftRev = 1;
   if (boardSourceEl) {
     boardSourceEl.value = cloudPlusDraftSource;
