@@ -20,12 +20,31 @@ assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
 assert.match(sheet, /id="createKindList"/, 'type list');
 assert.match(build, /06-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
 assert.match(css, /\.create-kind-label/, 'two class headers live in CSS');
+assert.match(css, /summary\.create-kind-label/, 'Mermaid header is a summary');
+assert.match(css, /\.create-kind-note-rail/, 'Mermaid notes sit in a right rail');
+assert.match(css, /\.create-kind-note-jump\s*\{[^}]*--ink-soft/, 'idle rail stays gray');
+assert.match(css, /\.create-kind-note-jump\.is-current\s*\{[^}]*color-mix/, 'current rail is 10% deeper than the title');
+assert.match(css, /\.create-kind-note-block\s*\{[^}]*border:/, 'notes reserve a frame');
+assert.match(css, /--note-ink:\s*80,\s*55,\s*30/, 'note wash hue');
+assert.match(css, /\.create-kind-note-block\.is-current[\s\S]{0,80}\.12/, 'current note deepens the frame');
+assert.match(css, /\.create-kind-note-block\s*\{[^}]*background:/, 'notes share one wash');
+assert.doesNotMatch(css, /\.create-kind-note-block:nth-child/);
+assert.match(css, /\.create-kind-row:hover:not\(\.is-picked\)/, 'every row can hover');
+assert.match(css, /\.create-kind-row:not\(:disabled\)[\s\S]{0,80}--accent/, 'ready names use the accent');
+assert.match(css, /scrollbar-width: none/, 'list scrollbar is hidden');
+assert.match(css, /justify-self: end/, 'note rail floats on the group');
+assert.match(css, /position: sticky/, 'note rail sticks while the list scrolls');
+assert.doesNotMatch(css, /content: "Expand"|content: "Collapse"/);
 assert.match(js, /cls: "Board"/, 'Board class');
 assert.match(js, /cls: "Mermaid"/, 'Mermaid class');
 assert.match(js, /name: "Flowchart"/, 'lists flowchart');
 assert.match(js, /name: "Mindmap"/, 'lists other mermaid types');
 assert.doesNotMatch(js, /Ready/, 'no Ready badge');
 assert.doesNotMatch(js + css, /create-kind-tag/, 'no per-row class tag');
+assert.match(js, /noteRailPinned/, 'start stays on the first note');
+assert.match(js, /Math\.abs\(\(els\.list\.scrollTop \|\| 0\) - noteRailLock\) < step/, 'one item of scroll releases the pin');
+assert.match(js, /vis >= step/, 'a group shows once one item appears');
+assert.doesNotMatch(js, /view\.top \+ step/, 'does not wait for the previous group to leave');
 assert.match(js, /event\.key !== "Escape"/, 'Esc is cancel');
 assert.doesNotMatch(js, /saveVelaToHash|blankHashBoardSource|blankHashFlowchartSource|velaSourceEl/, 'does not write hash or source');
 
@@ -107,8 +126,16 @@ function clickKind(t, kind, disabled) {
   assert.strictEqual(t.els.createKindDialog.hidden, false, 'opens');
   assert.strictEqual(t.els.createKindFilter.focused, true, 'focuses filter');
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Board/);
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Mermaid/);
-  assert.match(t.els.createKindList.innerHTML, />Flowchart</);
+  ["Flow", "Chart", "Design", "Map", "Time"].forEach(function (note) {
+    assert.match(t.els.createKindList.innerHTML, new RegExp('data-create-kind-note="' + note + '"'));
+    assert.match(t.els.createKindList.innerHTML, new RegExp('data-create-kind-note-jump="' + note + '"'));
+  });
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /data-create-kind-group="(chart|design|flow|map|time)"/);
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /<details[^>]* open/);
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Flow"[\s\S]*>Flowchart</);
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Flow"[\s\S]*data-create-kind-note="Chart"/);
   assert.match(t.els.createKindList.innerHTML, />Mindmap</);
   assert.doesNotMatch(t.els.createKindList.innerHTML, /Ready/);
   clickKind(t, 'board');
@@ -147,6 +174,28 @@ function clickKind(t, kind, disabled) {
   t.ctx.openCreateKindDialog({ onCancel: () => cancels.push(1) });
   t.ctx.closeCreateKindDialog();
   assert.deepStrictEqual(cancels, [1], 'close fires onCancel');
+}
+
+{
+  const t = load();
+  const picks = [];
+  t.ctx.openCreateKindDialog({ onPick: (kind) => picks.push(kind) });
+  const jump = {
+    getAttribute(name) { return name === 'data-create-kind-note-jump' ? 'Chart' : null; },
+    parentNode: t.els.createKindList,
+  };
+  (t.els.createKindList.listeners.click || []).forEach((fn) => fn({ target: jump }));
+  assert.deepStrictEqual(picks, [], 'rail jump does not pick a type');
+}
+
+{
+  const t = load();
+  t.ctx.openCreateKindDialog({});
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /<details[^>]* open/, 'Mermaid starts collapsed');
+  t.els.createKindFilter.value = 'mind';
+  (t.els.createKindFilter.listeners.input || []).forEach((fn) => fn());
+  assert.match(t.els.createKindList.innerHTML, /<details[^>]* open/, 'filter opens Mermaid');
+  assert.match(t.els.createKindList.innerHTML, />Mindmap</);
 }
 
 console.log('ok create-kind-dialog');
