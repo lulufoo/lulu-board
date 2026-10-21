@@ -8,7 +8,11 @@ account_id = "e03cf681f1dc2215f3ea12fd7f58b2d1"
 
 [vars]
 SUPABASE_URL = "https://xjwlxxuafhsfzksxxmtu.supabase.co"
-PUBLIC_ORIGIN = "https://mcp.luluboard.app"
+PUBLIC_ORIGIN = "https://mcp.luluvela.app"
+
+[[routes]]
+pattern = "mcp.luluvela.app"
+custom_domain = true
 
 [[routes]]
 pattern = "mcp.luluboard.app"

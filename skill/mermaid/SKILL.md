@@ -7,7 +7,7 @@ argument-hint: "[list | <topic or type>]"
 # mermaid
 
 List the catalog, or author one open type and open it on the public viewer.
-Done when the list is shown, a `luluboard.app` URL is shown — `#z:` from
+Done when the list is shown, a `preview.luluvela.app` URL is shown — `#z:` from
 preview, or `#b:` from MCP — or chat-only source is delivered.
 
 ## Identity
@@ -96,7 +96,7 @@ After the open type file is loaded.
 2. New Vela: author Source → `create_vela`. Pass the Source as `bmd`.
    `group_id` is the group this `vela_id` belongs to. Optional `group_id`
    joins that group on the current account. Omit `group_id` to create a new
-   group. Show `https://luluboard.app/#b:<id>` for that account.
+   group. Show `https://preview.luluvela.app/#b:<id>` for that account.
 3. Update: `get_vela` for this session’s last `vela_id`, or a `#b:` the user
    pasted → edit the returned `bmd` → `save_vela` with that `version`.
 4. On `conflict`, redo the edit on the returned row and save once. Still
@@ -118,7 +118,7 @@ Say one line with the URL, from stdout `open` in hash mode, or after MCP write:
 2. Only open types may be authored for the drawer.
 3. Samples stay in `references/`. Do not copy them here.
 4. Preview rules live in [viewer](./references/viewer.md).
-5. stdout `url` is the public hash link (`https://luluboard.app/#z:…`). Cloud
+5. stdout `url` is the public hash link (`https://preview.luluvela.app/#z:…`). Cloud
    mode shows `#b:<id>` instead. CLI success or MCP write completes the skill;
    do not open the URL, drive the viewer, or screenshot the layout unless the
    user explicitly requests visual verification.

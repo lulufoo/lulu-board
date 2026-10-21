@@ -8,7 +8,7 @@ const skill = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
-assert.match(readme, /https:\/\/mcp\.luluboard\.app\/mcp/, 'readme documents the hosted MCP');
+assert.match(readme, /https:\/\/mcp\.luluvela\.app\/mcp/, 'readme documents the hosted MCP');
 assert.match(skill, /## Hash flow/, 'hash flow remains');
 assert.match(skill, /\$DRAWER_CTL preview --kind board/, 'hash mode still uses preview');
 assert.match(skill, /Keep `url` first/, 'hash mode still prints url first');

@@ -20,7 +20,7 @@ class HashUrlTest(unittest.TestCase):
 
     def test_web_url_uses_fragment(self) -> None:
         url = board_web_url('board "X"\n')
-        self.assertTrue(url.startswith("https://luluboard.app/#z:"))
+        self.assertTrue(url.startswith("https://preview.luluvela.app/#z:"))
         self.assertNotIn("?", url)
 
     def test_flowchart_body_is_opaque_bmd(self) -> None:
