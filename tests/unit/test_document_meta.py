@@ -20,6 +20,7 @@ from document_meta import (
     mint_envelope,
     rewrite_envelope,
     split_document,
+    strip_leading_meta_lines,
 )
 
 
@@ -105,6 +106,21 @@ class DocumentMetaTest(unittest.TestCase):
         self.assertEqual(split_document(out, "board")[0], {"id": "b_cfb240ef", "version": 1})
         self.assertEqual(split_document(out, "board")[1], 'board "A"\n')
         self.assertNotIn("b_ex_commerce", out)
+
+    def test_strip_mermaid_meta_before_hash(self) -> None:
+        raw = '%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'
+        self.assertEqual(strip_leading_meta_lines(raw), "flowchart TD\n  A-->B\n")
+        self.assertNotIn("m_", strip_leading_meta_lines(raw))
+
+
+class BoardTitleTest(unittest.TestCase):
+    def test_mermaid_title_or_untitled(self) -> None:
+        from drawer_ctl.titles import derive_board_title
+
+        self.assertEqual(derive_board_title('board "Onboarding"\n'), "Onboarding")
+        self.assertEqual(derive_board_title("%% title Demo\nflowchart TD\n  A-->B\n"), "Demo")
+        self.assertEqual(derive_board_title("flowchart TD\n  A-->B\n"), "Untitled")
+        self.assertNotEqual(derive_board_title("flowchart TD\n  A-->B\n"), "flowchart")
 
 
 if __name__ == "__main__":

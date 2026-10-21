@@ -49,7 +49,7 @@ stageEl.addEventListener('wheel', (e) => {
 stageEl.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
-  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label")) return;
+  if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label, g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit")) return;
   if (boardLinkMode) setBoardLinkMode(false);
   else clearBoardSelection();
   e.preventDefault();
@@ -202,12 +202,17 @@ function applyBoardItemCap(rem, rerender, persist) {
     renderBoard({ fit: false });
   }
 }
+function applyPeleThemeVars(theme) {
+  if (typeof DrawerPeleTheme === "undefined" || typeof DrawerPeleTheme.applyTo !== "function") return;
+  DrawerPeleTheme.applyTo([document.documentElement, document.getElementById("preview")], theme);
+}
 function applyBoardThemeToPreview() {
   const t = (typeof currentDiagramTheme === 'function') ? currentDiagramTheme() : (localStorage.getItem('drawer.diagramTheme') || 'default');
   document.querySelectorAll('.board-render').forEach((el) => {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
+  applyPeleThemeVars(t);
 }
 function applyDiagramTheme(theme, opts) {
   const t = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
@@ -222,6 +227,7 @@ function applyDiagramTheme(theme, opts) {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
+  applyPeleThemeVars(t);
   if (opts && opts.persist && typeof persistBoardStyle === 'function') {
     persistBoardStyle({ theme: t });
   }

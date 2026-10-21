@@ -21,6 +21,12 @@ const Hash = require('../../packages/drawer-app/js/00-hash-persist.js');
     const fromPy = await Hash.decodeBoardHash('z:' + b64);
     assert.strictEqual(fromPy.bmd, src);
     assert.strictEqual(fromPy.version, 1);
+    const flow = 'flowchart TD\n  A-->B\n';
+    const flowToken = await Hash.encodeBoardHash(flow, 1);
+    assert.match(flowToken, /^z:[A-Za-z0-9_-]+$/);
+    const flowBack = await Hash.decodeBoardHash(flowToken);
+    assert.strictEqual(flowBack.bmd, flow);
+    assert.doesNotMatch(flowBack.bmd, /m_[0-9a-f]{8}/);
     console.log('ok hash-persist');
   }).catch((err) => {
     console.error(err);

@@ -84,6 +84,12 @@
         <button class="btn board-edit-tool" id="btnBoardLink" type="button" title="Link mode: click source box or item, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
         <button class="btn board-edit-tool" id="btnBoardDelete" type="button" title="Delete selected node or link" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
       </div>
+      <div class="flowchart-edit-tools" aria-label="Flowchart editing">
+        <button class="btn flowchart-edit-tool" id="btnFlowchartAddSubgraph" type="button" title="Add subgraph"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Subgraph</span></button>
+        <button class="btn flowchart-edit-tool" id="btnFlowchartAddNode" type="button" title="Add node"><span class="board-edit-glyph" aria-hidden="true">＋</span><span>Node</span></button>
+        <button class="btn flowchart-edit-tool" id="btnFlowchartLink" type="button" title="Link mode: click source node, then target"><span class="board-edit-glyph" aria-hidden="true">↗</span><span>Link</span></button>
+        <button class="btn flowchart-edit-tool" id="btnFlowchartDelete" type="button" title="Delete selected node, link, or subgraph" disabled><span class="board-edit-glyph" aria-hidden="true">⌫</span><span>Delete</span></button>
+      </div>
     </div>
 
     <script src="./vendor/drawer-app-early-hydrate.js"></script>
@@ -248,6 +254,21 @@
         </div>
         <p class="props-hint" id="propsHint"></p>
       </div>
+      <div class="props-fields" id="flowchartPropsFields" hidden>
+        <div class="props-field" id="flowchartTypeField">
+          <label class="props-label" for="flowchartTypeEditor" id="flowchartTypeLabel">Type</label>
+          <select id="flowchartTypeEditor" aria-label="Flowchart type"></select>
+        </div>
+        <div class="props-field" id="flowchartTitleField">
+          <label class="props-label" for="flowchartTitleEditor" id="flowchartTitleLabel">Label</label>
+          <textarea id="flowchartTitleEditor" rows="1" autocomplete="off" aria-label="Flowchart label"></textarea>
+        </div>
+        <div class="props-field" id="flowchartIdWrap" hidden>
+          <label class="props-label" for="flowchartIdEditor" id="flowchartIdLabel">ID</label>
+          <input id="flowchartIdEditor" type="text" spellcheck="false" autocomplete="off" aria-label="Flowchart id">
+        </div>
+        <p class="props-hint" id="flowchartPropsHint"></p>
+      </div>
     </div>
     <div class="board-dock-panel" id="layoutPanel" data-dock-panel="layout">
       <div class="props-layout" id="propsLayout" aria-label="Layout settings">
@@ -369,6 +390,8 @@
 
 </div>
 
+<script src="./vendor/pele.global.js"></script>
+<script src="./vendor/flowchart.min.js"></script>
 <script src="./vendor/board.min.js"></script>
 <script src="./vendor/supabase-config.js"></script>
 <script src="./vendor/supabase-client.js"></script>

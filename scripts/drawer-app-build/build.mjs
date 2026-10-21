@@ -5,6 +5,7 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -45,7 +46,12 @@ for (const [name, outName] of Object.entries(earlyMap)) {
   console.log(`ok ${outName}`);
 }
 
-for (const name of ['snapdom.mjs']) {
+{
+  const ext = spawnSync(process.execPath, [path.join(repo, 'scripts/mermaid-ext-build/build.mjs')], { stdio: 'inherit' });
+  if (ext.status) process.exit(ext.status || 1);
+}
+
+for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js']) {
   const src = path.join(srcDir, 'vendor', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(vendorOut, name));
@@ -55,12 +61,14 @@ for (const name of ['snapdom.mjs']) {
 // Main module: concat domain files in order (still one ES module when loaded)
 const domain = [
   '00-style-line.js',
+  '00-pele-theme.js',
   '00-document-meta.js',
   '00-cloud-route.js',
   '00-hash-persist.js',
   '00-canvas-view.js',
   '01-shell-state.js',
   '02-board.js',
+  '03-flowchart.js',
   '05-render-io.js',
   '05-board-file.js',
   '05-export-png.js',

@@ -23,6 +23,13 @@ class HashUrlTest(unittest.TestCase):
         self.assertTrue(url.startswith("https://luluboard.app/#z:"))
         self.assertNotIn("?", url)
 
+    def test_flowchart_body_is_opaque_bmd(self) -> None:
+        src = "flowchart TD\n  A-->B\n"
+        token = encode_board_hash(src, 1)
+        self.assertTrue(token.startswith("z:"))
+        self.assertEqual(decode_board_hash(token)["bmd"], src)
+        self.assertNotIn("m_", decode_board_hash(token)["bmd"])
+
     def test_rejects_plain_text(self) -> None:
         with self.assertRaises(ValueError):
             decode_board_hash("not-a-hash")

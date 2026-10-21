@@ -24,8 +24,33 @@ function b64(obj) {
 
 {
   assert.strictEqual(Style.isRendererStyleLine('style eyJ0aGVtZSI6ImthbWkifQ=='), true);
+  assert.strictEqual(Style.isRendererStyleLine('%% style classic'), true);
   assert.strictEqual(Style.isRendererStyleLine('style A fill:#f9f'), false);
   assert.strictEqual(Style.bodyIsBoard('board "Demo"\nstyle xxx\n'), true);
+}
+
+{
+  const flow = 'flowchart TD\nA-->B\n';
+  assert.strictEqual(Style.joinRendererStyle('classic', flow), '%% style classic\n' + flow);
+  assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
+  assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
+  assert.strictEqual(Style.joinRendererStyle('classic', 'board "A"\n'), 'style classic\nboard "A"\n');
+  assert.strictEqual(Style.mermaidStyleToken('classic'), 'classic');
+  assert.strictEqual(Style.mermaidStyleToken('default'), '');
+  assert.strictEqual(Style.themeFromStyleToken('pastel'), 'pastel');
+  assert.strictEqual(Style.themeFromStyleToken('kami'), 'default');
+}
+
+{
+  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'board');
+  assert.strictEqual(Style.bodyKind('flowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('%% title Demo\nflowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('style default\nflowchart TD\nA-->B\n'), 'flowchart');
+  assert.strictEqual(Style.bodyKind('mindmap\nroot((A))\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('sequenceDiagram\nA->>B: hi\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind(''), 'empty');
+  assert.strictEqual(Style.bodyKind('not a diagram\n'), 'unknown');
 }
 
 {

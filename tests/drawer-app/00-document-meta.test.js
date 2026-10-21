@@ -41,6 +41,10 @@ function token(id, version) {
   const blank = Meta.blankHashBoardSource("Untitled");
   assert.strictEqual(blank, 'board "Untitled"\n');
   assert.strictEqual(Meta.stripDocumentMeta('meta {"id":"b_0fc10001","version":3}\nboard "A"\n'), 'board "A"\n');
+  assert.strictEqual(
+    Meta.stripDocumentMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
+    'flowchart TD\n  A-->B\n'
+  );
 }
 
 {

@@ -80,7 +80,7 @@
     var i = 0;
     while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
     while (i < lines.length) {
-      if (!/^meta\s+/.test(String(lines[i]).trim())) break;
+      if (!/^(?:%%\s*)?meta\s+/.test(String(lines[i]).trim())) break;
       i += 1;
       while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
     }

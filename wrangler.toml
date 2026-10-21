@@ -1,5 +1,6 @@
 name = "lulu-board"
 compatibility_date = "2026-09-17"
+previews = { }
 
 [assets]
 directory = "./.cache/web/"

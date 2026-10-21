@@ -12,6 +12,14 @@ def derive_board_title(text: str, fallback: str | None = None) -> str:
         line = raw.strip()
         if not line or line.startswith("#") or line.startswith("meta "):
             continue
+        mermaid = re.match(r"^%%\s*title\s*:?\s*(.+?)\s*$", line, flags=re.IGNORECASE)
+        if mermaid:
+            title = mermaid.group(1).strip().strip('"\'')
+            if title:
+                return title[:80]
+            continue
+        if line.startswith("%%"):
+            continue
         if _RENDERER_STYLE_LINE.match(line):
             continue
         m = re.match(r"^board\s+(.+)$", line, flags=re.IGNORECASE)
@@ -27,4 +35,4 @@ def derive_board_title(text: str, fallback: str | None = None) -> str:
     fb = (fallback or "").strip()
     if fb and fb.lower() not in {"board", "stdin", "untitled", "restore"}:
         return fb[:80]
-    return fb[:80] if fb else "board"
+    return fb[:80] if fb else "Untitled"

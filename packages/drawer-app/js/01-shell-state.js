@@ -345,12 +345,14 @@ function applyBoardLiveMeta(meta = {}) {
 }
 
 function syncStyleLayoutSections() {
+  var kind = document.documentElement && document.documentElement.dataset.diagramKind;
+  var mermaid = kind === "flowchart" || kind === "mermaid-unsupported";
   var board = document.getElementById("boardLayoutSection");
-  if (board) board.hidden = false;
+  if (board) board.hidden = mermaid;
   var capSec = document.getElementById("boardItemCapSection");
-  if (capSec) capSec.hidden = false;
+  if (capSec) capSec.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
-  if (typeSec) typeSec.hidden = false;
+  if (typeSec) typeSec.hidden = mermaid;
 }
 
 function syncSourceDockLabel() {
@@ -471,3 +473,4 @@ function updateBoardChars() {
 function showBoardError(message) { boardError.textContent = message || ''; boardError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
+wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);
