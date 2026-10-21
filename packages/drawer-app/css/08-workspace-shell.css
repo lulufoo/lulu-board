@@ -14,46 +14,46 @@
 }
 
 /* ---- tool surfaces: right dock, toolbar, tabs, zoom ---- */
-html[data-drawer-mode="board"] .board-dock {
+html[data-drawer-mode="vela"] .vela-dock {
   background: var(--dock);
   border-left-color: var(--paper-line);
 }
-html[data-drawer-mode="board"] .board-dock:not([data-open=""]) { box-shadow: -10px 0 28px rgba(80, 55, 30, .06); }
-html[data-drawer-mode="board"] .board-dock-rail { background: transparent; border-left-color: var(--paper-line); }
-html[data-drawer-mode="board"] .board-dock-tab.is-active,
-html[data-drawer-mode="board"] .group-tab.is-active,
+html[data-drawer-mode="vela"] .vela-dock:not([data-open=""]) { box-shadow: -10px 0 28px rgba(80, 55, 30, .06); }
+html[data-drawer-mode="vela"] .vela-dock-rail { background: transparent; border-left-color: var(--paper-line); }
+html[data-drawer-mode="vela"] .vela-dock-tab.is-active,
+html[data-drawer-mode="vela"] .group-tab.is-active,
 .shell-row.is-active { background: var(--accent-soft); }
-html[data-drawer-mode="board"] .board-dock-tab:hover:not(.is-active),
-html[data-drawer-mode="board"] .group-tab:hover,
+html[data-drawer-mode="vela"] .vela-dock-tab:hover:not(.is-active),
+html[data-drawer-mode="vela"] .group-tab:hover,
 .shell-row:hover:not(.is-active) { background: var(--wash); }
-html[data-drawer-mode="board"] .group-tab.is-active { color: var(--brand); }
-html[data-drawer-mode="board"] .group-tab { color: var(--ink); }
-html[data-drawer-mode="board"] .board-dock .props-head strong,
-html[data-drawer-mode="board"] .board-dock .dock-source-head strong,
-html[data-drawer-mode="board"] .board-dock .style-section-label { color: var(--ink); }
+html[data-drawer-mode="vela"] .group-tab.is-active { color: var(--brand); }
+html[data-drawer-mode="vela"] .group-tab { color: var(--ink); }
+html[data-drawer-mode="vela"] .vela-dock .props-head strong,
+html[data-drawer-mode="vela"] .vela-dock .dock-source-head strong,
+html[data-drawer-mode="vela"] .vela-dock .style-section-label { color: var(--ink); }
 
-html[data-drawer-mode="board"] .board-edit-tool,
-html[data-drawer-mode="board"] .zoom-float,
-html[data-drawer-mode="board"] .group-tab-float {
+html[data-drawer-mode="vela"] .board-edit-tool,
+html[data-drawer-mode="vela"] .zoom-float,
+html[data-drawer-mode="vela"] .group-tab-float {
   background: var(--paper) !important;
   border-color: var(--paper-line) !important;
   box-shadow: var(--press);
   color: var(--ink);
 }
-html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled) { background: #fff !important; }
-html[data-drawer-mode="board"] .board-edit-tool:disabled { opacity: .5; }
-html[data-drawer-mode="board"] .zoom-float .btn { color: var(--ink); }
-html[data-drawer-mode="board"] .board-account .board-account-btn { background: var(--paper); border-color: var(--paper-line); }
+html[data-drawer-mode="vela"] .board-edit-tool:hover:not(:disabled) { background: #fff !important; }
+html[data-drawer-mode="vela"] .board-edit-tool:disabled { opacity: .5; }
+html[data-drawer-mode="vela"] .zoom-float .btn { color: var(--ink); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
 /* ---- canvas ground: white with faint dots ---- */
-html[data-drawer-mode="board"][data-theme="light"] .canvas-shell {
+html[data-drawer-mode="vela"][data-theme="light"] .canvas-shell {
   background-color: #fff !important;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
   background-size: 24px 24px !important;
 }
 
 /* ---- brand mark = drawer trigger (top-left, where it already sits) ---- */
-html[data-drawer-mode="board"] .board-brand {
+html[data-drawer-mode="vela"] .board-brand {
   pointer-events: auto !important;
   cursor: pointer;
 }
@@ -270,11 +270,11 @@ html[data-drawer-mode="board"] .board-brand {
 
 /* ---- top row and canvas floats: bigger, borderless solid fill (no bar behind them) ---- */
 [data-theme="light"] { --fill: #f3ede2; --fill-hover: #ebe3d4; }
-html[data-drawer-mode="board"] .top-float { top: 12px; }
-html[data-drawer-mode="board"] .board-edit-tools,
-html[data-drawer-mode="board"] .flowchart-edit-tools { gap: 8px; }
-html[data-drawer-mode="board"] .board-edit-tool,
-html[data-drawer-mode="board"] .flowchart-edit-tool {
+html[data-drawer-mode="vela"] .top-float { top: 12px; }
+html[data-drawer-mode="vela"] .board-edit-tools,
+html[data-drawer-mode="vela"] .flowchart-edit-tools { gap: 8px; }
+html[data-drawer-mode="vela"] .board-edit-tool,
+html[data-drawer-mode="vela"] .flowchart-edit-tool {
   height: 40px !important;
   min-width: 40px !important;
   padding: 0 15px !important;
@@ -286,21 +286,21 @@ html[data-drawer-mode="board"] .flowchart-edit-tool {
   color: var(--ink) !important;
   font: 600 13.5px var(--font) !important;
 }
-html[data-drawer-mode="board"] .board-edit-tool:hover:not(:disabled),
-html[data-drawer-mode="board"] .flowchart-edit-tool:hover:not(:disabled) { background: var(--fill-hover) !important; }
-html[data-drawer-mode="board"] .board-edit-tool:disabled,
-html[data-drawer-mode="board"] .flowchart-edit-tool:disabled { opacity: .45; }
-html[data-drawer-mode="board"] .flowchart-edit-tool#btnFlowchartDelete:not(:disabled) {
+html[data-drawer-mode="vela"] .board-edit-tool:hover:not(:disabled),
+html[data-drawer-mode="vela"] .flowchart-edit-tool:hover:not(:disabled) { background: var(--fill-hover) !important; }
+html[data-drawer-mode="vela"] .board-edit-tool:disabled,
+html[data-drawer-mode="vela"] .flowchart-edit-tool:disabled { opacity: .45; }
+html[data-drawer-mode="vela"] .flowchart-edit-tool#btnFlowchartDelete:not(:disabled) {
   background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
   color: var(--accent, #db4c84) !important;
 }
-html[data-drawer-mode="board"] .flowchart-edit-tool#btnFlowchartLink.is-active {
+html[data-drawer-mode="vela"] .flowchart-edit-tool#btnFlowchartLink.is-active {
   background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
   color: var(--accent, #db4c84) !important;
 }
-html[data-drawer-mode="board"] .board-edit-glyph { font-size: 17px; }
-html[data-drawer-mode="board"] .board-brand { height: 40px; padding-right: 12px; margin-right: 4px; }
-html[data-drawer-mode="board"] .board-brand-mark { width: 34px; height: 34px; border-radius: 10px; }
+html[data-drawer-mode="vela"] .board-edit-glyph { font-size: 17px; }
+html[data-drawer-mode="vela"] .board-brand { height: 40px; padding-right: 12px; margin-right: 4px; }
+html[data-drawer-mode="vela"] .board-brand-mark { width: 34px; height: 34px; border-radius: 10px; }
 
 .shell-search {
   top: 12px;
@@ -317,148 +317,148 @@ html[data-drawer-mode="board"] .board-brand-mark { width: 34px; height: 34px; bo
 .shell-search svg { width: 16px; height: 16px; }
 .shell-search kbd { background: rgba(255, 255, 255, .7); }
 
-html[data-drawer-mode="board"] .zoom-float,
-html[data-drawer-mode="board"] .group-tab-float {
+html[data-drawer-mode="vela"] .zoom-float,
+html[data-drawer-mode="vela"] .group-tab-float {
   border: 0 !important;
   border-radius: 12px;
   background: var(--fill) !important;
   box-shadow: none;
 }
-html[data-drawer-mode="board"] .group-tab { width: 36px; height: 36px; border-radius: 9px; font-size: 14px; }
-html[data-drawer-mode="board"] .group-tab:hover { background: var(--fill-hover); }
-html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); }
-html[data-drawer-mode="board"] .zoom-float .btn { height: 32px; min-width: 32px; font-size: 13px; }
-html[data-drawer-mode="board"] .zoom-float .btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] .group-tab { width: 36px; height: 36px; border-radius: 9px; font-size: 14px; }
+html[data-drawer-mode="vela"] .group-tab:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] .group-tab.is-active { background: rgba(219, 76, 132, .14); }
+html[data-drawer-mode="vela"] .zoom-float .btn { height: 32px; min-width: 32px; font-size: 13px; }
+html[data-drawer-mode="vela"] .zoom-float .btn:hover { background: var(--fill-hover); }
 .shell-drawer { top: 64px; }
 
 /* ---- right dock in the same language: wider rail, borderless fills, bigger controls ---- */
 [data-theme="light"] { --rail-w: 56px; }
-html[data-drawer-mode="board"] .board-dock[data-open=""] { width: var(--rail-w); }
-html[data-drawer-mode="board"] .board-dock-rail {
+html[data-drawer-mode="vela"] .vela-dock[data-open=""] { width: var(--rail-w); }
+html[data-drawer-mode="vela"] .vela-dock-rail {
   flex: 0 0 var(--rail-w);
   width: var(--rail-w);
   gap: 6px;
   padding: 12px 0 104px;
 }
-html[data-drawer-mode="board"] .board-dock-tab {
+html[data-drawer-mode="vela"] .vela-dock-tab {
   width: 40px; height: 40px; min-height: 40px; max-height: 40px;
   border-radius: 12px;
   background: var(--fill);
   color: var(--ink-soft);
 }
-html[data-drawer-mode="board"] .board-dock-tab:hover:not(.is-active) { background: var(--fill-hover); color: var(--ink); }
-html[data-drawer-mode="board"] .board-dock-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); box-shadow: none; }
-html[data-drawer-mode="board"] .board-dock-tab.is-active::before { display: none; }
-html[data-drawer-mode="board"] .board-dock-tab-icon { width: 20px; height: 20px; }
-html[data-drawer-mode="board"] .board-dock-help-glyph { font-size: 16px; }
-html[data-drawer-mode="board"] .group-tab-float { right: calc(var(--rail-w) + 8px); }
-html[data-drawer-mode="board"] .board-account { right: 8px; width: 40px; bottom: 12px; gap: 6px; }
-html[data-drawer-mode="board"] .board-account .board-cloud-status,
-html[data-drawer-mode="board"] .board-account .board-account-btn,
-html[data-drawer-mode="board"] .board-account #btnBoardSignIn {
+html[data-drawer-mode="vela"] .vela-dock-tab:hover:not(.is-active) { background: var(--fill-hover); color: var(--ink); }
+html[data-drawer-mode="vela"] .vela-dock-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); box-shadow: none; }
+html[data-drawer-mode="vela"] .vela-dock-tab.is-active::before { display: none; }
+html[data-drawer-mode="vela"] .vela-dock-tab-icon { width: 20px; height: 20px; }
+html[data-drawer-mode="vela"] .vela-dock-help-glyph { font-size: 16px; }
+html[data-drawer-mode="vela"] .group-tab-float { right: calc(var(--rail-w) + 8px); }
+html[data-drawer-mode="vela"] .shell-account-bar { right: 8px; width: 40px; bottom: 12px; gap: 6px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn,
+html[data-drawer-mode="vela"] .shell-account-bar #btnShellSignIn {
   width: 40px; height: 40px; min-width: 40px; border: 0; border-radius: 12px;
   background: var(--fill); box-shadow: none;
 }
-html[data-drawer-mode="board"] .board-account .board-cloud-status:hover,
-html[data-drawer-mode="board"] .board-account .board-account-btn:hover { background: var(--fill-hover); }
-html[data-drawer-mode="board"] .board-account .board-account-chip { width: 40px; height: 40px; max-width: 40px; border-radius: 12px; background: var(--fill); }
-html[data-drawer-mode="board"] .board-account .board-account-avatar { width: 26px; height: 26px; font-size: 11px; }
-html[data-drawer-mode="board"] .board-account .board-account-sign-icon { width: 17px; height: 17px; }
-html[data-drawer-mode="board"] .board-account .board-cloud-status-icon { width: 18px; height: 18px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status:hover,
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-chip { width: 40px; height: 40px; max-width: 40px; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-avatar { width: 26px; height: 26px; font-size: 11px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-account-sign-icon { width: 17px; height: 17px; }
+html[data-drawer-mode="vela"] .shell-account-bar .shell-cloud-status-icon { width: 18px; height: 18px; }
 
 /* panels */
-html[data-drawer-mode="board"] .board-dock-panel { padding: 20px 20px 24px; gap: 14px; }
+html[data-drawer-mode="vela"] .vela-dock-panel { padding: 20px 20px 24px; gap: 14px; }
 /* Properties still scrolls when the fields are taller than the window; it just draws no scrollbar */
-html[data-drawer-mode="board"] [data-dock-panel="props"] { scrollbar-width: none; }
-html[data-drawer-mode="board"] [data-dock-panel="props"]::-webkit-scrollbar { display: none; }
-html[data-drawer-mode="board"] .board-dock .props-head { border-bottom-color: var(--paper-line); padding-bottom: 14px; }
-html[data-drawer-mode="board"] .board-dock .props-head strong,
-html[data-drawer-mode="board"] .board-dock .dock-source-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
-html[data-drawer-mode="board"] .board-dock .props-label,
-html[data-drawer-mode="board"] .board-dock .style-section-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }
-html[data-drawer-mode="board"] .board-dock .props-empty,
-html[data-drawer-mode="board"] .board-dock .style-hint,
-html[data-drawer-mode="board"] .board-dock .export-type-hint { font-size: 12px; color: var(--ink-soft); }
-html[data-drawer-mode="board"] .style-block + .style-block { border-top-color: var(--paper-line); }
-html[data-drawer-mode="board"] .board-dock .style-block.is-disabled {
+html[data-drawer-mode="vela"] [data-dock-panel="props"] { scrollbar-width: none; }
+html[data-drawer-mode="vela"] [data-dock-panel="props"]::-webkit-scrollbar { display: none; }
+html[data-drawer-mode="vela"] .vela-dock .props-head { border-bottom-color: var(--paper-line); padding-bottom: 14px; }
+html[data-drawer-mode="vela"] .vela-dock .props-head strong,
+html[data-drawer-mode="vela"] .vela-dock .dock-source-head strong { font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+html[data-drawer-mode="vela"] .vela-dock .props-label,
+html[data-drawer-mode="vela"] .vela-dock .style-section-label { font-size: 12px; font-weight: 600; color: var(--ink-soft); letter-spacing: .02em; }
+html[data-drawer-mode="vela"] .vela-dock .props-empty,
+html[data-drawer-mode="vela"] .vela-dock .style-hint,
+html[data-drawer-mode="vela"] .vela-dock .export-type-hint { font-size: 12px; color: var(--ink-soft); }
+html[data-drawer-mode="vela"] .style-block + .style-block { border-top-color: var(--paper-line); }
+html[data-drawer-mode="vela"] .vela-dock .style-block.is-disabled {
   opacity: 0.42;
 }
-html[data-drawer-mode="board"] .board-dock .style-block.is-disabled input {
+html[data-drawer-mode="vela"] .vela-dock .style-block.is-disabled input {
   pointer-events: none;
   cursor: not-allowed;
 }
 
-html[data-drawer-mode="board"] .props-fields[hidden],
-html[data-drawer-mode="board"] .props-empty[hidden],
-html[data-drawer-mode="board"] .props-field[hidden],
-html[data-drawer-mode="board"] .board-dock [hidden] {
+html[data-drawer-mode="vela"] .props-fields[hidden],
+html[data-drawer-mode="vela"] .props-empty[hidden],
+html[data-drawer-mode="vela"] .props-field[hidden],
+html[data-drawer-mode="vela"] .vela-dock [hidden] {
   display: none !important;
 }
 
-html[data-drawer-mode="board"] .board-dock #diagramThemeSelect,
-html[data-drawer-mode="board"] .board-dock #boardTypeEditor,
-html[data-drawer-mode="board"] .board-dock #boardTitleEditor,
-html[data-drawer-mode="board"] .board-dock #boardDirEditor,
-html[data-drawer-mode="board"] .board-dock #boardIconSec,
-html[data-drawer-mode="board"] .board-dock #boardAlignEditor,
-html[data-drawer-mode="board"] .board-dock #boardJustifyEditor,
-html[data-drawer-mode="board"] .board-dock #boardArrowEditor,
-html[data-drawer-mode="board"] .board-dock #boardCapEditor,
-html[data-drawer-mode="board"] .board-dock #boardIdEditor,
-html[data-drawer-mode="board"] .board-dock #flowchartTypeEditor,
-html[data-drawer-mode="board"] .board-dock #flowchartTitleEditor,
-html[data-drawer-mode="board"] .board-dock #flowchartIdEditor,
-html[data-drawer-mode="board"] .board-dock #flowchartDirEditor {
+html[data-drawer-mode="vela"] .vela-dock #diagramThemeSelect,
+html[data-drawer-mode="vela"] .vela-dock #boardTypeEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardTitleEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardDirEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardIconSec,
+html[data-drawer-mode="vela"] .vela-dock #boardAlignEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardJustifyEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardArrowEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardCapEditor,
+html[data-drawer-mode="vela"] .vela-dock #boardIdEditor,
+html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor,
+html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor,
+html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor,
+html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
 }
-html[data-drawer-mode="board"] .board-dock #diagramThemeSelect:focus,
-html[data-drawer-mode="board"] .board-dock #boardTypeEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardTitleEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardDirEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardIconSec:focus,
-html[data-drawer-mode="board"] .board-dock #boardAlignEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardJustifyEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardArrowEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardCapEditor:focus,
-html[data-drawer-mode="board"] .board-dock #boardIdEditor:focus,
-html[data-drawer-mode="board"] .board-dock #flowchartTypeEditor:focus,
-html[data-drawer-mode="board"] .board-dock #flowchartTitleEditor:focus,
-html[data-drawer-mode="board"] .board-dock #flowchartIdEditor:focus,
-html[data-drawer-mode="board"] .board-dock #flowchartDirEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
-html[data-drawer-mode="board"] .board-dock .props-arrow-reverse,
-html[data-drawer-mode="board"] .board-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="vela"] .vela-dock #diagramThemeSelect:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardTypeEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardTitleEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardDirEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardIconSec:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardAlignEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardJustifyEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardArrowEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardCapEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #boardIdEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="vela"] .vela-dock .props-arrow-reverse,
+html[data-drawer-mode="vela"] .vela-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
 
-html[data-drawer-mode="board"] .board-dock .btn,
-html[data-drawer-mode="board"] .board-dock .props-seg-btn {
+html[data-drawer-mode="vela"] .vela-dock .btn,
+html[data-drawer-mode="vela"] .vela-dock .props-seg-btn {
   border: 0; border-radius: 12px; background: var(--fill); color: var(--ink);
   font: 600 13.5px var(--font); box-shadow: none;
 }
-html[data-drawer-mode="board"] .board-dock .btn:hover,
-html[data-drawer-mode="board"] .board-dock .props-seg-btn:hover { background: var(--fill-hover); }
-html[data-drawer-mode="board"] .board-dock .props-seg-btn { height: 40px; }
-html[data-drawer-mode="board"] .board-dock .props-seg-btn[aria-pressed="true"] {
+html[data-drawer-mode="vela"] .vela-dock .btn:hover,
+html[data-drawer-mode="vela"] .vela-dock .props-seg-btn:hover { background: var(--fill-hover); }
+html[data-drawer-mode="vela"] .vela-dock .props-seg-btn { height: 40px; }
+html[data-drawer-mode="vela"] .vela-dock .props-seg-btn[aria-pressed="true"] {
   background: rgba(219, 76, 132, .14); color: var(--brand); font-weight: 650;
 }
-html[data-drawer-mode="board"] #stylePanel .props-seg-btn { height: 40px; border-radius: 12px; }
-html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
-html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
-html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn + .props-seg-btn { box-shadow: none; }
-html[data-drawer-mode="board"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .14); }
-html[data-drawer-mode="board"] .export-actions .btn { height: 40px; }
-html[data-drawer-mode="board"] .export-type-row { border: 0; border-radius: 12px; background: var(--fill); }
-html[data-drawer-mode="board"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }
-html[data-drawer-mode="board"] .board-editor-wrap { border: 0; border-radius: 12px; background: var(--fill); }
-html[data-drawer-mode="board"] .dock-source-foot .btn-delete { height: 34px; color: var(--danger); }
+html[data-drawer-mode="vela"] #stylePanel .props-seg-btn { height: 40px; border-radius: 12px; }
+html[data-drawer-mode="vela"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
+html[data-drawer-mode="vela"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
+html[data-drawer-mode="vela"] #boardLayoutSection .props-route-seg .props-seg-btn + .props-seg-btn { box-shadow: none; }
+html[data-drawer-mode="vela"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .14); }
+html[data-drawer-mode="vela"] .export-actions .btn { height: 40px; }
+html[data-drawer-mode="vela"] .export-type-row { border: 0; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="vela"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }
+html[data-drawer-mode="vela"] .board-editor-wrap { border: 0; border-radius: 12px; background: var(--fill); }
+html[data-drawer-mode="vela"] .dock-source-foot .btn-delete { height: 34px; color: var(--danger); }
 
 /* group tabs keep the light surface so the active pink state reads clearly */
-html[data-drawer-mode="board"] .group-tab-float {
+html[data-drawer-mode="vela"] .group-tab-float {
   background: var(--paper) !important;
   border: 1px solid var(--paper-line) !important;
   box-shadow: var(--press);
 }
-html[data-drawer-mode="board"] .group-tab:hover { background: var(--wash); }
-html[data-drawer-mode="board"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
+html[data-drawer-mode="vela"] .group-tab:hover { background: var(--wash); }
+html[data-drawer-mode="vela"] .group-tab.is-active { background: rgba(219, 76, 132, .14); color: var(--brand); }
 
 
 /* the shared-by-me row that is the board open now */

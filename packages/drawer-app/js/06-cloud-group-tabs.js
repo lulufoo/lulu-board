@@ -137,8 +137,8 @@ function cloudParkPlusDraft() {
     clearTimeout(boardSaveTimer);
     boardSaveTimer = null;
   }
-  cloudPlusDraftSource = boardSourceEl ? String(boardSourceEl.value || "") : "";
-  cloudPlusDraftRev = Number(boardLocalRev) || 1;
+  cloudPlusDraftSource = velaSourceEl ? String(velaSourceEl.value || "") : "";
+  cloudPlusDraftRev = Number(velaLocalRev) || 1;
   cloudPlusDraftActive = false;
 }
 
@@ -150,7 +150,7 @@ function appendGroupDropLine(root, edge) {
 }
 
 function renderCloudGroupTabs() {
-  var root = document.getElementById("board-group-tabs");
+  var root = document.getElementById("vela-group-tabs");
   if (!root) return;
   var show = cloudGroupTabsVisible();
   root.hidden = !show;
@@ -211,8 +211,8 @@ function cloudClearGroupTabs() {
 async function cloudConfirmLeaveBoard() {
   if (cloudPlusDraftActive) return true;
   if (boardDirty && cloudBoardId()) {
-    if (typeof boardAskConfirm === "function") {
-      return boardAskConfirm({
+    if (typeof askConfirm === "function") {
+      return askConfirm({
         title: "Not saved yet",
         copy: "Switch anyway?",
         ok: "Switch",
@@ -301,22 +301,22 @@ async function cloudSwitchToPlusDraft() {
   }
   cloudClearDirtyLeave();
   cloudPlusDraftActive = true;
-  if (boardSourceEl) {
-    boardSourceEl.value = cloudPlusDraftSource || blankPlusDraftSource();
-    delete boardSourceEl.dataset.boardSelectionKey;
-    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  if (velaSourceEl) {
+    velaSourceEl.value = cloudPlusDraftSource || blankPlusDraftSource();
+    delete velaSourceEl.dataset.boardSelectionKey;
+    delete velaSourceEl.dataset.boardEdgeSelectionKey;
   }
-  boardLocalRev = Number(cloudPlusDraftRev) || 1;
+  velaLocalRev = Number(cloudPlusDraftRev) || 1;
   boardServerRev = 0;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: "",
-      version: boardLocalRev,
+      version: velaLocalRev,
     });
   }
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId("");
-  if (typeof renderBoard === "function") renderBoard({ fit: false });
-  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
+  if (typeof renderVela === "function") renderVela({ fit: false });
+  if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
 }
@@ -348,19 +348,19 @@ async function cloudCommitPlusDraft(kind) {
   cloudPlusDraftActive = true;
   cloudPlusDraftSource = blankPlusDraftSource(kind);
   cloudPlusDraftRev = 1;
-  if (boardSourceEl) {
-    boardSourceEl.value = cloudPlusDraftSource;
-    delete boardSourceEl.dataset.boardSelectionKey;
-    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  if (velaSourceEl) {
+    velaSourceEl.value = cloudPlusDraftSource;
+    delete velaSourceEl.dataset.boardSelectionKey;
+    delete velaSourceEl.dataset.boardEdgeSelectionKey;
   }
-  boardLocalRev = 1;
+  velaLocalRev = 1;
   boardServerRev = 0;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({ id: "", version: 1 });
   }
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId("");
-  if (typeof renderBoard === "function") renderBoard({ fit: false });
-  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
+  if (typeof renderVela === "function") renderVela({ fit: false });
+  if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
   setStatus("New Vela in this group");

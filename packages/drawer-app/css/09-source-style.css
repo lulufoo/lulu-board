@@ -7,14 +7,14 @@
   --src-num-on: #db4c84;
   --src-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
 }
-html[data-drawer-mode="board"] .board-dock[data-open="source"] [data-dock-panel="source"] {
+html[data-drawer-mode="vela"] .vela-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 0;
   gap: 0;
   background: var(--src-paper);
 }
 
 /* header: same rhythm as the Style / Export panels (title + hairline); typography comes from 08 */
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-head {
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .dock-source-head {
   box-sizing: border-box;
   flex: none;
   height: 47px;
@@ -24,28 +24,28 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-head {
   border-bottom: 1px solid var(--paper-line);
   background: transparent;
 }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-identity { align-items: center; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .dock-source-identity { align-items: center; }
 
 /* body */
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-body { background: var(--src-paper); }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .board-editor-wrap {
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .dock-source-body { background: var(--src-paper); }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .board-editor-wrap {
   margin: 0;
   border: 0;
   border-radius: 0;
   background: var(--src-paper);
 }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter {
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .source-gutter {
   padding: 16px 0 28px;
   border-right: 0;
   background: transparent;
   color: var(--src-num);
   font: 12px/1.65 var(--src-mono);
 }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter-line { padding: 0 14px 0 20px; }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .source-gutter-line.is-current { color: var(--src-num-on); font-weight: 700; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .source-gutter-line { padding: 0 14px 0 20px; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .source-gutter-line.is-current { color: var(--src-num-on); font-weight: 700; }
 
-html[data-drawer-mode="board"] [data-dock-panel="source"] .source-hl-wrap { position: relative; flex: 1 1 auto; min-width: 0; display: flex; }
-html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource {
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .source-hl-wrap { position: relative; flex: 1 1 auto; min-width: 0; display: flex; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] #velaSource {
   position: relative;
   z-index: 1;
   padding: 16px 16px 28px 4px;
@@ -55,8 +55,8 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource {
   caret-color: #4a3524;
   background: transparent;
 }
-html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::selection { background: rgba(219, 76, 132, .22); color: transparent; }
-html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placeholder { color: #bfae94; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] #velaSource::selection { background: rgba(219, 76, 132, .22); color: transparent; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] #velaSource::placeholder { color: #bfae94; }
 .source-hl {
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
@@ -88,10 +88,10 @@ html[data-drawer-mode="board"] [data-dock-panel="source"] #boardSource::placehol
 
 /* footer: a hairline closes the editor (same inset as the header's), Delete gets room above and below it,
    and the char count lines up with Delete's right edge. Only shown with Delete, so no empty band without it. */
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-foot:has(.btn-delete:not([hidden])) {
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .dock-source-foot:has(.btn-delete:not([hidden])) {
   margin: 0 14px;
   padding: 0 2px;
   border-top: 1px solid var(--paper-line);
 }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .dock-source-foot .btn-delete { margin: 10px 0 16px; }
-html[data-drawer-mode="board"] [data-dock-panel="source"] .source-chars { right: 16px; bottom: 10px; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .dock-source-foot .btn-delete { margin: 10px 0 16px; }
+html[data-drawer-mode="vela"] [data-dock-panel="source"] .source-chars { right: 16px; bottom: 10px; }

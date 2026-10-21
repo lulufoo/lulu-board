@@ -81,10 +81,12 @@ console.log('ok 09-shell-drawer');
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  assert.doesNotMatch(html, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
+  const drawerStart = html.indexOf('id="shellDrawer"');
+  const drawerHtml = html.slice(drawerStart, html.indexOf('</aside>', drawerStart));
+  assert.doesNotMatch(drawerHtml, /btnShellSignIn|shell-signin/, 'no separate Sign in button in the drawer');
   assert.match(html, /id="btnShellAccount"[\s\S]{0,200}id="shellAccountAvatar"[\s\S]{0,200}id="shellAccountName"/, 'avatar + name live in one clickable account row');
   assert.doesNotMatch(src, /cloudSignIn\("google"\)/, 'the account row no longer jumps straight to Google');
-  assert.match(html, /id="shellAuthMenu"[\s\S]{0,300}data-board-oauth="google"[\s\S]{0,200}data-board-oauth="github"/, 'the row opens a Google / GitHub choice');
+  assert.match(html, /id="shellAuthMenu"[\s\S]{0,300}data-shell-oauth="google"[\s\S]{0,200}data-shell-oauth="github"/, 'the row opens a Google / GitHub choice');
   assert.match(src, /classList\.contains\("is-signin"\)[\s\S]{0,160}setAuthMenu\(/, 'signed-out row toggles the choice menu');
   assert.match(src, /function closeAll[\s\S]{0,120}shellCloseAuthMenu/, 'closing the drawer closes the menu');
   assert.match(src, /classList\.toggle\("is-signin", !profile\)/, 'row is only interactive while signed out');
@@ -137,7 +139,7 @@ console.log('ok 09-shell-drawer');
 // ---- blank #z waits for kind ----
 {
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
   assert.match(src, /function shellOfferBlankStartKind/, 'blank start opens the kind dialog');
   assert.match(src, /onCancel: function \(\) \{ open\(\); \}/, 'blank start Esc keeps the dialog open');
   assert.match(board, /function shouldWaitForCreateKind/, 'empty hash does not seed while waiting for kind');
@@ -153,11 +155,11 @@ console.log('ok 09-shell-drawer');
   assert.match(open, /cloudConfirmLeaveBoard/, 'leave-confirm stays before the kind dialog');
   assert.match(open, /openCreateKindDialog/, 'New board opens the kind dialog');
   assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
-  assert.doesNotMatch(open, /history\.replaceState|bootstrapBoardFromHash|saveBoardToHash/, 'does not write hash before pick');
+  assert.doesNotMatch(open, /history\.replaceState|bootstrapVelaFromHash|saveVelaToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));
   assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
   assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
-  assert.match(commit, /saveBoardToHash\(\{ bump: false \}\)/, 'writes #z after pick');
+  assert.match(commit, /saveVelaToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
 }
 

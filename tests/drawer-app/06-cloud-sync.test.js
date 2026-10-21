@@ -19,7 +19,7 @@ const shareCss = read('packages/drawer-app/css/05-share.css');
 const dockCss = read('packages/drawer-app/css/03-diagram.css');
 const webBuild = read('scripts/web-build/build.mjs');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
-const boardJs = read('packages/drawer-app/js/02-board.js');
+const boardJs = read('packages/drawer-app/js/02-vela.js');
 const schema = readSql('20260917160000_create_boards.sql');
 const versionSql = readSql('20260918090000_boards_version.sql');
 const shareSql = readSql('20260918142200_board_share.sql');
@@ -29,27 +29,27 @@ const workerConfig = read('wrangler.toml');
 assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
 assert.match(html, /img-src[^"]*https:\/\/\*\.googleusercontent\.com/, 'CSP allows Google avatars');
 assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP allows GitHub avatars');
-assert.match(html, /id="btnBoardSignIn"/, 'public page exposes sign in');
-assert.match(html, /id="boardSignInDialog"/, 'unsigned #b: has a sign-in dialog');
+assert.match(html, /id="btnShellSignIn"/, 'public page exposes sign in');
+assert.match(html, /id="shellSignInDialog"/, 'unsigned #b: has a sign-in dialog');
 assert.match(html, /Sign in to open this Vela/, 'dialog copy asks to sign in');
-assert.match(html, /id="btnBoardSignInClose"/, 'dialog can be dismissed');
-assert.match(html, /id="btnBoardAccount"/, 'signed-in account is a menu button');
-assert.match(html, /id="boardSessionMenu"/, 'account menu holds session actions');
-assert.match(html, /id="btnBoardSaveCloud"/, 'unsaved chrome stays with the account cluster');
-assert.match(html, /id="boardAccount"[\s\S]*id="btnBoardSignIn"/, 'Sign in lives in the account cluster');
+assert.match(html, /id="btnShellSignInClose"/, 'dialog can be dismissed');
+assert.match(html, /id="btnShellSession"/, 'signed-in account is a menu button');
+assert.match(html, /id="shellSessionMenu"/, 'account menu holds session actions');
+assert.match(html, /id="btnShellSaveCloud"/, 'unsaved chrome stays with the account cluster');
+assert.match(html, /id="shellAccount"[\s\S]*id="btnShellSignIn"/, 'Sign in lives in the account cluster');
 assert.match(html, /id="shellMineList"/, 'signed-in groups are listed in the left drawer');
-assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnBoardHelp"/, 'Source is dock tab 3, Export is tab 4');
+assert.match(html, /id="btnDockProps"[\s\S]*id="btnDockStyle"[\s\S]*id="btnDockSource"[\s\S]*id="btnDockExport"[\s\S]*id="btnVelaHelp"/, 'Source is dock tab 3, Export is tab 4');
 assert.doesNotMatch(html, /id="btnDockShare"|id="sharePanel"|data-dock-panel="share"/, 'Share left the right dock for the left drawer');
 assert.doesNotMatch(dockCss, /data-open="share"/, 'no dock width rule for a Share tab');
 assert.match(html, /id="shellShareBoard"/, 'the drawer has a Share this board button');
 assert.match(html, /id="shellSharedList"/, 'the drawer lists the boards you shared');
 assert.doesNotMatch(shareCss, /\.share-role-seg|#sharePanel/, 'panel styles are gone');
 assert.doesNotMatch(html, /id="btnBoardShare"/, 'share left the toolbar');
-assert.match(html, /id="btnBoardSaveCopy"/, 'shared viewers can save a copy');
+assert.match(html, /id="btnShellSaveCopy"/, 'shared viewers can save a copy');
 assert.match(html, /id="btnShareSync"/, 'share guests with edit access get Share sync');
 assert.match(appBuild, /06-cloud-share\.js/, 'drawer app concatenates the share module');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
-assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
+assert.match(html, /id="vela-group-tabs"/, 'canvas keeps a group tab strip');
 assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
 assert.match(shareJs, /rpc\("get_shared_board"/, 'shared read uses get_shared_board');
 assert.match(shareJs, /p_board_id: boardId/, 'share mutations pass the cloud board id');
@@ -58,7 +58,7 @@ assert.match(shareJs, /save_shared_board/, 'shared editors save through save_sha
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedBoardByHash/, 'hash bootstrap can load a share token');
-assert.match(shareJs, /showBoardError\(message\)/, 'a missing share token surfaces an error');
+assert.match(shareJs, /showVelaError\(message\)/, 'a missing share token surfaces an error');
 assert.doesNotMatch(shareJs, /from\("boards"\)/, 'share module does not select boards as anon');
 assert.match(read('packages/drawer-app/js/09-shell-drawer.js'), /isShareGuest\(\)\) && \w|isShareGuest/, 'guests cannot use Share this board');
 assert.doesNotMatch(boardJs, /dataset\.shareView === "on"\) return/, 'share view still lets the guest edit locally');
@@ -75,22 +75,22 @@ assert.match(cloud, /if \(!ownCloud && typeof liveBoardId/, 'Saved chrome follow
 assert.match(cloud, /cloudSetActionLabel\(save, "Create"\)/, 'uncreated Saved hints Create');
 assert.doesNotMatch(cloud, /save\.title =|status\.title =/, 'save chrome drops the native title');
 {
-  const block = dockCss.match(/\.board-cloud-status\.is-pending\.is-uncreated \{[^}]+\}/);
+  const block = dockCss.match(/\.shell-cloud-status\.is-pending\.is-uncreated \{[^}]+\}/);
   assert.ok(block, 'uncreated Saved has a pending rule');
   assert.match(block[0], /color:\s*var\(--muted/, 'uncreated Saved uses the muted icon');
 }
-assert.match(dockCss, /\.board-cloud-status\.is-pending \{[\s\S]*?color:\s*var\(--warn\)/, 'unsaved Saved uses the warn icon');
-assert.match(dockCss, /\.board-cloud-status\.is-current \{[\s\S]*?color:\s*var\(--ok\)/, 'synced Saved uses the ok icon');
-assert.match(html, /class="board-cloud-status-icon"/, 'Saved chrome is an icon');
+assert.match(dockCss, /\.shell-cloud-status\.is-pending \{[\s\S]*?color:\s*var\(--warn\)/, 'unsaved Saved uses the warn icon');
+assert.match(dockCss, /\.shell-cloud-status\.is-current \{[\s\S]*?color:\s*var\(--ok\)/, 'synced Saved uses the ok icon');
+assert.match(html, /class="shell-cloud-status-icon"/, 'Saved chrome is an icon');
 assert.match(cloud, /isShareGuest[\s\S]*forkSharedBoard/, 'Saved on a share creates the guest\'s own copy');
-assert.match(html, /id="boardCloudStatus"/, 'aligned save state is a status chip');
-assert.match(html, /board-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
+assert.match(html, /id="shellCloudStatus"/, 'aligned save state is a status chip');
+assert.match(html, /shell-cloud-status is-pending/, 'unsaved chrome uses the pending status chip');
 assert.match(cloud, /function syncCloudSaveChrome/, 'save chrome follows server and client versions');
 assert.match(cloud, /copy\.pending/, 'unsaved chrome keeps the pending chip');
 assert.match(boardJs, /cloudBoardId\(\) \? 3000 : 350/, 'cloud autosave waits 3s');
-assert.match(html, /id="btnBoardSignOut"[\s\S]*boardSessionMenu|id="boardSessionMenu"[\s\S]*id="btnBoardSignOut"/, 'Sign out lives in the account menu');
-assert.match(html, /data-board-oauth="google"/, 'Google is an available provider');
-assert.match(html, /data-board-oauth="github"/, 'GitHub is an available provider');
+assert.match(html, /id="btnShellSessionOut"[\s\S]*shellSessionMenu|id="shellSessionMenu"[\s\S]*id="btnShellSessionOut"/, 'Sign out lives in the account menu');
+assert.match(html, /data-shell-oauth="google"/, 'Google is an available provider');
+assert.match(html, /data-shell-oauth="github"/, 'GitHub is an available provider');
 assert.match(html, /supabase-config\.js/, 'public page loads runtime Supabase configuration');
 assert.match(html, /supabase-client\.js/, 'public page loads the local Supabase client bundle');
 assert.match(appBuild, /@supabase\/supabase-js/, 'build bundles the Supabase client locally');
@@ -136,8 +136,8 @@ assert.match(cloud, /function cloudShowSignInDialog/, 'unsigned cloud hash opens
 assert.match(cloud, /cloudShowSignInDialog\(\)/, 'unsigned #b: load shows the dialog');
 assert.match(cloud, /if \(signedIn\) cloudHideSignInDialog/, 'signed-in chrome closes the dialog');
 assert.match(cloud, /function cloudDeclineCloudBoard/, 'Not now leaves the cloud pointer');
-assert.match(cloud, /btnBoardSignInClose[\s\S]*cloudDeclineCloudBoard/, 'Not now resets the URL off #b:');
-assert.match(cloud, /async function cloudDeclineCloudBoard[\s\S]*bootstrapBoardFromHash/, 'declining seeds an unsigned #z: board');
+assert.match(cloud, /btnShellSignInClose[\s\S]*cloudDeclineCloudBoard/, 'Not now resets the URL off #b:');
+assert.match(cloud, /async function cloudDeclineCloudBoard[\s\S]*bootstrapVelaFromHash/, 'declining seeds an unsigned #z: board');
 assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force sign-in');
 
 {
@@ -183,8 +183,8 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
     const save = mkEl(), status = mkEl();
     new Function('env', 'save', 'status', `
       var cloudSession = env.signedIn ? { user: {} } : null, cloudPlusDraftActive = false, liveBoardId = '';
-      var boardServerRev = env.server, boardLocalRev = env.client;
-      var document = { getElementById: (id) => id === 'btnBoardSaveCloud' ? save : status };
+      var boardServerRev = env.server, velaLocalRev = env.client;
+      var document = { getElementById: (id) => id === 'btnShellSaveCloud' ? save : status };
       function isLocalDrawerPreview() { return !!env.local; }
       function cloudBoardId() { return env.id || ''; }
       ${cloud.slice(start, end)}
@@ -239,7 +239,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
 }
 const diagramCss = read('packages/drawer-app/css/03-diagram.css');
 {
-  const block = diagramCss.match(/\.board-cloud-status\.is-pending\.is-signed-out \{[^}]+\}/);
+  const block = diagramCss.match(/\.shell-cloud-status\.is-pending\.is-signed-out \{[^}]+\}/);
   assert.ok(block, 'signed out has its own rule');
   assert.match(block[0], /opacity:\s*\.5/, 'signed out is faded');
   assert.match(block[0], /cursor:\s*default/, 'signed out uses the default cursor');
@@ -282,7 +282,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(start >= 0 && end > start, 'cloudSignOut is a closed function');
   const body = cloud.slice(start, end);
   assert.match(body, /history\.replaceState/, 'sign-out drops the #b: hash');
-  assert.match(body, /bootstrapBoardFromHash/, 'sign-out seeds a blank local board');
+  assert.match(body, /bootstrapVelaFromHash/, 'sign-out seeds a blank local board');
   assert.doesNotMatch(body, /cloudClearOpenBoard/, 'sign-out does not empty the source in place');
 }
 
@@ -402,7 +402,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   );
   assert.deepStrictEqual(sorted.map((row) => row.board_id), ['b_11111111', 'b_22222222']);
   assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
-  assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
+  assert.match(tabs, /askConfirm/, 'dirty saved tabs use the in-app confirm');
   assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
   assert.match(tabCss, /\.group-tab-float/, 'group tabs are canvas chrome');
   assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');

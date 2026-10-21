@@ -16,7 +16,7 @@ function setShareEdit(on) {
 function setShareView(on) {
   if (on) document.documentElement.dataset.shareView = "on";
   else delete document.documentElement.dataset.shareView;
-  if (boardSourceEl) boardSourceEl.readOnly = false;
+  if (velaSourceEl) velaSourceEl.readOnly = false;
   if (on) setShareEdit(false);
   syncShareChrome();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
@@ -36,24 +36,24 @@ function applySharedBoardRow(row) {
   var source = typeof cloudRowSource === "function"
     ? cloudRowSource(row, "")
     : String(row && row.bmd || "");
-  if (boardSourceEl) boardSourceEl.value = source;
+  if (velaSourceEl) velaSourceEl.value = source;
   boardDirty = false;
   boardServerRev = Number(row && row.version) || 1;
-  boardLocalRev = boardServerRev;
+  velaLocalRev = boardServerRev;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: "",
-      version: boardLocalRev,
+      version: velaLocalRev,
     });
   }
-  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof updateVelaChars === "function") updateVelaChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
 function applyShareVersion(row) {
   if (!row || row.version == null) return;
   boardServerRev = Number(row.version) || boardServerRev;
-  boardLocalRev = boardServerRev;
+  velaLocalRev = boardServerRev;
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
 async function loadSharedBoardByHash(raw) {
@@ -88,8 +88,8 @@ async function loadSharedBoardByHash(raw) {
     setShareEdit(canEdit);
     applySharedBoardRow(result.data);
     if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-    if (typeof showBoardError === "function") showBoardError("");
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof showVelaError === "function") showVelaError("");
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus(canEdit ? "Shared board · can edit" : "Shared board");
     return true;
@@ -97,12 +97,12 @@ async function loadSharedBoardByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     setShareView(false);
     setShareEdit(false);
-    if (boardSourceEl) boardSourceEl.value = "";
+    if (velaSourceEl) velaSourceEl.value = "";
     if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
-    if (typeof renderBoard === "function") renderBoard({ fit: false });
+    if (typeof renderVela === "function") renderVela({ fit: false });
     setBoardSyncUI("error");
     var message = shareRpcError(error, "Shared board load failed");
-    if (typeof showBoardError === "function") showBoardError(message);
+    if (typeof showVelaError === "function") showVelaError(message);
     setStatus(message, true);
     return true;
   }
@@ -136,9 +136,9 @@ async function saveSharedBoard(opts) {
     return false;
   }
   var source = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(boardSourceEl && boardSourceEl.value)
-    : String(boardSourceEl && boardSourceEl.value || "");
-  if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
+    ? stripDocumentMeta(velaSourceEl && velaSourceEl.value)
+    : String(velaSourceEl && velaSourceEl.value || "");
+  if (velaSourceEl && source !== velaSourceEl.value) velaSourceEl.value = source;
   var title = getBoardTitle(cloudOpenBoardId());
   var expected = Number(boardServerRev);
   if (!(expected > 0)) expected = 1;
@@ -159,7 +159,7 @@ async function saveSharedBoard(opts) {
       if (latest.error) throw latest.error;
       if (!latest.data) throw new Error("Shared board not found");
       applySharedBoardRow(latest.data);
-      if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+      if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
       setBoardSyncUI("conflict");
       setStatus("Shared version conflict — reloaded", true);
       return false;
@@ -199,7 +199,7 @@ function syncSharedOriginal() {
 }
 
 function syncShareChrome() {
-  var saveCopy = document.getElementById("btnBoardSaveCopy");
+  var saveCopy = document.getElementById("btnShellSaveCopy");
   var shareSync = document.getElementById("btnShareSync");
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   if (saveCopy) saveCopy.hidden = true;
@@ -212,6 +212,6 @@ function onShareClick(id, fn) {
   if (el) el.addEventListener("click", fn);
 }
 
-onShareClick("btnBoardSaveCopy", function () { void forkSharedBoard(); });
+onShareClick("btnShellSaveCopy", function () { void forkSharedBoard(); });
 onShareClick("btnShareSync", function () { void syncSharedOriginal(); });
 syncShareChrome();

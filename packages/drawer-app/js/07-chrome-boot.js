@@ -17,7 +17,7 @@ function flashChrome(ms = 900) {
     if (!title) return;
     event.stopPropagation();
     try {
-      var board = BoardRender.parse(boardSourceEl.value);
+      var board = BoardRender.parse(velaSourceEl.value);
       var root = previewEl.querySelector(".board-render");
       pickBoardElement(title, root || previewEl, board);
     } catch (err) {}
@@ -36,9 +36,9 @@ function flashChrome(ms = 900) {
   });
 })();
 
-boardSourceEl.addEventListener('input', () => {
-  if (typeof updateBoardChars === "function") updateBoardChars();
-  scheduleBoardRender();
+velaSourceEl.addEventListener('input', () => {
+  if (typeof updateVelaChars === "function") updateVelaChars();
+  scheduleVelaRender();
   scheduleBoardSave();
 });
 
@@ -86,8 +86,8 @@ if (boardIconSec) boardIconSec.addEventListener("change", function() {
 });
 
 (function(){
-  if (boardDock) {
-    boardDock.querySelectorAll("[data-dock]").forEach(function(btn) {
+  if (velaDock) {
+    velaDock.querySelectorAll("[data-dock]").forEach(function(btn) {
       btn.addEventListener("click", function() { toggleDock(btn.getAttribute("data-dock")); });
     });
   }
@@ -161,9 +161,9 @@ function applyBoardItemCap(rem, rerender, persist) {
   }
   paintStyleRange(boardItemCapSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ item_cap: n });
-  if (rerender && document.documentElement.dataset.drawerMode === 'board'
-    && typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) {
-    renderBoard({ fit: false });
+  if (rerender && document.documentElement.dataset.drawerMode === 'vela'
+    && typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) {
+    renderVela({ fit: false });
   }
 }
 function applyPeleThemeVars(theme) {
@@ -196,7 +196,7 @@ function applyDiagramTheme(theme, opts) {
     persistBoardStyle({ theme: t });
   }
   if (opts && opts.skipRender) return;
-  if (typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) renderBoard({ fit: false });
+  if (typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) renderVela({ fit: false });
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
 
@@ -261,9 +261,9 @@ function applyBoardTypeStep(raw, persist, rerender) {
   if (boardFontSizeSlider) boardFontSizeSlider.value = String(n);
   paintStyleRange(boardFontSizeSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ type_step: n });
-  if (rerender && document.documentElement.dataset.drawerMode === 'board'
-    && typeof renderBoard === 'function' && boardSourceEl && boardSourceEl.value.trim()) {
-    renderBoard({ fit: false });
+  if (rerender && document.documentElement.dataset.drawerMode === 'vela'
+    && typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) {
+    renderVela({ fit: false });
   }
 }
 if (boardFontSizeSlider) {
@@ -305,7 +305,7 @@ if (canvasExportBtn && canvasExportMenu) {
   });
 }
 function activeSourceText() {
-  return boardSourceEl ? boardSourceEl.value : '';
+  return velaSourceEl ? velaSourceEl.value : '';
 }
 function activeSourcePath() {
   return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
@@ -347,7 +347,7 @@ function toggleSourceEntry() {
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
-    renderBoard();
+    renderVela();
   }
   if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
     e.preventDefault();
@@ -364,15 +364,15 @@ function fitView() {
 
 function setMode(mode, opts) {
   opts = opts || {};
-  document.documentElement.dataset.drawerMode = "board";
+  document.documentElement.dataset.drawerMode = "vela";
   if (opts.persist !== false) saveDrawerUi({ mode: "board" });
-  try { setTypeUI(boardSourceEl && boardSourceEl.value); } catch (_e) {}
+  try { setTypeUI(velaSourceEl && velaSourceEl.value); } catch (_e) {}
   closeExportMenu();
   if (opts.restore) _drawerUiRestoreLock = true;
   var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
   var skipBoard = !!(opts.restore && hasBoard);
   if (!skipBoard) {
-    renderBoard({ fit: false, restoreView: true });
+    renderVela({ fit: false, restoreView: true });
     if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();
   } else {
     applyRestoredBoardView();
@@ -397,7 +397,7 @@ function setMode(mode, opts) {
 applyTransform();
 function restoreDrawerMode() {
   var ui = loadDrawerUi();
-  document.documentElement.dataset.drawerMode = "board";
+  document.documentElement.dataset.drawerMode = "vela";
   saveDrawerUi({ mode: "board" });
   setMode("board", { restore: true, persist: false });
   try {
@@ -407,7 +407,7 @@ function restoreDrawerMode() {
     }
   } catch (_e) {}
 }
-await bootstrapBoard();
+await bootstrapVela();
 restoreDrawerMode();
 if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
   setInterval(() => { void loadBoardPolled(); }, 1500);
@@ -425,9 +425,9 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
       }
       boardDirty = false;
     }
-    void pending.then(function() { return bootstrapBoard(); }).then(function() {
-      if (typeof renderBoard === "function" && boardSourceEl && boardSourceEl.value.trim()) {
-        renderBoard({ fit: false, restoreView: true });
+    void pending.then(function() { return bootstrapVela(); }).then(function() {
+      if (typeof renderVela === "function" && velaSourceEl && velaSourceEl.value.trim()) {
+        renderVela({ fit: false, restoreView: true });
       }
     });
   });

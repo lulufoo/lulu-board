@@ -6,6 +6,10 @@
   --bf-radius-chip: 8px;
   --bf-ring: #db4c84;
   --bf-ring-soft: rgba(219, 76, 132, .4);
+  --canvas-ring: var(--bf-ring);
+  --canvas-ring-soft: var(--bf-ring-soft);
+  --canvas-ring-width: 2px;
+  --canvas-ring-offset: 2px;
 }
 /* Ring colour follows the theme (--bf-rgb is set by the theme pack on the board root).
    Edge of every filled card / chip: the theme edge colour at .14 laid over the node's own fill, so the edge is always a
@@ -17,12 +21,7 @@
   --bf-shadow-box: var(--bf-edge-in), 0 1px 2px rgba(var(--bf-rgb, 74, 53, 36), .08), 0 6px 18px rgba(var(--bf-rgb, 74, 53, 36), .09);
 }
 
-/* ---- selection and hover: pink ring on nodes ---- */
-.board-render .board-zone:not(.board-type-layout):hover:not(.board-selection):not(.board-selection-tree):not(:has(.board-zone:hover)):not(:has(.board-item:hover)),
-.board-render .board-item:hover:not(.board-selection):not(.board-selection-tree) {
-  outline: 2px solid var(--bf-ring-soft);
-  outline-offset: 2px;
-}
+/* Hover / selected rings live on .canvas-hover / .canvas-selected in 03-diagram.css. */
 
 /* ---- Box · card: edge ring (deeper than its fill), soft corners; only the outermost card lifts off the canvas ---- */
 .board-render .box.board-type-card {

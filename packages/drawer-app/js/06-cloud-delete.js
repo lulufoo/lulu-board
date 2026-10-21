@@ -30,7 +30,7 @@ function cloudDropPlusDraft() {
 async function cloudDeleteSavedBoard() {
   var boardId = cloudBoardId();
   if (!cloudClient || !boardId) return false;
-  var confirmed = await boardAskConfirm({
+  var confirmed = await askConfirm({
     title: "Delete this Vela?",
     copy: "This board will be deleted from the cloud.",
     ok: "Delete",
@@ -48,8 +48,8 @@ async function cloudDeleteSavedBoard() {
       cloudOpenBoardById(nextId);
     } else {
       history.replaceState(null, "", location.pathname + location.search);
-      await bootstrapBoardFromHash();
-      if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+      await bootstrapVelaFromHash();
+      if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
       cloudClearGroupTabs();
     }
     setStatus("Deleted board");

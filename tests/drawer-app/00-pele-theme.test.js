@@ -40,20 +40,25 @@ assert.ok(!ids.includes('kami'));
     id + ' cluster stroke matches node',
   );
   assert.strictEqual(mapped.css['--bf-rgb'], pack.edgeRgb);
+  assert.strictEqual(mapped.themeVariables.clusterBkg, pack.colors[0], id + ' group paper matches Board card');
+  assert.strictEqual(mapped.css['--pele-radius'], 'var(--bf-radius-box, 12px)', id + ' radius follows Board card');
 });
 
 const defaultMapped = Pele.mapPack('default');
 assert.strictEqual(defaultMapped.css['--pele-border'], 'rgba(74, 53, 36, .14)');
 assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'rgba(74, 53, 36, .14)');
 assert.strictEqual(defaultMapped.css['--pele-muted'], BoardThemes.get('default').edgeLabel);
-assert.strictEqual(defaultMapped.css['--pele-radius'], '4px', 'Pele node radius is not the Board card 12px');
+assert.strictEqual(defaultMapped.css['--pele-radius'], 'var(--bf-radius-box, 12px)', 'flowchart corner follows the Board card');
+assert.strictEqual(defaultMapped.themeVariables.clusterBkg, BoardThemes.get('default').colors[0], 'group paper is the Board card fill');
+assert.doesNotMatch(fs.readFileSync(path.join(root, 'packages/drawer-app/js/00-pele-theme.js'), 'utf8'), /#5b7bd5/, 'no Pele blue fallback in the mapper');
 assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
 
 const chrome = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 const boardJs = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.js'), 'utf8');
+const velaJs = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
 assert.match(chrome, /applyPeleThemeVars/, 'host maps Board packs onto Pele');
 assert.match(boardJs, /persistMermaidStyle/, 'flowchart writes %% style');
 assert.doesNotMatch(boardJs, /MermaidFlowchartThemes/, 'mermaid-ext does not own theme packs');
-assert.doesNotMatch(boardJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
+assert.doesNotMatch(velaJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
 
 console.log('ok pele-theme');

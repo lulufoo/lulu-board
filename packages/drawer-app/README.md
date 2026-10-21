@@ -20,9 +20,9 @@ packages/drawer-app/
     00-hash-persist.js
     00-canvas-view.js
     01-shell-state.js
+    02-vela.js
     02-board.js
     05-render-io.js
-    05-board-file.js
     05-export-png.js
     06-cloud-sync.js
     06-cloud-share.js

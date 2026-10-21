@@ -82,7 +82,7 @@ var shellShares = shellShares || [];
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
   // Signed out: the account row is the sign-in entry. It opens a small menu to pick Google or GitHub
-  // (the provider buttons carry data-board-oauth, so 06-cloud-sync starts the flow). Signed in: the row is inert.
+  // (the provider buttons carry data-shell-oauth, so 06-cloud-sync starts the flow). Signed in: the row is inert.
   var account = document.getElementById("btnShellAccount");
   var authMenu = document.getElementById("shellAuthMenu");
   function setAuthMenu(on) {
@@ -306,18 +306,18 @@ async function shellCommitBlankBoard(kind) {
     : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
-  if (typeof boardSourceEl !== "undefined" && boardSourceEl) {
-    boardSourceEl.value = source;
-    delete boardSourceEl.dataset.boardSelectionKey;
-    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+  if (typeof velaSourceEl !== "undefined" && velaSourceEl) {
+    velaSourceEl.value = source;
+    delete velaSourceEl.dataset.boardSelectionKey;
+    delete velaSourceEl.dataset.boardEdgeSelectionKey;
   }
-  boardLocalRev = 1;
+  velaLocalRev = 1;
   boardServerRev = 0;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({ id: "", version: 1 });
   }
-  if (typeof saveBoardToHash === "function") await saveBoardToHash({ bump: false });
-  if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+  if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
+  if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
 }
@@ -462,7 +462,7 @@ function shellRenderShared(shares) {
     // Everything else about a share (link, who can do what, a new link) lives in the Share dialog.
     var stop = shellShareAction("Stop", "Stop sharing this Vela", async function () {
       if (!live) return;
-      if (typeof boardAskConfirm === "function" && !(await boardAskConfirm({
+      if (typeof askConfirm === "function" && !(await askConfirm({
         title: "Stop sharing this Vela?",
         copy: "Anyone with the link will lose access.",
         ok: "Stop sharing",
@@ -589,7 +589,7 @@ async function shellFillSearch() {
   if (!box || !input) return;
   var seq = ++shellSearchSeq;
   var query = input.value;
-  var source = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl.value : "";
+  var source = typeof velaSourceEl !== "undefined" && velaSourceEl ? velaSourceEl.value : "";
   var found = shellSearchMatches(query, shellSearchGroups(), source);
   var remote = { mine: [], public: [] };
   shellPaintSearchResults(query, found, remote);
@@ -634,10 +634,10 @@ function shellPickSearch() {
   }
   // A line of the open board: show it in Source and select it.
   if (typeof openDock === "function") openDock("source");
-  if (typeof boardSourceEl === "undefined" || !boardSourceEl) return;
-  var lines = boardSourceEl.value.split("\n");
+  if (typeof velaSourceEl === "undefined" || !velaSourceEl) return;
+  var lines = velaSourceEl.value.split("\n");
   var start = 0;
   for (var i = 0; i < hit.item.line; i++) start += lines[i].length + 1;
-  boardSourceEl.focus();
-  boardSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
+  velaSourceEl.focus();
+  velaSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
 }

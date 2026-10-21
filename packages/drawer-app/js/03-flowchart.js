@@ -27,7 +27,7 @@ function isFlowchartKind() {
 }
 
 function flowchartSource() {
-  return boardSourceEl ? boardSourceEl.value : "";
+  return velaSourceEl ? velaSourceEl.value : "";
 }
 
 function peleDataId(el) {
@@ -39,7 +39,7 @@ var FLOWCHART_SEL_HALO_GAP = 2.5;
 
 function flowchartSelectionShape(g) {
   if (!g || !g.querySelector) return null;
-  return g.querySelector(":scope > rect:not(.mermaid-edge-label-hit):not(.flowchart-selection-halo), :scope > polygon, :scope > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo), :scope > circle, :scope > ellipse");
+  return g.querySelector(":scope > rect:not(.mermaid-edge-label-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo), :scope > polygon, :scope > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo), :scope > circle, :scope > ellipse");
 }
 
 function flowchartThemeRadius() {
@@ -89,13 +89,14 @@ function flowchartUsedRadius(shape, axis) {
   return NaN;
 }
 
-function paintFlowchartSelectionHalo(g) {
+function paintFlowchartHalo(g, className) {
   if (!g) return;
-  g.querySelectorAll(".flowchart-selection-halo").forEach(function (el) { el.remove(); });
+  var ringClass = className || "flowchart-selection-halo";
+  g.querySelectorAll("." + ringClass).forEach(function (el) { el.remove(); });
   var shape = flowchartSelectionShape(g);
   if (!shape) return;
   var halo = shape.cloneNode(true);
-  halo.setAttribute("class", "flowchart-selection-halo");
+  halo.setAttribute("class", ringClass);
   halo.removeAttribute("id");
   halo.setAttribute("fill", "none");
   halo.setAttribute("pointer-events", "none");
@@ -119,7 +120,7 @@ function paintFlowchartSelectionHalo(g) {
       if (tag !== "path") {
         var doc = shape.ownerDocument || document;
         halo = doc.createElementNS("http://www.w3.org/2000/svg", "path");
-        halo.setAttribute("class", "flowchart-selection-halo");
+        halo.setAttribute("class", ringClass);
         halo.setAttribute("fill", "none");
         halo.setAttribute("pointer-events", "none");
       }
@@ -208,6 +209,52 @@ function paintFlowchartSelectionHalo(g) {
   if (shape.parentNode) shape.parentNode.insertBefore(halo, shape);
 }
 
+function paintFlowchartSelectionHalo(g) {
+  paintFlowchartHalo(g, "flowchart-selection-halo");
+}
+
+function paintFlowchartEdgeHover(g) {
+  if (!g || !g.querySelector) return;
+  g.querySelectorAll(".canvas-hover-halo").forEach(function (el) { el.remove(); });
+  var painted = g.querySelector(":scope > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo):not(.flowchart-selection-halo)");
+  if (!painted) return;
+  var halo = painted.cloneNode(true);
+  halo.setAttribute("class", "canvas-hover-halo");
+  halo.removeAttribute("id");
+  halo.setAttribute("fill", "none");
+  halo.setAttribute("pointer-events", "none");
+  if (painted.parentNode) painted.parentNode.insertBefore(halo, painted);
+}
+
+function clearFlowchartHoverVisual() {
+  if (!previewEl) return;
+  previewEl.querySelectorAll(".canvas-hover-halo").forEach(function (el) { el.remove(); });
+  previewEl.querySelectorAll(".canvas-hover").forEach(function (el) {
+    el.classList.remove("canvas-hover");
+  });
+}
+
+function flowchartHoverHost(target) {
+  if (!target || !target.closest) return null;
+  return target.closest("g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit");
+}
+
+function applyFlowchartHover(host) {
+  clearFlowchartHoverVisual();
+  if (!host || !previewEl) return;
+  var g = host.tagName && String(host.tagName).toLowerCase() === "path"
+    ? (host.closest("g.pele-edge, g.pele-edge-label") || host)
+    : host.closest("g");
+  if (!g) return;
+  if (g.classList.contains("canvas-selected") || g.classList.contains("flowchart-selection")) return;
+  g.classList.add("canvas-hover");
+  if (g.classList.contains("pele-edge") || g.classList.contains("pele-edge-label")) {
+    paintFlowchartEdgeHover(g);
+    return;
+  }
+  paintFlowchartHalo(g, "canvas-hover-halo");
+}
+
 function applyFlowchartSelectionHalos() {
   if (!previewEl) return;
   previewEl.querySelectorAll("g.pele-node.flowchart-selection, g.pele-cluster.flowchart-selection").forEach(paintFlowchartSelectionHalo);
@@ -220,20 +267,20 @@ function flowchartEditAction(action) {
     if (!result || typeof result.source !== "string") return;
     applyFlowchartEditResult(result);
   } catch (err) {
-    if (typeof showBoardError === "function") showBoardError(err instanceof Error ? err.message : String(err));
+    if (typeof showVelaError === "function") showVelaError(err instanceof Error ? err.message : String(err));
   }
 }
 
 function applyFlowchartEditResult(result) {
   if (!result || typeof result.source !== "string") return;
-  boardSourceEl.value = result.source;
+  velaSourceEl.value = result.source;
   selectedFlowchart = result.selection || null;
   flowchartLinkMode = false;
   flowchartLinkStart = null;
   syncFlowchartLinkChrome();
-  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof updateVelaChars === "function") updateVelaChars();
   if (typeof scheduleBoardSave === "function") scheduleBoardSave();
-  if (typeof renderBoard === "function") renderBoard({ fit: false });
+  if (typeof renderVela === "function") renderVela({ fit: false });
 }
 
 function restoreFlowchartSelection() {
@@ -284,9 +331,10 @@ function showFlowchartPropsEmpty() {
 
 function clearFlowchartSelectionVisual() {
   if (!previewEl) return;
+  clearFlowchartHoverVisual();
   previewEl.querySelectorAll(".flowchart-selection-halo").forEach(function (el) { el.remove(); });
-  previewEl.querySelectorAll(".flowchart-selection, .flowchart-link-source").forEach(function (el) {
-    el.classList.remove("flowchart-selection", "flowchart-link-source");
+  previewEl.querySelectorAll(".flowchart-selection, .flowchart-link-source, .canvas-selected").forEach(function (el) {
+    el.classList.remove("flowchart-selection", "flowchart-link-source", "canvas-selected");
   });
 }
 
@@ -306,20 +354,20 @@ function applyFlowchartSelectionVisual() {
   var sel = selectedFlowchart;
   if (sel.kind === "node" && sel.id) {
     previewEl.querySelectorAll("g.pele-node").forEach(function (g) {
-      if (peleDataId(g) === sel.id) g.classList.add("flowchart-selection");
+      if (peleDataId(g) === sel.id) g.classList.add("flowchart-selection", "canvas-selected");
     });
   }
   if (sel.kind === "subgraph" && sel.id) {
     previewEl.querySelectorAll("g.pele-cluster, g.pele-cluster-title").forEach(function (g) {
-      if (peleDataId(g) === sel.id) g.classList.add("flowchart-selection");
+      if (peleDataId(g) === sel.id) g.classList.add("flowchart-selection", "canvas-selected");
     });
   }
   if (sel.kind === "link") {
     previewEl.querySelectorAll("g.pele-edge").forEach(function (el) {
-      if (flowchartLinkMatches(el, sel)) el.classList.add("flowchart-selection");
+      if (flowchartLinkMatches(el, sel)) el.classList.add("flowchart-selection", "canvas-selected");
     });
     previewEl.querySelectorAll("g.pele-edge-label").forEach(function (g) {
-      if (flowchartLinkMatches(g, sel)) g.classList.add("flowchart-selection");
+      if (flowchartLinkMatches(g, sel)) g.classList.add("flowchart-selection", "canvas-selected");
     });
   }
   applyFlowchartSelectionHalos();
@@ -556,7 +604,7 @@ function flowchartSelectionFromEvent(event) {
 }
 
 function flowchartEventOnChrome(event) {
-  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .board-dock, .zoom-float, .props-panel, button, input, textarea, select"));
+  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .vela-dock, .zoom-float, .props-panel, button, input, textarea, select"));
 }
 
 function flowchartHitSelect(event) {
@@ -651,7 +699,7 @@ document.addEventListener("keydown", function (event) {
   if (event.key !== "Delete" && event.key !== "Backspace") return;
   if (!selectedFlowchart) return;
   var target = event.target;
-  if (target === boardSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === velaSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   flowchartEditAction(function () { return FlowchartEdit.deleteSelection(flowchartSource(), selectedFlowchart); });
 });
@@ -667,12 +715,22 @@ if (previewEl) {
   previewEl.addEventListener("dblclick", function (event) {
     flowchartHitSelect(event);
   }, true);
+  previewEl.addEventListener("pointerover", function (event) {
+    if (!isFlowchartKind()) return;
+    applyFlowchartHover(flowchartHoverHost(event.target));
+  });
+  previewEl.addEventListener("pointerout", function (event) {
+    if (!isFlowchartKind()) return;
+    var next = event.relatedTarget;
+    if (next && previewEl.contains(next) && flowchartHoverHost(next)) return;
+    clearFlowchartHoverVisual();
+  });
 }
 
 document.addEventListener("pointerdown", function (event) {
   if (!isFlowchartKind() || event.button !== 0) return;
   if (!event.target.closest) return;
-  if (event.target.closest(".flowchart-edit-tools, .props-panel, .board-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
+  if (event.target.closest(".flowchart-edit-tools, .props-panel, .vela-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
   if (event.target.closest(".top-float, .zoom-float, .shell-search, .menu")) {
     clearFlowchartInteraction();
   }

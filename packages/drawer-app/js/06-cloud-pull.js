@@ -4,8 +4,8 @@ async function pullBoardFromCloud() {
   if (typeof isShareGuest === "function" && isShareGuest()) return false;
   var boardId = cloudBoardId();
   if (!boardId || cloudPlusDraftActive) return false;
-  if (boardDirty && typeof boardAskConfirm === "function") {
-    var ok = await boardAskConfirm({
+  if (boardDirty && typeof askConfirm === "function") {
+    var ok = await askConfirm({
       title: "Replace local edits?",
       copy: "The board will be reloaded from the cloud.",
       ok: "Pull",
@@ -26,7 +26,7 @@ async function pullBoardFromCloud() {
     if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
     cloudForgetBoardCache([boardId]);
     applyCloudBoardRow(result.data);
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Pulled from cloud");
     if (typeof showCopyTip === "function") showCopyTip("Pulled from cloud");
@@ -40,7 +40,7 @@ async function pullBoardFromCloud() {
 }
 
 (function wireCloudPull() {
-  var status = document.getElementById("boardCloudStatus");
+  var status = document.getElementById("shellCloudStatus");
   if (!status) return;
   if (typeof bindChromeTip === "function") {
     bindChromeTip(status, function () { return status.getAttribute("aria-label") || ""; });

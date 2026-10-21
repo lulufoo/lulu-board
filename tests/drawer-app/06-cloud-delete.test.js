@@ -20,7 +20,7 @@ assert.ok(panel.indexOf('dock-source-body') < panel.indexOf('btnBoardDeleteCloud
 assert.match(html, /id="btnBoardDeleteCloud"[^>]*hidden/, 'delete starts hidden');
 assert.strictEqual((html.match(/id="btnBoardDeleteCloud"/g) || []).length, 1, 'cloud delete id is unique');
 assert.strictEqual((html.match(/id="btnBoardDelete"/g) || []).length, 1, 'node delete id is untouched');
-assert.doesNotMatch(html.slice(html.indexOf('class="board-dock-rail"'), html.indexOf('data-dock-panel="props"')), /btnBoardDeleteCloud/, 'rail has no delete');
+assert.doesNotMatch(html.slice(html.indexOf('class="vela-dock-rail"'), html.indexOf('data-dock-panel="props"')), /btnBoardDeleteCloud/, 'rail has no delete');
 assert.match(css, /\.dock-source-foot \{[^}]*justify-content:\s*flex-end/, 'footer pins delete to the right');
 assert.match(appBuild, /06-cloud-group-order\.js[\s\S]*06-cloud-delete\.js/, 'delete module is built');
 assert.match(sync, /syncBoardDeleteChrome/, 'save chrome refreshes delete visibility');
@@ -40,12 +40,12 @@ assert.match(del, /cloudPlusDraftActive \|\| cloudBoardId\(\)/, 'delete shows fo
 }
 
 const draft = del.slice(del.indexOf('function cloudDropPlusDraft'), del.indexOf('async function cloudDeleteSavedBoard'));
-assert.doesNotMatch(draft, /boardAskConfirm|cloudClient/, 'dropping a draft neither asks nor hits the cloud');
+assert.doesNotMatch(draft, /askConfirm|cloudClient/, 'dropping a draft neither asks nor hits the cloud');
 assert.match(draft, /cloudClearPlusDraftSlot\(\)/, 'dropping a draft clears the memory slot');
 assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.board_id/, 'draft drop returns to the last saved board');
 
 const saved = del.slice(del.indexOf('async function cloudDeleteSavedBoard'), del.indexOf('async function cloudDeleteCurrentBoard'));
-assert.match(saved, /boardAskConfirm\(\{[\s\S]*Delete this Vela\?/, 'saved board asks first, in English');
+assert.match(saved, /askConfirm\(\{[\s\S]*Delete this Vela\?/, 'saved board asks first, in English');
 assert.match(saved, /from\("boards"\)\.delete\(\)\.eq\("board_id", boardId\)/, 'deletes the boards row');
 assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
 assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');

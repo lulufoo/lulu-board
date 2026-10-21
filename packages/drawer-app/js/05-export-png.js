@@ -38,17 +38,19 @@ function stripExportInteractions(root) {
   const interactive = [
     root,
     ...root.querySelectorAll(
-      '.board-selection, .board-reorder-dragging, .board-reorder-caret'
+      '.board-selection, .canvas-selected, .canvas-hover, .board-reorder-dragging, .board-reorder-caret'
     ),
   ];
   interactive.forEach((el) => {
     el.classList.remove(
       'board-selection',
+      'canvas-selected',
+      'canvas-hover',
       'board-reorder-dragging'
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .board-reorder-caret, .mermaid-edge-hit, .flowchart-selection-halo'
+    '.board-edge-hit, .board-reorder-caret, .mermaid-edge-hit, .flowchart-selection-halo, .canvas-hover-halo'
   ).forEach((el) => el.remove());
 }
 

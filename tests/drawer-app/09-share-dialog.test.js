@@ -14,7 +14,7 @@ const css = read('packages/drawer-app/css/09-share-dialog.css');
 const build = read('scripts/drawer-app-build/build.mjs');
 
 // ---- markup ----
-const sheet = html.slice(html.indexOf('id="shareDialog"'), html.indexOf('id="boardConfirmDialog"'));
+const sheet = html.slice(html.indexOf('id="shareDialog"'), html.indexOf('id="confirmDialog"'));
 assert.match(sheet, /role="dialog" aria-modal="true" aria-labelledby="shareDialogTitle"/, 'a real modal dialog');
 assert.match(sheet, /id="shareLinkInput"[^>]*readonly/, 'the link is a read-only field');
 assert.match(sheet, /id="shareCopy"/, 'Copy sits next to the link');

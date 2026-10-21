@@ -9,9 +9,9 @@
 
   var CHROME_SEL = [
     ".board-inspector",
-    ".board-dock",
-    ".board-dock-resize",
-    ".board-account",
+    ".vela-dock",
+    ".vela-dock-resize",
+    ".shell-account-bar",
     ".props-panel",
     ".top-float",
     ".zoom-float",

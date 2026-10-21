@@ -21,7 +21,7 @@ assert.ok(/title="Copy Source"[^>]*>Source</.test(html), 'Source button says Sou
 assert.ok(/<button[^>]*id="btnSourceCopyId"[^>]*>/.test(html) && /<button[^>]*class="btn"[^>]*id="btnSourceCopyId"/.test(html) && !/id="btnSourceCopyId"[^>]*ghost/.test(html), 'Copy ID is a bordered button');
 assert.ok(/<button[^>]*class="btn"[^>]*id="btnSourceCopy"[^>]*>/.test(html) && !/<button[^>]*id="btnSourceCopy"[^>]*ghost/.test(html), 'Copy Source is a bordered button');
 assert.ok(!/id="snapPill"/.test(html) && !/id="boardSnapPill"/.test(html), 'no record snap pills');
-assert.ok(/id="boardDockResize"/.test(html), 'sidebar has a resize handle');
+assert.ok(/id="velaDockResize"/.test(html), 'sidebar has a resize handle');
 assert.ok(/class="source-chars"/.test(html), 'chars sit on the editor');
 assert.ok(/class="props-field"/.test(html) && /id="boardDirEditor"[\s\S]*id="boardDirTip"/.test(html), 'property tips sit under the control');
 assert.ok(/flex-direction:\s*row/.test(css) && /\.dock-source-head\s*\{/.test(css), 'Source head is a row');

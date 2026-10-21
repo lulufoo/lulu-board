@@ -8,7 +8,7 @@ assert.ok(Interaction.wheelFactor(0, 0) === 1, 'zero wheel keeps scale');
 assert.ok(Interaction.wheelFactor(100, 0) < 1, 'scroll down zooms out');
 assert.ok(Interaction.wheelFactor(-100, 0) > 1, 'scroll up zooms in');
 
-assert.ok(Interaction.isBlockedTarget({ closest: (sel) => sel.indexOf('.board-dock') >= 0 }), 'chrome is blocked');
+assert.ok(Interaction.isBlockedTarget({ closest: (sel) => sel.indexOf('.vela-dock') >= 0 }), 'chrome is blocked');
 assert.ok(!Interaction.isBlockedTarget({ closest: () => null }), 'blank stage is not a hit');
 assert.ok(!Interaction.isBlockedTarget(null), 'missing target is blank');
 
@@ -49,7 +49,7 @@ assert.ok(downAt >= 0 && moveAt > downAt && endAt >= 0);
 assert.doesNotMatch(src.slice(downAt, moveAt), /leaveBlank|hideBlankProps|closePropsPanel/, 'pan start does not hide Properties');
 assert.match(src.slice(endAt), /!moved && leaveIfStill\) leaveBlank/, 'blank click without move still leaves');
 assert.match(src, /function hideBlankProps/, 'hide is on the shared canvas module');
-assert.match(src, /\.board-dock-resize/, 'dock resize is chrome, not a blank leave');
+assert.match(src, /\.vela-dock-resize/, 'dock resize is chrome, not a blank leave');
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
 assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
 assert.match(src, /openBlankProps/, 'blank dblclick opens Props');
@@ -69,6 +69,6 @@ assert.match(flow, /previewEl\.addEventListener\("dblclick"/, 'flowchart hit dbl
 assert.doesNotMatch(flow, /openBlankProps/, 'flowchart does not own blank props');
 assert.doesNotMatch(flow, /closePropsPanel/, 'flowchart clear does not hide Properties');
 assert.doesNotMatch(board, /closePropsPanel/, 'Board clear does not hide Properties');
-assert.doesNotMatch(flow, /\.top-float, \.board-dock, \.zoom-float/, 'dock resize is not a flowchart leave');
+assert.doesNotMatch(flow, /\.top-float, \.vela-dock, \.zoom-float/, 'dock resize is not a flowchart leave');
 
 console.log('ok canvas-interaction');

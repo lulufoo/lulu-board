@@ -1,6 +1,17 @@
-/* board diagram surfaces */
-.board-selection { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
-.board-selection-tree { outline: 2px dashed var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+/* Shared canvas rings. HTML uses outline; SVG uses a halo with the same tokens. */
+.canvas-selected:not(.board-item-diamond):not(.board-diamond) {
+  outline: var(--canvas-ring-width, 2px) solid var(--canvas-ring, #db4c84) !important;
+  outline-offset: var(--canvas-ring-offset, 2px);
+}
+.canvas-hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.canvas-selected):not(.board-selection):not(.board-selection-tree),
+.board-render .board-zone:not(.board-type-layout):hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree):not(:has(.board-zone:hover)):not(:has(.board-item:hover)),
+.board-render .board-item:hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree) {
+  outline: 1px dashed var(--canvas-ring-soft, rgba(219, 76, 132, .45));
+  outline-offset: 3px;
+}
+.board-selection-tree { outline: var(--canvas-ring-width, 2px) dashed var(--canvas-ring, #db4c84) !important; outline-offset: var(--canvas-ring-offset, 2px); }
 .board-reorder-dragging { opacity: 0.45; cursor: grabbing !important; }
 .board-reorder-caret {
   position: absolute;
@@ -51,27 +62,22 @@
   position: relative;
   z-index: 1;
 }
-.board-render .box.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection),
-.board-render .board-zone.board-type-layout:hover:not(:has(> .box-content:hover)):not(.board-selection) {
-  outline: 1px dashed var(--bf-ring-soft, rgba(219, 76, 132, .45));
-  outline-offset: 3px;
-}
 .board-render .box.board-type-container > .box-content,
 .board-render .board-zone.board-type-container > .box-content,
 .board-render .board-container > .box-content {
   pointer-events: auto;
 }
 .board-render .box.board-type-container.board-selection,
-.board-render .board-zone.board-type-container.board-selection {
-  /* Selection ring (brand pink); keep dashed group border visible underneath. */
-  outline: 2px solid var(--bf-ring, #db4c84) !important;
-  outline-offset: 2px;
+.board-render .box.board-type-container.canvas-selected,
+.board-render .board-zone.board-type-container.board-selection,
+.board-render .board-zone.board-type-container.canvas-selected {
+  /* Ring comes from .canvas-selected; keep the dashed group border visible. */
   background: transparent !important;
 }
 .board-render .box.board-type-layout.board-selection,
-.board-render .board-zone.board-type-layout.board-selection {
-  outline: 2px solid var(--bf-ring, #db4c84) !important;
-  outline-offset: 2px;
+.board-render .box.board-type-layout.canvas-selected,
+.board-render .board-zone.board-type-layout.board-selection,
+.board-render .board-zone.board-type-layout.canvas-selected {
   border-color: transparent !important;
   background: transparent !important;
 }
@@ -110,7 +116,7 @@
 
 .board-render .box.board-nested { position: relative !important; left: auto !important; top: auto !important; }
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
-html[data-drawer-mode="board"] .board-edit-tools { display: inline-flex; }
+html[data-drawer-mode="vela"] .board-edit-tools { display: inline-flex; }
 html[data-diagram-kind="flowchart"] .board-edit-tools,
 html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
 html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
@@ -132,8 +138,8 @@ html[data-diagram-kind="flowchart"] {
   --_s: var(--pele-surface, #fffdf9);
   --_a: var(--pele-surface-alt, #f3ece6);
   --_b: var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14));
-  --_c: var(--pele-accent, #5b7bd5);
-  --_r: 4px;
+  --_c: var(--pele-accent, var(--pele-line, #4a3524));
+  --_r: var(--pele-radius, var(--bf-radius-box, 12px));
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-node,
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster,
@@ -145,9 +151,29 @@ html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect {
   pointer-events: all;
-  rx: var(--_r, 4px);
-  ry: var(--_r, 4px);
-  stroke: var(--_b);
+  rx: var(--_r);
+  ry: var(--_r);
+  fill: var(--_s) !important;
+  stroke: var(--_b) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node > rect,
+html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon,
+html[data-diagram-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+  fill: var(--_s) !important;
+  stroke: var(--_b) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect > rect {
+  rx: var(--_r);
+  ry: var(--_r);
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-node text,
+html[data-diagram-kind="flowchart"] #preview g.pele-node tspan,
+html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title text,
+html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title tspan {
+  fill: var(--_fg) !important;
+}
+html[data-diagram-kind="flowchart"] #preview g.pele-edge > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+  stroke: var(--_l);
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
 html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
@@ -193,24 +219,35 @@ html[data-diagram-kind="flowchart"] #preview g.pele-edge text,
 html[data-diagram-kind="flowchart"] #preview g.pele-edge tspan {
   font-size: var(--fc-font-link, 13px);
 }
-html[data-diagram-kind="flowchart"] g.flowchart-selection {
+html[data-diagram-kind="flowchart"] g.flowchart-selection,
+html[data-diagram-kind="flowchart"] g.canvas-selected,
+html[data-diagram-kind="flowchart"] g.canvas-hover {
   outline: none;
   overflow: visible;
 }
 html[data-diagram-kind="flowchart"] .flowchart-selection-halo {
   /* Offset ring, same geometry as local mermaid mermaid-selection-halo. */
   fill: none !important;
-  stroke: var(--accent, #db4c84) !important;
-  stroke-width: 2px !important;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
   pointer-events: none !important;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit) {
-  stroke: var(--accent, #db4c84) !important;
+html[data-diagram-kind="flowchart"] .canvas-hover-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .45)) !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 4 3;
+  pointer-events: none !important;
+}
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
+html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
+  stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: 2.6px !important;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker {
-  stroke: var(--accent, #db4c84) !important;
-  fill: var(--accent, #db4c84) !important;
+html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker,
+html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path.pele-marker {
+  stroke: var(--canvas-ring, #db4c84) !important;
+  fill: var(--canvas-ring, #db4c84) !important;
 }
 html.flowchart-link-mode,
 html.flowchart-link-mode #preview {
@@ -230,7 +267,7 @@ html[data-diagram-kind="flowchart"] path.mermaid-edge-hit.flowchart-selection {
   pointer-events: none !important;
   user-select: none;
 }
-html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
+html[data-drawer-mode="vela"] .board-brand { display: inline-flex; }
 .board-brand-mark {
   width: 28px;
   height: 28px;
@@ -610,7 +647,7 @@ html[data-drawer-mode="board"] .board-brand { display: inline-flex; }
 
 
 /* SOURCE_LEFT_12: dock source 12px from sheet/viewport; theme+more on right */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute !important;
   inset: 12px 12px auto 12px !important;
   left: 12px !important;
@@ -667,7 +704,7 @@ html[data-drawer-mode="board"] .top-float {
 .top-float-theme .menu-panel { right: 0; left: auto; }
 .top-float-theme .theme-item.is-active { font-weight: 650; color: var(--accent, #2563eb); }
 /* Shared grid canvas — no diagram chrome frame / white plate */
-html[data-drawer-mode="board"] .canvas-shell {
+html[data-drawer-mode="vela"] .canvas-shell {
   background-color: #f8fafc !important;
   background-image: linear-gradient(rgba(100,116,139,.12) 1px, transparent 1px),
     linear-gradient(90deg, rgba(100,116,139,.12) 1px, transparent 1px) !important;
@@ -685,7 +722,7 @@ html[data-drawer-mode="board"] .canvas-shell {
   background: transparent !important;
   border-radius: 0 !important;
 }
-html[data-drawer-mode="board"] #preview svg {
+html[data-drawer-mode="vela"] #preview svg {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
@@ -694,7 +731,7 @@ html[data-drawer-mode="board"] #preview svg {
   border-radius: 0 !important;
 }
 /* Top toolbar layout — Source hugs Lulu Drawer sheet; ⋯ far right */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute;
   top: 12px;
   left: 12px;
@@ -714,8 +751,8 @@ html[data-drawer-mode="board"] .top-float {
   pointer-events: none;
   z-index: 5;
 }
-html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
-.board-account {
+html[data-drawer-mode="vela"] .top-float > * { pointer-events: auto; }
+.shell-account-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -723,7 +760,7 @@ html[data-drawer-mode="board"] .top-float > * { pointer-events: auto; }
   min-width: 0;
   position: relative;
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn {
   height: 32px;
   min-width: 32px;
   padding: 0 12px;
@@ -735,19 +772,19 @@ html[data-drawer-mode="board"] .top-float .board-account-btn {
   font-weight: 550;
   color: var(--text, #222);
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:hover {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:hover {
   background: var(--panel-solid, #fff);
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:disabled {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:disabled {
   opacity: 0.72;
   cursor: default;
   box-shadow: none;
 }
-html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
+html[data-drawer-mode="vela"] .top-float .shell-account-btn:disabled:hover {
   border-color: var(--stroke);
 }
-.board-cloud-status {
+.shell-cloud-status {
   appearance: none;
   -webkit-appearance: none;
   position: relative;
@@ -769,48 +806,48 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   line-height: 1;
   user-select: none;
 }
-.board-cloud-status[hidden] { display: none !important; }
-.board-cloud-status-icon { width: 18px; height: 18px; display: block; }
-.board-cloud-status-label {
+.shell-cloud-status[hidden] { display: none !important; }
+.shell-cloud-status-icon { width: 18px; height: 18px; display: block; }
+.shell-cloud-status-label {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
 }
-.board-cloud-status.is-current {
+.shell-cloud-status.is-current {
   color: var(--ok);
   border: 0;
   cursor: pointer;
 }
-.board-cloud-status.is-pending {
+.shell-cloud-status.is-pending {
   color: var(--warn);
   border: 0;
   cursor: pointer;
 }
-.board-cloud-status:hover {
+.shell-cloud-status:hover {
   background: color-mix(in srgb, var(--text) 6%, transparent);
   box-shadow: none;
 }
-.board-cloud-status.is-pending.is-uncreated {
+.shell-cloud-status.is-pending.is-uncreated {
   color: var(--muted, #64748b);
 }
-.board-cloud-status.is-pending.is-signed-out {
+.shell-cloud-status.is-pending.is-signed-out {
   color: var(--muted, #64748b);
   opacity: .5;
   cursor: default;
 }
-.board-cloud-status.is-pending.is-signed-out:active { transform: none; }
-.board-cloud-status.is-pending:active,
-.board-cloud-status.is-current:active {
+.shell-cloud-status.is-pending.is-signed-out:active { transform: none; }
+.shell-cloud-status.is-pending:active,
+.shell-cloud-status.is-current:active {
   transform: scale(.98);
 }
-.board-session {
+.shell-session {
   position: relative;
   min-width: 0;
 }
-.board-session[hidden] { display: none !important; }
-.board-account-chip {
+.shell-session[hidden] { display: none !important; }
+.shell-account-chip {
   appearance: none;
   height: 32px;
   max-width: 16rem;
@@ -827,15 +864,15 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   min-width: 0;
   font: 12px/1.2 inherit;
 }
-.board-account-chip:hover,
-.board-account-chip[aria-expanded="true"] {
+.shell-account-chip:hover,
+.shell-account-chip[aria-expanded="true"] {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--stroke));
 }
-.board-account-chip:focus-visible {
+.shell-account-chip:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
   outline-offset: 2px;
 }
-.board-account-avatar {
+.shell-account-avatar {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -850,15 +887,15 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   font-weight: 700;
   letter-spacing: 0.02em;
 }
-.board-account-avatar img {
+.shell-account-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.board-account-avatar img[hidden],
-.board-account-initials[hidden] { display: none; }
-.board-account-name {
+.shell-account-avatar img[hidden],
+.shell-account-initials[hidden] { display: none; }
+.shell-account-name {
   max-width: 9.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -866,7 +903,7 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   min-width: 0;
   font-weight: 560;
 }
-.board-account-caret {
+.shell-account-caret {
   width: 0;
   height: 0;
   border-left: 3.5px solid transparent;
@@ -875,7 +912,7 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   flex: 0 0 auto;
   margin-left: 1px;
 }
-.board-auth-menu {
+.shell-auth-menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
@@ -889,8 +926,8 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   box-shadow: 0 10px 28px rgba(15, 23, 42, .16);
   z-index: 30;
 }
-.board-auth-menu[hidden] { display: none; }
-.board-session-meta {
+.shell-auth-menu[hidden] { display: none; }
+.shell-session-meta {
   padding: 7px 9px 8px;
   margin: 0 0 2px;
   border-bottom: 1px solid var(--stroke, #e5e7eb);
@@ -901,8 +938,8 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.board-session-meta:empty { display: none; }
-.board-auth-provider {
+.shell-session-meta:empty { display: none; }
+.shell-auth-provider {
   appearance: none;
   border: 0;
   border-radius: 7px;
@@ -913,8 +950,8 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
   font: 12px/1.3 inherit;
   text-align: left;
 }
-.board-auth-provider:hover,
-.board-auth-provider:focus-visible {
+.shell-auth-provider:hover,
+.shell-auth-provider:focus-visible {
   background: color-mix(in srgb, var(--accent, #2563eb) 10%, transparent);
   outline: none;
 }
@@ -941,17 +978,17 @@ html[data-drawer-mode="board"] .top-float .board-account-btn:disabled:hover {
 }
 /* Diagram theme */
 
-html[data-drawer-mode="board"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
-html[data-drawer-mode="board"] #preview .board-diamond-shape,
-html[data-drawer-mode="board"] #preview .board-item-diamond-shape,
-html[data-drawer-mode="board"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+html[data-drawer-mode="vela"] #preview svg { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+html[data-drawer-mode="vela"] #preview .board-diamond-shape,
+html[data-drawer-mode="vela"] #preview .board-item-diamond-shape,
+html[data-drawer-mode="vela"] #preview .board-edges { filter: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
 /* World layer: zero-size anchor; edges paint in world px and are never clipped */
 .board-render .board-canvas { width: 0 !important; height: 0 !important; min-height: 0 !important; }
 .board-render svg.board-edges { width: 1px !important; height: 1px !important; overflow: visible !important; }
 #preview.board-preview { width: max-content; min-width: 0; height: 100%; padding: 0; }
 /* Board: hit area fills the stage (not just content bbox), still grows with large boards */
-html[data-drawer-mode="board"] #preview,
-html[data-drawer-mode="board"] #preview.board-preview {
+html[data-drawer-mode="vela"] #preview,
+html[data-drawer-mode="vela"] #preview.board-preview {
   min-width: 100%;
   min-height: 100%;
   width: max-content;
@@ -1084,14 +1121,26 @@ html[data-drawer-mode="board"] #preview.board-preview {
   justify-content: center;
   align-items: center;
 }
-.board-item-diamond-halo { visibility: hidden; }
-.board-item-diamond.board-selection { outline: none !important; }
-.board-item-diamond.board-selection > .board-item-diamond-visual { outline: none !important; }
-.board-item-diamond.board-selection .board-item-diamond-halo { visibility: visible; }
+.board-item-diamond-halo {
+  visibility: hidden;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
+}
+.board-item-diamond.board-selection,
+.board-item-diamond.canvas-selected { outline: none !important; }
+.board-item-diamond.board-selection > .board-item-diamond-visual,
+.board-item-diamond.canvas-selected > .board-item-diamond-visual { outline: none !important; }
+.board-item-diamond.board-selection .board-item-diamond-halo,
+.board-item-diamond.canvas-selected .board-item-diamond-halo { visibility: visible; }
 .board-diamond { display: flex; align-items: center; justify-content: center; padding: 0; background: transparent; border: 0; box-shadow: none; overflow: visible; }
 .board-diamond-visual { position: relative; flex: 0 0 auto; }
-.board-diamond.board-selection { outline: none !important; }
-.board-diamond.board-selection > .board-diamond-visual { outline: 2px solid var(--bf-ring, #db4c84) !important; outline-offset: 2px; }
+.board-diamond.board-selection,
+.board-diamond.canvas-selected { outline: none !important; }
+.board-diamond.board-selection > .board-diamond-visual,
+.board-diamond.canvas-selected > .board-diamond-visual {
+  outline: var(--canvas-ring-width, 2px) solid var(--canvas-ring, #db4c84) !important;
+  outline-offset: var(--canvas-ring-offset, 2px);
+}
 .board-diamond-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .board-diamond .box-content { padding: 0; gap: 6px; align-items: stretch; flex: 0 0 auto; width: max-content; max-width: 100%; }
 .board-diamond .box-content > .board-item { width: 100%; box-sizing: border-box; }
@@ -1143,7 +1192,7 @@ html[data-drawer-mode="board"] #preview.board-preview {
 .board-legend-evidence { border-top-color: #b85a68; border-top-style: dashed; }
 
 /* TOOLBAR_V3: canvas-shell already sits beside sheet — always left:12px; 3 buttons gap 8px */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   position: absolute !important;
   top: 12px !important;
   left: 12px !important;
@@ -1166,7 +1215,7 @@ html[data-drawer-mode="board"] .top-float {
   z-index: 40 !important;
   overflow: visible !important;
 }
-html[data-drawer-mode="board"] .top-float > * {
+html[data-drawer-mode="vela"] .top-float > * {
   pointer-events: auto;
 }
 .top-float .btn-source,
@@ -1209,7 +1258,7 @@ html[data-drawer-mode="board"] .top-float > * {
 
 /* MENUS_NO_SHEET_OVERLAP: sheet above menus; panels stay in canvas */
 .sheet { z-index: 60 !important; }
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   z-index: 30 !important;
 }
 .top-float .menu-panel {
@@ -1507,11 +1556,11 @@ html[data-drawer-mode="board"] .top-float {
 .board-render .board-zone .board-modules { pointer-events: auto; }
 
 /* BOARD_DOCK: right rail — Layout / Props / Source; one panel at a time */
-html[data-drawer-mode="board"] .app {
+html[data-drawer-mode="vela"] .app {
   grid-template-columns: minmax(0, 1fr);
 }
 .sheet { display: none !important; }
-.board-dock {
+.vela-dock {
   position: absolute;
   top: 0;
   right: 0;
@@ -1530,20 +1579,20 @@ html[data-drawer-mode="board"] .app {
   pointer-events: auto;
   transition: none; /* avoid open/close width jitter */
 }
-html[data-drawer-mode="board"] .board-dock { display: flex; }
+html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 /* Layout tab hidden; settings live in Style */
 [data-dock="layout"] {
   display: none !important;
 }
-.board-dock[data-open="props"],
-.board-dock[data-open="layout"],
-.board-dock[data-open="source"],
-.board-dock[data-open="export"],
-.board-dock[data-open="style"] {
+.vela-dock[data-open="props"],
+.vela-dock[data-open="layout"],
+.vela-dock[data-open="source"],
+.vela-dock[data-open="export"],
+.vela-dock[data-open="style"] {
   width: var(--dock-open-width, 400px);
   box-shadow: -12px 0 32px rgba(15, 23, 42, .05);
 }
-.board-dock-resize {
+.vela-dock-resize {
   display: none;
   position: absolute;
   left: 0;
@@ -1555,7 +1604,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   touch-action: none;
   background: transparent;
 }
-.board-dock-resize::after {
+.vela-dock-resize::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1566,19 +1615,19 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   pointer-events: none;
   transition: width .12s ease, background-color .12s ease;
 }
-.board-dock[data-open="props"] .board-dock-resize,
-.board-dock[data-open="layout"] .board-dock-resize,
-.board-dock[data-open="source"] .board-dock-resize,
-.board-dock[data-open="export"] .board-dock-resize,
-.board-dock[data-open="style"] .board-dock-resize {
+.vela-dock[data-open="props"] .vela-dock-resize,
+.vela-dock[data-open="layout"] .vela-dock-resize,
+.vela-dock[data-open="source"] .vela-dock-resize,
+.vela-dock[data-open="export"] .vela-dock-resize,
+.vela-dock[data-open="style"] .vela-dock-resize {
   display: block;
 }
-.board-dock-resize:hover::after,
-.board-dock.is-resizing .board-dock-resize::after {
+.vela-dock-resize:hover::after,
+.vela-dock.is-resizing .vela-dock-resize::after {
   width: 2px;
   background: var(--accent);
 }
-.board-dock-rail {
+.vela-dock-rail {
   flex: 0 0 40px;
   width: 40px;
   display: flex;
@@ -1589,7 +1638,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   border-left: 1px solid var(--stroke);
   background: color-mix(in srgb, var(--canvas) 35%, var(--panel-solid));
 }
-.board-dock-tab {
+.vela-dock-tab {
   position: relative;
   flex: 0 0 auto;
   width: 32px;
@@ -1607,12 +1656,12 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   justify-content: center;
   box-sizing: border-box;
 }
-.board-dock-tab:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
-.board-dock-tab.is-active {
+.vela-dock-tab:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.vela-dock-tab.is-active {
   background: color-mix(in srgb, var(--accent) 10%, var(--panel-solid));
   color: var(--accent);
 }
-.board-dock-tab.is-active::before {
+.vela-dock-tab.is-active::before {
   content: "";
   position: absolute;
   left: -4px;
@@ -1622,9 +1671,9 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   border-radius: 2px;
   background: var(--accent);
 }
-.board-dock-tab-icon { width: 18px; height: 18px; display: block; }
-.board-dock-intro { text-decoration: none; }
-.board-dock-help-glyph {
+.vela-dock-tab-icon { width: 18px; height: 18px; display: block; }
+.vela-dock-intro { text-decoration: none; }
+.vela-dock-help-glyph {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1632,7 +1681,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   font-weight: 600;
   line-height: 1;
 }
-.board-dock-tab-label {
+.vela-dock-tab-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1643,7 +1692,7 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   white-space: nowrap;
   border: 0;
 }
-.board-dock-panel {
+.vela-dock-panel {
   display: none;
   flex: 1 1 auto;
   min-width: 0;
@@ -1652,22 +1701,22 @@ html[data-drawer-mode="board"] .board-dock { display: flex; }
   gap: 12px;
   overflow: auto;
 }
-.board-dock[data-open="props"] [data-dock-panel="props"],
-.board-dock[data-open="layout"] [data-dock-panel="layout"],
-.board-dock[data-open="source"] [data-dock-panel="source"],
-.board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.vela-dock[data-open="props"] [data-dock-panel="props"],
+.vela-dock[data-open="layout"] [data-dock-panel="layout"],
+.vela-dock[data-open="source"] [data-dock-panel="source"],
+.vela-dock[data-open="export"] [data-dock-panel="export"],
+.vela-dock[data-open="style"] [data-dock-panel="style"] {
   display: flex;
 }
-.board-dock[data-open="source"] [data-dock-panel="source"] {
+.vela-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 16px 0 16px;
 }
-.board-dock[data-open="export"] [data-dock-panel="export"],
-.board-dock[data-open="style"] [data-dock-panel="style"] {
+.vela-dock[data-open="export"] [data-dock-panel="export"],
+.vela-dock[data-open="style"] [data-dock-panel="style"] {
   padding: 14px;
 }
-.board-dock[data-open="export"] [data-dock-panel="export"] .dock-source-head,
-.board-dock[data-open="style"] [data-dock-panel="style"] .dock-source-head {
+.vela-dock[data-open="export"] [data-dock-panel="export"] .dock-source-head,
+.vela-dock[data-open="style"] [data-dock-panel="style"] .dock-source-head {
   padding: 0; /* panel already pads; avoid title drifting right */
 }
 .dock-source-body {
@@ -2008,9 +2057,9 @@ html[data-theme="dark"] #flowchartDirEditor {
 .props-icon-num { width: 3ch; flex: 0 0 auto; font-variant-numeric: tabular-nums; color: var(--muted, #64748b); }
 .props-icon-gloss { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-render .board-title-node { cursor: pointer; border-radius: 10px; padding: 6px 14px !important; }
-.board-render .board-title-node.board-selection {
-  outline: 2px solid var(--accent, #2563eb); outline-offset: 2px;
-  background: color-mix(in srgb, var(--accent, #2563eb) 8%, transparent);
+.board-render .board-title-node.board-selection,
+.board-render .board-title-node.canvas-selected {
+  background: color-mix(in srgb, var(--canvas-ring, #db4c84) 8%, transparent);
 }
 
 /* Keep left sheet above any stray overlay */
@@ -2104,30 +2153,30 @@ html.board-link-mode .board-edit-tool#btnBoardLink.is-active {
   font-weight: 550;
   color: var(--muted, #64748b);
 }
-.dock-source-body #boardSource {
+.dock-source-body #velaSource {
   min-height: 0;
   padding-bottom: 28px;
 }
 
 /* Keep editing controls left and account controls right. */
-html[data-drawer-mode="board"] .top-float {
+html[data-drawer-mode="vela"] .top-float {
   left: 12px !important;
   right: 48px !important;
   width: auto !important;
 }
-html[data-drawer-mode="board"] .board-account {
+html[data-drawer-mode="vela"] .shell-account-bar {
   margin-left: auto;
   flex: 0 1 auto;
 }
 @media (max-width: 820px) {
-  html[data-drawer-mode="board"] .top-float {
+  html[data-drawer-mode="vela"] .top-float {
     left: 6px !important;
     right: 42px !important;
   }
-  .board-account-name {
+  .shell-account-name {
     max-width: 6rem;
   }
-  .board-account-chip {
+  .shell-account-chip {
     max-width: 11rem;
     padding-right: 8px;
   }

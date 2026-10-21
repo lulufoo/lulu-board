@@ -2,7 +2,6 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const Style = require('../../packages/drawer-app/js/00-style-line.js');
 global.DrawerStyleLine = Style;
 const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
@@ -52,10 +51,7 @@ function token(id, version) {
   const seed = Meta.blankHashFlowchartSource();
   assert.strictEqual(seed, '%% title Untitled\nflowchart TD\n');
   assert.strictEqual(Style.bodyKind(seed), 'flowchart');
-  const titleSrc = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/05-board-file.js'), 'utf8');
-  const titleCtx = { boardTitleFromBody: null };
-  vm.runInNewContext(titleSrc, titleCtx);
-  assert.strictEqual(titleCtx.boardTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.velaTitleFromBody(seed), 'Untitled');
 }
 
 {

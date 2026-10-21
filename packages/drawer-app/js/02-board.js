@@ -56,12 +56,12 @@ function boardLinkPickFromEvent(event, root, board) {
     return true;
   }
   try {
-    var result = BoardRender.addLink(boardSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
+    var result = BoardRender.addLink(velaSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
     applyBoardEditResult(result);
     setBoardLinkMode(false);
     setStatus("Linked " + boardLinkRefKey(from) + " → " + boardLinkRefKey(to));
   } catch (err) {
-    showBoardError(err instanceof Error ? err.message : String(err));
+    showVelaError(err instanceof Error ? err.message : String(err));
   }
   return true;
 }
@@ -72,14 +72,14 @@ function setBoardLinkMode(active) {
   document.querySelectorAll(".board-link-source").forEach(function(el) { el.classList.remove("board-link-source"); });
   if (boardLinkMode) {
     selectedBoardEdge = null;
-    delete boardSourceEl.dataset.boardEdgeSelectionKey;
+    delete velaSourceEl.dataset.boardEdgeSelectionKey;
     clearBoardSelection();
     showPropsForLinkMode();
     setStatus("Link mode · type and title, then click source / target box or item");
   } else {
     hidePropsLinkOnlyChrome();
     clearBoardSelection();
-    if (document.documentElement.dataset.drawerMode === "board") setStatus("Board mode");
+    if (document.documentElement.dataset.drawerMode === "vela") setStatus("Board mode");
   }
 }
 function boardLinkTitleValue() {
@@ -234,7 +234,7 @@ function commitBoardNodeFont(persist, rerender) {
   previewBoardNodeFont(n);
   if (!persist) return;
   try {
-    var raw = boardSourceEl.value;
+    var raw = velaSourceEl.value;
     var meta = null;
     var body = raw;
     try {
@@ -244,10 +244,10 @@ function commitBoardNodeFont(persist, rerender) {
     } catch (_e) {}
     var nextBody = BoardRender.updateNodeTypeStep(body, selectedBoardNode, n);
     var next = meta ? joinDocument(meta, nextBody) : nextBody;
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
-      updateBoardChars();
-      if (rerender && typeof renderBoard === "function") renderBoard({ fit: false });
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
+      updateVelaChars();
+      if (rerender && typeof renderVela === "function") renderVela({ fit: false });
       scheduleBoardSave();
     }
     var board = BoardRender.parse(nextBody);
@@ -258,7 +258,7 @@ function commitBoardNodeFont(persist, rerender) {
       setBoardIdField(true, id);
     }
     setBoardNodeFontField(true, id ? BoardRender.authoredNodeTypeStep(board, id) : null, BoardRender.resolveStyle(board).type_step);
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function setAuthoredTip(el, show, authored) {
   if (!el) return;
@@ -417,7 +417,7 @@ function syncBoardIdDup() {
   var draft = boardIdEditor ? normalizeBoardIdInput(boardIdEditor.value) : "";
   var taken = false;
   if (draft && selectedBoardNode && typeof BoardRender !== "undefined" && typeof BoardRender.isIdTaken === "function") {
-    try { taken = !!BoardRender.isIdTaken(boardSourceEl.value, selectedBoardNode, draft); }
+    try { taken = !!BoardRender.isIdTaken(velaSourceEl.value, selectedBoardNode, draft); }
     catch (_) { taken = false; }
   }
   if (boardIdEditor) boardIdEditor.classList.toggle("is-dup", taken);
@@ -469,17 +469,17 @@ function commitBoardId() {
   if (syncBoardIdDup()) return;
   var keepSelection = boardSelectionWithId(selectedBoardNode, next);
   try {
-    var source = BoardRender.updateId(boardSourceEl.value, selectedBoardNode, next);
-    if (source !== boardSourceEl.value) {
-      boardSourceEl.value = source;
+    var source = BoardRender.updateId(velaSourceEl.value, selectedBoardNode, next);
+    if (source !== velaSourceEl.value) {
+      velaSourceEl.value = source;
       selectedBoardNode = keepSelection;
-      boardSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
-      updateBoardChars();
-      renderBoard();
+      velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
     }
   } catch (err) {
-    showBoardError(err instanceof Error ? err.message : String(err));
+    showVelaError(err instanceof Error ? err.message : String(err));
   }
 }
 function setBoardIconField(show, icon) {
@@ -497,16 +497,16 @@ function commitBoardIcon(nextIcon) {
   if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") || typeof BoardRender.updateIcon !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateIcon(boardSourceEl.value, selectedBoardNode, nextIcon);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateIcon(velaSourceEl.value, selectedBoardNode, nextIcon);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus(nextIcon == null ? "Icon cleared" : "Icon · " + nextIcon);
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 
 
@@ -594,8 +594,8 @@ function applyBoardEdgeSelection(root) {
     el.classList.remove("board-edge-selected");
     restoreBoardEdgePaint(el);
   });
-  if (!selectedBoardEdge && boardSourceEl.dataset.boardEdgeSelectionKey) {
-    var index = Number(String(boardSourceEl.dataset.boardEdgeSelectionKey).split(":")[1]);
+  if (!selectedBoardEdge && velaSourceEl.dataset.boardEdgeSelectionKey) {
+    var index = Number(String(velaSourceEl.dataset.boardEdgeSelectionKey).split(":")[1]);
     if (Number.isInteger(index)) selectedBoardEdge = { kind: "link", key: "link:" + index, index: index };
   }
   if (!selectedBoardEdge || !root) return;
@@ -636,12 +636,12 @@ function applyBoardEdgeSelection(root) {
 function selectBoardEdge(root, index) {
   var nextKey = "link:" + index;
   selectedBoardNode = null; selectedBoardEdge = { kind: "link", key: nextKey, index: index };
-  delete boardSourceEl.dataset.boardSelectionKey; boardSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
+  delete velaSourceEl.dataset.boardSelectionKey; velaSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
   var title = "control";
   var type = "solid";
   var arrow = "forward";
   try {
-    var board = BoardRender.parse(boardSourceEl.value);
+    var board = BoardRender.parse(velaSourceEl.value);
     var link = (board.links || [])[index];
     if (link && (link.title || link.label)) title = link.title || link.label;
     if (link && link.type) type = link.type;
@@ -659,7 +659,7 @@ function syncBoardEditControls() {
 function currentBoardSelectionKey() {
   if (selectedBoardEdge) return selectedBoardEdge.key;
   if (selectedBoardNode) return selectedBoardNode.key;
-  return boardSourceEl.dataset.boardSelectionKey || boardSourceEl.dataset.boardEdgeSelectionKey || "";
+  return velaSourceEl.dataset.boardSelectionKey || velaSourceEl.dataset.boardEdgeSelectionKey || "";
 }
 function selectionKeyFromEl(el) {
   if (!el) return "";
@@ -694,9 +694,9 @@ function clearBoardSelection() {
   boardInspectGesture = null;
   selectedBoardNode = null;
   selectedBoardEdge = null;
-  delete boardSourceEl.dataset.boardSelectionKey;
-  delete boardSourceEl.dataset.boardEdgeSelectionKey;
-  document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); });
+  delete velaSourceEl.dataset.boardSelectionKey;
+  delete velaSourceEl.dataset.boardEdgeSelectionKey;
+  document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); });
   document.querySelectorAll(".board-edge-selected").forEach(function(el) {
     el.classList.remove("board-edge-selected");
     restoreBoardEdgeMarker(el);
@@ -724,17 +724,17 @@ function boardItemSelectionFromEl(el) {
     index: Number(el.dataset.boardItemIndex)
   };
 }
-function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree"); }); if (restoreFromDataset && !selectedBoardNode && boardSourceEl.dataset.boardSelectionKey) { var parts = boardSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: boardSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: boardSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(boardSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
+function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); }); if (restoreFromDataset && !selectedBoardNode && velaSourceEl.dataset.boardSelectionKey) { var parts = velaSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(velaSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
   if (!match && selectedBoardNode.kind === "title") {
     match = (typeof boardPinnedTitleNode === "function" && boardPinnedTitleNode())
       || document.querySelector("#boardTitlePin [data-board-key=\"title:board\"]")
       || document.querySelector("#boardTitlePin .board-title-node, #boardTitlePin .board-html-header");
   }
   if (!match) { clearBoardSelection(); return; }
-  match.classList.add("board-selection");
+  match.classList.add("board-selection", "canvas-selected");
   if (selectedBoardNode.kind === "box" && selectedBoardNode.scope === "tree") {
     match.classList.add("board-selection-tree");
-    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection"); });
+    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection", "canvas-selected"); });
   }
   if (boardTitleEditor && selectedBoardNode) {
     var isTitle = selectedBoardNode.kind === "title";
@@ -820,7 +820,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     }
     var orderInfo = null;
     if (!isTitle && typeof BoardRender !== "undefined" && typeof BoardRender.reorderInfo === "function") {
-      try { orderInfo = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
+      try { orderInfo = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
     }
     setBoardOrderField(!!orderInfo, orderInfo);
     if (propsHint) propsHint.textContent = isTitle
@@ -851,8 +851,8 @@ function selectBoardElement(el, root, board, event) {
   }
   selectedBoardEdge = null;
   selectedBoardNode = next;
-  delete boardSourceEl.dataset.boardEdgeSelectionKey;
-  boardSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  delete velaSourceEl.dataset.boardEdgeSelectionKey;
+  velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
   applyBoardSelection(root, board);
 }
 function pickBoardElement(el, root, board, event) {
@@ -880,28 +880,6 @@ function boardCanvasPoint(canvas, event) {
 
 function boardTitlePinEl() {
   return document.getElementById("boardTitlePin");
-}
-function clearDrawerBoot() {
-  document.documentElement.removeAttribute('data-drawer-boot');
-}
-function pinBoardTitle() {
-  var pin = boardTitlePinEl();
-  if (pin) { pin.hidden = true; pin.innerHTML = ""; }
-  var kind = document.documentElement.dataset.diagramKind || "";
-  if (kind && kind !== "board") {
-    if (document.title !== "Lulu Vela") document.title = "Lulu Vela";
-    return;
-  }
-  var title = "";
-  try {
-    title = String((BoardRender.parse(boardSourceEl.value) || {}).title || "").trim();
-  } catch (_) {}
-  if (!title) {
-    var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
-    title = heading ? String(heading.textContent || "").trim() : "";
-  }
-  var next = title || "Lulu Vela";
-  if (document.title !== next) document.title = next;
 }
 function boardPinnedTitleNode() {
   var pin = boardTitlePinEl();
@@ -1172,7 +1150,7 @@ function wireBoardDrag(root, board) {
       var toIndex = BoardRender.reorderFinalIndex(fromIndex, done.insertBefore);
       if (fromIndex < 0 || toIndex === fromIndex) return;
       var reorderKeep = Object.assign({}, selectedBoardNode);
-      try { var reordered = BoardRender.reorderNode(boardSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+      try { var reordered = BoardRender.reorderNode(velaSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
       event.preventDefault(); event.stopPropagation(); return;
     }
     if (cancelled || !done.moved) return;
@@ -1181,20 +1159,20 @@ function wireBoardDrag(root, board) {
     done.hit.style.left = x + "px"; done.hit.style.top = y + "px";
     var keep = Object.assign({}, selectedBoardNode);
     try {
-      boardSourceEl.value = BoardRender.updatePosition(boardSourceEl.value, keep, x, y);
+      velaSourceEl.value = BoardRender.updatePosition(velaSourceEl.value, keep, x, y);
       selectedBoardNode = keep;
-      boardSourceEl.dataset.boardSelectionKey = keep.key || boardSourceEl.dataset.boardSelectionKey || "";
-      updateBoardChars();
+      velaSourceEl.dataset.boardSelectionKey = keep.key || velaSourceEl.dataset.boardSelectionKey || "";
+      updateVelaChars();
       scheduleBoardSave();
       // Avoid full remount flash: keep live DOM positions, only refresh edges.
       var liveRoot = previewEl.querySelector(".board-render");
       if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-        BoardRender.refreshEdges(liveRoot, BoardRender.parse(boardSourceEl.value));
-        applyBoardSelection(liveRoot, BoardRender.parse(boardSourceEl.value));
-        done.hit.classList.add("board-selection");
+        BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
+        applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
+        done.hit.classList.add("board-selection", "canvas-selected");
       }
       setStatus("Moved · saved layout");
-    } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showBoardError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showVelaError(err instanceof Error ? err.message : String(err)); }
     event.preventDefault(); event.stopPropagation();
   };
   canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
@@ -1205,28 +1183,28 @@ function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(
 function commitBoardArrow() {
   if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
   try {
-    var nextLink = BoardRender.updateLinkArrow(boardSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
-    if (nextLink !== boardSourceEl.value) {
-      boardSourceEl.value = nextLink;
-      updateBoardChars();
-      renderBoard();
+    var nextLink = BoardRender.updateLinkArrow(velaSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
+    if (nextLink !== velaSourceEl.value) {
+      velaSourceEl.value = nextLink;
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Link arrow · " + (boardArrowEditor.value === "both" ? "<->" : "->"));
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardReverse() {
   if (!selectedBoardEdge || typeof BoardRender.reverseLink !== "function") return;
   try {
-    var nextLink = BoardRender.reverseLink(boardSourceEl.value, selectedBoardEdge);
-    if (nextLink !== boardSourceEl.value) {
-      boardSourceEl.value = nextLink;
-      updateBoardChars();
-      renderBoard();
+    var nextLink = BoardRender.reverseLink(velaSourceEl.value, selectedBoardEdge);
+    if (nextLink !== velaSourceEl.value) {
+      velaSourceEl.value = nextLink;
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Link reversed");
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardShape(shape) {
   var nextShape = shape === "diamond" ? "diamond" : "rect";
@@ -1234,17 +1212,17 @@ function commitBoardShape(shape) {
   if (typeof BoardRender.updateShape !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateShape(boardSourceEl.value, selectedBoardNode, nextShape);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateShape(velaSourceEl.value, selectedBoardNode, nextShape);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Shape · " + nextShape);
     }
     setBoardShapeField(true, nextShape);
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function persistMermaidStyle(body, patch) {
   if (typeof DrawerStyleLine === "undefined") return body;
@@ -1269,10 +1247,10 @@ function persistMermaidStyle(body, patch) {
 }
 
 function persistBoardStyle(patch) {
-  if (!boardSourceEl || !boardSourceEl.value.trim()) return;
-  if (document.documentElement.dataset.drawerMode !== "board") return;
+  if (!velaSourceEl || !velaSourceEl.value.trim()) return;
+  if (document.documentElement.dataset.drawerMode !== "vela") return;
   try {
-    var raw = boardSourceEl.value;
+    var raw = velaSourceEl.value;
     var meta = null;
     var body = raw;
     try {
@@ -1292,12 +1270,12 @@ function persistBoardStyle(patch) {
       nextBody = BoardRender.updateStyle(body, patch || {});
     }
     var next = meta ? joinDocument(meta, nextBody) : nextBody;
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
-      updateBoardChars();
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
+      updateVelaChars();
       scheduleBoardSave();
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function syncBoardStyleChrome(board) {
   if (typeof BoardRender === "undefined" || typeof BoardRender.resolveStyle !== "function") return;
@@ -1317,82 +1295,82 @@ function commitBoardCap() {
   var nextCap = boardCapEditor.value === "off" ? "off" : "on";
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateCap(boardSourceEl.value, selectedBoardNode, nextCap);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateCap(velaSourceEl.value, selectedBoardNode, nextCap);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Width Cap · " + nextCap);
     }
     setBoardCapField(true, nextCap);
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardType() {
   if (!boardTypeEditor) return;
   if (selectedBoardEdge && typeof BoardRender.updateLinkType === "function") {
     try {
-      var nextLink = BoardRender.updateLinkType(boardSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
-      if (nextLink !== boardSourceEl.value) {
-        boardSourceEl.value = nextLink;
-        updateBoardChars();
-        renderBoard();
+      var nextLink = BoardRender.updateLinkType(velaSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
+      if (nextLink !== velaSourceEl.value) {
+        velaSourceEl.value = nextLink;
+        updateVelaChars();
+        renderVela();
         scheduleBoardSave();
         setStatus("Link type · " + boardTypeEditor.value);
       }
-    } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
     return;
   }
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoardRender.updateType !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateType(boardSourceEl.value, selectedBoardNode, boardTypeEditor.value);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateType(velaSourceEl.value, selectedBoardNode, boardTypeEditor.value);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Type · " + boardTypeEditor.value);
       // Refresh props so layout hides title/icon immediately
       try {
-        var b = typeof BoardRender !== "undefined" ? BoardRender.parse(boardSourceEl.value) : null;
+        var b = typeof BoardRender !== "undefined" ? BoardRender.parse(velaSourceEl.value) : null;
         var root = previewEl && previewEl.querySelector(".board-render");
         if (b && root) applyBoardSelection(root, b);
       } catch (_e) {}
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardDir() {
   if (!selectedBoardNode || selectedBoardNode.kind === "item" || !boardDirEditor || typeof BoardRender.updateDir !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateDir(boardSourceEl.value, selectedBoardNode, boardDirEditor.value);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateDir(velaSourceEl.value, selectedBoardNode, boardDirEditor.value);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus("Direction · " + boardDirEditor.value);
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardBoxFlex(kind, editor, updateFn) {
   if (!selectedBoardNode || selectedBoardNode.kind !== "box" || !editor || typeof updateFn !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = updateFn(boardSourceEl.value, selectedBoardNode, editor.value);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = updateFn(velaSourceEl.value, selectedBoardNode, editor.value);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
       setStatus(kind + " · " + editor.value);
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardAlign() {
   commitBoardBoxFlex("Align", boardAlignEditor, BoardRender.updateAlign);
@@ -1404,42 +1382,42 @@ function commitBoardTitle() {
   if (!boardTitleEditor) return;
   if (selectedBoardEdge && typeof BoardRender.updateLinkTitle === "function") {
     try {
-      var nextLink = BoardRender.updateLinkTitle(boardSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
-      if (nextLink !== boardSourceEl.value) {
-        boardSourceEl.value = nextLink;
-        updateBoardChars();
-        renderBoard();
+      var nextLink = BoardRender.updateLinkTitle(velaSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
+      if (nextLink !== velaSourceEl.value) {
+        velaSourceEl.value = nextLink;
+        updateVelaChars();
+        renderVela();
         scheduleBoardSave();
         setStatus("Link title · saved");
       }
-    } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
     return;
   }
   if (!selectedBoardNode) return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateTitle(boardSourceEl.value, selectedBoardNode, boardTitleEditor.value);
-    if (next !== boardSourceEl.value) {
-      boardSourceEl.value = next;
+    var next = BoardRender.updateTitle(velaSourceEl.value, selectedBoardNode, boardTitleEditor.value);
+    if (next !== velaSourceEl.value) {
+      velaSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateBoardChars();
-      renderBoard();
+      updateVelaChars();
+      renderVela();
       scheduleBoardSave();
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 function applyBoardEditResult(result) {
-  boardSourceEl.value = result.source;
+  velaSourceEl.value = result.source;
   selectedBoardNode = result.selection && result.selection.kind !== "link" ? result.selection : null; selectedBoardEdge = result.selection && result.selection.kind === "link" ? result.selection : null;
-  if (selectedBoardNode) boardSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
-  else delete boardSourceEl.dataset.boardSelectionKey; if (selectedBoardEdge) boardSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key; else delete boardSourceEl.dataset.boardEdgeSelectionKey;
-  updateBoardChars();
-  renderBoard();
+  if (selectedBoardNode) velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  else delete velaSourceEl.dataset.boardSelectionKey; if (selectedBoardEdge) velaSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key; else delete velaSourceEl.dataset.boardEdgeSelectionKey;
+  updateVelaChars();
+  renderVela();
   scheduleBoardSave();
 }
 function boardEditAction(action) {
   try { applyBoardEditResult(action()); }
-  catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 
 function syncBoardLinkRouteButton() {
@@ -1466,11 +1444,11 @@ function applyBoardLinkRouteStyle(style, persist) {
   // Re-route without resetting zoom/pan.
   try {
     var root = previewEl && previewEl.querySelector(".board-render");
-    if (root && boardSourceEl && boardSourceEl.value.trim()) {
-      BoardRender.refreshEdges(root, BoardRender.parse(boardSourceEl.value));
+    if (root && velaSourceEl && velaSourceEl.value.trim()) {
+      BoardRender.refreshEdges(root, BoardRender.parse(velaSourceEl.value));
       setStatus("Link route · " + BoardRender.getLinkRouteStyle());
     }
-  } catch (err) { showBoardError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
 }
 (function wireBoardLinkRouteSeg() {
   var trunkBtn = $("#btnRouteTrunk");
@@ -1488,25 +1466,25 @@ function applyBoardLinkRouteStyle(style, persist) {
   }
 })();
 
-if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoardRender.addBox(boardSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
-if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoardRender.addItem(boardSourceEl.value, selectedBoardNode); }); };
-if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(boardSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(boardSourceEl.value, selectedBoardNode); }); };
+if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoardRender.addBox(velaSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
+if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoardRender.addItem(velaSourceEl.value, selectedBoardNode); }); };
+if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(velaSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(velaSourceEl.value, selectedBoardNode); }); };
 if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!boardLinkMode); };
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
   var target = event.target;
-  if (target === boardSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === velaSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
-  boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(boardSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(boardSourceEl.value, selectedBoardNode); });
+  boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(velaSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(velaSourceEl.value, selectedBoardNode); });
 });
 function boardNudgeOrder(delta) {
   if (!selectedBoardNode || typeof BoardRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var next = info.index + delta;
   if (next < 0 || next >= info.count) return;
-  boardEditAction(function() { return BoardRender.reorderNode(boardSourceEl.value, selectedBoardNode, next); });
+  boardEditAction(function() { return BoardRender.reorderNode(velaSourceEl.value, selectedBoardNode, next); });
 }
 if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
 if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
@@ -1520,7 +1498,7 @@ function boardNudgeSelection(delta) {
   var from = kids.indexOf(el);
   var next = from + delta;
   if (from < 0 || next < 0 || next >= kids.length) return false;
-  selectBoardElement(kids[next], root, BoardRender.parse(boardSourceEl.value));
+  selectBoardElement(kids[next], root, BoardRender.parse(velaSourceEl.value));
   return true;
 }
 var BOARD_NUDGE_STEPS = [1, 2, 4, 8, 16, 32];
@@ -1540,16 +1518,16 @@ function boardNudgeStepPx(key, isRepeat) {
 }
 function boardWriteLivePosition(el, x, y) {
   var keep = Object.assign({}, selectedBoardNode);
-  boardSourceEl.value = BoardRender.updatePosition(boardSourceEl.value, keep, x, y);
+  velaSourceEl.value = BoardRender.updatePosition(velaSourceEl.value, keep, x, y);
   selectedBoardNode = keep;
-  boardSourceEl.dataset.boardSelectionKey = keep.key || boardSourceEl.dataset.boardSelectionKey || "";
-  updateBoardChars();
+  velaSourceEl.dataset.boardSelectionKey = keep.key || velaSourceEl.dataset.boardSelectionKey || "";
+  updateVelaChars();
   scheduleBoardSave();
   var liveRoot = previewEl.querySelector(".board-render");
   if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-    BoardRender.refreshEdges(liveRoot, BoardRender.parse(boardSourceEl.value));
-    applyBoardSelection(liveRoot, BoardRender.parse(boardSourceEl.value));
-    el.classList.add("board-selection");
+    BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
+    applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
+    el.classList.add("board-selection", "canvas-selected");
   }
 }
 function boardNudgeTopLevel(dx, dy) {
@@ -1573,19 +1551,19 @@ function boardNudgeTopLevel(dx, dy) {
   } catch (err) {
     el.style.left = prevX + "px";
     el.style.top = prevY + "px";
-    showBoardError(err instanceof Error ? err.message : String(err));
+    showVelaError(err instanceof Error ? err.message : String(err));
   }
   return true;
 }
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
   var delta = 0;
   if (event.key === "ArrowUp" || event.key === "ArrowLeft") delta = -1;
   else if (event.key === "ArrowDown" || event.key === "ArrowRight") delta = 1;
   if (!delta) return;
   var target = event.target;
-  if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === velaSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   if (target && target.closest && target.closest("#boardIconField")) return;
   if (boardNudgeSelection(delta)) {
     event.preventDefault();
@@ -1606,13 +1584,13 @@ document.addEventListener("keyup", function(event) {
 });
 window.addEventListener("blur", boardNudgeResetSlide);
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board" || !event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || !event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
   var target = event.target;
-  if (target === boardSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === velaSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   if (typeof BoardRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(boardSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var row = info.direction === "row";
   var delta = 0;
@@ -1637,20 +1615,10 @@ previewEl.addEventListener("dblclick", function(event) {
   var root = canvas.closest(".board-render");
   var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
   if (!hit || !canvas.contains(hit)) return;
-  selectBoardElement(hit, root, BoardRender.parse(boardSourceEl.value));
+  selectBoardElement(hit, root, BoardRender.parse(velaSourceEl.value));
   inspectBoardSelection();
   if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
 });
-function sourceBodyForKind(text) {
-  var raw = String(text == null ? "" : text);
-  if (typeof stripDocumentMeta === "function") {
-    try { raw = stripDocumentMeta(raw); } catch (_e) {}
-  }
-  if (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.splitRendererStyle) {
-    raw = DrawerStyleLine.splitRendererStyle(raw).body;
-  }
-  return raw;
-}
 
 function isBoardCanvasKind() {
   var kind = document.documentElement.dataset.diagramKind || "";
@@ -1668,431 +1636,5 @@ function boardCanvasClear() {
 
 if (typeof CanvasInteraction !== "undefined" && typeof CanvasInteraction.registerKind === "function") {
   CanvasInteraction.registerKind("board", { isHit: boardCanvasHit, clear: boardCanvasClear });
-}
-
-function applyDrawerKind(kind) {
-  var html = document.documentElement;
-  if (!html) return;
-  html.dataset.diagramKind = kind === "empty" ? "" : String(kind || "");
-  // Chrome CSS is gated on data-drawer-mode=board. Keep that; kind switches tools/render.
-  if (!html.dataset.drawerMode) html.dataset.drawerMode = "board";
-  if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
-  if (propsEmpty) {
-    propsEmpty.textContent = kind === "flowchart"
-      ? "Select a group, node, or link"
-      : "Select a title, box, or item";
-  }
-  var flowProps = document.getElementById("flowchartPropsFields");
-  if (flowProps && kind !== "flowchart") flowProps.hidden = true;
-  var flowDir = document.getElementById("flowchartDirField");
-  if (flowDir && kind !== "flowchart") flowDir.hidden = true;
-}
-
-function fixSvgIntrinsic(svg) {
-  if (!svg) return;
-  var vb = String(svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
-  if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
-    svg.setAttribute("width", String(Math.ceil(vb[2])));
-    svg.setAttribute("height", String(Math.ceil(vb[3])));
-  }
-  // Do not write svg.style.* — on this host that rebuilds the style
-  // attribute and drops Pele's --_s / --_fg aliases (nodes paint black).
-}
-
-function bindCanvasWorld(rootEl, boundsFn) {
-  if (typeof Canvas !== "undefined" && typeof Canvas.setWorld === "function") {
-    Canvas.setWorld(rootEl || null, boundsFn || null);
-  }
-}
-
-function canvasSvgBounds(svg) {
-  if (!svg) return null;
-  var w = parseFloat(svg.getAttribute("width") || "");
-  var h = parseFloat(svg.getAttribute("height") || "");
-  if (!(w > 0 && h > 0) && svg.viewBox && svg.viewBox.baseVal) {
-    w = svg.viewBox.baseVal.width;
-    h = svg.viewBox.baseVal.height;
-  }
-  if (!(w > 0 && h > 0)) return null;
-  return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
-}
-
-function finishCanvasView(opts) {
-  opts = opts || {};
-  if (opts.fit) {
-    if (typeof fitBoardView === "function") fitBoardView();
-    else if (typeof applyTransform === "function") applyTransform();
-  } else if (opts.restoreView) {
-    if (typeof applyRestoredBoardView === "function") applyRestoredBoardView();
-    else if (typeof applyTransform === "function") applyTransform();
-  } else if (typeof applyTransform === "function") {
-    applyTransform();
-  }
-  if (typeof pinBoardTitle === "function") pinBoardTitle();
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { clearDrawerBoot(); });
-  });
-}
-
-function syncMermaidStyleChrome(body) {
-  if (typeof DrawerStyleLine === "undefined") return;
-  var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
-  var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  if (typeof applyDiagramTheme === "function") {
-    applyDiagramTheme(theme, { persist: false, skipRender: true });
-  } else if (typeof applyPeleThemeVars === "function") {
-    applyPeleThemeVars(theme);
-  }
-  if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, false);
-}
-
-function renderFlowchart(opts) {
-  opts = opts || {};
-  syncBoardEditControls();
-  previewEl.classList.remove("board-preview");
-  syncMermaidStyleChrome(boardSourceEl ? boardSourceEl.value : "");
-  var body = sourceBodyForKind(boardSourceEl.value);
-  updateBoardChars();
-  if (!body.trim()) {
-    previewEl.innerHTML = "";
-    bindCanvasWorld(null, null);
-    showBoardError("");
-    setStatus("No flowchart source");
-    finishCanvasView(opts);
-    return;
-  }
-  if (!window.pele || typeof window.pele.render !== "function") {
-    previewEl.innerHTML = "";
-    bindCanvasWorld(null, null);
-    showBoardError("Pele renderer missing");
-    setStatus("Pele renderer missing", true);
-    finishCanvasView(opts);
-    return;
-  }
-  try {
-    var typeStep = 0;
-    if (typeof DrawerStyleLine !== "undefined") {
-      typeStep = DrawerStyleLine.typeStepFromStyleToken(
-        DrawerStyleLine.splitRendererStyle(boardSourceEl ? boardSourceEl.value : "").token
-      );
-    }
-    var peleFont = typeof FlowchartTypeScale !== "undefined"
-      ? FlowchartTypeScale.px("default", typeStep)
-      : 16;
-    var result = window.pele.render(body.trim(), {
-      fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
-      fontSize: peleFont,
-      autoDirection: false,
-      responsive: false,
-    });
-    previewEl.innerHTML = result && result.svg ? result.svg : "";
-    var svg = previewEl.querySelector("svg");
-    fixSvgIntrinsic(svg);
-    bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
-    if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
-    if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
-    showBoardError("");
-    setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
-    if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
-  } catch (err) {
-    previewEl.innerHTML = "";
-    bindCanvasWorld(null, null);
-    showBoardError(err instanceof Error ? err.message : String(err));
-    setStatus("Invalid flowchart source", true);
-  }
-  finishCanvasView(opts);
-}
-
-function refuseUnsupportedMermaid() {
-  syncBoardEditControls();
-  previewEl.classList.remove("board-preview");
-  previewEl.innerHTML = "";
-  bindCanvasWorld(null, null);
-  updateBoardChars();
-  showBoardError("Only flowchart can be rendered.");
-  setStatus("Only flowchart can be rendered.", true);
-  finishCanvasView({});
-}
-
-function renderBoard(opts) {
-  opts = opts || {};
-  var body = sourceBodyForKind(boardSourceEl ? boardSourceEl.value : "");
-  var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
-    ? DrawerStyleLine.bodyKind(body)
-    : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "board" : "unknown");
-  applyDrawerKind(kind);
-  if (kind === "flowchart") return renderFlowchart(opts);
-  if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
-  syncBoardEditControls();
-  previewEl.classList.add('board-preview');
-  const text = boardSourceEl.value.trim(); updateBoardChars();
-  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinBoardTitle === "function") pinBoardTitle(); showBoardError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
-  BoardRender.render(text, previewEl).then((rendered) => {
-    try {
-      var worldRoot = rendered && rendered.root && rendered.root.querySelector
-        ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
-          ? rendered.root
-          : rendered.root.querySelector(".board-canvas"))
-        : null;
-      bindCanvasWorld(worldRoot, function () {
-        return typeof BoardRender !== "undefined" && typeof BoardRender.worldBounds === "function"
-          ? BoardRender.worldBounds(rendered.root)
-          : null;
-      });
-      syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardDomSelectionKey(boardSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection");
-      // Repaint the live root after any mode/bootstrap render race.
-      if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
-      showBoardError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);
-      syncBoardStyleChrome(rendered.board);
-      applyBoardThemeToPreview();
-      if (opts.fit) {
-        fitBoardView();
-      } else if (opts.restoreView) {
-        applyRestoredBoardView();
-      } else {
-        applyTransform();
-      }
-    } finally {
-      pinBoardTitle();
-      // Two frames: let pin/title + item frame rects settle while stage still opacity:0.
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { clearDrawerBoot(); });
-      });
-    }
-  }).catch((err) => {
-    pinBoardTitle();
-    clearDrawerBoot();
-    showBoardError(err instanceof Error ? err.message : String(err)); setStatus('Invalid Board source', true);
-  });
-}
-function scheduleBoardRender() { clearTimeout(boardRenderTimer); boardRenderTimer = setTimeout(renderBoard, 220); }
-function setBoardSyncUI(state = 'ok') { const pill = $('#boardSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${boardLocalRev}</b>`; }
-// Cloud saves hit Supabase; debounce them longer than local/URL saves.
-function boardSaveDelay() { return typeof cloudBoardId === "function" && cloudBoardId() ? 3000 : 350; }
-function bumpClientRevIfSynced() {
-  var server = Number(boardServerRev);
-  var client = Number(boardLocalRev);
-  if (Number.isFinite(server) && server > 0 && server === client) {
-    boardLocalRev = server + 1;
-    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
-  }
-  if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
-}
-function scheduleBoardSave() {
-  boardDirty = true;
-  bumpClientRevIfSynced();
-  clearTimeout(boardSaveTimer);
-  if (typeof isShareGuest === "function" && isShareGuest()) {
-    boardSaveTimer = null;
-    if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
-    return;
-  }
-  if (typeof cloudPlusDraftActive !== "undefined" && cloudPlusDraftActive) {
-    boardSaveTimer = setTimeout(function () {
-      void saveBoardToHash().then(function () {
-        if (!cloudPlusDraftActive || !boardSourceEl) return;
-        cloudPlusDraftSource = boardSourceEl.value;
-        cloudPlusDraftRev = Number(boardLocalRev) || 1;
-      });
-    }, boardSaveDelay());
-    return;
-  }
-  setBoardSyncUI('saving');
-  boardSaveTimer = setTimeout(() => void saveBoardToFile(), boardSaveDelay());
-}
-function flushBoardSave() {
-  if (typeof isShareGuest === "function" && isShareGuest()) {
-    clearTimeout(boardSaveTimer);
-    boardSaveTimer = null;
-    return Promise.resolve();
-  }
-  if (!boardDirty && !boardSaveTimer) return Promise.resolve();
-  clearTimeout(boardSaveTimer);
-  boardSaveTimer = null;
-  return saveBoardToFile();
-}
-window.addEventListener("pagehide", function() { void flushBoardSave(); });
-document.addEventListener("visibilitychange", function() {
-  if (document.visibilityState === "hidden") void flushBoardSave();
-});
-async function saveBoardToHash(opts) {
-  opts = opts || {};
-  boardSaveTimer = null;
-  var text = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(boardSourceEl.value)
-    : boardSourceEl.value;
-  if (boardSourceEl && text !== boardSourceEl.value) boardSourceEl.value = text;
-  const seq = ++boardSaveSeq;
-  try {
-    if (opts.bump !== false) boardLocalRev = (Number(boardLocalRev) || 0) + 1;
-    else if (!(Number(boardLocalRev) > 0)) boardLocalRev = 1;
-    const token = await encodeBoardHash(text, boardLocalRev);
-    if (seq !== boardSaveSeq) return;
-    const next = "#" + token;
-    if (location.hash !== next) {
-      history.replaceState(null, "", location.pathname + location.search + next);
-    }
-    boardDirty = false;
-    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
-    if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
-    setBoardSyncUI("ok");
-    setStatus("Saved in URL");
-  } catch (err) {
-    setBoardSyncUI("error");
-    setStatus(err instanceof Error ? err.message : String(err), true);
-  }
-}
-async function saveBoardToFile() {
-  // Clear the timer on every path; a stale id here blocks hashchange/poll loads forever.
-  boardSaveTimer = null;
-  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
-    if (typeof isShareGuest === "function" && isShareGuest()) {
-      return Promise.resolve();
-    }
-    if (typeof cloudBoardId === "function" && cloudBoardId()) {
-      return saveBoardToCloud({ explicit: false });
-    }
-    return saveBoardToHash();
-  }
-  const text = boardSourceEl.value, seq = ++boardSaveSeq, baseRev = boardLocalRev;
-  try {
-    const headers = {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'X-Board-Rev': String(baseRev),
-      'X-Board-Via': 'ui',
-      'X-Board-Label': 'docker-sbx-board',
-    };
-    if (typeof liveBoardId !== 'undefined' && liveBoardId) headers['X-Board-Id'] = liveBoardId;
-    if (typeof getBoardTitle === 'function') headers['X-Board-Title'] = headerByteString(getBoardTitle(cloudOpenBoardId()));
-    const res = await fetch('./board.bmd', { method: 'PUT', headers, body: text });
-    if (seq !== boardSaveSeq) return;
-    if (res.status === 409) { const payload = await res.json(); boardLocalRev = Number(payload.version != null ? payload.version : payload.rev) || boardLocalRev; boardDirty = false; if (typeof payload.source === 'string') { boardSourceEl.value = payload.source; renderBoard(); } setBoardSyncUI('conflict'); setStatus(`Board version conflict → loaded v ${boardLocalRev}`, true); return; }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    boardLocalRev = Number(res.headers.get('X-Board-Rev')) || baseRev + 1; boardDirty = false; setBoardSyncUI('ok');
-    try { var saved = splitDocument(text); boardSourceEl.value = joinDocument({ id: saved.meta.id, version: boardLocalRev }, saved.body); } catch (_e) {}
-    setStatus(`Board saved v ${boardLocalRev}`);
-    try {
-      const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-      if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
-    } catch (_e) {}
-  } catch (err) { setBoardSyncUI('error'); setStatus(err instanceof Error ? err.message : String(err), true); }
-}
-async function loadBoardPolled() {
-  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") return;
-  if (boardDirty || boardSaveTimer) return;
-  try {
-    const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' }); if (!metaRes.ok) return;
-    const meta = await metaRes.json(), remoteRev = Number(meta.version != null ? meta.version : meta.rev) || 0;
-    if (typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(meta);
-    if (remoteRev <= boardLocalRev) { setBoardSyncUI('ok'); return; }
-    const res = await fetch(`./board.bmd?ts=${Date.now()}`, { cache: 'no-store' }); if (!res.ok) return;
-    const text = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || remoteRev; boardDirty = false;
-    if (boardSourceEl.value !== text) { boardSourceEl.value = text; renderBoard({ fit: false }); setStatus(`Board loaded r${boardLocalRev}`); }
-    setBoardSyncUI('ok');
-  } catch (_) {}
-}
-function shouldWaitForCreateKind() {
-  if (typeof document !== "undefined" && document.documentElement && document.documentElement.dataset.blankStartKind === "1") {
-    return true;
-  }
-  if (typeof DrawerEarlyHead === "undefined") return false;
-  var ctx = {
-    pathname: typeof location !== "undefined" ? location.pathname : "/",
-    hash: typeof location !== "undefined" ? location.hash : "",
-    search: typeof location !== "undefined" ? location.search : "",
-    storage: DrawerEarlyHead.safeStorage(typeof globalThis !== "undefined" ? globalThis : this),
-  };
-  if (DrawerEarlyHead.isLegalHash(ctx.hash)) return false;
-  if (DrawerEarlyHead.shouldBlankStart(ctx)) return true;
-  return !!(DrawerEarlyHead.isAuthReturn && DrawerEarlyHead.isAuthReturn(ctx.search));
-}
-
-async function bootstrapBoardFromHash() {
-  var raw = String(location.hash || "").replace(/^#/, "");
-  if (typeof cloudBoardIdFromHash === "function" && cloudBoardIdFromHash(raw)) {
-    await loadCloudBoardByHash(raw);
-    return;
-  }
-  if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(raw)) {
-    if (typeof loadSharedBoardByHash === "function") {
-      await loadSharedBoardByHash(raw);
-      return;
-    }
-  }
-  if (!raw) {
-    if (typeof setShareView === "function") setShareView(false);
-    if (typeof setShareEdit === "function") setShareEdit(false);
-    if (typeof shouldWaitForCreateKind === "function" && shouldWaitForCreateKind()) {
-      if (boardSourceEl) boardSourceEl.value = "";
-      boardLocalRev = 1;
-      boardServerRev = 0;
-      if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "", version: 1 });
-      setStatus("Choose a type");
-      return;
-    }
-    boardSourceEl.value = typeof blankHashBoardSource === "function"
-      ? blankHashBoardSource("Untitled")
-      : "board \"Untitled\"\n";
-    boardLocalRev = 1;
-    boardServerRev = 0;
-    if (typeof applyBoardLiveMeta === "function") {
-      applyBoardLiveMeta({ id: "", version: 1 });
-    }
-    await saveBoardToHash({ bump: false });
-    setStatus("New Vela");
-    return;
-  }
-  try {
-    if (typeof setShareView === "function") setShareView(false);
-    if (typeof setShareEdit === "function") setShareEdit(false);
-    var decoded = await decodeBoardHash(raw);
-    var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(decoded.bmd) : decoded.bmd;
-    boardSourceEl.value = body;
-    boardLocalRev = Number(decoded.version) || 1;
-    boardServerRev = 0;
-    if (typeof applyBoardLiveMeta === "function") {
-      applyBoardLiveMeta({
-        id: "",
-        version: boardLocalRev,
-      });
-    }
-    if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
-  } catch (err) {
-    boardSourceEl.value = "";
-    if (typeof showBoardError === "function") {
-      showBoardError(err instanceof Error ? err.message : String(err));
-    }
-    setStatus("Could not read board from URL", true);
-  }
-}
-async function bootstrapBoard() {
-  if (typeof boardPersistMode === "function" && boardPersistMode() === "hash") {
-    await bootstrapBoardFromHash();
-  } else {
-    try { const res = await fetch('./board.bmd', { cache: 'no-store' }); if (res.ok) { boardSourceEl.value = await res.text(); boardLocalRev = Number(res.headers.get('X-Board-Rev')) || 0; } else boardSourceEl.value = ''; }
-    catch (_) { boardSourceEl.value = ''; }
-    try {
-      const metaRes = await fetch(`./board.meta.json?ts=${Date.now()}`, { cache: 'no-store' });
-      if (metaRes.ok && typeof applyBoardLiveMeta === 'function') applyBoardLiveMeta(await metaRes.json());
-    } catch (_e) {}
-  }
-  boardDirty = false; updateBoardChars(); setBoardSyncUI('ok');
-  if (boardSourceEl.value.trim()) {
-    await new Promise(function (resolve) {
-      var done = false;
-      var finish = function () { if (done) return; done = true; resolve(); };
-      try {
-        renderBoard({ fit: false, restoreView: true });
-        // renderBoard is async via promise; wait for board-render or timeout
-        var turns = 0;
-        (function wait() {
-          if (previewEl && previewEl.querySelector(".board-render")) return finish();
-          if (++turns > 120) return finish();
-          requestAnimationFrame(wait);
-        })();
-      } catch (_e) { finish(); }
-    });
-  }
 }
 

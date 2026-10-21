@@ -1,4 +1,4 @@
-.board-sign-in {
+.shell-dialog {
   position: fixed;
   inset: 0;
   z-index: 180;
@@ -6,8 +6,8 @@
   place-items: center;
   padding: 24px;
 }
-.board-sign-in[hidden] { display: none !important; }
-.board-sign-in-backdrop {
+.shell-dialog[hidden] { display: none !important; }
+.shell-dialog-backdrop {
   position: absolute;
   inset: 0;
   border: 0;
@@ -15,7 +15,7 @@
   background: color-mix(in srgb, #000 36%, transparent);
   cursor: pointer;
 }
-.board-sign-in-sheet {
+.shell-dialog-sheet {
   position: relative;
   box-sizing: border-box;
   width: min(360px, 100%);
@@ -25,23 +25,23 @@
   background: var(--panel-solid);
   box-shadow: var(--shadow);
 }
-.board-sign-in-sheet h2 {
+.shell-dialog-sheet h2 {
   margin: 0 0 8px;
   font: 650 18px/1.25 var(--font);
   color: var(--text);
 }
-.board-sign-in-sheet p {
+.shell-dialog-sheet p {
   margin: 0 0 16px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
 }
-.board-sign-in-actions {
+.shell-dialog-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.board-sign-in .board-auth-provider {
+.shell-dialog .shell-auth-provider {
   height: 36px;
   padding: 0 12px;
   border: 1px solid var(--stroke);
@@ -51,7 +51,7 @@
   font-weight: 600;
   text-align: center;
 }
-.board-sign-in-close {
+.shell-dialog-close {
   display: block;
   width: 100%;
   margin-top: 10px;
@@ -61,12 +61,12 @@
   cursor: pointer;
   font: 600 12px/1 var(--font);
 }
-.board-confirm-actions {
+.confirm-actions {
   flex-direction: row;
   justify-content: flex-end;
   margin-top: 4px;
 }
-.board-confirm-actions .btn {
+.confirm-actions .btn {
   min-width: 72px;
   justify-content: center;
 }

@@ -33,7 +33,7 @@ function setCharsLabel(el, n) {
   el.appendChild(document.createTextNode(" chars"));
 }
 function liveDocumentVersion() {
-  return Number.isFinite(boardLocalRev) && boardLocalRev > 0 ? boardLocalRev : 0;
+  return Number.isFinite(velaLocalRev) && velaLocalRev > 0 ? velaLocalRev : 0;
 }
 
 function wrapEditorApi(api) {
@@ -63,9 +63,9 @@ function wrapEditorApi(api) {
 
 /* drawer-app/01-shell-state.js — lines 1-699 of former inline module */
 const $ = (s) => document.querySelector(s);
-const boardSourceEl = $('#boardSource');
-const boardError = $("#boardError");
-const boardDock = $("#boardDock");
+const velaSourceEl = $('#velaSource');
+const velaError = $("#velaError");
+const velaDock = $("#velaDock");
 const propsPanel = $("#propsPanel");
 const propsEmpty = $("#propsEmpty");
 const propsFields = $("#propsFields");
@@ -123,15 +123,15 @@ const boardIconSec = $("#boardIconSec");
 var boardIconPick = 1;
 var boardIconSecId = ""; // first section comes from BoardIcons / icons.json
 function currentDockTab() {
-  return (boardDock && boardDock.getAttribute("data-open")) || "";
+  return (velaDock && velaDock.getAttribute("data-open")) || "";
 }
 function openDock(tab) {
-  if (!boardDock) return;
+  if (!velaDock) return;
   var next = tab || "";
   if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style") next = "";
-  boardDock.setAttribute("data-open", next);
+  velaDock.setAttribute("data-open", next);
   if (propsPanel) propsPanel.setAttribute("data-collapsed", next === "props" ? "false" : "true");
-  Array.from(boardDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
+  Array.from(velaDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
     var on = btn.getAttribute("data-dock") === next && next !== "";
     btn.setAttribute("aria-selected", on ? "true" : "false");
     btn.classList.toggle("is-active", on);
@@ -172,10 +172,10 @@ const boardDeleteButton = $("#btnBoardDelete");
 const boardLinkButton = $("#btnBoardLink");
 const previewEl = $('#preview');
 const stageEl = $('#preview-stage');
-const boardSelectionObserver = new MutationObserver(() => { var key = boardSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection"); });
+const boardSelectionObserver = new MutationObserver(() => { var key = velaSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection", "canvas-selected"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
-let boardLocalRev = 0;
+let velaLocalRev = 0;
 let boardServerRev = 0;
 let boardDirty = false;
 let boardSaveSeq = 0;
@@ -216,13 +216,13 @@ function clampDockWidth(n) {
 }
 function applyDockWidth(n, persist) {
   var w = clampDockWidth(n);
-  if (boardDock) boardDock.style.setProperty("--dock-open-width", w + "px");
+  if (velaDock) velaDock.style.setProperty("--dock-open-width", w + "px");
   if (persist) saveDrawerUi({ dockWidth: w });
   return w;
 }
 function currentDockWidth() {
-  if (boardDock) {
-    var raw = boardDock.style.getPropertyValue("--dock-open-width");
+  if (velaDock) {
+    var raw = velaDock.style.getPropertyValue("--dock-open-width");
     var n = parseInt(raw, 10);
     if (isFinite(n) && n > 0) return clampDockWidth(n);
   }
@@ -287,15 +287,15 @@ document.addEventListener("visibilitychange", function() {
   applyDockWidth(loadDrawerUi().dockWidth, false);
 })();
 (function wireDockResize() {
-  var handle = document.getElementById("boardDockResize");
-  if (!handle || !boardDock) return;
+  var handle = document.getElementById("velaDockResize");
+  if (!handle || !velaDock) return;
   var drag = null;
   handle.addEventListener("pointerdown", function(e) {
-    if (!boardDock.getAttribute("data-open")) return;
+    if (!velaDock.getAttribute("data-open")) return;
     e.preventDefault();
     try { handle.setPointerCapture(e.pointerId); } catch (_e) {}
     drag = { x: e.clientX, w: currentDockWidth() };
-    boardDock.classList.add("is-resizing");
+    velaDock.classList.add("is-resizing");
   });
   handle.addEventListener("pointermove", function(e) {
     if (!drag) return;
@@ -304,7 +304,7 @@ document.addEventListener("visibilitychange", function() {
   function endDrag() {
     if (!drag) return;
     drag = null;
-    boardDock.classList.remove("is-resizing");
+    velaDock.classList.remove("is-resizing");
     saveDrawerUi({ dockWidth: currentDockWidth() });
   }
   handle.addEventListener("pointerup", endDrag);
@@ -336,7 +336,7 @@ function applyBoardLiveMeta(meta = {}) {
   if (meta && meta.path) liveBoardPath = String(meta.path);
   else if (meta && meta.current && String(meta.current).startsWith("/")) liveBoardPath = String(meta.current);
   if (meta && Number.isFinite(Number(meta.version != null ? meta.version : meta.rev))) {
-    if (!Number.isFinite(boardLocalRev) || boardLocalRev <= 0) boardLocalRev = Number(meta.version != null ? meta.version : meta.rev);
+    if (!Number.isFinite(velaLocalRev) || velaLocalRev <= 0) velaLocalRev = Number(meta.version != null ? meta.version : meta.rev);
   }
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel("Board");
@@ -423,7 +423,7 @@ function setCanvasZoom(nextScale) {
   applyTransform();
 }
 function applyRestoredBoardView() {
-  if (typeof pinBoardTitle === "function") pinBoardTitle();
+  if (typeof pinVelaTitle === "function") pinVelaTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.restoreOrFit === "function") {
     Canvas.restoreOrFit();
     return;
@@ -431,23 +431,23 @@ function applyRestoredBoardView() {
 }
 function fitBoardView() {
   if (!previewEl) return;
-  pinBoardTitle();
+  pinVelaTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.fitWorld === "function") Canvas.fitWorld();
   requestAnimationFrame(function () {
-    if (!previewEl || !boardSourceEl) return;
-    var key = boardSourceEl.dataset.boardSelectionKey;
+    if (!previewEl || !velaSourceEl) return;
+    var key = velaSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
-    if (retained) retained.classList.add("board-selection");
+    if (retained) retained.classList.add("board-selection", "canvas-selected");
   });
 }
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
 }
-function updateBoardChars() {
-  setCharsLabel($('#boardCharsPill'), [...boardSourceEl.value].length);
+function updateVelaChars() {
+  setCharsLabel($('#velaCharsPill'), [...velaSourceEl.value].length);
 }
-function showBoardError(message) { boardError.textContent = message || ''; boardError.classList.toggle('show', !!message); }
+function showVelaError(message) { velaError.textContent = message || ''; velaError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
 wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);

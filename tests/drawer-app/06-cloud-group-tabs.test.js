@@ -13,13 +13,13 @@ const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
 const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
 const chromeCss = read('packages/drawer-app/css/02-chrome.css');
 const dockCss = read('packages/drawer-app/css/03-diagram.css');
-const boardJs = read('packages/drawer-app/js/02-board.js');
+const boardJs = read('packages/drawer-app/js/02-vela.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 
-assert.match(html, /id="board-group-tabs"/, 'canvas keeps a group tab strip');
+assert.match(html, /id="vela-group-tabs"/, 'canvas keeps a group tab strip');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
-assert.match(appBuild, /06-board-confirm\.js/, 'drawer app concatenates the in-app confirm');
-assert.match(html, /id="boardConfirmDialog"/, 'canvas keeps one in-app confirm');
+assert.match(appBuild, /06-confirm\.js/, 'drawer app concatenates the in-app confirm');
+assert.match(html, /id="confirmDialog"/, 'canvas keeps one in-app confirm');
 assert.match(chromeCss, /\.zoom-float \{[\s\S]*left: 50%;/, 'zoom / Fit sit at the bottom center');
 assert.match(chromeCss, /show-chrome \.zoom-float/, 'zoom chrome still appears after a zoom change');
 assert.doesNotMatch(tabCss, /right: 88px/, 'group tabs do not shove zoom left');
@@ -32,14 +32,14 @@ assert.match(tabs, /openCreateKindDialog/, 'plus opens the kind dialog before wr
 assert.match(tabs, /shellCloseDrawer/, 'picking a type from plus closes the left drawer');
 assert.match(tabs, /blankHashFlowchartSource\("Untitled"\)/, 'plus can seed flowchart');
 assert.match(tabs, /onCancel: function \(\) \{\}/, 'plus cancel does not create a draft');
-assert.match(tabs, /saveBoardToHash/, 'plus writes a blank #z: envelope');
+assert.match(tabs, /saveVelaToHash/, 'plus writes a blank #z: envelope');
 assert.match(tabs, /cloudGroupMembers\.length \+ 1/, 'plus shows the next numbered tab');
 assert.match(tabs, /plus\.disabled = !!cloudPlusDraft/, 'plus stays disabled until the draft is saved');
 assert.match(tabs, /function cloudParkPlusDraft/, 'leaving the draft parks source in memory');
 assert.match(tabs, /function cloudSwitchToPlusDraft/, 'the parked tab restores from memory');
 assert.match(tabs, /cloudPlusDraft && cloudGroupId && groupId !== cloudGroupId/, 'changing group drops the memory slot');
 assert.match(tabCss, /\.group-tab:disabled/, 'disabled plus is gray');
-assert.match(tabs, /boardAskConfirm/, 'dirty saved tabs use the in-app confirm');
+assert.match(tabs, /askConfirm/, 'dirty saved tabs use the in-app confirm');
 assert.match(tabs, /Not saved yet/, 'tab leave copy is English');
 assert.doesNotMatch(tabs, /还没有保存/, 'tab leave copy is not Chinese');
 assert.doesNotMatch(tabs, /window\.confirm/, 'tab switch does not use the browser confirm');
@@ -47,7 +47,7 @@ assert.match(cloud, /Delete this group\?/, 'history delete copy is English');
 assert.doesNotMatch(cloud, /删除这一组/, 'history delete copy is not Chinese');
 assert.match(tabs, /cloudParkDirtyBoard/, 'confirming a switch parks dirty source');
 assert.match(tabs, /cloudPlusDraftActive\) return true/, 'parking a draft does not prompt');
-assert.match(cloud, /boardAskConfirm/, 'history delete uses the in-app confirm');
+assert.match(cloud, /askConfirm/, 'history delete uses the in-app confirm');
 assert.match(cloud, /function cloudParkDirtyBoard/, 'dirty boards can be parked in memory');
 assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
 assert.match(cloud, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
@@ -65,7 +65,7 @@ assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
 assert.match(cloud, /cloudForgetBoardCache/, 'sign out and group delete drop the memory cache');
 assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
 assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
-assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveBoardToHash/, 'plus draft edits persist in #z:');
+assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveVelaToHash/, 'plus draft edits persist in #z:');
 assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active plus draft');
 
 {
@@ -116,7 +116,7 @@ assert.match(tabs, /"Add board"/, 'plus keeps Add board');
   assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
   assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
-  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'boardSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudBoardId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
     body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
     (id) => (env.cache || {})[id] || null,
     (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });

@@ -99,7 +99,7 @@ function cloudMarkTabDrop(root, event) {
 }
 
 (function wireCloudGroupOrder() {
-  var root = document.getElementById("board-group-tabs");
+  var root = document.getElementById("vela-group-tabs");
   if (!root) return;
   root.addEventListener("dragstart", function (event) {
     var tab = cloudTabFromEvent(event);

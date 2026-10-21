@@ -44,9 +44,9 @@ function cloudCachedBoardRow(boardId) {
 
 function cloudParkDirtyBoard() {
   var id = typeof cloudBoardId === "function" ? cloudBoardId() : "";
-  if (!id || !boardSourceEl) return;
+  if (!id || !velaSourceEl) return;
   var prev = cloudCachedBoardRow(id) || {};
-  var source = boardSourceEl.value;
+  var source = velaSourceEl.value;
   cloudRememberBoardRow({
     board_id: id,
     title: (typeof cloudBoardTitle === "function" ? cloudBoardTitle(source) : "") || prev.title,
@@ -56,7 +56,7 @@ function cloudParkDirtyBoard() {
     created_at: prev.created_at,
     updated_at: prev.updated_at,
     dirty: true,
-    localRev: Number(boardLocalRev) || 1,
+    localRev: Number(velaLocalRev) || 1,
   });
 }
 
@@ -99,13 +99,13 @@ function applyLocalSignedInPreview() {
   if (!isLocalDrawerPreview()) return;
   if (cloudSession && cloudSession.user) return;
   cloudHideSignInDialog();
-  var signIn = document.getElementById("btnBoardSignIn");
-  var session = document.getElementById("boardSession");
-  var save = document.getElementById("btnBoardSaveCloud");
-  var status = document.getElementById("boardCloudStatus");
-  var chip = document.getElementById("btnBoardAccount");
-  var initialsEl = document.getElementById("boardAccountInitials");
-  var img = document.getElementById("boardAccountAvatarImg");
+  var signIn = document.getElementById("btnShellSignIn");
+  var session = document.getElementById("shellSession");
+  var save = document.getElementById("btnShellSaveCloud");
+  var status = document.getElementById("shellCloudStatus");
+  var chip = document.getElementById("btnShellSession");
+  var initialsEl = document.getElementById("shellSessionInitials");
+  var img = document.getElementById("shellSessionAvatarImg");
   if (signIn) signIn.hidden = true;
   if (session) session.hidden = false;
   if (status) status.hidden = true;
@@ -152,14 +152,14 @@ function cloudAccountProfile(user) {
 }
 
 function cloudSignInDialog() {
-  return document.getElementById("boardSignInDialog");
+  return document.getElementById("shellSignInDialog");
 }
 
 function cloudShowSignInDialog() {
   var dialog = cloudSignInDialog();
   if (!dialog) return;
   dialog.hidden = false;
-  var first = dialog.querySelector("[data-board-oauth]");
+  var first = dialog.querySelector("[data-shell-oauth]");
   if (first && typeof first.focus === "function") first.focus();
 }
 
@@ -177,15 +177,15 @@ async function cloudDeclineCloudBoard() {
   cloudHideSignInDialog();
   if (!cloudBoardId()) return;
   history.replaceState(null, "", location.pathname + location.search);
-  if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
-  if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+  if (typeof bootstrapVelaFromHash === "function") await bootstrapVelaFromHash();
+  if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
 }
 
 function cloudCloseAccountMenus() {
-  var signIn = document.getElementById("btnBoardSignIn");
-  var authMenu = document.getElementById("boardAuthMenu");
-  var chip = document.getElementById("btnBoardAccount");
-  var sessionMenu = document.getElementById("boardSessionMenu");
+  var signIn = document.getElementById("btnShellSignIn");
+  var authMenu = document.getElementById("shellCanvasAuthMenu");
+  var chip = document.getElementById("btnShellSession");
+  var sessionMenu = document.getElementById("shellSessionMenu");
   if (authMenu) authMenu.hidden = true;
   if (signIn) signIn.setAttribute("aria-expanded", "false");
   if (sessionMenu) sessionMenu.hidden = true;
@@ -229,8 +229,8 @@ function cloudSetSaveSignedOut(save) {
 }
 
 function syncCloudSaveChrome() {
-  var save = document.getElementById("btnBoardSaveCloud");
-  var status = document.getElementById("boardCloudStatus");
+  var save = document.getElementById("btnShellSaveCloud");
+  var status = document.getElementById("shellCloudStatus");
   if (!save || !status) return;
   if (typeof syncBoardDeleteChrome === "function") syncBoardDeleteChrome();
   var signedIn = !!(cloudSession && cloudSession.user);
@@ -254,7 +254,7 @@ function syncCloudSaveChrome() {
     return;
   }
   save.classList.remove("is-uncreated");
-  var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, boardLocalRev));
+  var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, velaLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
   cloudSetActionLabel(save, copy.pending ? copy.title : "");
@@ -265,14 +265,14 @@ function syncCloudSaveChrome() {
 function cloudSetAccountUi() {
   var configured = cloudConfigured();
   var signedIn = !!(cloudSession && cloudSession.user);
-  var signIn = document.getElementById("btnBoardSignIn");
-  var session = document.getElementById("boardSession");
-  var chip = document.getElementById("btnBoardAccount");
-  var nameEl = document.getElementById("boardAccountName");
-  var sessionName = document.getElementById("boardSessionName");
-  var emailEl = document.getElementById("boardSessionEmail");
-  var img = document.getElementById("boardAccountAvatarImg");
-  var initialsEl = document.getElementById("boardAccountInitials");
+  var signIn = document.getElementById("btnShellSignIn");
+  var session = document.getElementById("shellSession");
+  var chip = document.getElementById("btnShellSession");
+  var nameEl = document.getElementById("shellSessionName");
+  var sessionName = document.getElementById("shellSessionLabel");
+  var emailEl = document.getElementById("shellSessionEmail");
+  var img = document.getElementById("shellSessionAvatarImg");
+  var initialsEl = document.getElementById("shellSessionInitials");
   var profile = signedIn ? cloudAccountProfile(cloudSession.user) : null;
 
   cloudCloseAccountMenus();
@@ -318,7 +318,7 @@ function cloudSetAccountUi() {
 
 function cloudBoardTitle(source) {
   var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(source) : String(source || "");
-  return typeof boardTitleFromBody === "function" ? boardTitleFromBody(body) : "";
+  return typeof velaTitleFromBody === "function" ? velaTitleFromBody(body) : "";
 }
 
 // The board shown in the editor right now: its cloud id, or "" when it has none
@@ -334,7 +334,7 @@ function cloudOpenBoardId() {
 function getBoardTitle(boardId, queriedTitle) {
   var id = String(boardId || "");
   var source = null;
-  var editor = typeof boardSourceEl !== "undefined" && boardSourceEl ? boardSourceEl : null;
+  var editor = typeof velaSourceEl !== "undefined" && velaSourceEl ? velaSourceEl : null;
   if (editor && (!id || id === cloudOpenBoardId())) {
     source = editor.value;
   } else {
@@ -355,14 +355,14 @@ function cloudSetBoardHash(boardId, replace) {
 
 function cloudClearOpenBoard() {
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  if (!cloudBoardId() || !boardSourceEl) return;
-  boardSourceEl.value = "";
+  if (!cloudBoardId() || !velaSourceEl) return;
+  velaSourceEl.value = "";
   boardDirty = false;
-  boardLocalRev = 0;
+  velaLocalRev = 0;
   boardServerRev = 0;
-  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof updateVelaChars === "function") updateVelaChars();
   if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
-  if (typeof renderBoard === "function") renderBoard({ fit: false });
+  if (typeof renderVela === "function") renderVela({ fit: false });
   syncCloudSaveChrome();
 }
 
@@ -380,7 +380,7 @@ function cloudOpenSignInFromLanding() {
     void cloudSignIn("github");
     return;
   }
-  var signIn = document.getElementById("btnBoardSignIn");
+  var signIn = document.getElementById("btnShellSignIn");
   if (intent && signIn && !signIn.hidden && !signIn.disabled) signIn.click();
 }
 
@@ -461,8 +461,8 @@ async function cloudSignOut() {
   cloudSetAccountUi();
   if (leaveCloud) {
     history.replaceState(null, "", location.pathname + location.search);
-    if (typeof bootstrapBoardFromHash === "function") await bootstrapBoardFromHash();
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof bootstrapVelaFromHash === "function") await bootstrapVelaFromHash();
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
   }
   setStatus("Signed out");
 }
@@ -476,19 +476,19 @@ function cloudRowSource(row, fallback) {
 
 function applyCloudBoardRow(row, opts) {
   opts = opts || {};
-  var source = cloudRowSource(row, boardSourceEl ? boardSourceEl.value : "");
-  if (boardSourceEl) boardSourceEl.value = source;
+  var source = cloudRowSource(row, velaSourceEl ? velaSourceEl.value : "");
+  if (velaSourceEl) velaSourceEl.value = source;
   boardDirty = !!(row && row.dirty);
   boardServerRev = Number(row && row.version) || 1;
-  if (boardDirty && Number(row.localRev) > 0) boardLocalRev = Number(row.localRev);
-  else boardLocalRev = boardServerRev;
+  if (boardDirty && Number(row.localRev) > 0) velaLocalRev = Number(row.localRev);
+  else velaLocalRev = boardServerRev;
   if (typeof applyBoardLiveMeta === "function") {
     applyBoardLiveMeta({
       id: row && row.board_id || "",
-      version: boardLocalRev,
+      version: velaLocalRev,
     });
   }
-  if (typeof updateBoardChars === "function") updateBoardChars();
+  if (typeof updateVelaChars === "function") updateVelaChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
@@ -503,7 +503,7 @@ function applyCloudBoardRow(row, opts) {
     created_at: row && row.created_at,
     updated_at: row && row.updated_at,
     dirty: boardDirty,
-    localRev: boardLocalRev,
+    localRev: velaLocalRev,
   });
   syncCloudSaveChrome();
 }
@@ -559,9 +559,9 @@ async function saveBoardToCloud(opts) {
     return false;
   }
   var source = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(boardSourceEl && boardSourceEl.value)
-    : String(boardSourceEl && boardSourceEl.value || "");
-  if (boardSourceEl && source !== boardSourceEl.value) boardSourceEl.value = source;
+    ? stripDocumentMeta(velaSourceEl && velaSourceEl.value)
+    : String(velaSourceEl && velaSourceEl.value || "");
+  if (velaSourceEl && source !== velaSourceEl.value) velaSourceEl.value = source;
   var boardId = (typeof cloudBoardId === "function" && cloudBoardId())
     || (typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "");
   if (cloudPlusDraftActive) boardId = "";
@@ -612,7 +612,7 @@ async function saveBoardToCloud(opts) {
         if (latest.error) throw latest.error;
         if (!latest.data) throw new Error("Cloud board not found");
         applyCloudBoardRow(latest.data);
-        if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+        if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
         setBoardSyncUI("conflict");
         setStatus("Cloud version conflict — reloaded", true);
         return false;
@@ -666,7 +666,7 @@ async function loadCloudBoardByHash(raw) {
       await refreshCloudGroupMembers(boardId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
     if (!known) void cloudRefreshGroups();
@@ -689,7 +689,7 @@ async function loadCloudBoardByHash(raw) {
       await refreshCloudGroupMembers(boardId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
     setStatus("Cloud board loaded");
     if (!known) void cloudRefreshGroups();
@@ -724,8 +724,8 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
   var ids = (boardIds || []).filter(Boolean);
   if (!ids.length) return;
-  if (typeof boardAskConfirm !== "function") return;
-  if (!(await boardAskConfirm({
+  if (typeof askConfirm !== "function") return;
+  if (!(await askConfirm({
     title: "Delete this group?",
     copy: "All boards in the group will be deleted.",
     ok: "Delete",
@@ -738,8 +738,8 @@ async function deleteCloudGroup(groupId, boardIds) {
     var openId = cloudBoardId();
     if (openId && ids.indexOf(openId) >= 0) {
       history.replaceState(null, "", location.pathname + location.search);
-      await bootstrapBoardFromHash();
-      if (typeof renderBoard === "function") renderBoard({ fit: false, restoreView: true });
+      await bootstrapVelaFromHash();
+      if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     }
     if (typeof refreshCloudGroupMembers === "function") {
       await refreshCloudGroupMembers(cloudBoardId());
@@ -752,10 +752,10 @@ async function deleteCloudGroup(groupId, boardIds) {
 }
 
 (function wireCloudAuth() {
-  var signIn = document.getElementById("btnBoardSignIn");
-  var menu = document.getElementById("boardAuthMenu");
-  var chip = document.getElementById("btnBoardAccount");
-  var sessionMenu = document.getElementById("boardSessionMenu");
+  var signIn = document.getElementById("btnShellSignIn");
+  var menu = document.getElementById("shellCanvasAuthMenu");
+  var chip = document.getElementById("btnShellSession");
+  var sessionMenu = document.getElementById("shellSessionMenu");
   if (signIn && menu) {
     signIn.addEventListener("click", function () {
       if (signIn.disabled) return;
@@ -773,17 +773,17 @@ async function deleteCloudGroup(groupId, boardIds) {
       chip.setAttribute("aria-expanded", open ? "true" : "false");
     });
   }
-  document.querySelectorAll("[data-board-oauth]").forEach(function (button) {
+  document.querySelectorAll("[data-shell-oauth]").forEach(function (button) {
     button.addEventListener("click", function () {
       cloudCloseAccountMenus();
       void cloudSignIn(button.dataset.boardOauth);
     });
   });
-  var closeDialog = document.getElementById("btnBoardSignInClose");
-  var backdrop = document.getElementById("boardSignInBackdrop");
+  var closeDialog = document.getElementById("btnShellSignInClose");
+  var backdrop = document.getElementById("shellSignInBackdrop");
   if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
   if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
-  var save = document.getElementById("btnBoardSaveCloud");
+  var save = document.getElementById("btnShellSaveCloud");
   if (save && typeof bindChromeTip === "function") {
     bindChromeTip(save, function () { return save.getAttribute("aria-label") || ""; });
   }
@@ -799,13 +799,13 @@ async function deleteCloudGroup(groupId, boardIds) {
     }
     void saveBoardToCloud({ explicit: true });
   });
-  var signOut = document.getElementById("btnBoardSignOut");
+  var signOut = document.getElementById("btnShellSessionOut");
   if (signOut) signOut.addEventListener("click", function () {
     cloudCloseAccountMenus();
     void cloudSignOut();
   });
   document.addEventListener("click", function (event) {
-    var account = document.getElementById("boardAccount");
+    var account = document.getElementById("shellAccount");
     if (!account || account.contains(event.target)) return;
     cloudCloseAccountMenus();
   });

@@ -10,7 +10,6 @@ const html = read('packages/drawer-app/index.html');
 const css = read('packages/drawer-app/css/03-diagram.css');
 const chromeCss = read('packages/drawer-app/css/07-cloud-chrome.css');
 const build = read('scripts/drawer-app-build/build.mjs');
-const boardFile = read('packages/drawer-app/js/05-board-file.js');
 const renderIo = read('packages/drawer-app/js/05-render-io.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 const cloud = read('packages/drawer-app/js/06-cloud-sync.js');
@@ -23,16 +22,16 @@ assert.doesNotMatch(cloud, /refreshCloudBoardHistory|cloudSetHistoryVisible|pain
 assert.match(cloud, /async function cloudRefreshGroups/, 'the drawer list refresh replaces the history refresh');
 assert.doesNotMatch(css, /\.history-(combo|item|pop|list|block)|#boardHistory/, 'history styles are gone');
 assert.doesNotMatch(chromeCss, /#boardHistory/, 'history chrome styles are gone');
-assert.match(chromeCss, /html\[data-drawer-mode="board"\] \.board-account\s*\{[^}]*bottom:\s*8px/,
+assert.match(chromeCss, /html\[data-drawer-mode="vela"\] \.shell-account-bar\s*\{[^}]*bottom:\s*8px/,
   'account chrome sits on the sidebar foot');
-assert.doesNotMatch(chromeCss, /#boardCloudStatus \{\s*display:\s*none/,
+assert.doesNotMatch(chromeCss, /#shellCloudStatus \{\s*display:\s*none/,
   'Saved stays its own control');
-assert.match(html, /class="board-cloud-status-icon"/, 'Saved is a sidebar-style icon');
-assert.doesNotMatch(html, /board-cloud-status-icon"[\s\S]*?<rect /,
+assert.match(html, /class="shell-cloud-status-icon"/, 'Saved is a sidebar-style icon');
+assert.doesNotMatch(html, /shell-cloud-status-icon"[\s\S]*?<rect /,
   'Saved icon has no drawn frame');
-assert.match(css, /\.board-cloud-status:hover \{[^}]*background:\s*color-mix\(in srgb, var\(--text\) 6%/,
+assert.match(css, /\.shell-cloud-status:hover \{[^}]*background:\s*color-mix\(in srgb, var\(--text\) 6%/,
   'Saved hover matches the rail icon plate');
-assert.match(chromeCss, /\.board-account \.board-cloud-status \{[^}]*background:\s*transparent/,
+assert.match(chromeCss, /\.shell-account-bar \.shell-cloud-status \{[^}]*background:\s*transparent/,
   'Saved matches the rail icon chrome');
 assert.match(css, /Keep editing controls left and account controls right\.[\s\S]*right:\s*48px/,
   'top chrome still clears the right-side dock');

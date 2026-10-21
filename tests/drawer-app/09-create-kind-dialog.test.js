@@ -14,11 +14,11 @@ const build = read('scripts/drawer-app-build/build.mjs');
 const sheet = html.slice(html.indexOf('id="createKindDialog"'));
 assert.match(sheet, /role="dialog" aria-modal="true" aria-labelledby="createKindTitle"/, 'a real modal dialog');
 assert.match(sheet, /class="create-kind-pop"/, 'search-style pop, not the sign-in sheet');
-assert.doesNotMatch(sheet, /board-sign-in-sheet/, 'create dialog does not reuse the small sign-in sheet');
+assert.doesNotMatch(sheet, /shell-dialog-sheet/, 'create dialog does not reuse the small sign-in sheet');
 assert.match(sheet, /id="createKindFilter"/, 'filter field');
 assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
 assert.match(sheet, /id="createKindList"/, 'type list');
-assert.match(build, /06-board-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
+assert.match(build, /06-confirm\.js[\s\S]*09-create-kind-dialog\.js/, 'dialog is in the drawer bundle');
 assert.match(css, /\.create-kind-label/, 'two class headers live in CSS');
 assert.match(js, /cls: "Board"/, 'Board class');
 assert.match(js, /cls: "Mermaid"/, 'Mermaid class');
@@ -27,7 +27,7 @@ assert.match(js, /name: "Mindmap"/, 'lists other mermaid types');
 assert.doesNotMatch(js, /Ready/, 'no Ready badge');
 assert.doesNotMatch(js + css, /create-kind-tag/, 'no per-row class tag');
 assert.match(js, /event\.key !== "Escape"/, 'Esc is cancel');
-assert.doesNotMatch(js, /saveBoardToHash|blankHashBoardSource|blankHashFlowchartSource|boardSourceEl/, 'does not write hash or source');
+assert.doesNotMatch(js, /saveVelaToHash|blankHashBoardSource|blankHashFlowchartSource|velaSourceEl/, 'does not write hash or source');
 
 function makeEl(id) {
   const attrs = {};
