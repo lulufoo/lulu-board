@@ -294,6 +294,10 @@ html[data-drawer-mode="board"] .flowchart-edit-tool#btnFlowchartDelete:not(:disa
   background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
   color: var(--accent, #db4c84) !important;
 }
+html[data-drawer-mode="board"] .flowchart-edit-tool#btnFlowchartLink.is-active {
+  background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
+  color: var(--accent, #db4c84) !important;
+}
 html[data-drawer-mode="board"] .board-edit-glyph { font-size: 17px; }
 html[data-drawer-mode="board"] .board-brand { height: 40px; padding-right: 12px; margin-right: 4px; }
 html[data-drawer-mode="board"] .board-brand-mark { width: 34px; height: 34px; border-radius: 10px; }

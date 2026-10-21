@@ -50,7 +50,9 @@ stageEl.addEventListener('pointerdown', (e) => {
   if (e.button !== 0) return;
   // Pan only on blank stage/canvas — not boxes, items, title, edges, or chrome.
   if (e.target.closest && e.target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .props-panel, .top-float, .zoom-float, .menu, .sheet, button, input, select, textarea, label, g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit")) return;
-  if (boardLinkMode) setBoardLinkMode(false);
+  if (typeof isFlowchartKind === "function" && isFlowchartKind()) {
+    if (typeof clearFlowchartInteraction === "function") clearFlowchartInteraction();
+  } else if (boardLinkMode) setBoardLinkMode(false);
   else clearBoardSelection();
   e.preventDefault();
   try { var sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (_) {}

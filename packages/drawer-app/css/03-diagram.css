@@ -189,6 +189,15 @@ html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-
   stroke: var(--accent, #db4c84) !important;
   fill: var(--accent, #db4c84) !important;
 }
+html.flowchart-link-mode,
+html.flowchart-link-mode #preview {
+  cursor: crosshair;
+}
+html[data-diagram-kind="flowchart"] path.mermaid-edge-hit,
+html[data-diagram-kind="flowchart"] path.mermaid-edge-hit.flowchart-selection {
+  fill: none !important;
+  stroke: transparent !important;
+}
 .board-brand {
   display: none;
   align-items: center;

@@ -51,5 +51,11 @@ const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-board.j
 const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mjs'), 'utf8');
 assert.match(board, /FlowchartShapes\.polishFlowchartNodeShapes/, 'render bakes corners before selection');
 assert.match(build, /03-flowchart-shapes\.js/, 'shapes file is in the drawer bundle');
+assert.strictEqual(typeof Shapes.installFlowchartEdgeHits, 'function', 'edge hits are part of polish');
+assert.match(
+  fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-flowchart-shapes.js'), 'utf8'),
+  /mermaid-edge-hit/,
+  'hit class matches selectionFromDom'
+);
 
 console.log('ok flowchart-shapes');

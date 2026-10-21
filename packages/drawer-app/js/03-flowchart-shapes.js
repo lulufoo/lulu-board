@@ -152,10 +152,33 @@ var FlowchartShapes = (function () {
     });
   }
 
+  function installFlowchartEdgeHits(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll("path.mermaid-edge-hit").forEach(function (el) { el.remove(); });
+    root.querySelectorAll("g.pele-edge").forEach(function (g) {
+      var path = g.querySelector("path:not(.pele-marker)") || g.querySelector("path");
+      if (!path || !path.parentNode) return;
+      var hit = path.cloneNode(false);
+      hit.removeAttribute("id");
+      hit.removeAttribute("marker-end");
+      hit.removeAttribute("marker-start");
+      hit.removeAttribute("style");
+      hit.setAttribute("class", "mermaid-edge-hit");
+      var did = (g.getAttribute && g.getAttribute("data-id")) || g.id || "";
+      if (did) hit.setAttribute("data-edge-dom-id", did);
+      hit.setAttribute("fill", "none");
+      hit.setAttribute("stroke", "transparent");
+      hit.setAttribute("stroke-width", "20");
+      hit.setAttribute("pointer-events", "stroke");
+      path.parentNode.insertBefore(hit, path);
+    });
+  }
+
   function polishFlowchartNodeShapes(root) {
     if (!root || !root.querySelectorAll) return;
     polishDefaultRects(root);
     polishDiamonds(root);
+    installFlowchartEdgeHits(root);
   }
 
   return {
@@ -166,6 +189,7 @@ var FlowchartShapes = (function () {
     diamondPathFromPoints: diamondPathFromPoints,
     diamondHaloPath: diamondHaloPath,
     bakeDefaultRectRadius: bakeDefaultRectRadius,
+    installFlowchartEdgeHits: installFlowchartEdgeHits,
     polishFlowchartNodeShapes: polishFlowchartNodeShapes,
   };
 })();
