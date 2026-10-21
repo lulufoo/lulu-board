@@ -1,4 +1,4 @@
-/* board-mcp/boards.js — PostgREST board reads and writes with CAS */
+/* vela-mcp/boards.js — PostgREST board reads and writes with CAS */
 
 const BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
