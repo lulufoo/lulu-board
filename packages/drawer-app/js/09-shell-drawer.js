@@ -289,7 +289,12 @@ async function shellNewBlankBoard() {
   });
 }
 
+function shellCloseAfterKindPick() {
+  if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
+}
+
 async function shellCommitBlankBoard(kind) {
+  shellCloseAfterKindPick();
   if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudBoardId === "function" && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
   }

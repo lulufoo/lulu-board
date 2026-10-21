@@ -29,6 +29,7 @@ assert.match(tabCss, /flex-direction: column/, 'group tabs stack vertically');
 assert.match(tabCss, /z-index: 4/, 'open dock covers the tab strip');
 assert.match(tabs, /cloudStartPlusDraft/, 'plus starts a local draft');
 assert.match(tabs, /openCreateKindDialog/, 'plus opens the kind dialog before writing');
+assert.match(tabs, /shellCloseDrawer/, 'picking a type from plus closes the left drawer');
 assert.match(tabs, /blankHashFlowchartSource\("Untitled"\)/, 'plus can seed flowchart');
 assert.match(tabs, /onCancel: function \(\) \{\}/, 'plus cancel does not create a draft');
 assert.match(tabs, /saveBoardToHash/, 'plus writes a blank #z: envelope');

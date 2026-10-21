@@ -158,5 +158,6 @@ console.log('ok 09-shell-drawer');
   assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
   assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
   assert.match(commit, /saveBoardToHash\(\{ bump: false \}\)/, 'writes #z after pick');
+  assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
 }
 

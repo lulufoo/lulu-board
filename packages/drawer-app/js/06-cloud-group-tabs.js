@@ -338,6 +338,7 @@ async function cloudStartPlusDraft() {
 }
 
 async function cloudCommitPlusDraft(kind) {
+  if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (cloudPlusDraft) return;
   if (boardDirty && cloudBoardId() && typeof cloudParkDirtyBoard === "function") {
     cloudParkDirtyBoard();
