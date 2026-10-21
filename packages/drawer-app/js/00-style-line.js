@@ -109,8 +109,11 @@
   function mermaidStyleToken(theme, typeStep) {
     var t = resolveThemeId(theme);
     var step = clampMermaidTypeStep(typeStep);
-    if (step === 0) return t === "default" ? "" : t;
-    return encodeStyleTokenJson({ theme: t, type_step: step });
+    var data = {};
+    if (t !== "default") data.theme = t;
+    if (step !== 0) data.type_step = step;
+    if (!Object.keys(data).length) return "";
+    return encodeStyleTokenJson(data);
   }
 
   function themeFromStyleToken(token) {
