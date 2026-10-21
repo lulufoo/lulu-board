@@ -177,9 +177,58 @@ function refuseUnsupportedMermaid() {
   previewEl.innerHTML = "";
   bindCanvasWorld(null, null);
   updateVelaChars();
-  showVelaError("Only flowchart can be rendered.");
-  setStatus("Only flowchart can be rendered.", true);
+  showVelaError("Only flowchart and mindmap can be rendered.");
+  setStatus("Only flowchart and mindmap can be rendered.", true);
   finishCanvasView({});
+}
+
+function renderMindmap(opts) {
+  opts = opts || {};
+  syncBoardEditControls();
+  previewEl.classList.remove("board-preview");
+  syncMermaidStyleChrome(velaSourceEl ? velaSourceEl.value : "");
+  var body = sourceBodyForKind(velaSourceEl.value);
+  updateVelaChars();
+  if (!body.trim()) {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError("");
+    setStatus("No mindmap source");
+    finishCanvasView(opts);
+    return;
+  }
+  if (typeof MindmapEdit === "undefined" || typeof MindmapEdit.render !== "function") {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError("Mindmap renderer missing");
+    setStatus("Mindmap renderer missing", true);
+    finishCanvasView(opts);
+    return;
+  }
+  try {
+    var theme = "default";
+    if (typeof DrawerStyleLine !== "undefined") {
+      theme = DrawerStyleLine.themeFromStyleToken(
+        DrawerStyleLine.splitRendererStyle(velaSourceEl ? velaSourceEl.value : "").token
+      ) || "default";
+    }
+    var result = MindmapEdit.render(body, { layout: "radial", theme: theme, id: "mm" });
+    if (result && result.errors && result.errors.length && !result.svg) {
+      throw new Error(result.errors.join("; "));
+    }
+    previewEl.innerHTML = result && result.svg ? result.svg : "";
+    var svg = previewEl.querySelector("svg");
+    fixSvgIntrinsic(svg);
+    bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
+    showVelaError("");
+    setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
+  } catch (err) {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError(err instanceof Error ? err.message : String(err));
+    setStatus("Invalid mindmap source", true);
+  }
+  finishCanvasView(opts);
 }
 
 function renderVela(opts) {
@@ -190,6 +239,7 @@ function renderVela(opts) {
     : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "board" : "unknown");
   applyDrawerKind(kind);
   if (kind === "flowchart") return renderFlowchart(opts);
+  if (kind === "mindmap") return renderMindmap(opts);
   if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
   syncBoardEditControls();
   previewEl.classList.add('board-preview');

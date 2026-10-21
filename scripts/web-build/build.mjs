@@ -35,6 +35,7 @@ const vendorFiles = [
   'snapdom.mjs',
   'pele.global.js',
   'flowchart.min.js',
+  'mindmap.min.js',
 ];
 for (const name of vendorFiles) {
   const src = path.join(webVendor, name);

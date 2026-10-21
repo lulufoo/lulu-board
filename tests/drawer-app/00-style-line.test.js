@@ -66,7 +66,7 @@ function b64(obj) {
   assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('%% title Demo\nflowchart TD\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('style default\nflowchart TD\nA-->B\n'), 'flowchart');
-  assert.strictEqual(Style.bodyKind('mindmap\nroot((A))\n'), 'mermaid-unsupported');
+  assert.strictEqual(Style.bodyKind('mindmap\nroot((A))\n'), 'mindmap');
   assert.strictEqual(Style.bodyKind('sequenceDiagram\nA->>B: hi\n'), 'mermaid-unsupported');
   assert.strictEqual(Style.bodyKind('block\ncolumns 1\nA\n'), 'mermaid-unsupported');
   assert.strictEqual(Style.bodyKind('xychart\n'), 'mermaid-unsupported');
@@ -95,6 +95,7 @@ function b64(obj) {
     const src = item.kind === 'board' ? 'board "X"\n' : item.kind + '\n';
     assert.strictEqual(Style.bodyTypeLabel(src), item.name, item.kind);
   });
+  assert.strictEqual(Style.bodyTypeLabel('mindmap\nRoot\n'), 'Mindmap');
   assert.strictEqual(Style.bodyTypeLabel('flowchart LR\nA-->B\n'), 'Flowchart');
   assert.strictEqual(Style.bodyTypeLabel('graph TD\nA-->B\n'), 'Flowchart');
   assert.strictEqual(Style.bodyTypeLabel('%% style classic\nflowchart TD\n'), 'Flowchart');

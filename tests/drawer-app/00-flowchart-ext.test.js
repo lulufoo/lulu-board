@@ -9,8 +9,11 @@ const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mj
 const web = fs.readFileSync(path.join(root, 'scripts/web-build/build.mjs'), 'utf8');
 
 assert.match(html, /flowchart\.min\.js/, 'index loads FlowchartEdit bundle');
+assert.match(html, /mindmap\.min\.js/, 'index loads MindmapEdit bundle');
 assert.match(build, /flowchart\.min\.js/, 'drawer-app build copies FlowchartEdit');
+assert.match(build, /mindmap\.min\.js/, 'drawer-app build copies MindmapEdit');
 assert.match(web, /flowchart\.min\.js/, 'web build requires FlowchartEdit');
+assert.match(web, /mindmap\.min\.js/, 'web build requires MindmapEdit');
 assert.ok(fs.existsSync(path.join(root, 'packages/mermaid-ext/flowchart/index.js')), 'flowchart source is in Board');
 assert.ok(fs.existsSync(path.join(root, 'packages/mermaid-ext/mindmap/index.js')), 'mindmap source package is present');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/vendor/mindmap.min.js')), 'MindmapEdit is bundled');

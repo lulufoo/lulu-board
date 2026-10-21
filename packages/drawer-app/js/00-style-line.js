@@ -21,6 +21,7 @@
   }
 
   var FLOWCHART_RE = /^(flowchart|graph|flowchart-elk)\b/i;
+  var MINDMAP_RE = /^mindmap\b/i;
   var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
   var TYPE_NAMES = {
     board: "Board",
@@ -76,12 +77,13 @@
     return /^board\s+/i.test(firstRealLine(body));
   }
 
-  // board | flowchart | mermaid-unsupported | empty | unknown
+  // board | flowchart | mindmap | mermaid-unsupported | empty | unknown
   function bodyKind(body) {
     var line = firstDiagramLine(body);
     if (!line) return "empty";
     if (/^board\s+/i.test(line)) return "board";
     if (FLOWCHART_RE.test(line)) return "flowchart";
+    if (MINDMAP_RE.test(line)) return "mindmap";
     if (MERMAID_RE.test(line)) return "mermaid-unsupported";
     return "unknown";
   }
@@ -114,6 +116,7 @@
     if (name) return name;
     if (kind === "board") return "Board";
     if (kind === "flowchart") return "Flowchart";
+    if (kind === "mindmap") return "Mindmap";
     return "Mermaid";
   }
 
