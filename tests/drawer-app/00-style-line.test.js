@@ -94,6 +94,29 @@ function b64(obj) {
     Token.encodeStylePayload({ theme: 'classic' }),
     'mermaid encode is the shared token',
   );
+  assert.deepStrictEqual(
+    Token.authoredFields({ theme: 'classic', type_step: 0, item_cap: 16 }),
+    { theme: 'classic' },
+    'shared fields omit defaults',
+  );
+  assert.deepStrictEqual(
+    Token.authoredFields({ theme: 'default', type_step: 2, item_cap: 20 }),
+    { type_step: 2, item_cap: 20 },
+    'shared fields keep non-default cap and step',
+  );
+  assert.deepStrictEqual(Token.resolveFields({}), Token.DEFAULTS);
+  assert.strictEqual(
+    Style.mermaidStyleToken('classic', 2),
+    Token.encodeStylePayload(Token.authoredFields({ theme: 'classic', type_step: 2 })),
+    'mermaid token is shared authored fields',
+  );
+  assert.ok(
+    !Object.prototype.hasOwnProperty.call(
+      Token.decodeStylePayload(Style.mermaidStyleToken('classic', 2)),
+      'item_cap',
+    ),
+    'flowchart still does not write item_cap',
+  );
   assert.ok(/patch\.theme == null && patch\.type_step == null/.test(boardJs), 'flowchart persist accepts type_step without theme');
 }
 
