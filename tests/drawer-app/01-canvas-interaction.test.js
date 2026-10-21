@@ -38,6 +38,12 @@ assert.doesNotMatch(boot, /stageEl\.addEventListener\('wheel'/, 'chrome-boot doe
 assert.doesNotMatch(boot, /stageEl\.addEventListener\('pointerdown'/, 'chrome-boot does not own blank pan');
 assert.match(src, /setCanvasZoom\(scale \* factor\)/, 'wheel still uses the live camera');
 assert.match(src, /panX = event\.clientX - panOrigin\.x/, 'pan still writes panX / panY');
+const downAt = src.indexOf('function onPointerDown');
+const moveAt = src.indexOf('function onPointerMove');
+const endAt = src.indexOf('function endPan');
+assert.ok(downAt >= 0 && moveAt > downAt && endAt >= 0);
+assert.doesNotMatch(src.slice(downAt, moveAt), /leaveBlank/, 'pan start does not clear selection');
+assert.match(src.slice(endAt), /!moved && leaveIfStill\) leaveBlank/, 'blank click without move still leaves');
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
 assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
 assert.match(src, /openBlankProps/, 'blank dblclick opens Props');

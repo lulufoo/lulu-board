@@ -99,7 +99,6 @@
   function onPointerDown(event) {
     if (event.button !== 0) return;
     if (isBlockedTarget(event.target)) return;
-    leaveBlank();
     event.preventDefault();
     try {
       var sel = window.getSelection && window.getSelection();
@@ -131,7 +130,7 @@
     if (typeof applyTransform === "function") applyTransform();
   }
 
-  function onPointerUp() {
+  function endPan(leaveIfStill) {
     var wasPanning = panning;
     var moved = panMoved;
     panning = false;
@@ -143,6 +142,15 @@
       if (sel && sel.removeAllRanges) sel.removeAllRanges();
     } catch (_e) {}
     if (wasPanning && moved && typeof noteUserCanvasView === "function") noteUserCanvasView();
+    if (wasPanning && !moved && leaveIfStill) leaveBlank();
+  }
+
+  function onPointerUp() {
+    endPan(true);
+  }
+
+  function onPointerCancel() {
+    endPan(false);
   }
 
   function onSelectStart(event) {
@@ -156,6 +164,7 @@
     stage.addEventListener("pointerdown", onPointerDown);
     stage.addEventListener("pointermove", onPointerMove);
     stage.addEventListener("pointerup", onPointerUp);
+    stage.addEventListener("pointercancel", onPointerCancel);
     stage.addEventListener("selectstart", onSelectStart);
     stage.addEventListener("dblclick", onDblClick);
   }
