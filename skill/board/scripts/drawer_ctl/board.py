@@ -8,19 +8,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from document_meta import (
-    DocumentMetaError,
-    bump_document,
-    correct_missing,
-    has_envelope,
-    join_document,
-    mint_envelope,
-    split_document,
-)
+from document_meta import leftover_envelope, strip_leading_meta_lines
 from drawer_ctl import paths
 from drawer_ctl import util
 from drawer_ctl import titles
-from drawer_ctl.document import persist_document, stale_document_text, envelope_live_fields
 from drawer_ctl import document
 
 def default_board_meta() -> dict:
@@ -138,14 +129,18 @@ def create_board_record(
         dest = paths.board_history_dir() / f"{base}-{n}.bmd"
         n += 1
     did = board_id or util.new_board_id()
-    text, doc = mint_envelope(text, "board", did)
-    util.write_text_atomic(dest, text)
+    body = strip_leading_meta_lines(text)
+    if body and not body.endswith("\n"):
+        body += "\n"
+    util.write_text_atomic(dest, body)
     payload = {
         "title": dtitle,
         "kind": "board",
         "via": via,
         "label": label or util.sanitize_stem(dtitle),
         "created_at": ts,
+        "id": did,
+        "version": max(1, int(rev or 1)),
     }
     _write_board_history_sidecar(dest, payload)
     return dest
@@ -252,15 +247,17 @@ def ensure_board_history_entry_meta(dsl: Path, meta: dict | None = None) -> dict
     meta = dict(meta or _read_board_history_sidecar(dsl))
     text = util.read_text_capped(dsl)
     changed = False
-    try:
-        doc, _ = split_document(text, "board")
-        if str(meta.get("id") or "").strip() != doc["id"]:
-            meta["id"] = doc["id"]
-            changed = True
-    except DocumentMetaError:
+    leftover = leftover_envelope(text, "board")
+    if leftover:
         if not str(meta.get("id") or "").strip():
-            meta["id"] = util.new_board_id()
+            meta["id"] = leftover["id"]
             changed = True
+        if leftover.get("version") and not meta.get("version"):
+            meta["version"] = leftover["version"]
+            changed = True
+    elif not str(meta.get("id") or "").strip():
+        meta["id"] = util.new_board_id()
+        changed = True
     title = str(meta.get("title") or "").strip()
     if not title:
         meta["title"] = titles.derive_board_title(text, meta.get("label"))
@@ -392,11 +389,12 @@ def find_board_record_by_id(board_id: str) -> Path | None:
     for dsl in paths.board_history_records():
         if not dsl.is_file():
             continue
-        try:
-            meta, _ = split_document(dsl.read_text(encoding="utf-8"), "board")
-        except (OSError, DocumentMetaError):
-            continue
-        if meta["id"] == want:
+        side = _read_board_history_sidecar(dsl)
+        sid = str(side.get("id") or "").strip()
+        if not sid:
+            leftover = leftover_envelope(util.read_text_capped(dsl), "board")
+            sid = str((leftover or {}).get("id") or "").strip()
+        if sid == want:
             hits.append(dsl)
     if not hits:
         return None
@@ -424,8 +422,8 @@ def write_board_record(
     dtitle = (title or "").strip() or titles.derive_board_title(text, label or current.get("label"))
     doc = document.persist_document(rec, text, "board", board_id)
     entry = ensure_board_history_entry_meta(rec)
-    entry.pop("id", None)
-    entry.pop("rev", None)
+    entry["id"] = doc["id"]
+    entry["version"] = doc["version"]
     entry["via"] = via or "ui"
     if dtitle:
         entry["title"] = dtitle
@@ -457,18 +455,15 @@ def list_board_history(limit: int = 80) -> list[dict]:
             size = dsl.stat().st_size
         except OSError:
             size = 0
-        try:
-            doc, _ = split_document(util.read_text_capped(dsl), "board")
-        except (OSError, DocumentMetaError):
-            doc = {"id": entry.get("id"), "version": None}
+        live = document.envelope_live_fields(dsl, "board")
         items.append(
             {
-                "id": doc.get("id"),
+                "id": live.get("id") or entry.get("id"),
                 "title": entry.get("title") or "board",
                 "kind": "board",
                 "name": dsl.name,
                 "path": str(dsl),
-                "version": doc.get("version"),
+                "version": live.get("version"),
                 "label": entry.get("label") or "board",
                 "via": entry.get("via") or "",
                 "created_at": entry.get("created_at") or "",
@@ -528,24 +523,11 @@ def delete_board_history(name: str) -> bool:
 
 
 def stale_document_text(path: Path | None, kind: str, base_rev: int | None) -> str | None:
-    if base_rev is None or path is None or not path.is_file():
-        return None
-    try:
-        raw = path.read_text(encoding="utf-8")
-        meta, _ = split_document(raw, kind)
-    except (OSError, DocumentMetaError):
-        return None
-    if int(meta["version"]) != int(base_rev):
-        return raw
-    return None
+    return document.stale_document_text(path, kind, base_rev)
 
 
 def envelope_live_fields(path: Path, kind: str) -> dict:
-    try:
-        doc, _ = split_document(path.read_text(encoding="utf-8"), kind)
-        return {"id": doc["id"], "version": doc["version"]}
-    except (OSError, DocumentMetaError):
-        return {}
+    return document.envelope_live_fields(path, kind)
 
 
 def commit_board_source(
@@ -619,21 +601,21 @@ def commit_board_source(
     if create_new:
         if not str(text).strip():
             return current, read_board_source_text()
-        text, doc = mint_envelope(text, "board", util.new_board_id())
+        did = util.new_board_id()
         dest = create_board_record(
             text,
-            rev=doc["version"],
+            rev=1,
             via=via if via != "cli" else "preview",
             label=label or util.sanitize_stem(dtitle),
-            board_id=doc["id"],
+            board_id=did,
             title=dtitle,
         )
         new_meta = {
-            "rev": doc["version"],
-            "version": doc["version"],
+            "rev": 1,
+            "version": 1,
             "updated_at": int(time.time()),
             "via": via,
-            "id": doc["id"],
+            "id": did,
             "title": dtitle,
             "kind": "board",
             "current": rel_board_current(dest),
@@ -646,21 +628,21 @@ def commit_board_source(
     # —— UI (and other write-through): mutate the current record only ——
     rec = board_record_path_from_meta(current)
     if rec is None:
-        text, doc = mint_envelope(text, "board", board_id or current.get("id") or util.new_board_id())
+        did = board_id or current.get("id") or util.new_board_id()
         dest = create_board_record(
             text,
-            rev=doc["version"],
+            rev=1,
             via=via or "ui",
             label=label or current.get("label") or util.sanitize_stem(dtitle),
-            board_id=doc["id"],
+            board_id=did,
             title=dtitle,
         )
         new_meta = {
-            "rev": doc["version"],
-            "version": doc["version"],
+            "rev": 1,
+            "version": 1,
             "updated_at": int(time.time()),
             "via": via or "ui",
-            "id": doc["id"],
+            "id": did,
             "title": dtitle,
             "kind": "board",
             "current": rel_board_current(dest),

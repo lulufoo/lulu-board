@@ -178,8 +178,8 @@ rewrites it as `parent` pins and drops its `arrange` lines and `flush` membershi
 ## Protocol boundary
 
 Author structure, relations, and layout. A leftover `meta <base64>` line is
-not identity; omit it. A `style <base64>` line is stash: omit when minting;
-leave it unchanged if present; do not add, decode, or edit it.
+not identity; ingress strips it and never writes it back. A `style <base64>`
+line is stash: omit when minting; leave it unchanged if present; do not add, decode, or edit it.
 
 Position and size live only in `layout`. Node-line `x` / `y` / size fields
 and freehand drawing stay out of this protocol.

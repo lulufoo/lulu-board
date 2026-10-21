@@ -17,6 +17,7 @@ from document_meta import (
     encode_meta_payload,
     has_envelope,
     join_document,
+    leftover_envelope,
     mint_envelope,
     rewrite_envelope,
     split_document,
@@ -111,6 +112,13 @@ class DocumentMetaTest(unittest.TestCase):
         raw = '%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'
         self.assertEqual(strip_leading_meta_lines(raw), "flowchart TD\n  A-->B\n")
         self.assertNotIn("m_", strip_leading_meta_lines(raw))
+
+    def test_leftover_envelope_none_without_line(self) -> None:
+        self.assertIsNone(leftover_envelope('board "A"\n', "board"))
+        self.assertEqual(
+            leftover_envelope(join_document({"id": "b_0fc10001", "version": 3}, 'board "A"\n'), "board"),
+            {"id": "b_0fc10001", "version": 3},
+        )
 
 
 class BoardTitleTest(unittest.TestCase):

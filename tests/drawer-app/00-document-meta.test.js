@@ -61,7 +61,12 @@ function token(id, version) {
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');
   assert.ok(/style <base64>/.test(vocab), 'vocab names style as stash');
   assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
+  assert.ok(/never writes it back/.test(vocab), 'vocab says leftover meta is not rewritten');
   assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
+  const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
+  const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
+  const vela = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-vela.js'), 'utf8');
+  assert.ok(!/joinDocument/.test(shell + boardJs + vela), 'drawer production does not join envelope');
 }
 
 console.log('ok document-meta');

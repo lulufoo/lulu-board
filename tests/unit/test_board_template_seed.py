@@ -37,7 +37,7 @@ class BoardTemplateSeedTest(unittest.TestCase):
         again = dc.seed_default_board_if_empty()
         self.assertIsNone(again)
         self.assertIn('board "Mine"', rec.read_text(encoding="utf-8"))
-        self.assertTrue(rec.read_text(encoding="utf-8").lstrip().startswith("meta "))
+        self.assertFalse(rec.read_text(encoding="utf-8").lstrip().startswith("meta "))
         names = [p.name for p in dc.board_history_dir().glob("*.bmd")]
         self.assertEqual(len(names), 1)
 

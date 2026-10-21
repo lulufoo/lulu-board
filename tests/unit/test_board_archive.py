@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" /
 
 import drawer_control as dc
 from drawer_ctl import paths as _ctl_paths
-from document_meta import join_document, split_document
+from document_meta import join_document
 
 
 class BoardArchiveTest(unittest.TestCase):
@@ -31,13 +31,14 @@ class BoardArchiveTest(unittest.TestCase):
     def test_ui_write_does_not_archive(self) -> None:
         seed, conflict = dc.commit_board_source("board Old\n", via="cli", label="shown")
         self.assertIsNone(conflict)
-        board_id = seed["id"]
         n = len(self._history())
-        incoming = join_document({"id": board_id, "version": seed["rev"]}, "board New\n")
+        incoming = "board New\n"
         meta, conflict = dc.commit_board_source(incoming, via="ui", label="ui-write")
         self.assertIsNone(conflict)
         self.assertEqual(meta["rev"], seed["rev"] + 1)
-        self.assertIn("board New", dc.read_board_source_text())
+        live = dc.read_board_source_text()
+        self.assertIn("board New", live)
+        self.assertFalse(live.lstrip().startswith("meta "))
         self.assertEqual(len(self._history()), n)
 
     def test_cli_preview_mints_new_record(self) -> None:
@@ -58,7 +59,7 @@ class BoardArchiveTest(unittest.TestCase):
         self.assertIsNone(conflict)
         live = dc.read_board_source_text()
         self.assertIn('board "Fresh"', live)
-        self.assertTrue(live.lstrip().startswith("meta "))
+        self.assertFalse(live.lstrip().startswith("meta "))
         self.assertTrue(self._history())
 
     def test_lifts_nested_history_board(self) -> None:
@@ -110,14 +111,27 @@ class BoardArchiveTest(unittest.TestCase):
 
     def test_stale_base_rev_returns_conflict(self) -> None:
         seed, _ = dc.commit_board_source("board Live\n", via="cli", label="live")
-        board_id = seed["id"]
-        # pretend client is one rev behind
-        incoming = join_document({"id": board_id, "version": seed["rev"]}, "board X\n")
         meta, conflict = dc.commit_board_source(
-            incoming, via="ui", base_rev=seed["rev"] - 1, label="x"
+            "board X\n", via="ui", base_rev=seed["rev"] - 1, label="x"
         )
         self.assertIsNotNone(conflict)
         self.assertIn("board Live", conflict)
+
+    def test_ui_write_strips_leftover_envelope(self) -> None:
+        seed, _ = dc.commit_board_source("board Old\n", via="cli", label="old")
+        leftover = join_document({"id": seed["id"], "version": seed["rev"]}, "board New\n")
+        meta, conflict = dc.commit_board_source(leftover, via="ui", label="ui-write")
+        self.assertIsNone(conflict)
+        live = dc.read_board_source_text()
+        self.assertFalse(live.lstrip().startswith("meta "))
+        self.assertIn("board New", live)
+
+    def test_production_does_not_join_envelope(self) -> None:
+        root = Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts" / "drawer_ctl"
+        for name in ("document.py", "board.py", "migrate.py"):
+            src = (root / name).read_text(encoding="utf-8")
+            self.assertNotIn("join_document(", src)
+            self.assertNotIn("mint_envelope(", src)
 
 
 if __name__ == "__main__":

@@ -43,20 +43,11 @@ function wrapEditorApi(api) {
     if (typeof fn !== "function") return;
     api[key] = function(text) {
       if (typeof text !== "string") return fn.apply(api, arguments);
-      if (!/^\s*meta\s+/.test(text)) return fn.apply(api, arguments);
-      var doc = splitDocument(text);
+      var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(text) : text;
+      if (body === text) return fn.apply(api, arguments);
       var args = Array.prototype.slice.call(arguments);
-      args[0] = doc.body;
-      var out = fn.apply(api, args);
-      if (key === "render" || key === "parse" || key === "isIdTaken" || key === "findNode" || key === "getLinkRouteStyle") return out;
-      function rejoin(nextBody) {
-        return joinDocument(doc.meta, nextBody);
-      }
-      if (typeof out === "string") return rejoin(out);
-      if (out && typeof out.source === "string") {
-        out.source = rejoin(out.source);
-      }
-      return out;
+      args[0] = body;
+      return fn.apply(api, args);
     };
   });
 }
