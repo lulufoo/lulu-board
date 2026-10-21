@@ -23,15 +23,15 @@ function createServer(env, identity, token) {
   server.registerTool("whoami", { description: "Return the authorized Lulu Vela account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
-  server.registerTool("get_board", {
-    description: "Load one owned board by id. group_id in the result is the group this board_id belongs to.",
+  server.registerTool("get_vela", {
+    description: "Load one owned Vela by id. group_id in the result is the group this board_id belongs to.",
     inputSchema: { board_id: z.string() },
   }, async ({ board_id }) => {
     try { return toolText(await getBoard(env, token, board_id)); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("create_board", {
-    description: "Insert a new owned board and return its cloud id. group_id in the result is the group this board_id belongs to. Optional group_id joins that group on the current account so this board is classified with other board ids that share it. Omit group_id to create a new group.",
+  server.registerTool("create_vela", {
+    description: "Insert a new owned Vela and return its cloud id. group_id in the result is the group this board_id belongs to. Optional group_id joins that group on the current account so this Vela is classified with other Vela that share it. Omit group_id to create a new group.",
     inputSchema: {
       bmd: z.string(),
       board_id: z.string().optional(),
@@ -43,8 +43,8 @@ function createServer(env, identity, token) {
     try { return toolText(await createBoard(env, token, identity.user_id, bmd, board_id, group_id)); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("save_board", {
-    description: "Update an owned board when expected_version still matches. row.group_id is the group this board_id belongs to.",
+  server.registerTool("save_vela", {
+    description: "Update an owned Vela when expected_version still matches. row.group_id is the group this board_id belongs to.",
     inputSchema: { board_id: z.string(), bmd: z.string(), expected_version: z.number() },
   }, async ({ board_id, bmd, expected_version }) => {
     try { return toolText(await saveBoard(env, token, board_id, bmd, expected_version)); }

@@ -225,7 +225,7 @@ try {
   const flowSaved = await saveBoard(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
   const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
-  assert.ok(flowPatch, 'save_board stores flowchart in bmd');
+  assert.ok(flowPatch, 'save_vela stores flowchart in bmd');
 
   const conflict = await saveBoard(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
@@ -259,9 +259,9 @@ assert.equal(denied.status, 401);
 assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\/\/mcp\.luluboard\.app\/\.well-known\/oauth-protected-resource"/);
 
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
-assert.match(worker, /registerTool\("get_board"/, 'get_board is registered');
-assert.match(worker, /registerTool\("create_board"/, 'create_board is registered');
-assert.match(worker, /registerTool\("save_board"/, 'save_board is registered');
+assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
+assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
+assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
 assert.match(worker, /createBoard\(env, token, identity\.user_id, bmd, board_id, group_id\)/);
 assert.match(worker, /group_id: z\.string\(\)\.optional\(\)/);
 assert.match(worker, /group this board_id belongs to/, 'get/create say group_id is the board group');
