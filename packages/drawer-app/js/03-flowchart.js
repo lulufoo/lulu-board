@@ -510,19 +510,20 @@ function flowchartHitSelect(event) {
   if (flowchartEventOnChrome(event)) return false;
   var sel = flowchartSelectionFromEvent(event);
   if (flowchartLinkMode) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (sel && sel.kind === "node") flowchartLinkPick(sel);
-    else clearFlowchartInteraction();
-    return true;
-  }
-  if (event.type === "pointerdown") {
-    selectFlowchartHit(sel);
-    if (sel) {
+    if (sel && sel.kind === "node") {
       event.preventDefault();
       event.stopPropagation();
+      flowchartLinkPick(sel);
+      return true;
     }
-    return !!sel;
+    return false;
+  }
+  if (event.type === "pointerdown") {
+    if (!sel) return false;
+    selectFlowchartHit(sel);
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
   }
   return !!sel;
 }
@@ -596,3 +597,14 @@ document.addEventListener("pointerdown", function (event) {
     clearFlowchartInteraction();
   }
 }, true);
+
+function flowchartCanvasHit(target) {
+  return !!(target && target.closest && target.closest("g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit"));
+}
+
+if (typeof CanvasInteraction !== "undefined" && typeof CanvasInteraction.registerKind === "function") {
+  CanvasInteraction.registerKind("flowchart", {
+    isHit: flowchartCanvasHit,
+    clear: clearFlowchartInteraction,
+  });
+}

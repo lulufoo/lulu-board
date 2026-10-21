@@ -1205,7 +1205,7 @@ function wireBoardDrag(root, board) {
   canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
 }
 function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardClickWired === "1") return; canvas.dataset.boardClickWired = "1"; canvas.addEventListener("click", function(event) { var edge = event.target.closest ? event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link") : null; var hit = event.target.closest ? event.target.closest(".board-title-node, .board-item, .board-zone") : null; if (boardLinkMode) { event.preventDefault(); event.stopPropagation(); return; } if (boardEventIsItemMdLink(event)) return; /* pick happens on pointerdown */
-      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) { clearBoardSelection(); return; } var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
+      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
 
 function commitBoardArrow() {
   if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
@@ -1622,31 +1622,10 @@ document.addEventListener("keydown", function(event) {
   boardNudgeOrder(delta);
 });
 
-function boardClickIsOnNode(event) {
-  return !!(event.target.closest && event.target.closest(".board-title-node, .board-item, .board-zone, .board-edge, .board-edge-label, .board-slot.is-link, .board-inspector, .board-dock, .board-account, .top-float, .menu, .sheet, button, input, select, textarea, label"));
-}
 function boardEventIsItemMdLink(event) {
   var a = event.target && event.target.closest ? event.target.closest("a") : null;
   return !!(a && a.closest && a.closest(".board-item-md"));
 }
-// Blank click anywhere in the preview/canvas clears selection (grid, padding, svg empty).
-previewEl.addEventListener("pointerdown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
-  if (event.button !== 0) return;
-  if (boardClickIsOnNode(event)) return;
-  if (boardLinkMode) { setBoardLinkMode(false); return; }
-  clearBoardSelection();
-}, true);
-previewEl.addEventListener("click", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "board") return;
-  if (boardLinkMode) return;
-  if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return;
-  var canvas = event.target.closest(".board-canvas");
-  var root = event.target.closest(".board-render");
-  var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
-  if (hit && canvas && canvas.contains(hit)) return;
-  if (!boardClickIsOnNode(event)) clearBoardSelection();
-});
 previewEl.addEventListener("dblclick", function(event) {
   if (!isBoardCanvasKind()) return;
   if (boardEventIsItemMdLink(event)) return;
@@ -1672,6 +1651,19 @@ function sourceBodyForKind(text) {
 function isBoardCanvasKind() {
   var kind = document.documentElement.dataset.diagramKind || "";
   return kind !== "flowchart" && kind !== "mermaid-unsupported";
+}
+
+function boardCanvasHit(target) {
+  return !!(target && target.closest && target.closest("#boardTitlePin, .board-title-node, .board-zone, .board-item, .board-edge, .board-edge-label, .board-slot.is-link"));
+}
+
+function boardCanvasClear() {
+  if (boardLinkMode) setBoardLinkMode(false);
+  else clearBoardSelection();
+}
+
+if (typeof CanvasInteraction !== "undefined" && typeof CanvasInteraction.registerKind === "function") {
+  CanvasInteraction.registerKind("board", { isHit: boardCanvasHit, clear: boardCanvasClear });
 }
 
 function applyDrawerKind(kind) {

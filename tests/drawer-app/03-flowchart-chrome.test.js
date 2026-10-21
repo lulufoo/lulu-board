@@ -59,9 +59,10 @@ assert.match(board, /FlowchartTypeScale\.px\("default", typeStep\)/, 'Pele still
 assert.match(board, /FlowchartTypeScale\.applyToRoot/, 'render paints the four rungs');
 const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 const interact = fs.readFileSync(path.join(root, 'packages/drawer-app/js/01-canvas-interaction.js'), 'utf8');
-assert.match(interact, /g\.pele-node/, 'pan ignores Pele hits');
-assert.match(boot, /clearFlowchartInteraction/, 'blank stage leaves flowchart selection');
-assert.match(boot, /CanvasInteraction\.setOnBlank/, 'flowchart clear is a hook on the canvas module');
+assert.match(js, /flowchartCanvasHit/, 'flowchart registers its own hit test');
+assert.match(js, /registerKind\("flowchart"/, 'flowchart registers clear on the canvas module');
+assert.match(js, /g\.pele-node/, 'flowchart hit still includes Pele nodes');
+assert.doesNotMatch(boot, /clearFlowchartInteraction/, 'chrome-boot has no flowchart blank path');
 assert.match(shellCss, /btnFlowchartLink\.is-active/, 'Link tool active state is visible');
 assert.match(css, /html\.flowchart-link-mode/, 'link mode cursor is on the canvas');
 assert.match(board, /isBoardCanvasKind/);

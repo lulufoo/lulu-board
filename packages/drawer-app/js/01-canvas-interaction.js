@@ -6,14 +6,7 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  var BLOCK_SEL = [
-    "#boardTitlePin",
-    ".board-title-node",
-    ".board-zone",
-    ".board-item",
-    ".board-edge",
-    ".board-edge-label",
-    ".board-slot.is-link",
+  var CHROME_SEL = [
     ".board-inspector",
     ".board-dock",
     ".board-account",
@@ -27,14 +20,9 @@
     "select",
     "textarea",
     "label",
-    "g.pele-node",
-    "g.pele-cluster",
-    "g.pele-cluster-title",
-    "g.pele-edge",
-    "g.pele-edge-label",
-    "path.mermaid-edge-hit",
   ].join(", ");
 
+  var kinds = Object.create(null);
   var onBlank = null;
   var boundStage = null;
   var panning = false;
@@ -45,8 +33,34 @@
     onBlank = typeof fn === "function" ? fn : null;
   }
 
+  function registerKind(id, rec) {
+    var key = String(id || "").trim();
+    if (!key || !rec) return;
+    kinds[key] = {
+      isHit: typeof rec.isHit === "function" ? rec.isHit : null,
+      clear: typeof rec.clear === "function" ? rec.clear : null,
+    };
+  }
+
+  function activeKindId() {
+    var html = typeof document !== "undefined" ? document.documentElement : null;
+    var kind = html && html.dataset ? html.dataset.diagramKind : "";
+    if (kind === "flowchart" || kind === "mermaid-unsupported") return "flowchart";
+    return "board";
+  }
+
+  function kindHit(target) {
+    var id;
+    for (id in kinds) {
+      if (kinds[id] && kinds[id].isHit && kinds[id].isHit(target)) return true;
+    }
+    return false;
+  }
+
   function isBlockedTarget(target) {
-    return !!(target && typeof target.closest === "function" && target.closest(BLOCK_SEL));
+    if (!target || typeof target.closest !== "function") return false;
+    if (target.closest(CHROME_SEL)) return true;
+    return kindHit(target);
   }
 
   function wheelFactor(deltaY, deltaMode) {
@@ -55,7 +69,9 @@
   }
 
   function leaveBlank() {
-    if (typeof onBlank === "function") onBlank();
+    var rec = kinds[activeKindId()];
+    if (rec && rec.clear) rec.clear();
+    else if (typeof onBlank === "function") onBlank();
   }
 
   function onWheel(event) {
@@ -132,8 +148,10 @@
   if (typeof stageEl !== "undefined" && stageEl) bind(stageEl);
 
   return {
-    BLOCK_SEL: BLOCK_SEL,
+    CHROME_SEL: CHROME_SEL,
     setOnBlank: setOnBlank,
+    registerKind: registerKind,
+    activeKindId: activeKindId,
     isBlockedTarget: isBlockedTarget,
     wheelFactor: wheelFactor,
     leaveBlank: leaveBlank,

@@ -8,15 +8,6 @@ function flashChrome(ms = 900) {
   chromeTimer = setTimeout(() => shell.classList.remove('show-chrome'), ms);
 }
 
-if (typeof CanvasInteraction !== "undefined") {
-  CanvasInteraction.setOnBlank(function () {
-    if (typeof isFlowchartKind === "function" && isFlowchartKind()) {
-      if (typeof clearFlowchartInteraction === "function") clearFlowchartInteraction();
-    } else if (boardLinkMode) setBoardLinkMode(false);
-    else clearBoardSelection();
-  });
-}
-
 (function wireBoardTitlePin() {
   var pin = boardTitlePinEl();
   if (!pin || pin.dataset.wired === "1") return;
