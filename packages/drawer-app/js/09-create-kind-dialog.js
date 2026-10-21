@@ -44,8 +44,12 @@
     { cls: "Mermaid", name: "Ishikawa", note: "map", ready: false, kind: "ishikawa" },
   ];
 
+  var MERMAID_NOTES = ["flow", "chart", "design", "map", "time"];
   var createKindWait = null;
   var createKindPicked = "";
+  var mermaidOpen = false;
+  var noteRailPinned = "";
+  var noteRailLock = 0;
 
   function createKindEls() {
     return {
@@ -61,39 +65,148 @@
     return els.filter ? String(els.filter.value || "").trim().toLowerCase() : "";
   }
 
+  function createKindRowHtml(it) {
+    var picked = it.kind === createKindPicked;
+    var cls = "create-kind-row" + (picked ? " is-picked" : "");
+    var note = it.cls === "Mermaid" ? "" : "<span>" + it.note + "</span>";
+    return "<button type=\"button\" class=\"" + cls + "\" data-create-kind=\"" + it.kind + "\""
+      + (it.ready ? "" : " disabled") + ">"
+      + "<span class=\"create-kind-main\"><b>" + it.name + "</b>" + note + "</span>"
+      + "</button>";
+  }
+
+  function createKindNoteTitle(note) {
+    return note.charAt(0).toUpperCase() + note.slice(1);
+  }
+
+  function createKindGroupHtml(name, open) {
+    return "<details class=\"create-kind-group\" data-create-kind-group=\"" + name + "\""
+      + (open ? " open" : "") + ">"
+      + "<summary class=\"create-kind-label\">" + name + "</summary>";
+  }
+
+  function createKindNoteStep(list) {
+    var row = list.querySelector(".create-kind-note-block .create-kind-row");
+    var h = row && row.getBoundingClientRect ? row.getBoundingClientRect().height : 0;
+    return h > 0 ? h : 36;
+  }
+
+  function markCreateKindNote(rail, current) {
+    var nodes = (rail.parentNode || rail).querySelectorAll("[data-create-kind-note], [data-create-kind-note-jump]");
+    for (var j = 0; j < nodes.length; j++) {
+      var node = nodes[j];
+      if (node.classList && node.classList.toggle) {
+        node.classList.toggle("is-current", (node.getAttribute("data-create-kind-note-jump") || node.getAttribute("data-create-kind-note") || "") === current);
+      }
+    }
+  }
+
+  function pinCreateKindNote(title, list) {
+    noteRailPinned = title || "";
+    noteRailLock = list && typeof list.scrollTop === "number" ? list.scrollTop : 0;
+  }
+
+  function syncCreateKindNoteRail() {
+    var els = createKindEls();
+    if (!els.list || typeof els.list.querySelector !== "function") return;
+    var rail = els.list.querySelector(".create-kind-note-rail");
+    if (!rail || typeof rail.querySelectorAll !== "function") return;
+    var blocks = els.list.querySelectorAll(".create-kind-note-block");
+    var current = blocks.length ? blocks[0].getAttribute("data-create-kind-note") || "" : "";
+    var step = createKindNoteStep(els.list);
+    if (noteRailPinned && Math.abs((els.list.scrollTop || 0) - noteRailLock) < step) {
+      current = noteRailPinned;
+    } else if (els.list.getBoundingClientRect && blocks.length) {
+      noteRailPinned = "";
+      var view = els.list.getBoundingClientRect();
+      for (var i = 0; i < blocks.length; i++) {
+        var block = blocks[i];
+        if (!block.getBoundingClientRect) continue;
+        var r = block.getBoundingClientRect();
+        var vis = Math.min(r.bottom, view.bottom) - Math.max(r.top, view.top);
+        if (vis >= step) {
+          current = block.getAttribute("data-create-kind-note") || "";
+        }
+      }
+    }
+    markCreateKindNote(rail, current);
+  }
+
+  function jumpCreateKindNote(title) {
+    var els = createKindEls();
+    if (!els.list || typeof els.list.querySelector !== "function") return;
+    var block = els.list.querySelector(".create-kind-note-block[data-create-kind-note=\"" + title + "\"]");
+    if (block && typeof block.scrollIntoView === "function") block.scrollIntoView({ block: "start" });
+    pinCreateKindNote(title, els.list);
+    var rail = els.list.querySelector(".create-kind-note-rail");
+    if (rail) markCreateKindNote(rail, title);
+  }
+
   function paintCreateKindList() {
     var els = createKindEls();
     if (!els.list) return;
     var q = createKindQuery();
-    var html = "";
-    var last = "";
-    var n = 0;
+    var board = [];
+    var mermaidByNote = {};
     CREATE_KIND_ITEMS.forEach(function (it) {
       var hay = (it.cls + " " + it.name + " " + it.note).toLowerCase();
       if (q && hay.indexOf(q) < 0) return;
-      if (it.cls !== last) {
-        html += "<div class=\"create-kind-label\">" + it.cls + "</div>";
-        last = it.cls;
+      if (it.cls !== "Mermaid") {
+        board.push(it);
+        return;
       }
-      var picked = it.kind === createKindPicked;
-      var cls = "create-kind-row" + (picked ? " is-picked" : "");
-      html += "<button type=\"button\" class=\"" + cls + "\" data-create-kind=\"" + it.kind + "\""
-        + (it.ready ? "" : " disabled") + ">"
-        + "<span class=\"create-kind-main\"><b>" + it.name + "</b><span>" + it.note + "</span></span>"
-        + "</button>";
-      n += 1;
+      if (!mermaidByNote[it.note]) mermaidByNote[it.note] = [];
+      mermaidByNote[it.note].push(it);
     });
+    var html = "";
+    var n = 0;
+    if (board.length) {
+      html += "<div class=\"create-kind-label\">Board</div>";
+      board.forEach(function (it) {
+        html += createKindRowHtml(it);
+        n += 1;
+      });
+    }
+    var notes = MERMAID_NOTES.filter(function (note) {
+      return mermaidByNote[note] && mermaidByNote[note].length;
+    });
+    if (notes.length) {
+      var blocks = "";
+      var jumps = "";
+      notes.forEach(function (note) {
+        var title = createKindNoteTitle(note);
+        blocks += "<div class=\"create-kind-note-block\" data-create-kind-note=\"" + title + "\">";
+        mermaidByNote[note].forEach(function (it) {
+          blocks += createKindRowHtml(it);
+          n += 1;
+        });
+        blocks += "</div>";
+        jumps += "<button type=\"button\" class=\"create-kind-note-jump\" data-create-kind-note-jump=\"" + title + "\">" + title + "</button>";
+      });
+      html += createKindGroupHtml("Mermaid", mermaidOpen || !!q)
+        + "<div class=\"create-kind-mermaid\"><div class=\"create-kind-mermaid-list\">" + blocks
+        + "</div><nav class=\"create-kind-note-rail\" aria-label=\"Mermaid categories\">" + jumps
+        + "</nav></div></details>";
+    }
     els.list.innerHTML = n ? html : "<div class=\"create-kind-empty\">No types match</div>";
+    pinCreateKindNote(notes.length ? createKindNoteTitle(notes[0]) : "", els.list);
+    syncCreateKindNoteRail();
   }
 
   function createKindCleanup() {
     var els = createKindEls();
     if (els.root) els.root.hidden = true;
     if (els.list && els.list._createKindPick) els.list.removeEventListener("click", els.list._createKindPick);
+    if (els.list && els.list._createKindToggle) els.list.removeEventListener("toggle", els.list._createKindToggle, true);
+    if (els.list && els.list._createKindScroll) els.list.removeEventListener("scroll", els.list._createKindScroll);
     if (els.filter && els.filter._createKindFilter) els.filter.removeEventListener("input", els.filter._createKindFilter);
     if (els.backdrop && els.backdrop._createKindCancel) els.backdrop.removeEventListener("click", els.backdrop._createKindCancel);
     document.removeEventListener("keydown", createKindOnKey);
-    if (els.list) els.list._createKindPick = null;
+    if (els.list) {
+      els.list._createKindPick = null;
+      els.list._createKindToggle = null;
+      els.list._createKindScroll = null;
+    }
     if (els.filter) els.filter._createKindFilter = null;
     if (els.backdrop) els.backdrop._createKindCancel = null;
   }
@@ -117,6 +230,9 @@
     if (createKindWait) createKindWait("cancel");
     createKindCleanup();
     createKindPicked = "";
+    mermaidOpen = false;
+    noteRailPinned = "";
+    noteRailLock = 0;
     if (els.filter) els.filter.value = "";
     var done = false;
     function finish(action, kind) {
@@ -131,6 +247,12 @@
     els.list._createKindPick = function (event) {
       var node = event && event.target;
       while (node && node !== els.list) {
+        if (node.tagName === "SUMMARY" || (node.getAttribute && node.getAttribute("data-create-kind-group"))) return;
+        var jump = node.getAttribute && node.getAttribute("data-create-kind-note-jump");
+        if (jump) {
+          jumpCreateKindNote(jump);
+          return;
+        }
         var kind = node.getAttribute && node.getAttribute("data-create-kind");
         if (kind) {
           if (node.disabled) return;
@@ -140,9 +262,22 @@
         node = node.parentNode;
       }
     };
+    els.list._createKindToggle = function (event) {
+      var t = event && event.target;
+      if (!t || !t.getAttribute || t.getAttribute("data-create-kind-group") !== "Mermaid") return;
+      mermaidOpen = !!t.open;
+      if (t.open) {
+        var first = els.list.querySelector(".create-kind-note-block");
+        pinCreateKindNote((first && first.getAttribute("data-create-kind-note")) || "", els.list);
+      }
+      syncCreateKindNoteRail();
+    };
+    els.list._createKindScroll = function () { syncCreateKindNoteRail(); };
     els.filter._createKindFilter = function () { paintCreateKindList(); };
     els.backdrop._createKindCancel = function () { finish("cancel"); };
     els.list.addEventListener("click", els.list._createKindPick);
+    els.list.addEventListener("toggle", els.list._createKindToggle, true);
+    els.list.addEventListener("scroll", els.list._createKindScroll);
     if (els.filter) els.filter.addEventListener("input", els.filter._createKindFilter);
     if (els.backdrop) els.backdrop.addEventListener("click", els.backdrop._createKindCancel);
     document.addEventListener("keydown", createKindOnKey);
