@@ -151,8 +151,8 @@ html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
   pointer-events: all;
-  rx: var(--_r);
-  ry: var(--_r);
+  rx: 4px !important;
+  ry: 4px !important;
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
 }
@@ -161,10 +161,6 @@ html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon:not(.canvas-h
 html[data-diagram-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
-}
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect > rect {
-  rx: var(--_r);
-  ry: var(--_r);
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-node text,
 html[data-diagram-kind="flowchart"] #preview g.pele-node tspan,

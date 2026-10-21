@@ -51,7 +51,8 @@ assert.doesNotMatch(js, /path\.style\.stroke\s*=/, 'selected link color is CSS c
 assert.doesNotMatch(js, /\[0, -10\].*\[0, 18\]/, 'blank near a link is not padded into a hit');
 assert.match(css, /--_r: var\(--pele-radius, var\(--bf-radius-box, 12px\)\)/, 'flowchart corner follows the Board card');
 assert.doesNotMatch(css, /--_c: var\(--pele-accent, #5b7bd5\)/, 'no Pele blue fallback on the host');
-assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\) \{[\s\S]*rx: var\(--_r/, 'group uses the node corner');
+assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\) \{[\s\S]*rx: 4px !important/, 'group corner matches the selection ring radius');
+assert.doesNotMatch(css, /g\.pele-node\.pele-shape-rect > rect \{[^}]*rx:\s*var\(--_r\)/, 'node corner is the baked 4px, not a second 12px radius');
 assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\) \{[\s\S]*stroke: var\(--_b\)/, 'group stroke matches node');
 assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\) \{[\s\S]*fill: var\(--_s\)/, 'group paper is the Board surface');
 assert.match(css, /flowchart-selection-halo/);
