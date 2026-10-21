@@ -59,7 +59,7 @@ assert.match(css, /flowchart-selection-halo/);
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--canvas-ring/, 'selected node keeps the shared canvas ring');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo stays visible');
 const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
-assert.match(shellCss, /btnFlowchartDelete:not\(:disabled\)/, 'Delete armed state is visible');
+assert.doesNotMatch(shellCss, /btnFlowchartDelete:not\(:disabled\)/, 'Delete stays the same fill as Board when a shape is selected');
 assert.match(shellCss, /flowchart-edit-tool/, 'flowchart tools share Board chrome');
 assert.match(shellCss, /html\[data-drawer-mode="vela"\] \.flowchart-edit-tool \{[\s\S]*height: 40px/, 'flowchart tools use Board 40px fill pills');
 assert.match(shellCss, /#flowchartTypeEditor/, 'flowchart Type uses fill-pill chrome');
