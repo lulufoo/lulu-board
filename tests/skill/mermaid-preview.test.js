@@ -7,10 +7,11 @@ const { spawnSync } = require('child_process');
 const root = path.join(__dirname, '../..');
 const ctl = path.join(root, 'skill/mermaid/scripts/drawer_control.py');
 const viewer = fs.readFileSync(path.join(root, 'skill/mermaid/references/viewer.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8');
 
-assert.match(viewer, /`preview` encodes `\{bmd, version\}`/, 'viewer encodes the hash envelope');
-assert.match(viewer, /CLI preview never mints `#b:`/, 'preview stays unsigned');
+assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
+assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
 assert.match(viewer, /`--kind flowchart`/, 'viewer pins flowchart kind');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');

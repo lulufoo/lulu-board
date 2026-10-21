@@ -1,6 +1,6 @@
 # Viewer
 
-Public hash preview for Mermaid. Loaded from `/mermaid` only.
+Mermaid CLI preview. Loaded from `/mermaid` for `status` or kind.
 
 ## CLI
 
@@ -8,28 +8,20 @@ Public hash preview for Mermaid. Loaded from `/mermaid` only.
 2. Extra verb: `status`.
 3. Subcommand contract: `$DRAWER_CTL --help`.
 
-## Write-back
+## Kind
 
-| Concern | Rule |
-|---|---|
-| Write | `preview` encodes `{bmd, version}` to the public hash URL |
-| Cache | `preview` does not write `history/` |
-| `--id` | leftover; ignored |
-| Mint | any file or stdin is a new encode |
-| Kind | `--kind flowchart` |
-
-## Pointers
-
-1. CLI preview does not retarget local `current`.
-2. The public page does not write CLI history.
-3. Hash mode emits `#z:`. Cloud mode emits `#b:<id>` after MCP `create_vela` or `save_vela`.
-4. CLI preview never mints `#b:`.
+`--kind flowchart`
 
 ## Seed
 
 1. `preview --kind flowchart` with no file and no stdin does not create a record.
 
-## Open
+## Write-back
 
-stdout `open` is `created` | `current`.
-stdout `url` is the public hash link on `https://preview.luluvela.app/`, or the bare site when there is no source.
+| Concern | Rule |
+|---|---|
+| Cache | `preview` does not write `history/` |
+| `--id` | leftover; ignored |
+| Mint | any file or stdin is a new encode |
+
+Pointer grammar: [pointers](../../references/pointers.md).
