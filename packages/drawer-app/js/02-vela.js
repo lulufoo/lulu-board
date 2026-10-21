@@ -45,7 +45,7 @@ function applyDrawerKind(kind) {
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
       ? "Select a group, node, or link"
-      : "Select a title, box, or item";
+      : (kind === "mindmap" ? "Select a topic" : "Select a title, box, or item");
   }
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
@@ -53,6 +53,12 @@ function applyDrawerKind(kind) {
   if (flowDir && kind !== "flowchart") flowDir.hidden = true;
   var flowTitle = document.getElementById("flowchartDocTitleField");
   if (flowTitle && kind !== "flowchart") flowTitle.hidden = true;
+  var mmProps = document.getElementById("mindmapPropsFields");
+  if (mmProps && kind !== "mindmap") mmProps.hidden = true;
+  var mmTitle = document.getElementById("mindmapDocTitleField");
+  if (mmTitle && kind !== "mindmap") mmTitle.hidden = true;
+  var mmLayout = document.getElementById("mindmapLayoutField");
+  if (mmLayout && kind !== "mindmap") mmLayout.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {
@@ -212,7 +218,8 @@ function renderMindmap(opts) {
         DrawerStyleLine.splitRendererStyle(velaSourceEl ? velaSourceEl.value : "").token
       ) || "default";
     }
-    var result = MindmapEdit.render(body, { layout: "radial", theme: theme, id: "mm" });
+    var layout = typeof currentMindmapLayout === "function" ? currentMindmapLayout() : "radial";
+    var result = MindmapEdit.render(body, { layout: layout, theme: theme, id: "mm" });
     if (result && result.errors && result.errors.length && !result.svg) {
       throw new Error(result.errors.join("; "));
     }
@@ -222,6 +229,8 @@ function renderMindmap(opts) {
     bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
     showVelaError("");
     setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
+    if (typeof restoreMindmapSelection === "function") restoreMindmapSelection();
+    else if (typeof fillMindmapProps === "function") fillMindmapProps();
   } catch (err) {
     previewEl.innerHTML = "";
     bindCanvasWorld(null, null);

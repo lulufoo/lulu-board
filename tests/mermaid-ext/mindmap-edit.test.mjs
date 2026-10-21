@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { parseMindmap } from '../../packages/mermaid-ext/mindmap/parse.js';
 import { addChild, deleteTopic, updateTopicLabel, getTopic } from '../../packages/mermaid-ext/mindmap/edit.js';
+import { getTitle, updateTitle } from '../../packages/mermaid-ext/mindmap/source.js';
 import { selectionFromDom } from '../../packages/mermaid-ext/mindmap/selection.js';
 
 const source = `mindmap
@@ -83,6 +84,12 @@ const source = `mindmap
   assert.notEqual(first.key, second.key);
   assert.deepEqual(first.path, [0]);
   assert.deepEqual(second.path, [1]);
+}
+
+{
+  const titled = updateTitle(source, 'Ship');
+  assert.equal(getTitle(titled.source), 'Ship');
+  assert.match(titled.source, /%% title Ship/);
 }
 
 console.log('ok mindmap-edit');

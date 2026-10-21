@@ -11,6 +11,52 @@ function walk(node, depth, lines) {
   (node.children || []).forEach((c) => walk(c, depth + 1, lines));
 }
 
+function matchTitleLine(line) {
+  return /^%%\s*title\s*:?\s*(.*)$/i.exec(String(line || "").trim());
+}
+
+export function getTitle(source) {
+  const lines = String(source || "").split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const hit = matchTitleLine(lines[i]);
+    if (hit) return String(hit[1] || "").replace(/^["']|["']$/g, "").trim();
+  }
+  return "";
+}
+
+export function updateTitle(source, title) {
+  const name = String(title == null ? "" : title).replace(/[\r\n]/g, " ").trim();
+  const lines = String(source == null ? "" : source).replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  let found = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (matchTitleLine(lines[i])) {
+      found = i;
+      break;
+    }
+  }
+  if (!name) {
+    if (found >= 0) lines.splice(found, 1);
+    return { source: lines.join("\n") };
+  }
+  const next = "%% title " + name;
+  if (found >= 0) {
+    lines[found] = next;
+    return { source: lines.join("\n") };
+  }
+  let at = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const trim = String(lines[i] || "").trim();
+    if (!trim || trim.indexOf("%%") === 0 || trim.charAt(0) === "#") continue;
+    if (/^---/.test(trim)) continue;
+    if (/^mindmap\b/i.test(trim)) {
+      at = i;
+      break;
+    }
+  }
+  lines.splice(at, 0, next);
+  return { source: lines.join("\n") };
+}
+
 export function serializeMindmap(root) {
   if (!root) return "mindmap\n";
   const lines = ["mindmap"];

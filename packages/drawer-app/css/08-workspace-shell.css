@@ -272,8 +272,10 @@ html[data-drawer-mode="vela"] .board-brand {
 [data-theme="light"] { --fill: #f3ede2; --fill-hover: #ebe3d4; }
 html[data-drawer-mode="vela"] .top-float { top: 12px; }
 html[data-drawer-mode="vela"] .board-edit-tools,
-html[data-drawer-mode="vela"] .flowchart-edit-tools { gap: 8px; }
+html[data-drawer-mode="vela"] .flowchart-edit-tools,
+html[data-drawer-mode="vela"] .mindmap-edit-tools { gap: 8px; }
 html[data-drawer-mode="vela"] .board-edit-tool,
+html[data-drawer-mode="vela"] .mindmap-edit-tool,
 html[data-drawer-mode="vela"] .flowchart-edit-tool {
   height: 40px !important;
   min-width: 40px !important;
@@ -287,9 +289,11 @@ html[data-drawer-mode="vela"] .flowchart-edit-tool {
   font: 600 13.5px var(--font) !important;
 }
 html[data-drawer-mode="vela"] .board-edit-tool:hover:not(:disabled),
-html[data-drawer-mode="vela"] .flowchart-edit-tool:hover:not(:disabled) { background: var(--fill-hover) !important; }
+html[data-drawer-mode="vela"] .flowchart-edit-tool:hover:not(:disabled),
+html[data-drawer-mode="vela"] .mindmap-edit-tool:hover:not(:disabled) { background: var(--fill-hover) !important; }
 html[data-drawer-mode="vela"] .board-edit-tool:disabled,
-html[data-drawer-mode="vela"] .flowchart-edit-tool:disabled { opacity: .45; }
+html[data-drawer-mode="vela"] .flowchart-edit-tool:disabled,
+html[data-drawer-mode="vela"] .mindmap-edit-tool:disabled { opacity: .45; }
 html[data-drawer-mode="vela"] .flowchart-edit-tool#btnFlowchartLink.is-active {
   background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
   color: var(--accent, #db4c84) !important;
@@ -413,7 +417,10 @@ html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartDocTitleEditor,
-html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor {
+html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor,
+html[data-drawer-mode="vela"] .vela-dock #mindmapDocTitleEditor,
+html[data-drawer-mode="vela"] .vela-dock #mindmapLayoutEditor,
+html[data-drawer-mode="vela"] .vela-dock #mindmapTextEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
 }
@@ -431,7 +438,10 @@ html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartDocTitleEditor:focus,
-html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #mindmapDocTitleEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #mindmapLayoutEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #mindmapTextEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
 html[data-drawer-mode="vela"] .vela-dock .props-arrow-reverse,
 html[data-drawer-mode="vela"] .vela-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
 

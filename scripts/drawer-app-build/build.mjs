@@ -74,6 +74,7 @@ const domain = [
   '02-board.js',
   '03-flowchart-shapes.js',
   '03-flowchart.js',
+  '03-mindmap.js',
   '05-render-io.js',
   '05-export-png.js',
   '06-confirm.js',

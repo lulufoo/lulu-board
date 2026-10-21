@@ -1,0 +1,41 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '../..');
+const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-mindmap.js'), 'utf8');
+const vela = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
+const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mjs'), 'utf8');
+const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+
+assert.match(html, /id="btnMindmapAddRoot"[^>]*>[\s\S]*?<span>Root<\/span>/);
+assert.match(html, /id="btnMindmapAddNode"[^>]*>[\s\S]*?<span>Node<\/span>/);
+assert.match(html, /id="btnMindmapDelete"/);
+assert.match(html, /id="mindmapDocTitleEditor"/);
+assert.match(html, /id="mindmapLayoutEditor"/);
+assert.match(html, />Radial<\/option>/);
+assert.match(html, />Logic<\/option>/);
+assert.match(html, /id="mindmapTextEditor"/);
+assert.doesNotMatch(js, /boardTitleEditor/);
+assert.doesNotMatch(js, /flowchartTitleEditor/);
+assert.match(js, /MINDMAP_SEED = "%% title Untitled\\nmindmap\\n  Topic\\n"/);
+assert.match(js, /MINDMAP_LAYOUT_KEY = "mindmapLayout"/);
+assert.match(js, /MindmapEdit\.updateTopicLabel/);
+assert.match(js, /MindmapEdit\.addChild/);
+assert.match(js, /MindmapEdit\.deleteTopic/);
+assert.match(js, /mindmapAddRootButton\.disabled = hasRoot/);
+assert.match(js, /selectedMindmap\.isRoot/);
+assert.match(js, /data-add-parent/);
+assert.match(css, /html\[data-diagram-kind="mindmap"\] \.mindmap-edit-tools/);
+assert.match(css, /html\[data-diagram-kind="mindmap"\] #propsFields/);
+assert.doesNotMatch(css, /#stylePanel[\s\S]{0,200}mindmapLayout/);
+assert.match(vela, /currentMindmapLayout/);
+assert.match(vela, /Select a topic/);
+assert.match(vela, /mindmapDocTitleField/);
+assert.match(build, /03-mindmap\.js/);
+assert.match(shellCss, /mindmap-edit-tool/, 'mindmap tools share Board chrome');
+
+console.log('ok mindmap-chrome');
