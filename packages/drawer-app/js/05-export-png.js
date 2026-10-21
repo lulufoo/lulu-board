@@ -50,7 +50,7 @@ function stripExportInteractions(root) {
     );
   });
   root.querySelectorAll(
-    '.board-edge-hit, .board-reorder-caret, .mermaid-edge-hit, .flowchart-selection-halo, .canvas-hover-halo'
+    '.board-edge-hit, .board-reorder-caret, .mermaid-edge-hit, .flowchart-selection-halo, .mindmap-selection-halo, .canvas-hover-halo, .mindmap-add, .mindmap-add-zone'
   ).forEach((el) => el.remove());
 }
 

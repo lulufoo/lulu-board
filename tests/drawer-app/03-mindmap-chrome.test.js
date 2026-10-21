@@ -36,6 +36,7 @@ assert.match(vela, /currentMindmapLayout/);
 assert.match(vela, /Select a topic/);
 assert.match(vela, /mindmapDocTitleField/);
 assert.match(build, /03-mindmap\.js/);
+assert.match(build, /03-mindmap-select\.js/);
 assert.match(shellCss, /mindmap-edit-tool/, 'mindmap tools share Board chrome');
 
 console.log('ok mindmap-chrome');

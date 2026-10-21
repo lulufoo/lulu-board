@@ -47,5 +47,15 @@ assert.match(build, /01-mermaid-halo\.js/, 'shared halo is in the drawer bundle'
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke-dasharray:\s*none/, 'flowchart selection ring is solid');
 assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-width:\s*1px/, 'flowchart hover ring is 1px, same as Board');
 assert.match(flow, /if \(g\.classList\.contains\("canvas-selected"\) \|\| g\.classList\.contains\("flowchart-selection"\)\) return/, 'selected nodes do not also hover');
+const mind = read('packages/drawer-app/js/03-mindmap-select.js');
+assert.match(mind, /registerKind\("mindmap"/, 'mindmap registers hit / clear');
+assert.match(mind, /mermaidPaintHalo/, 'mindmap uses the shared SVG halo');
+assert.match(mind, /classList\.add\("canvas-selected"\)/, 'mindmap hangs the public selected class');
+assert.match(mind, /classList\.add\("canvas-hover"\)/, 'mindmap hangs the public hover class');
+assert.match(css, /\.mindmap-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'mindmap selected halo reads the same token');
+assert.match(css, /html\[data-diagram-kind="mindmap"\] \.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'mindmap hover halo reads the soft token');
+const exportPng = read('packages/drawer-app/js/05-export-png.js');
+assert.match(exportPng, /mindmap-selection-halo/, 'PNG export strips mindmap halo');
+assert.match(exportPng, /mindmap-add/, 'PNG export strips hover plus');
 
 console.log('ok canvas-ring');

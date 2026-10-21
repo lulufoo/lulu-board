@@ -61,7 +61,10 @@ delete globalThis.openPropsPanel;
 
 const board = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
 const flow = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-flowchart.js'), 'utf8');
+const mind = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-mindmap-select.js'), 'utf8');
 assert.match(board, /registerKind\("board"/, 'Board registers hit / clear');
+assert.match(mind, /registerKind\("mindmap"/, 'mindmap registers hit / clear');
+assert.doesNotMatch(mind, /closePropsPanel/, 'mindmap clear does not hide Properties');
 assert.doesNotMatch(board, /previewEl\.addEventListener\("pointerdown"/, 'Board blank pointerdown is not a second path');
 assert.doesNotMatch(flow, /else clearFlowchartInteraction\(\)/, 'flowchart miss is not a second blank path');
 assert.match(board, /if \(!hit \|\| !canvas\.contains\(hit\)\) return;/, 'Board blank dblclick does not open Props');

@@ -101,6 +101,7 @@ function fillMindmapProps() {
 
 function clearMindmapSelection() {
   selectedMindmap = null;
+  restoreMindmapVisual();
   syncMindmapButtons();
   if (isMindmapKind()) fillMindmapProps();
 }
@@ -119,6 +120,7 @@ function selectMindmapTopic(sel) {
     isRoot: !!(sel.isRoot || (sel.path && !sel.path.length)),
   };
   fillMindmapProps();
+  restoreMindmapVisual();
 }
 
 function restoreMindmapSelection() {
@@ -138,6 +140,7 @@ function restoreMindmapSelection() {
     isRoot: info.isRoot,
   };
   fillMindmapProps();
+  restoreMindmapVisual();
 }
 
 function commitMindmapDocTitle() {
@@ -203,17 +206,8 @@ if (mindmapTextEditor) {
 }
 if (mindmapLayoutEditor) mindmapLayoutEditor.addEventListener("change", commitMindmapLayout);
 
-if (previewEl) {
-  previewEl.addEventListener("click", function (event) {
-    if (!isMindmapKind()) return;
-    var hit = mindmapHitFromEvent(event);
-    if (hit && hit.kind === "add") {
-      event.preventDefault();
-      addMindmapChild(hit.parent);
-      return;
-    }
-    if (hit && hit.kind === "topic") selectMindmapTopic(hit);
-  });
+function restoreMindmapVisual() {
+  if (typeof applyMindmapSelectionVisual === "function") applyMindmapSelectionVisual();
 }
 
 document.addEventListener("keydown", function (event) {

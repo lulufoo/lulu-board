@@ -240,6 +240,25 @@ html[data-diagram-kind="flowchart"] .canvas-hover-halo {
   stroke-dasharray: 4 3;
   pointer-events: none !important;
 }
+html[data-diagram-kind="mindmap"] g.canvas-selected,
+html[data-diagram-kind="mindmap"] g.canvas-hover {
+  outline: none !important;
+  overflow: visible;
+}
+html[data-diagram-kind="mindmap"] .mindmap-selection-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
+  stroke-dasharray: none;
+  pointer-events: none !important;
+}
+html[data-diagram-kind="mindmap"] .canvas-hover-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .4)) !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 4 3;
+  pointer-events: none !important;
+}
 html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
 html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
   stroke: var(--canvas-ring, #db4c84) !important;
