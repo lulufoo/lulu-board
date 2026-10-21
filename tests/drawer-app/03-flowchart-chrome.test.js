@@ -37,6 +37,8 @@ assert.match(js, /flowchart-link-mode/, 'Link tool enters a visible mode');
 assert.doesNotMatch(js, /path\.style\.stroke\s*=/, 'selected link color is CSS class, not inline stroke');
 assert.doesNotMatch(js, /\[0, -10\].*\[0, 18\]/, 'blank near a link is not padded into a hit');
 assert.match(css, /--_r: 4px/, 'flowchart default corner is a small box radius');
+assert.match(css, /g\.pele-cluster > rect \{[\s\S]*rx: var\(--_r/, 'group uses the node corner');
+assert.match(css, /g\.pele-cluster > rect \{[\s\S]*stroke: var\(--_b\)/, 'group stroke matches node');
 assert.match(css, /flowchart-selection-halo/);
 assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke: var\(--accent/, 'selected node keeps the offset pink halo');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{\s*display: none/, 'halo stays visible');

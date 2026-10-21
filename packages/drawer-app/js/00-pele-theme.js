@@ -40,9 +40,7 @@
     var edge = theme.edgeStroke || color;
     var muted = theme.edgeLabel || color;
     var border = edgeTintOf(theme);
-    var Themes = typeof BoardThemes !== "undefined" ? BoardThemes : null;
-    var dash = Themes && Themes.EDGE_DASH_ALPHA != null ? Themes.EDGE_DASH_ALPHA : 0.3;
-    var clusterBorder = edgeTintOf(theme, dash);
+    var clusterBorder = border;
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
     var radius = "4px";

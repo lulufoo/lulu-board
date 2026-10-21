@@ -145,6 +145,9 @@ html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect {
   pointer-events: all;
+  rx: var(--_r, 4px);
+  ry: var(--_r, 4px);
+  stroke: var(--_b);
 }
 html[data-diagram-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
 html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {

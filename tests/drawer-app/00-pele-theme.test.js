@@ -36,14 +36,15 @@ assert.ok(!ids.includes('kami'));
   );
   assert.strictEqual(
     mapped.themeVariables.clusterBorder,
-    BoardThemes.edgeTint(pack, BoardThemes.EDGE_DASH_ALPHA),
+    BoardThemes.edgeTint(pack),
+    id + ' cluster stroke matches node',
   );
   assert.strictEqual(mapped.css['--bf-rgb'], pack.edgeRgb);
 });
 
 const defaultMapped = Pele.mapPack('default');
 assert.strictEqual(defaultMapped.css['--pele-border'], 'rgba(74, 53, 36, .14)');
-assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'rgba(74, 53, 36, .3)');
+assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'rgba(74, 53, 36, .14)');
 assert.strictEqual(defaultMapped.css['--pele-muted'], BoardThemes.get('default').edgeLabel);
 assert.strictEqual(defaultMapped.css['--pele-radius'], '4px', 'Pele node radius is not the Board card 12px');
 assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
