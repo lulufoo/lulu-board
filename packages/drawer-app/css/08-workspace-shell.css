@@ -290,10 +290,6 @@ html[data-drawer-mode="vela"] .board-edit-tool:hover:not(:disabled),
 html[data-drawer-mode="vela"] .flowchart-edit-tool:hover:not(:disabled) { background: var(--fill-hover) !important; }
 html[data-drawer-mode="vela"] .board-edit-tool:disabled,
 html[data-drawer-mode="vela"] .flowchart-edit-tool:disabled { opacity: .45; }
-html[data-drawer-mode="vela"] .flowchart-edit-tool#btnFlowchartDelete:not(:disabled) {
-  background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
-  color: var(--accent, #db4c84) !important;
-}
 html[data-drawer-mode="vela"] .flowchart-edit-tool#btnFlowchartLink.is-active {
   background: color-mix(in srgb, var(--accent, #db4c84) 18%, var(--fill, var(--panel-solid))) !important;
   color: var(--accent, #db4c84) !important;
