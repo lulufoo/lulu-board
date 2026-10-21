@@ -1,8 +1,8 @@
-/* vela-mcp/boards.js — PostgREST board reads and writes with CAS */
+/* vela-mcp/graphs.js — PostgREST graph reads and writes with CAS */
 
-const BOARD_ID_RE = /^b_[0-9a-f]{8}$/;
+const GRAPH_ID_RE = /^b_[0-9a-f]{8}$/;
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
-const BOARD_PUBLIC_SELECT = "board_id,title,bmd,version,updated_at,group_id";
+const GRAPH_PUBLIC_SELECT = "graph_id,title,bmd,version,updated_at,group_id";
 const META_LINE = /^(?:%%\s*)?meta\s+(\S+|{.*})\s*$/;
 
 export function stripPersistedMeta(text) {
@@ -32,7 +32,7 @@ export function boardTitleFromBody(body) {
   return "";
 }
 
-export function newBoardId(bytes) {
+export function newGraphId(bytes) {
   var raw = bytes || new Uint8Array(4);
   if (!bytes && globalThis.crypto && globalThis.crypto.getRandomValues) {
     globalThis.crypto.getRandomValues(raw);
@@ -52,9 +52,9 @@ export function newGroupId(bytes) {
   return "g_" + hex;
 }
 
-export function assertBoardId(boardId) {
-  var id = String(boardId || "").trim();
-  if (!BOARD_ID_RE.test(id)) throw new Error("invalid board id");
+export function assertGraphId(graphId) {
+  var id = String(graphId || "").trim();
+  if (!GRAPH_ID_RE.test(id)) throw new Error("invalid board id");
   return id;
 }
 
@@ -69,7 +69,7 @@ function rowPublic(row) {
   var raw = row.group_id;
   if (!String(raw || "").trim()) throw new Error("missing group id");
   return {
-    board_id: row.board_id,
+    graph_id: row.graph_id,
     title: row.title || "",
     bmd: row.bmd || "",
     version: Number(row.version) || 1,
@@ -100,26 +100,26 @@ async function restJson(env, token, path, init) {
   return body;
 }
 
-export async function getBoard(env, token, boardId) {
-  var id = assertBoardId(boardId);
+export async function getGraph(env, token, graphId) {
+  var id = assertGraphId(graphId);
   var rows = await restJson(
     env,
     token,
-    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&select=" + BOARD_PUBLIC_SELECT
+    "/rest/v1/graphs?graph_id=eq." + encodeURIComponent(id) + "&select=" + GRAPH_PUBLIC_SELECT
   );
   if (!rows || !rows[0]) throw new Error("Cloud board not found");
   return rowPublic(rows[0]);
 }
 
-export async function createBoard(env, token, userId, bmd, boardId, groupId) {
+export async function createGraph(env, token, userId, bmd, graphId, groupId) {
   var source = stripPersistedMeta(bmd);
   if (!source.trim()) throw new Error("board source must not be empty");
-  var id = boardId ? assertBoardId(boardId) : newBoardId();
+  var id = graphId ? assertGraphId(graphId) : newGraphId();
   var ownedGroup = groupId ? assertGroupId(groupId) : null;
-  var rows = await restJson(env, token, "/rest/v1/rpc/create_owned_board_with_group", {
+  var rows = await restJson(env, token, "/rest/v1/rpc/create_owned_graph_with_group", {
     method: "POST",
     body: JSON.stringify({
-      p_board_id: id,
+      p_graph_id: id,
       p_title: boardTitleFromBody(source) || "Untitled",
       p_bmd: source,
       p_group_id: ownedGroup,
@@ -130,8 +130,8 @@ export async function createBoard(env, token, userId, bmd, boardId, groupId) {
   return rowPublic(row);
 }
 
-export async function saveBoard(env, token, boardId, bmd, expectedVersion) {
-  var id = assertBoardId(boardId);
+export async function saveGraph(env, token, graphId, bmd, expectedVersion) {
+  var id = assertGraphId(graphId);
   var source = stripPersistedMeta(bmd);
   if (!source.trim()) throw new Error("board source must not be empty");
   var expected = Number(expectedVersion);
@@ -139,7 +139,7 @@ export async function saveBoard(env, token, boardId, bmd, expectedVersion) {
   var rows = await restJson(
     env,
     token,
-    "/rest/v1/boards?board_id=eq." + encodeURIComponent(id) + "&version=eq." + encodeURIComponent(String(expected)) + "&select=" + BOARD_PUBLIC_SELECT,
+    "/rest/v1/graphs?graph_id=eq." + encodeURIComponent(id) + "&version=eq." + encodeURIComponent(String(expected)) + "&select=" + GRAPH_PUBLIC_SELECT,
     {
       method: "PATCH",
       body: JSON.stringify({
@@ -149,6 +149,6 @@ export async function saveBoard(env, token, boardId, bmd, expectedVersion) {
     }
   );
   if (rows && rows[0]) return { conflict: false, row: rowPublic(rows[0]) };
-  var latest = await getBoard(env, token, id);
+  var latest = await getGraph(env, token, id);
   return { conflict: true, row: latest };
 }
