@@ -53,6 +53,7 @@ assert.match(board, /registerKind\("board"/, 'Board registers hit / clear');
 assert.doesNotMatch(board, /previewEl\.addEventListener\("pointerdown"/, 'Board blank pointerdown is not a second path');
 assert.doesNotMatch(flow, /else clearFlowchartInteraction\(\)/, 'flowchart miss is not a second blank path');
 assert.match(board, /if \(!hit \|\| !canvas\.contains\(hit\)\) return;/, 'Board blank dblclick does not open Props');
-assert.doesNotMatch(flow, /addEventListener\("dblclick"/, 'flowchart has no own blank dblclick');
+assert.match(flow, /previewEl\.addEventListener\("dblclick"/, 'flowchart hit dblclick inspects');
+assert.doesNotMatch(flow, /openBlankProps/, 'flowchart does not own blank props');
 
 console.log('ok canvas-interaction');

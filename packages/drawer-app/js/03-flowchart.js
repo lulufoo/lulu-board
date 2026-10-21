@@ -1,5 +1,6 @@
 /* Flowchart toolbar + Properties. Own field IDs; do not reuse Board props. */
 var selectedFlowchart = null;
+var flowchartInspectGesture = null;
 var flowchartLinkMode = false;
 var flowchartLinkStart = null;
 var flowchartPropsFill = false;
@@ -308,7 +309,29 @@ function applyFlowchartSelectionVisual() {
   syncFlowchartDeleteButton();
 }
 
+function flowchartSelectionKey(sel) {
+  return sel && sel.key ? sel.key : "";
+}
+
+function beginFlowchartInspect(sel) {
+  var key = flowchartSelectionKey(sel);
+  flowchartInspectGesture = { key: key, already: !!(key && key === flowchartSelectionKey(selectedFlowchart)) };
+}
+
+function consumeFlowchartInspect(sel) {
+  var gesture = flowchartInspectGesture;
+  flowchartInspectGesture = null;
+  var key = flowchartSelectionKey(sel);
+  return !!(gesture && gesture.already && gesture.key && gesture.key === key);
+}
+
+function inspectFlowchartSelection() {
+  if (flowchartLinkMode) return;
+  if (typeof openPropsPanel === "function") openPropsPanel();
+}
+
 function clearFlowchartSelection() {
+  flowchartInspectGesture = null;
   selectedFlowchart = null;
   flowchartLinkStart = null;
   clearFlowchartSelectionVisual();
@@ -323,6 +346,7 @@ function setFlowchartLinkMode(active) {
   flowchartLinkStart = null;
   syncFlowchartLinkChrome();
   if (on) {
+    flowchartInspectGesture = null;
     selectedFlowchart = null;
     clearFlowchartSelectionVisual();
     syncFlowchartDeleteButton();
@@ -474,10 +498,10 @@ function selectFlowchartHit(sel) {
     return;
   }
   if (flowchartLinkMode) setFlowchartLinkMode(false);
+  beginFlowchartInspect(sel);
   selectedFlowchart = sel;
   applyFlowchartSelectionVisual();
   fillFlowchartProps();
-  if (typeof openPropsPanel === "function") openPropsPanel();
   setStatus("Selected " + sel.kind + (sel.id ? (" " + sel.id) : (sel.from && sel.to ? (" " + sel.from + "→" + sel.to) : "")));
 }
 
@@ -521,6 +545,25 @@ function flowchartHitSelect(event) {
   if (event.type === "pointerdown") {
     if (!sel) return false;
     selectFlowchartHit(sel);
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+  if (event.type === "click") {
+    if (!sel) return false;
+    if (consumeFlowchartInspect(sel)) inspectFlowchartSelection();
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+  if (event.type === "dblclick") {
+    if (!sel) return false;
+    selectFlowchartHit(sel);
+    inspectFlowchartSelection();
+    if (flowchartTitleEditor) {
+      flowchartTitleEditor.focus();
+      flowchartTitleEditor.select();
+    }
     event.preventDefault();
     event.stopPropagation();
     return true;
@@ -585,6 +628,12 @@ document.addEventListener("keydown", function (event) {
 if (previewEl) {
   previewEl.addEventListener("pointerdown", function (event) {
     if (event.button !== 0) return;
+    flowchartHitSelect(event);
+  }, true);
+  previewEl.addEventListener("click", function (event) {
+    flowchartHitSelect(event);
+  }, true);
+  previewEl.addEventListener("dblclick", function (event) {
     flowchartHitSelect(event);
   }, true);
 }
