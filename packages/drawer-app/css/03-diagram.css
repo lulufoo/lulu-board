@@ -908,7 +908,7 @@ html[data-drawer-mode="vela"] .top-float .shell-account-btn:disabled:hover {
   flex: 0 0 auto;
   margin-left: 1px;
 }
-.shell-auth-menu {
+.shell-account-bar .shell-auth-menu {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
