@@ -105,7 +105,8 @@ $('#btnZoomIn').onclick = () => { setCanvasZoom(scale * 1.08); if (typeof noteUs
 $('#btnZoomOut').onclick = () => { setCanvasZoom(scale / 1.08); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
-$('#btnFit').onclick = fitView;
+var zoomTypeFit = $('#zoom-type-label');
+if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 /* $('#btnTheme') removed */
 
 // —— Canvas toolbar: diagram theme + export + UI theme ——

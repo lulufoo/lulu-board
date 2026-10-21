@@ -339,7 +339,7 @@ function applyBoardLiveMeta(meta = {}) {
     if (!Number.isFinite(velaLocalRev) || velaLocalRev <= 0) velaLocalRev = Number(meta.version != null ? meta.version : meta.rev);
   }
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
-  if (typeof syncSourceDockLabel === "function") syncSourceDockLabel("Board");
+  if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
 }
 
 function syncStyleLayoutSections() {
@@ -363,6 +363,13 @@ function syncStyleLayoutSections() {
   }
 }
 
+function liveDiagramTypeLabel() {
+  var text = velaSourceEl ? velaSourceEl.value : "";
+  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.bodyTypeLabel === "function") {
+    return DrawerStyleLine.bodyTypeLabel(text);
+  }
+  return "Board";
+}
 function syncSourceDockLabel() {
   var tab = document.getElementById("sourceDockTabLabel");
   var title = document.getElementById("sourceDockTitle");
@@ -370,7 +377,8 @@ function syncSourceDockLabel() {
   if (tab && tab.textContent !== "Source") tab.textContent = "Source";
   if (btn && btn.title !== "Source") btn.title = "Source";
   var version = typeof liveDocumentVersion === "function" ? liveDocumentVersion() : 0;
-  if (title && title.textContent !== "Board") title.textContent = "Board";
+  var label = liveDiagramTypeLabel();
+  if (title && title.textContent !== label) title.textContent = label;
   var verEl = document.getElementById("sourceDockVersion");
   var verText = formatVersionLabel(version);
   if (verEl) {
@@ -399,10 +407,24 @@ function syncSourceIdChrome() {
 
 function setTypeUI() {
   const typePill = $('#typePill');
+  var label = liveDiagramTypeLabel();
   if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel();
-  if (typePill) typePill.innerHTML = '<b>Board</b>';
+  if (typePill) {
+    typePill.replaceChildren();
+    var bold = document.createElement("b");
+    bold.textContent = label;
+    typePill.appendChild(bold);
+  }
   var hint = $('#exportTypeHint');
-  if (hint) hint.textContent = 'Board mode · Export File below.';
+  if (hint) hint.textContent = label + ' mode · Export File below.';
+  var zoomType = document.getElementById("zoom-type-label");
+  var zoomSep = document.getElementById("zoom-type-sep");
+  var showZoomType = !!(label && label !== "Source");
+  if (zoomType) {
+    zoomType.textContent = showZoomType ? label : "";
+    zoomType.hidden = !showZoomType;
+  }
+  if (zoomSep) zoomSep.hidden = !showZoomType;
   if (typeof syncStyleLayoutSections === 'function') syncStyleLayoutSections();
 }
 function applyTransform() {

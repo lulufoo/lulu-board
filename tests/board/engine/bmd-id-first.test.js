@@ -45,7 +45,7 @@ assert.ok(!/id="syncPill"/.test(html), 'Source does not show a rev pill');
 assert.ok(!/id="boardSyncPill"/.test(html), 'Board Source does not show a rev pill');
 assert.ok(/liveDocumentVersion/.test(shell), 'Source title reads document version');
 assert.ok(/id="sourceDockVersion"/.test(html) && /function formatVersionLabel/.test(shell), 'version sits beside the type name');
-assert.ok(/title.textContent = "Board"/.test(shell), 'Source title is Board');
+assert.ok(/function liveDiagramTypeLabel/.test(shell) && /title.textContent !== label/.test(shell), 'Source title follows the live diagram type');
 assert.ok(/function setCharsLabel/.test(shell), 'chars use a formatted count');
 assert.ok(shell.includes("if (!/^\\s*meta\\s+/.test(text))"), 'API wrap only peels meta envelopes');
 assert.ok(/var doc = splitDocument\(text\)/.test(shell), 'API wrap still splits a meta document');

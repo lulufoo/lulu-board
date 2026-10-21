@@ -40,7 +40,8 @@ function applyDrawerKind(kind) {
   html.dataset.diagramKind = kind === "empty" ? "" : String(kind || "");
   // Chrome CSS is gated on data-drawer-mode=vela. Keep that; kind switches tools/render.
   if (!html.dataset.drawerMode) html.dataset.drawerMode = "vela";
-  if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
+  if (typeof setTypeUI === "function") setTypeUI();
+  else if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
       ? "Select a group, node, or link"
