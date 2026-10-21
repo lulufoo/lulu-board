@@ -59,6 +59,50 @@ function updateDirection(source, dir) {
   return { source: joinLines(lines) };
 }
 
+function matchTitleLine(line) {
+  return /^%%\s*title\s*:?\s*(.*)$/i.exec(String(line || "").trim());
+}
+
+function titleFromMatch(hit) {
+  if (!hit) return "";
+  return String(hit[1] || "").replace(/^["']|["']$/g, "").trim();
+}
+
+function getTitle(source) {
+  var lines = linesOf(source);
+  for (var i = 0; i < lines.length; i++) {
+    var title = titleFromMatch(matchTitleLine(lines[i]));
+    if (title) return title;
+  }
+  return "";
+}
+
+function updateTitle(source, title) {
+  var text = ensureFlowchart(source);
+  var name = String(title == null ? "" : title).replace(/[\r\n]/g, " ").trim();
+  var lines = linesOf(text);
+  var found = -1;
+  for (var i = 0; i < lines.length; i++) {
+    if (matchTitleLine(lines[i])) {
+      found = i;
+      break;
+    }
+  }
+  if (!name) {
+    if (found >= 0) lines.splice(found, 1);
+    return { source: joinLines(lines) };
+  }
+  var next = "%% title " + name;
+  if (found >= 0) {
+    lines[found] = next;
+    return { source: joinLines(lines) };
+  }
+  var header = findHeaderLine(lines);
+  var at = header ? header.index : 0;
+  lines.splice(at, 0, next);
+  return { source: joinLines(lines) };
+}
+
 function ensureFlowchart(source) {
   var text = String(source == null ? "" : source);
   if (!String(text).trim()) return "flowchart TD\n";
@@ -143,6 +187,8 @@ export {
   normalizeDirection,
   getDirection,
   updateDirection,
+  getTitle,
+  updateTitle,
   collectIds,
   nextId,
   rewriteIdEverywhere,

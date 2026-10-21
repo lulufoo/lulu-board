@@ -412,6 +412,7 @@ html[data-drawer-mode="vela"] .vela-dock #boardIdEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor,
+html[data-drawer-mode="vela"] .vela-dock #flowchartDocTitleEditor,
 html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
@@ -429,6 +430,7 @@ html[data-drawer-mode="vela"] .vela-dock #boardIdEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTypeEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartTitleEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartIdEditor:focus,
+html[data-drawer-mode="vela"] .vela-dock #flowchartDocTitleEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #flowchartDirEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
 html[data-drawer-mode="vela"] .vela-dock .props-arrow-reverse,
 html[data-drawer-mode="vela"] .vela-dock .props-id-copy { border: 0; border-radius: 12px; background: var(--fill); }
