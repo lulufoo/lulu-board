@@ -13,6 +13,12 @@ assert.match(build, /flowchart\.min\.js/, 'drawer-app build copies FlowchartEdit
 assert.match(web, /flowchart\.min\.js/, 'web build requires FlowchartEdit');
 assert.ok(fs.existsSync(path.join(root, 'packages/mermaid-ext/flowchart/index.js')), 'flowchart source is in Board');
 assert.ok(fs.existsSync(path.join(root, 'packages/mermaid-ext/mindmap/index.js')), 'mindmap source package is present');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/vendor/mindmap.min.js')), 'MindmapEdit is bundled');
+assert.match(
+  fs.readFileSync(path.join(root, 'packages/drawer-app/vendor/mindmap.min.js'), 'utf8'),
+  /MindmapEdit/,
+  'bundle exports MindmapEdit'
+);
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/vendor/flowchart.min.js')), 'FlowchartEdit is bundled');
 assert.match(
   fs.readFileSync(path.join(root, 'packages/drawer-app/vendor/flowchart.min.js'), 'utf8'),

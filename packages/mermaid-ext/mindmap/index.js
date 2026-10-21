@@ -1,8 +1,9 @@
-/** Mermaid mindmap source editor (Drawer). Layout / draw land in a later issue. */
+/** Mermaid mindmap source editor + custom SVG render (Drawer). */
 import { parseMindmap } from "./parse.js";
 import { serializeMindmap } from "./source.js";
 import { addChild, deleteTopic, updateTopicLabel, updateTopicShape, getTopic } from "./edit.js";
 import { selectionFromDom } from "./selection.js";
+import { render, normalizeLayout } from "./render.js";
 
 const MindmapEdit = {
   parseMindmap,
@@ -13,6 +14,8 @@ const MindmapEdit = {
   updateTopicShape,
   getTopic,
   selectionFromDom,
+  render,
+  normalizeLayout,
 };
 
 export { MindmapEdit };
