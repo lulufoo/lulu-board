@@ -1,5 +1,5 @@
 /** Mermaid flowchart source editor (Drawer). */
-import { isFlowchart, normalizeDirection, getDirection, updateDirection } from './source.js';
+import { isFlowchart, normalizeDirection, getDirection, updateDirection, getTitle, updateTitle } from './source.js';
 import { SHAPES, NODE_KINDS, nodeKinds, kindFromShape, shapeFromKind, normalizeNodeKind, shapeKeys } from './kinds.js';
 import { collectIds, findSubgraphRange, isEmptySubgraph } from './source.js';
 import {
@@ -18,6 +18,8 @@ const FlowchartEdit = {
   normalizeDirection,
   getDirection,
   updateDirection,
+  getTitle,
+  updateTitle,
   shapes: shapeKeys,
   nodeKinds,
   kindFromShape,

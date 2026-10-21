@@ -51,6 +51,8 @@ function applyDrawerKind(kind) {
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
   var flowDir = document.getElementById("flowchartDirField");
   if (flowDir && kind !== "flowchart") flowDir.hidden = true;
+  var flowTitle = document.getElementById("flowchartDocTitleField");
+  if (flowTitle && kind !== "flowchart") flowTitle.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {

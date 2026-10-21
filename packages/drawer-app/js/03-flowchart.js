@@ -20,6 +20,8 @@ var flowchartIdLabel = document.getElementById("flowchartIdLabel");
 var flowchartIdWrap = document.getElementById("flowchartIdWrap");
 var flowchartDirField = document.getElementById("flowchartDirField");
 var flowchartDirEditor = document.getElementById("flowchartDirEditor");
+var flowchartDocTitleField = document.getElementById("flowchartDocTitleField");
+var flowchartDocTitleEditor = document.getElementById("flowchartDocTitleEditor");
 var flowchartPropsHint = document.getElementById("flowchartPropsHint");
 
 function isFlowchartKind() {
@@ -317,6 +319,20 @@ function hideFlowchartDir() {
   if (flowchartDirField) flowchartDirField.hidden = true;
 }
 
+function flowchartTitleOf(source) {
+  if (typeof FlowchartEdit === "undefined" || typeof FlowchartEdit.getTitle !== "function") return "";
+  return FlowchartEdit.getTitle(source || flowchartSource());
+}
+
+function showFlowchartDocTitle() {
+  if (flowchartDocTitleField) flowchartDocTitleField.hidden = false;
+  if (flowchartDocTitleEditor) flowchartDocTitleEditor.value = flowchartTitleOf();
+}
+
+function hideFlowchartDocTitle() {
+  if (flowchartDocTitleField) flowchartDocTitleField.hidden = true;
+}
+
 function showFlowchartPropsEmpty() {
   if (flowchartPropsFields) flowchartPropsFields.hidden = true;
   if (propsEmpty && isFlowchartKind()) {
@@ -326,8 +342,13 @@ function showFlowchartPropsEmpty() {
       : "Select a group, node, or link";
   }
   if (propsKindLabel && isFlowchartKind()) propsKindLabel.textContent = "—";
-  if (isFlowchartKind()) showFlowchartDir(flowchartDirectionOf());
-  else hideFlowchartDir();
+  if (isFlowchartKind()) {
+    showFlowchartDocTitle();
+    showFlowchartDir(flowchartDirectionOf());
+  } else {
+    hideFlowchartDocTitle();
+    hideFlowchartDir();
+  }
 }
 
 function clearFlowchartSelectionVisual() {
@@ -496,6 +517,7 @@ function fillFlowchartPropsBody() {
     }
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = node.id || selectedFlowchart.id;
+    hideFlowchartDocTitle();
     hideFlowchartDir();
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Type changes the shape: default box, start/end rounded, judgment diamond";
     return;
@@ -511,6 +533,7 @@ function fillFlowchartPropsBody() {
       flowchartTypeEditor.value = (link.stroke === "dotted" || link.stroke === "dashed") ? "dotted" : "solid";
     }
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
+    hideFlowchartDocTitle();
     hideFlowchartDir();
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Edit the link title and stroke";
     return;
@@ -522,6 +545,7 @@ function fillFlowchartPropsBody() {
     if (flowchartTypeField) flowchartTypeField.hidden = true;
     if (flowchartIdWrap) flowchartIdWrap.hidden = true;
     if (flowchartIdEditor) flowchartIdEditor.value = sg.id || selectedFlowchart.id;
+    hideFlowchartDocTitle();
     showFlowchartDir(sg.direction || flowchartDirectionOf());
     if (flowchartPropsHint) flowchartPropsHint.textContent = "Group selected · Node adds inside this group";
   }
@@ -537,6 +561,14 @@ function commitFlowchartTitle() {
   } else if (selectedFlowchart.kind === "subgraph") {
     flowchartEditAction(function () { return FlowchartEdit.updateSubgraphTitle(flowchartSource(), selectedFlowchart, next); });
   }
+}
+
+function commitFlowchartDocTitle() {
+  if (flowchartPropsFill || selectedFlowchart || typeof FlowchartEdit === "undefined") return;
+  if (typeof FlowchartEdit.updateTitle !== "function") return;
+  var next = flowchartDocTitleEditor ? String(flowchartDocTitleEditor.value || "").trim() : "";
+  if (next === flowchartTitleOf()) return;
+  flowchartEditAction(function () { return FlowchartEdit.updateTitle(flowchartSource(), next); });
 }
 
 function commitFlowchartDirection() {
@@ -689,6 +721,10 @@ if (flowchartTitleEditor) {
   flowchartTitleEditor.addEventListener("blur", commitFlowchartTitle);
 }
 if (flowchartTypeEditor) flowchartTypeEditor.addEventListener("change", commitFlowchartType);
+if (flowchartDocTitleEditor) {
+  flowchartDocTitleEditor.addEventListener("change", commitFlowchartDocTitle);
+  flowchartDocTitleEditor.addEventListener("blur", commitFlowchartDocTitle);
+}
 if (flowchartDirEditor) flowchartDirEditor.addEventListener("change", commitFlowchartDirection);
 if (flowchartIdEditor) {
   flowchartIdEditor.addEventListener("change", commitFlowchartId);

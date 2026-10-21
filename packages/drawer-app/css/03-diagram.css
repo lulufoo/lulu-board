@@ -1865,6 +1865,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
   gap: 10px;
   min-width: 0;
 }
+#flowchartDocTitleField,
 #flowchartDirField { margin: 4px 0 10px; }
 .props-control {
   display: flex;
@@ -1891,6 +1892,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTypeEditor,
 #flowchartTitleEditor,
 #flowchartIdEditor,
+#flowchartDocTitleEditor,
 #flowchartDirEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
@@ -1939,6 +1941,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTypeEditor:focus,
 #flowchartTitleEditor:focus,
 #flowchartIdEditor:focus,
+#flowchartDocTitleEditor:focus,
 #flowchartDirEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
