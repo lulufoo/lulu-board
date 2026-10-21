@@ -7,14 +7,11 @@ argument-hint: "[scene intent]"
 # board
 
 Define one diagram with the Board protocol and open it on the public viewer.
-Done when a `preview.luluvela.app` URL is shown — `#z:` from preview, or `#b:` from
-MCP — or chat-only BMD Source is delivered.
+Done when a tool `url` is shown, or chat-only BMD Source is delivered.
 
 ## Identity
 
-**BMD Source** is the `.bmd` body. The file has no identity. **BMD ID** (`b_…`)
-is the cloud row on `#b:<id>`. `preview` encodes source plus client version `1`
-into `#z:`. Cloud mode mints `#b:` through MCP.
+**BMD Source** is the `.bmd` body. The file has no identity.
 
 ## Script Macros
 
@@ -31,15 +28,16 @@ Load the authoring contract before writing.
 3. Load vocab from `files["vocab.md"].path`; it is the authoring contract.
 4. Load [demo.bmd](./templates/demo.bmd) only when a complete example helps.
 5. When using an icon, load `files["icons.json"].path`.
-6. Load [viewer](./references/viewer.md) for `status` or the pointer protocol.
+6. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
+7. Load [pointers](../references/pointers.md) when a viewer link is pasted.
+8. Load [cloud](../references/cloud.md) in cloud mode.
 
 ## Mode
 
-1. If the `whoami` MCP tool is listed, use **cloud mode**.
+1. If the `whoami` MCP tool is listed, use **cloud mode**. Load cloud.md.
 2. If it is missing, use **hash mode**. Do not mention MCP.
 3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
-4. If the user pastes `#b:` or `#s:` while hash mode is on, say: connect MCP to
-   open the cloud board, or paste the Source.
+4. If the user pastes a viewer URL in hash mode, load pointers.md.
 
 ## Hash flow
 
@@ -57,20 +55,11 @@ Load the authoring contract before writing.
 
 ## Cloud flow
 
-1. Call `whoami` and remember the email.
-2. New Vela: author BMD Source → `create_vela`. `group_id` is the group this
-   `vela_id` belongs to. Optional `group_id` joins that group on the current
-   account (other Vela that share it). Omit `group_id` to create a new group.
-   Show `https://preview.luluvela.app/#b:<id>` for that account.
-3. Update: `get_vela` for this session’s last `vela_id`, or a `#b:` the user pasted →
-   edit the returned BMD Source → `save_vela` with that `version`.
-4. On `conflict`, redo the edit on the returned row and save once. Still
-   conflict: stop and show both versions.
-5. Chat-only: one `board`-fenced block; do not write cloud.
+Follow [cloud](../references/cloud.md). Chat-only: one `board`-fenced block.
 
 ## Open wording
 
-Say one line with the URL, from stdout `open` in hash mode, or after MCP write:
+Say one line with the URL, from stdout `open` or MCP `url`:
 
 | `open` | Say |
 |---|---|
@@ -79,9 +68,9 @@ Say one line with the URL, from stdout `open` in hash mode, or after MCP write:
 
 ## Boundaries
 
-stdout `url` is the public hash link (`https://preview.luluvela.app/#z:…`). Cloud mode
-shows `#b:<id>` instead. CLI success or MCP write completes the skill; do not
-open the URL, drive the viewer, or screenshot the layout unless the user
-explicitly requests visual verification.
+CLI stdout contract: `$DRAWER_CTL --help`.
+CLI success or MCP write completes the skill; do not open the URL, drive the
+viewer, or screenshot the layout unless the user explicitly requests visual
+verification.
 Mint without meta or style. On update, leave those lines unchanged.
 `preview` does not write `~/.cache/board/history`.

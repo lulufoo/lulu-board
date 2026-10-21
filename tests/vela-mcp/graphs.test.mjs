@@ -23,6 +23,7 @@ const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-documen
 const graphsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
+const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('item X\n'), '');
@@ -286,10 +287,10 @@ assert.doesNotMatch(worker, /list_recent/, 'list_recent stays out of v1');
 assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no service key');
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
-assert.match(skill, /[Oo]ptional `group_id`/, 'cloud create can join a group');
-assert.match(skill, /group this\s+`vela_id` belongs to/, 'skill says group_id is the Vela group');
-assert.match(skill, /current\s+account/, 'skill joins on the current account');
-assert.match(skill, /Omit `group_id` to create a new group/, 'skill says omit mints a group');
+assert.match(cloud, /[Oo]ptional\s+`group_id`/, 'cloud create can join a group');
+assert.match(cloud, /group this `vela_id` belongs to/, 'cloud says group_id is the Vela group');
+assert.match(cloud, /current account/, 'cloud joins on the current account');
+assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
 
 const brandDir = path.join(root, 'packages/drawer-app/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
