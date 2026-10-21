@@ -13,7 +13,3 @@ PUBLIC_ORIGIN = "https://mcp.luluvela.app"
 [[routes]]
 pattern = "mcp.luluvela.app"
 custom_domain = true
-
-[[routes]]
-pattern = "mcp.luluboard.app"
-custom_domain = true
