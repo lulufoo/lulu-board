@@ -1,10 +1,12 @@
 # skill/
 
-Chat entry is `/board`. The skill is **`board/`**. It contains `SKILL.md`, `scripts/`, and `templates/`.
+Chat entries are `/board` and `/mermaid`. Each skill is a folder with
+`SKILL.md`. Do not add `skill/SKILL.md`.
 
 | Path | Role |
 |---|---|
 | `board/` | Self-contained `/board` skill |
+| `mermaid/` | Self-contained `/mermaid` skill |
 
 ```bash
 python3 board/scripts/drawer_control.py preview --kind board
@@ -13,9 +15,13 @@ python3 board/scripts/drawer_control.py assets
 ```
 
 From `board/`, the same CLI is `python3 scripts/drawer_control.py`.
+`/mermaid` uses the same CLI shape from `mermaid/` once its scripts are in
+place.
 
-`preview` prints a `https://luluboard.app/#z:…` URL from `{bmd, version}`. It does not write local history.
+`preview` prints a `https://luluboard.app/#z:…` URL from `{bmd, version}`. It
+does not write local history.
 
-`assets` syncs `vocab.md` and `icons.json` from luluboard.app into `~/.cache/board/assets/`.
+`assets` (board) syncs `vocab.md` and `icons.json` from luluboard.app into
+`~/.cache/board/assets/`.
 
 Rebuild the public viewer from the repo root: `node scripts/web-build/build.mjs`.
