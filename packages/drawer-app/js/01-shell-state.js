@@ -192,7 +192,7 @@ let scale = 1, panX = 0, panY = 0;
  *   dockTab          "" | "props" | "layout" | "source" | "style" | "export"
  *   dockWidth        number   — open sidebar width (px)
  * Canvas zoom/pan is NOT stored here: it lives only in the board document's style.viewport.
- * Other already-persistent keys (unchanged): drawer.diagramTheme, drawer.boardLinkRoute, drawer.boardItemCap
+ * Other already-persistent keys (unchanged): drawer.kindTheme, drawer.boardLinkRoute, drawer.boardItemCap
  * Board documents also persist those in `style <base64>` when not default.
  */
 var DRAWER_UI_KEY = "drawer.ui";
@@ -334,7 +334,7 @@ function applyBoardLiveMeta(meta = {}) {
 }
 
 function syncStyleLayoutSections() {
-  var kind = document.documentElement && document.documentElement.dataset.diagramKind;
+  var kind = document.documentElement && document.documentElement.dataset.kind;
   var mermaid = kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported";
   var flowchart = kind === "flowchart";
   var board = document.getElementById("boardLayoutSection");
@@ -354,10 +354,10 @@ function syncStyleLayoutSections() {
   }
 }
 
-function liveDiagramTypeLabel() {
+function liveKindLabel() {
   var text = velaSourceEl ? velaSourceEl.value : "";
-  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.bodyTypeLabel === "function") {
-    return DrawerStyleLine.bodyTypeLabel(text);
+  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.bodyKindLabel === "function") {
+    return DrawerStyleLine.bodyKindLabel(text);
   }
   return "Board";
 }
@@ -368,7 +368,7 @@ function syncSourceDockLabel() {
   if (tab && tab.textContent !== "Source") tab.textContent = "Source";
   if (btn && btn.title !== "Source") btn.title = "Source";
   var version = typeof liveDocumentVersion === "function" ? liveDocumentVersion() : 0;
-  var label = liveDiagramTypeLabel();
+  var label = liveKindLabel();
   if (title && title.textContent !== label) title.textContent = label;
   var verEl = document.getElementById("sourceDockVersion");
   var verText = formatVersionLabel(version);
@@ -396,19 +396,19 @@ function syncSourceIdChrome() {
   }
 }
 
-function setTypeUI() {
-  const typePill = $('#typePill');
-  var label = liveDiagramTypeLabel();
+function setKindUI() {
+  const kindPill = $('#kindPill');
+  var label = liveKindLabel();
   if (typeof syncSourceDockLabel === 'function') syncSourceDockLabel();
-  if (typePill) {
-    typePill.replaceChildren();
+  if (kindPill) {
+    kindPill.replaceChildren();
     var bold = document.createElement("b");
     bold.textContent = label;
-    typePill.appendChild(bold);
+    kindPill.appendChild(bold);
   }
-  var hint = $('#exportTypeHint');
+  var hint = $('#exportKindHint');
   if (hint) hint.textContent = label + ' mode · Export File below.';
-  var zoomType = document.getElementById("zoom-type-label");
+  var zoomType = document.getElementById("zoom-kind-label");
   var zoomSep = document.getElementById("zoom-type-sep");
   var showZoomType = !!(label && label !== "Source");
   if (zoomType) {

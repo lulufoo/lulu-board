@@ -16,7 +16,7 @@ var mindmapLayoutEditor = document.getElementById("mindmapLayoutEditor");
 var mindmapPropsHint = document.getElementById("mindmapPropsHint");
 
 function isMindmapKind() {
-  return document.documentElement.dataset.diagramKind === "mindmap";
+  return document.documentElement.dataset.kind === "mindmap";
 }
 
 function mindmapSource() {

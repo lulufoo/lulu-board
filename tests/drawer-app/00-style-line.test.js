@@ -93,18 +93,18 @@ function b64(obj) {
   const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
   Create.CREATE_KIND_ITEMS.forEach((item) => {
     const src = item.kind === 'board' ? 'board "X"\n' : item.kind + '\n';
-    assert.strictEqual(Style.bodyTypeLabel(src), item.name, item.kind);
+    assert.strictEqual(Style.bodyKindLabel(src), item.name, item.kind);
   });
-  assert.strictEqual(Style.bodyTypeLabel('mindmap\nRoot\n'), 'Mindmap');
-  assert.strictEqual(Style.bodyTypeLabel('flowchart LR\nA-->B\n'), 'Flowchart');
-  assert.strictEqual(Style.bodyTypeLabel('graph TD\nA-->B\n'), 'Flowchart');
-  assert.strictEqual(Style.bodyTypeLabel('%% style classic\nflowchart TD\n'), 'Flowchart');
-  assert.strictEqual(Style.bodyTypeLabel('classDiagram-v2\n'), 'Class');
-  assert.strictEqual(Style.bodyTypeLabel('stateDiagram-v2\n'), 'State');
-  assert.strictEqual(Style.bodyTypeLabel('C4Container\n'), 'C4');
-  assert.strictEqual(Style.bodyTypeLabel('railroad-ebnf-beta\n'), 'Railroad');
-  assert.strictEqual(Style.bodyTypeLabel(''), 'Source');
-  assert.strictEqual(Style.bodyTypeLabel('not a diagram\n'), 'Source');
+  assert.strictEqual(Style.bodyKindLabel('mindmap\nRoot\n'), 'Mindmap');
+  assert.strictEqual(Style.bodyKindLabel('flowchart LR\nA-->B\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyKindLabel('graph TD\nA-->B\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyKindLabel('%% style classic\nflowchart TD\n'), 'Flowchart');
+  assert.strictEqual(Style.bodyKindLabel('classDiagram-v2\n'), 'Class');
+  assert.strictEqual(Style.bodyKindLabel('stateDiagram-v2\n'), 'State');
+  assert.strictEqual(Style.bodyKindLabel('C4Container\n'), 'C4');
+  assert.strictEqual(Style.bodyKindLabel('railroad-ebnf-beta\n'), 'Railroad');
+  assert.strictEqual(Style.bodyKindLabel(''), 'Source');
+  assert.strictEqual(Style.bodyKindLabel('not a diagram\n'), 'Source');
 }
 
 {
@@ -120,7 +120,7 @@ function b64(obj) {
   const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
-  assert.ok(/skipRender/.test(chrome), 'applyDiagramTheme can skip render');
+  assert.ok(/skipRender/.test(chrome), 'applyKindTheme can skip render');
   assert.ok(/stripDocumentMeta/.test(shell) && !/joinDocument/.test(shell), 'wrap strips leftover meta and does not rejoin');
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
   assert.ok(/mermaidStyleToken\(theme, step, viewport\)/.test(boardJs), 'mermaid persist writes theme, type_step, viewport');

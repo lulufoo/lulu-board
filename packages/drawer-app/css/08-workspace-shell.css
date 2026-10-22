@@ -403,7 +403,7 @@ html[data-drawer-mode="vela"] .vela-dock [hidden] {
   display: none !important;
 }
 
-html[data-drawer-mode="vela"] .vela-dock #diagramThemeSelect,
+html[data-drawer-mode="vela"] .vela-dock #kindThemeSelect,
 html[data-drawer-mode="vela"] .vela-dock #boardTypeEditor,
 html[data-drawer-mode="vela"] .vela-dock #boardTitleEditor,
 html[data-drawer-mode="vela"] .vela-dock #boardDirEditor,
@@ -424,7 +424,7 @@ html[data-drawer-mode="vela"] .vela-dock #mindmapTextEditor {
   border: 0; border-radius: 12px; min-height: 40px; padding: 10px 14px;
   background: var(--fill); color: var(--ink); font-size: 14px;
 }
-html[data-drawer-mode="vela"] .vela-dock #diagramThemeSelect:focus,
+html[data-drawer-mode="vela"] .vela-dock #kindThemeSelect:focus,
 html[data-drawer-mode="vela"] .vela-dock #boardTypeEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #boardTitleEditor:focus,
 html[data-drawer-mode="vela"] .vela-dock #boardDirEditor:focus,
