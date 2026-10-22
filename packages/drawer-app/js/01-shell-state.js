@@ -335,7 +335,9 @@ function applyDiagramLiveMeta(meta = {}) {
 
 function syncStyleLayoutSections() {
   var kind = document.documentElement && document.documentElement.dataset.kind;
-  var mermaid = kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported";
+  var mermaid = typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isMermaidKind === "function"
+    ? DrawerStyleLine.isMermaidKind(kind)
+    : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported");
   var flowchart = kind === "flowchart";
   var board = document.getElementById("boardLayoutSection");
   if (board) board.hidden = mermaid;

@@ -120,8 +120,18 @@ function syncMermaidStyleChrome(body) {
   if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(step, false, false);
 }
 
-function renderFlowchart(opts) {
+var PELE_FONT_STACK = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
+
+function isDesignKind(kind) {
+  return typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isDesignKind === "function"
+    ? DrawerStyleLine.isDesignKind(kind)
+    : false;
+}
+
+function paintPeleSvg(opts, paint) {
   opts = opts || {};
+  paint = paint || {};
+  var label = paint.label || "diagram";
   syncBoardEditControls();
   previewEl.classList.remove("board-preview");
   syncMermaidStyleChrome(diagramSourceEl ? diagramSourceEl.value : "");
@@ -131,7 +141,7 @@ function renderFlowchart(opts) {
     previewEl.innerHTML = "";
     bindCanvasWorld(null, null);
     showDiagramError("");
-    setStatus("No flowchart source");
+    setStatus("No " + label + " source");
     finishCanvasView(opts);
     return;
   }
@@ -154,7 +164,7 @@ function renderFlowchart(opts) {
       ? FlowchartTypeScale.px("default", typeStep)
       : 16;
     var result = window.pele.render(body.trim(), {
-      fontFamily: '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif',
+      fontFamily: PELE_FONT_STACK,
       fontSize: peleFont,
       autoDirection: false,
       responsive: false,
@@ -163,18 +173,31 @@ function renderFlowchart(opts) {
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
     bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
-    if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
-    if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
+    if (typeof paint.afterPaint === "function") paint.afterPaint(typeStep);
     showDiagramError("");
-    setStatus("Flowchart rendered · " + new Date().toLocaleTimeString());
-    if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
+    setStatus((label.charAt(0).toUpperCase() + label.slice(1)) + " rendered · " + new Date().toLocaleTimeString());
   } catch (err) {
     previewEl.innerHTML = "";
     bindCanvasWorld(null, null);
     showDiagramError(err instanceof Error ? err.message : String(err));
-    setStatus("Invalid flowchart source", true);
+    setStatus("Invalid " + label + " source", true);
   }
   finishCanvasView(opts);
+}
+
+function renderFlowchart(opts) {
+  paintPeleSvg(opts, {
+    label: "flowchart",
+    afterPaint: function (typeStep) {
+      if (typeof FlowchartShapes !== "undefined") FlowchartShapes.polishFlowchartNodeShapes(previewEl);
+      if (typeof FlowchartTypeScale !== "undefined") FlowchartTypeScale.applyToRoot(previewEl, typeStep);
+      if (typeof restoreFlowchartSelection === "function") restoreFlowchartSelection();
+    },
+  });
+}
+
+function renderDesignPele(opts) {
+  paintPeleSvg(opts, { label: "diagram" });
 }
 
 function refuseUnsupportedMermaid() {
@@ -183,8 +206,8 @@ function refuseUnsupportedMermaid() {
   previewEl.innerHTML = "";
   bindCanvasWorld(null, null);
   updateDiagramChars();
-  showDiagramError("Only flowchart and mindmap can be rendered.");
-  setStatus("Only flowchart and mindmap can be rendered.", true);
+  showDiagramError("This diagram type cannot be rendered.");
+  setStatus("This diagram type cannot be rendered.", true);
   finishCanvasView({});
 }
 
@@ -251,6 +274,7 @@ function renderDiagram(opts) {
   applyDrawerKind(kind);
   if (kind === "flowchart") return renderFlowchart(opts);
   if (kind === "mindmap") return renderMindmap(opts);
+  if (isDesignKind(kind)) return renderDesignPele(opts);
   if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
   syncBoardEditControls();
   previewEl.classList.add('board-preview');

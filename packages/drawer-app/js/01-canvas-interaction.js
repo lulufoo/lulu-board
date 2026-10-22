@@ -47,7 +47,12 @@
   function activeKindId() {
     var html = typeof document !== "undefined" ? document.documentElement : null;
     var kind = html && html.dataset ? html.dataset.kind : "";
-    if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") return kind === "mindmap" ? "mindmap" : "flowchart";
+    if (kind === "mindmap") return "mindmap";
+    if (kind === "flowchart" || kind === "mermaid-unsupported") return "flowchart";
+    if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isDesignKind === "function"
+      && DrawerStyleLine.isDesignKind(kind)) {
+      return "design";
+    }
     return "board";
   }
 
