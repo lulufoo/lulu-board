@@ -4,7 +4,7 @@ Author Mermaid 12.1.0 built-in syntax. Drawer renders flowchart with Pele 1.7.0
 and mindmap with a custom SVG pipeline, not Mermaid.js. Route loads **one**
 type file. `info`, `error`, and `---` are not author types.
 
-**Open** is `flowchart`, `mindmap`, `sequence`, `class`, `state`, and `er`. Closed types may be listed; do not
+**Open** is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, and `requirement`. Closed types may be listed; do not
 author them for the drawer.
 
 ## Aliases
@@ -35,7 +35,7 @@ author them for the drawer.
 | class | `classDiagram` / `classDiagram-v2` | open | [design/class.md](./design/class.md) |
 | state | `stateDiagram` / `stateDiagram-v2` | open | [design/state.md](./design/state.md) |
 | er | `erDiagram` | open | [design/er.md](./design/er.md) |
-| requirement | `requirement` / `requirementDiagram` | closed | [design/requirement.md](./design/requirement.md) |
+| requirement | `requirement` / `requirementDiagram` | open | [design/requirement.md](./design/requirement.md) |
 | c4 | `C4Context` / `C4Container` / `C4Component` / `C4Dynamic` / `C4Deployment` | closed | [design/c4.md](./design/c4.md) |
 | usecase | `usecase-beta` | closed | [design/usecase.md](./design/usecase.md) |
 | eventmodeling | `eventmodeling` | closed | [design/eventmodeling.md](./design/eventmodeling.md) |
