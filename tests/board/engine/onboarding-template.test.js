@@ -9,7 +9,7 @@ global.BoardLayout = Layout;
 const Render = require('../../../packages/board/engine/board-render.js');
 
 const src = fs.readFileSync(
-  path.join(__dirname, '../../../packages/drawer-app/onboarding.bmd'),
+  path.join(__dirname, '../../../packages/drawer-app/templates/welcome.bmd'),
   'utf8'
 );
 assert.ok(!/^\s*meta\s+/.test(src), 'onboarding has no document meta');

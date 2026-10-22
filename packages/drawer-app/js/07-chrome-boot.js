@@ -441,41 +441,7 @@ if (typeof diagramPersistMode !== "function" || diagramPersistMode() !== "hash")
   });
 }
 
-async function openOnboardingHash() {
-  // On a cloud board, keep it open: the welcome board opens as a local #z: board in a new tab.
-  var inNewTab = typeof diagramPersistMode === "function" && diagramPersistMode() !== "hash";
-  if (typeof encodeDiagramHash !== "function") {
-    setStatus("Onboarding is unavailable", true);
-    return;
-  }
-  try {
-    var res = await fetch("./onboarding.bmd", { cache: "no-store" });
-    if (!res.ok) throw new Error("Onboarding is unavailable");
-    var text = await res.text();
-    if (typeof stripDocumentMeta === "function") text = stripDocumentMeta(text);
-    if (!String(text).trim()) throw new Error("Onboarding is unavailable");
-    var token = await encodeDiagramHash(text, 1);
-    if (inNewTab) {
-      window.open(location.origin + location.pathname + "#" + token, "_blank", "noopener");
-      setStatus("Welcome opened in a new tab");
-      return;
-    }
-    var next = "#" + token;
-    if (location.hash === next) {
-      setStatus("Onboarding");
-      return;
-    }
-    location.hash = token;
-    setStatus("Onboarding");
-  } catch (err) {
-    setStatus(err instanceof Error ? err.message : String(err), true);
-  }
-}
 function applyCreateKindPick(kind, commit) {
-  if (kind === "welcome") {
-    void openOnboardingHash();
-    return;
-  }
   if (typeof commit === "function") commit(kind);
 }
 

@@ -48,17 +48,22 @@ function token(id, version) {
 }
 
 {
-  const seed = Meta.blankHashFlowchartSource();
-  assert.strictEqual(seed, '%% title Untitled\nflowchart TD\n');
-  assert.strictEqual(Style.bodyKind(seed), 'flowchart');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-}
-
-{
-  const seed = Meta.blankHashMindmapSource();
-  assert.strictEqual(seed, '%% title Untitled\nmindmap\n  Topic\n');
-  assert.strictEqual(Style.bodyKind(seed), 'mindmap');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
+  const Template = require('../../packages/drawer-app/js/00-kind-template.js');
+  const titled = (name) => Template.applyUntitledTitle(
+    fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/templates', name), 'utf8')
+  );
+  assert.strictEqual(Style.bodyKind(titled('flowchart.mmd')), 'flowchart');
+  assert.strictEqual(Style.bodyKind(titled('mindmap.mmd')), 'mindmap');
+  assert.strictEqual(Style.bodyKind(titled('sequenceDiagram.mmd')), 'sequence');
+  assert.strictEqual(Style.bodyKind(titled('classDiagram.mmd')), 'class');
+  assert.strictEqual(Style.bodyKind(titled('stateDiagram.mmd')), 'state');
+  assert.strictEqual(Style.bodyKind(titled('erDiagram.mmd')), 'er');
+  assert.strictEqual(Style.bodyKind(titled('requirement.mmd')), 'requirement');
+  assert.strictEqual(Style.bodyKind(titled('C4Context.mmd')), 'c4');
+  assert.strictEqual(Style.bodyKind(titled('eventmodeling.mmd')), 'eventmodeling');
+  assert.strictEqual(Style.bodyKind(titled('usecase-beta.mmd')), 'usecase');
+  assert.strictEqual(Style.bodyKind(titled('railroad-beta.mmd')), 'railroad');
+  assert.strictEqual(Meta.diagramTitleFromBody(titled('flowchart.mmd')), 'Untitled');
 }
 
 {
@@ -70,94 +75,8 @@ function token(id, version) {
 }
 
 {
-  const seed = Meta.blankHashSequenceSource();
-  assert.match(seed, /^%% title Untitled\nsequenceDiagram\n/);
-  assert.match(seed, /actor User/);
-  assert.strictEqual(Style.bodyKind(seed), 'sequence');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('sequenceDiagram'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('sequence'), seed);
-}
-
-{
-  const seed = Meta.blankHashClassSource();
-  assert.match(seed, /^%% title Untitled\nclassDiagram\n/);
-  assert.match(seed, /class Service/);
-  assert.strictEqual(Style.bodyKind(seed), 'class');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('classDiagram'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('class'), seed);
-}
-
-{
-  const seed = Meta.blankHashStateSource();
-  assert.match(seed, /^%% title Untitled\nstateDiagram-v2\n/);
-  assert.match(seed, /\[\*\] --> Idle/);
-  assert.strictEqual(Style.bodyKind(seed), 'state');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('stateDiagram'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('state'), seed);
-}
-
-{
-  const seed = Meta.blankHashErSource();
-  assert.match(seed, /^%% title Untitled\nerDiagram\n/);
-  assert.match(seed, /USER \|\|--o\{ NOTE/);
-  assert.strictEqual(Style.bodyKind(seed), 'er');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('erDiagram'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('er'), seed);
-}
-
-{
-  const seed = Meta.blankHashRequirementSource();
-  assert.match(seed, /^%% title Untitled\nrequirementDiagram\n/);
-  assert.match(seed, /requirement auth/);
-  assert.strictEqual(Style.bodyKind(seed), 'requirement');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('requirement'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('requirementDiagram'), seed);
-}
-
-{
-  const seed = Meta.blankHashC4Source();
-  assert.match(seed, /^%% title Untitled\nC4Context\n/);
-  assert.match(seed, /Person\(user/);
-  assert.strictEqual(Style.bodyKind(seed), 'c4');
   assert.strictEqual(Style.bodyKind('C4Container\n  Person(user, "User", "Uses")\n'), 'c4');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('C4Context'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('c4'), seed);
-}
-
-{
-  const seed = Meta.blankHashEventmodelingSource();
-  assert.match(seed, /^%% title Untitled\neventmodeling\n/);
-  assert.match(seed, /tf 01 ui CartUI/);
-  assert.strictEqual(Style.bodyKind(seed), 'eventmodeling');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('eventmodeling'), seed);
-}
-
-{
-  const seed = Meta.blankHashUsecaseSource();
-  assert.match(seed, /^%% title Untitled\nusecase-beta\n/);
-  assert.match(seed, /actor Customer/);
-  assert.strictEqual(Style.bodyKind(seed), 'usecase');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('usecase-beta'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('usecase'), seed);
-}
-
-{
-  const seed = Meta.blankHashRailroadSource();
-  assert.match(seed, /^%% title Untitled\nrailroad-beta\n/);
-  assert.match(seed, /terminal\("hello"\)/);
-  assert.strictEqual(Style.bodyKind(seed), 'railroad');
   assert.strictEqual(Style.bodyKind('railroad-ebnf-beta\nrule = "hello";\n'), 'railroad');
-  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
-  assert.strictEqual(Meta.blankHashSourceForKind('railroad-beta'), seed);
-  assert.strictEqual(Meta.blankHashSourceForKind('railroad'), seed);
 }
 
 {

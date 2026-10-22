@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Examples stay under examples/ for README. They are not packed into skill/.
- * Website onboarding is packages/drawer-app/onboarding.bmd.
+ * Website welcome is packages/drawer-app/templates/welcome.bmd.
  */
-console.log('skip examples-templates-build: onboarding lives in packages/drawer-app');
+console.log('skip examples-templates-build: welcome lives in packages/drawer-app/templates');
 process.exit(0);
 
 /**

@@ -8,19 +8,6 @@
   root.sourceBody = api.sourceBody;
   root.newGraphId = api.newGraphId;
   root.blankHashBoardSource = api.blankHashBoardSource;
-  root.blankHashFlowchartSource = api.blankHashFlowchartSource;
-  root.blankHashMindmapSource = api.blankHashMindmapSource;
-  root.blankHashSequenceSource = api.blankHashSequenceSource;
-  root.blankHashClassSource = api.blankHashClassSource;
-  root.blankHashStateSource = api.blankHashStateSource;
-  root.blankHashErSource = api.blankHashErSource;
-  root.blankHashRequirementSource = api.blankHashRequirementSource;
-  root.blankHashC4Source = api.blankHashC4Source;
-  root.blankHashEventModelingSource = api.blankHashEventModelingSource;
-  root.blankHashEventmodelingSource = api.blankHashEventModelingSource;
-  root.blankHashUsecaseSource = api.blankHashUsecaseSource;
-  root.blankHashRailroadSource = api.blankHashRailroadSource;
-  root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
@@ -129,70 +116,6 @@
     return "board \"" + titledName(title) + "\"\n";
   }
 
-  function blankHashFlowchartSource(title) {
-    return "%% title " + titledName(title) + "\nflowchart TD\n";
-  }
-
-  function blankHashMindmapSource(title) {
-    return "%% title " + titledName(title) + "\nmindmap\n  Topic\n";
-  }
-
-  function wrapMermaidSeed(title, body) {
-    return "%% title " + titledName(title) + "\n" + body;
-  }
-
-  function blankHashSequenceSource(title) {
-    return wrapMermaidSeed(title, "sequenceDiagram\n  actor User\n  participant UI\n  participant API\n  participant DB\n  User->>UI: action\n  UI->>API: request\n  API->>DB: query\n  DB-->>API: rows\n  API-->>UI: result\n  UI-->>User: render\n");
-  }
-
-  function blankHashClassSource(title) {
-    return wrapMermaidSeed(title, "classDiagram\n  class Service {\n    +run()\n  }\n  class Store {\n    +load()\n    +save()\n  }\n  Service --> Store : uses\n  class Api\n  Api --> Service : uses\n");
-  }
-
-  function blankHashStateSource(title) {
-    return wrapMermaidSeed(title, "stateDiagram-v2\n  [*] --> Idle\n  Idle --> Open : open\n  Open --> Saving : submit\n  Saving --> Idle : success\n  Saving --> Open : failure\n  Open --> Idle : cancel\n");
-  }
-
-  function blankHashErSource(title) {
-    return wrapMermaidSeed(title, "erDiagram\n  USER ||--o{ NOTE : writes\n  NOTE ||--|{ TAG : tagged\n  USER {\n    string id PK\n    string name\n  }\n  NOTE {\n    string id PK\n    string user_id FK\n    string body\n  }\n");
-  }
-
-  function blankHashRequirementSource(title) {
-    return wrapMermaidSeed(title, "requirementDiagram\n  requirement auth {\n    id: 1\n    text: user must sign in\n    risk: high\n    verifymethod: test\n  }\n  element login {\n    type: simulation\n  }\n  login - satisfies -> auth\n");
-  }
-
-  function blankHashC4Source(title) {
-    return wrapMermaidSeed(title, "C4Context\n  title System Context — Example\n  Person(user, \"User\", \"Uses the product\")\n  System(app, \"Example System\", \"Our system\")\n  System_Ext(mail, \"Email\", \"Notifications\")\n  Rel(user, app, \"Uses\")\n  Rel(app, mail, \"Sends email\")\n");
-  }
-
-  function blankHashEventModelingSource(title) {
-    return wrapMermaidSeed(title, "eventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded\n");
-  }
-
-  function blankHashUsecaseSource(title) {
-    return wrapMermaidSeed(title, "usecase-beta\nactor Customer\nCheckout(\"Place order\")\nCustomer --> Checkout\n");
-  }
-
-  function blankHashRailroadSource(title) {
-    return wrapMermaidSeed(title, "railroad-beta\nrule = terminal(\"hello\");\n");
-  }
-
-  function blankHashSourceForKind(kind, title) {
-    var key = String(kind || "").trim();
-    if (key === "flowchart") return blankHashFlowchartSource(title);
-    if (key === "mindmap") return blankHashMindmapSource(title);
-    if (key === "sequence" || key === "sequenceDiagram") return blankHashSequenceSource(title);
-    if (key === "class" || key === "classDiagram") return blankHashClassSource(title);
-    if (key === "state" || key === "stateDiagram" || key === "stateDiagram-v2") return blankHashStateSource(title);
-    if (key === "er" || key === "erDiagram") return blankHashErSource(title);
-    if (key === "requirement" || key === "requirementDiagram") return blankHashRequirementSource(title);
-    if (key === "c4" || key === "C4Context") return blankHashC4Source(title);
-    if (key === "eventmodeling") return blankHashEventModelingSource(title);
-    if (key === "usecase" || key === "usecase-beta") return blankHashUsecaseSource(title);
-    if (key === "railroad" || key === "railroad-beta") return blankHashRailroadSource(title);
-    return blankHashBoardSource(title);
-  }
-
   function matchMermaidTitleLine(line) {
     return /^%%\s*title\s*:?\s*(.*)$/i.exec(String(line || "").trim());
   }
@@ -258,19 +181,6 @@
     sourceBody: sourceBody,
     newGraphId: newGraphId,
     blankHashBoardSource: blankHashBoardSource,
-    blankHashFlowchartSource: blankHashFlowchartSource,
-    blankHashMindmapSource: blankHashMindmapSource,
-    blankHashSequenceSource: blankHashSequenceSource,
-    blankHashClassSource: blankHashClassSource,
-    blankHashStateSource: blankHashStateSource,
-    blankHashErSource: blankHashErSource,
-    blankHashRequirementSource: blankHashRequirementSource,
-    blankHashC4Source: blankHashC4Source,
-    blankHashEventModelingSource: blankHashEventModelingSource,
-    blankHashEventmodelingSource: blankHashEventModelingSource,
-    blankHashUsecaseSource: blankHashUsecaseSource,
-    blankHashRailroadSource: blankHashRailroadSource,
-    blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
   };
@@ -281,18 +191,5 @@ var stripDocumentMeta = globalThis.stripDocumentMeta;
 var sourceBody = globalThis.sourceBody;
 var newGraphId = globalThis.newGraphId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
-var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
-var blankHashMindmapSource = globalThis.blankHashMindmapSource;
-var blankHashSequenceSource = globalThis.blankHashSequenceSource;
-var blankHashClassSource = globalThis.blankHashClassSource;
-var blankHashStateSource = globalThis.blankHashStateSource;
-var blankHashErSource = globalThis.blankHashErSource;
-var blankHashRequirementSource = globalThis.blankHashRequirementSource;
-var blankHashC4Source = globalThis.blankHashC4Source;
-var blankHashEventModelingSource = globalThis.blankHashEventModelingSource;
-var blankHashEventmodelingSource = globalThis.blankHashEventmodelingSource;
-var blankHashUsecaseSource = globalThis.blankHashUsecaseSource;
-var blankHashRailroadSource = globalThis.blankHashRailroadSource;
-var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;

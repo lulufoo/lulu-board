@@ -196,12 +196,45 @@
     if (!q) syncCreateKindNoteRail();
   }
 
+  function createKindRowFromNode(node, list) {
+    while (node && node !== list) {
+      if (node.getAttribute && node.getAttribute("data-create-kind")) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
+  function clearCreateKindHover(list) {
+    if (!list || !list.querySelectorAll) return;
+    var rows = list.querySelectorAll(".create-kind-row.is-hover");
+    for (var i = 0; i < rows.length; i++) rows[i].classList.remove("is-hover");
+  }
+
+  function hoverCreateKindRow(list, row) {
+    clearCreateKindHover(list);
+    if (!row || !row.classList) return;
+    row.classList.add("is-hover");
+    var block = row;
+    while (block && block !== list) {
+      var title = block.getAttribute && block.getAttribute("data-create-kind-note");
+      if (title) {
+        pinCreateKindNote(title, list);
+        var rail = list.querySelector(".create-kind-note-rail");
+        if (rail) markCreateKindNote(rail, title);
+        break;
+      }
+      block = block.parentNode;
+    }
+  }
+
   function createKindCleanup() {
     var els = createKindEls();
     if (els.root) els.root.hidden = true;
     if (els.list && els.list._createKindPick) els.list.removeEventListener("click", els.list._createKindPick);
     if (els.list && els.list._createKindToggle) els.list.removeEventListener("toggle", els.list._createKindToggle, true);
     if (els.list && els.list._createKindScroll) els.list.removeEventListener("scroll", els.list._createKindScroll);
+    if (els.list && els.list._createKindPointer) els.list.removeEventListener("pointermove", els.list._createKindPointer);
+    if (els.list && els.list._createKindPointerLeave) els.list.removeEventListener("pointerleave", els.list._createKindPointerLeave);
     if (els.filter && els.filter._createKindFilter) els.filter.removeEventListener("input", els.filter._createKindFilter);
     if (els.backdrop && els.backdrop._createKindCancel) els.backdrop.removeEventListener("click", els.backdrop._createKindCancel);
     document.removeEventListener("keydown", createKindOnKey);
@@ -209,6 +242,8 @@
       els.list._createKindPick = null;
       els.list._createKindToggle = null;
       els.list._createKindScroll = null;
+      els.list._createKindPointer = null;
+      els.list._createKindPointerLeave = null;
     }
     if (els.filter) els.filter._createKindFilter = null;
     if (els.backdrop) els.backdrop._createKindCancel = null;
@@ -275,12 +310,19 @@
       }
       syncCreateKindNoteRail();
     };
-    els.list._createKindScroll = function () { syncCreateKindNoteRail(); };
+    els.list._createKindScroll = function () { clearCreateKindHover(els.list); };
+    els.list._createKindPointer = function (event) {
+      if (!event || (event.movementX === 0 && event.movementY === 0)) return;
+      hoverCreateKindRow(els.list, createKindRowFromNode(event.target, els.list));
+    };
+    els.list._createKindPointerLeave = function () { clearCreateKindHover(els.list); };
     els.filter._createKindFilter = function () { paintCreateKindList(); };
     els.backdrop._createKindCancel = function () { finish("cancel"); };
     els.list.addEventListener("click", els.list._createKindPick);
     els.list.addEventListener("toggle", els.list._createKindToggle, true);
     els.list.addEventListener("scroll", els.list._createKindScroll);
+    els.list.addEventListener("pointermove", els.list._createKindPointer);
+    els.list.addEventListener("pointerleave", els.list._createKindPointerLeave);
     if (els.filter) els.filter.addEventListener("input", els.filter._createKindFilter);
     if (els.backdrop) els.backdrop.addEventListener("click", els.backdrop._createKindCancel);
     document.addEventListener("keydown", createKindOnKey);

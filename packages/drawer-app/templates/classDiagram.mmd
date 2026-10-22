@@ -1,0 +1,11 @@
+classDiagram
+  class Service {
+    +run()
+  }
+  class Store {
+    +load()
+    +save()
+  }
+  Service --> Store : uses
+  class Api
+  Api --> Service : uses

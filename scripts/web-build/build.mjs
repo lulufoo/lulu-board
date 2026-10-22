@@ -43,10 +43,22 @@ for (const name of vendorFiles) {
   console.log('ok .cache/web/vendor/' + name);
 }
 
-for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico', 'onboarding.bmd']) {
+for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   const src = path.join(webDir, name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   console.log('ok .cache/web/' + name);
+}
+
+{
+  const templatesSrc = path.join(repo, 'packages/drawer-app/templates');
+  const templatesOut = path.join(webDir, 'templates');
+  const names = readdirSync(templatesSrc).sort();
+  if (names.length !== 13) throw new Error('expected 13 templates, got ' + names.length);
+  for (const name of names) {
+    const src = path.join(templatesOut, name);
+    if (!existsSync(src)) throw new Error('missing .cache/web/templates/' + name);
+    console.log('ok .cache/web/templates/' + name);
+  }
 }
 
 let html = readFileSync(srcHtml, 'utf8');
