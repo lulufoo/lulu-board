@@ -38,15 +38,15 @@ function createServer(env, identity, token) {
   server.registerTool("whoami", { description: "Return the authorized Lulu Vela account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
-  server.registerTool("get_vela", {
-    description: "Load one owned Vela by id. Returns url plus vela_id. group_id is the group this vela_id belongs to.",
+  server.registerTool("get_diagram", {
+    description: "Load one owned diagram by id. Returns url plus vela_id. group_id is the group this vela_id belongs to.",
     inputSchema: { vela_id: VELA_ID },
   }, async ({ vela_id }) => {
     try { return toolText(mcpDoc(await getGraph(env, token, vela_id))); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("create_vela", {
-    description: "Insert a new owned Vela and return url plus vela_id. group_id is the group this vela_id belongs to. Optional group_id joins that group on the current account so this Vela is classified with other Vela that share it. Omit group_id to create a new group.",
+  server.registerTool("create_diagram", {
+    description: "Insert a new owned diagram and return url plus vela_id. group_id is the group this vela_id belongs to. Optional group_id joins that group on the current account so this diagram is classified with other diagrams that share it. Omit group_id to create a new group.",
     inputSchema: {
       bmd: z.string(),
       vela_id: VELA_ID.optional(),
@@ -58,8 +58,8 @@ function createServer(env, identity, token) {
     try { return toolText(mcpDoc(await createGraph(env, token, identity.user_id, bmd, vela_id, group_id))); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("save_vela", {
-    description: "Update an owned Vela when expected_version still matches. row includes url and vela_id. row.group_id is the group this vela_id belongs to.",
+  server.registerTool("save_diagram", {
+    description: "Update an owned diagram when expected_version still matches. row includes url and vela_id. row.group_id is the group this vela_id belongs to.",
     inputSchema: { vela_id: VELA_ID, bmd: z.string(), expected_version: z.number() },
   }, async ({ vela_id, bmd, expected_version }) => {
     try {

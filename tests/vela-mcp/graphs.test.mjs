@@ -226,7 +226,7 @@ try {
   const flowSaved = await saveGraph(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
   const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
-  assert.ok(flowPatch, 'save_vela stores flowchart in bmd');
+  assert.ok(flowPatch, 'save_diagram stores flowchart in bmd');
 
   const conflict = await saveGraph(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
@@ -260,9 +260,9 @@ assert.equal(denied.status, 401);
 assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\/\/mcp\.luluvela\.app\/\.well-known\/oauth-protected-resource"/);
 
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
-assert.match(worker, /registerTool\("get_vela"/, 'get_vela is registered');
-assert.match(worker, /registerTool\("create_vela"/, 'create_vela is registered');
-assert.match(worker, /registerTool\("save_vela"/, 'save_vela is registered');
+assert.match(worker, /registerTool\("get_diagram"/, 'get_diagram is registered');
+assert.match(worker, /registerTool\("create_diagram"/, 'create_diagram is registered');
+assert.match(worker, /registerTool\("save_diagram"/, 'save_diagram is registered');
 assert.match(worker, /const VELA_ID = z\.string\(\)\.regex\(\/\^b_\[0-9a-f\]\{8\}\$\/\)/, 'vela_id is b_ + 8 hex');
 assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
@@ -273,6 +273,7 @@ assert.match(worker, /row\.group_id is the group this vela_id belongs to/, 'save
 assert.match(worker, /current account/, 'create joins a group on the current account');
 assert.match(worker, /Omit group_id to create a new group/, 'create says omit mints a group');
 assert.doesNotMatch(worker, /create_mermaid/, 'MCP stays one persist set');
+assert.doesNotMatch(worker, /registerTool\("get_vela"|registerTool\("create_vela"|registerTool\("save_vela"/, 'no vela method aliases');
 assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const payload = Buffer.from(JSON.stringify({
