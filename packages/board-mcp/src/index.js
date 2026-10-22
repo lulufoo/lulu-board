@@ -1,4 +1,4 @@
-/* vela-mcp Worker — Streamable HTTP MCP + Supabase user JWT */
+/* board-mcp Worker — Streamable HTTP MCP + Supabase user JWT */
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";

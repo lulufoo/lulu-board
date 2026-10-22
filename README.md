@@ -116,7 +116,7 @@ skill/
 
 ```text
 examples/    # README previews (source) → packed into skill/board/templates
-packages/    # board, drawer-app, vela-mcp
+packages/    # board, drawer-app, board-mcp
 scripts/     # build tooling
 skill/       # /board skill
 tests/

@@ -1,4 +1,4 @@
-/* vela-mcp/graphs.js — PostgREST graph reads and writes with CAS */
+/* board-mcp/graphs.js — PostgREST graph reads and writes with CAS */
 
 const GRAPH_ID_RE = /^b_[0-9a-f]{8}$/;
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;

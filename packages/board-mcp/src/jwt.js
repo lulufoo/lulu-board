@@ -1,4 +1,4 @@
-/* vela-mcp/jwt.js — confirm a user JWT with Auth, then read claims */
+/* board-mcp/jwt.js — confirm a user JWT with Auth, then read claims */
 
 export function decodePayload(token) {
   var parts = String(token || "").split(".");

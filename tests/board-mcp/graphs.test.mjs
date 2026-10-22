@@ -12,16 +12,16 @@ import {
   createGraph,
   saveGraph,
   stripPersistedMeta,
-} from '../../packages/vela-mcp/src/graphs.js';
-import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
-import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
-import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/vela-mcp/src/brand.js';
+} from '../../packages/board-mcp/src/graphs.js';
+import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
+import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/board-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
-const graphsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/graphs.js'), 'utf8');
-const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
+const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
+const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 
@@ -325,4 +325,4 @@ assert.deepEqual(
   readFileSync(path.join(brandDir, 'favicon-32.png'))
 );
 
-console.log('ok vela-mcp graphs');
+console.log('ok board-mcp graphs');

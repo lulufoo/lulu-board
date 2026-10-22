@@ -1,4 +1,4 @@
-name = "lulu-vela-mcp"
+name = "lulu-board-mcp"
 main = "src/index.js"
 compatibility_date = "2026-09-17"
 workers_dev = false

@@ -1,4 +1,4 @@
-/* vela-mcp/meta.js — RFC 9728 protected-resource metadata */
+/* board-mcp/meta.js — RFC 9728 protected-resource metadata */
 
 function resourceUrl(env, request) {
   var origin = String(env.PUBLIC_ORIGIN || "").replace(/\/$/, "");
