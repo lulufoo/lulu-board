@@ -14,6 +14,7 @@ const stateDoc = fs.readFileSync(path.join(refs, 'design/state.md'), 'utf8');
 const erDoc = fs.readFileSync(path.join(refs, 'design/er.md'), 'utf8');
 const requirementDoc = fs.readFileSync(path.join(refs, 'design/requirement.md'), 'utf8');
 const c4Doc = fs.readFileSync(path.join(refs, 'design/c4.md'), 'utf8');
+const eventmodelingDoc = fs.readFileSync(path.join(refs, 'design/eventmodeling.md'), 'utf8');
 const block = fs.readFileSync(path.join(refs, 'flow/block.md'), 'utf8');
 const railroad = fs.readFileSync(path.join(refs, 'design/railroad.md'), 'utf8');
 const ishikawa = fs.readFileSync(path.join(refs, 'map/ishikawa.md'), 'utf8');
@@ -21,7 +22,7 @@ const treemap = fs.readFileSync(path.join(refs, 'chart/treemap.md'), 'utf8');
 
 assert.match(catalog, /Mermaid 12\.1\.0/, 'catalog pins Mermaid 12.1.0');
 assert.match(catalog, /Pele 1\.7\.0/, 'catalog pins Pele 1.7.0');
-assert.match(catalog, /\*\*Open\*\* is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, `requirement`, and `c4`/, 'flowchart through c4 are open');
+assert.match(catalog, /\*\*Open\*\* is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, `requirement`, `c4`, and `eventmodeling`/, 'flowchart through eventmodeling are open');
 assert.match(catalog, /\| flowchart \| `flowchart` \/ `graph` \| open \|/, 'flowchart row is open');
 assert.match(catalog, /\| mindmap \| `mindmap` \| open \|/, 'mindmap row is open');
 assert.match(catalog, /\| sequence \| `sequenceDiagram` \| open \|/, 'sequence row is open');
@@ -39,7 +40,7 @@ assert.match(catalog, /\| swimlane \| `swimlane-beta` \| closed \|/, 'swimlane i
 assert.match(catalog, /\| agentflow \| `agentflow-beta` \| closed \|/, 'agentflow is closed');
 assert.match(catalog, /\| treeView \| `treeView-beta` \| closed \|/, 'treeView is closed');
 assert.match(catalog, /\| usecase \| `usecase-beta` \| closed \|/, 'usecase is closed');
-assert.match(catalog, /\| eventmodeling \| `eventmodeling` \| closed \|/, 'eventmodeling is closed');
+assert.match(catalog, /\| eventmodeling \| `eventmodeling` \| open \|/, 'eventmodeling is open');
 assert.match(catalog, /\| railroad \| `railroad-beta` \/ `railroad-ebnf-beta` \/ `railroad-abnf-beta` \/ `railroad-peg-beta` \| closed \|/, 'railroad lists four notations');
 assert.match(catalog, /\| cynefin \| `cynefin-beta` \| closed \|/, 'cynefin is closed');
 assert.match(catalog, /\| wardley \| `wardley-beta` \| closed \|/, 'wardley is closed');
@@ -61,11 +62,13 @@ assert.match(requirementDoc, /Pele/, 'requirement names Pele preview');
 assert.match(requirementDoc, /Title/, 'requirement names Title');
 assert.match(c4Doc, /Pele/, 'c4 names Pele preview');
 assert.match(c4Doc, /first-line keyword/, 'c4 switches view in source');
+assert.match(eventmodelingDoc, /Pele/, 'eventmodeling names Pele preview');
+assert.match(eventmodelingDoc, /Title/, 'eventmodeling names Title');
 assert.match(block, /Keyword: `block`/, 'block file authors the short name');
 assert.match(railroad, /Author `railroad-beta`/, 'railroad authors the IR keyword');
 assert.match(ishikawa, /Author `ishikawa`/, 'ishikawa authors the short name');
 assert.match(treemap, /Author `treemap`/, 'treemap authors the short name');
-assert.strictEqual((catalog.match(/\| open \|/g) || []).length, 8, 'eight open type rows');
+assert.strictEqual((catalog.match(/\| open \|/g) || []).length, 9, 'nine open type rows');
 
 const files = [
   'flow/flowchart.md', 'flow/block.md', 'flow/mindmap.md', 'flow/architecture.md',

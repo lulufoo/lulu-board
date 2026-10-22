@@ -16,6 +16,8 @@
   root.blankHashErSource = api.blankHashErSource;
   root.blankHashRequirementSource = api.blankHashRequirementSource;
   root.blankHashC4Source = api.blankHashC4Source;
+  root.blankHashEventModelingSource = api.blankHashEventModelingSource;
+  root.blankHashEventmodelingSource = api.blankHashEventModelingSource;
   root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
@@ -161,6 +163,10 @@
     return wrapMermaidSeed(title, "C4Context\n  title System Context — Example\n  Person(user, \"User\", \"Uses the product\")\n  System(app, \"Example System\", \"Our system\")\n  System_Ext(mail, \"Email\", \"Notifications\")\n  Rel(user, app, \"Uses\")\n  Rel(app, mail, \"Sends email\")\n");
   }
 
+  function blankHashEventModelingSource(title) {
+    return wrapMermaidSeed(title, "eventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded\n");
+  }
+
   function blankHashSourceForKind(kind, title) {
     var key = String(kind || "").trim();
     if (key === "flowchart") return blankHashFlowchartSource(title);
@@ -171,6 +177,7 @@
     if (key === "er" || key === "erDiagram") return blankHashErSource(title);
     if (key === "requirement" || key === "requirementDiagram") return blankHashRequirementSource(title);
     if (key === "c4" || key === "C4Context") return blankHashC4Source(title);
+    if (key === "eventmodeling") return blankHashEventModelingSource(title);
     return blankHashBoardSource(title);
   }
 
@@ -247,6 +254,8 @@
     blankHashErSource: blankHashErSource,
     blankHashRequirementSource: blankHashRequirementSource,
     blankHashC4Source: blankHashC4Source,
+    blankHashEventModelingSource: blankHashEventModelingSource,
+    blankHashEventmodelingSource: blankHashEventModelingSource,
     blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
@@ -266,6 +275,8 @@ var blankHashStateSource = globalThis.blankHashStateSource;
 var blankHashErSource = globalThis.blankHashErSource;
 var blankHashRequirementSource = globalThis.blankHashRequirementSource;
 var blankHashC4Source = globalThis.blankHashC4Source;
+var blankHashEventModelingSource = globalThis.blankHashEventModelingSource;
+var blankHashEventmodelingSource = globalThis.blankHashEventmodelingSource;
 var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;

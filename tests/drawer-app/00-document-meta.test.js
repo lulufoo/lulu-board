@@ -131,6 +131,15 @@ function token(id, version) {
 }
 
 {
+  const seed = Meta.blankHashEventmodelingSource();
+  assert.match(seed, /^%% title Untitled\neventmodeling\n/);
+  assert.match(seed, /tf 01 ui CartUI/);
+  assert.strictEqual(Style.bodyKind(seed), 'eventmodeling');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.blankHashSourceForKind('eventmodeling'), seed);
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
