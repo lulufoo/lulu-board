@@ -17,7 +17,7 @@ function flashChrome(ms = 900) {
     if (!title) return;
     event.stopPropagation();
     try {
-      var board = BoardRender.parse(velaSourceEl.value);
+      var board = BoardRender.parse(diagramSourceEl.value);
       var root = previewEl.querySelector(".board-render");
       pickBoardElement(title, root || previewEl, board);
     } catch (err) {}
@@ -36,10 +36,10 @@ function flashChrome(ms = 900) {
   });
 })();
 
-velaSourceEl.addEventListener('input', () => {
-  if (typeof updateVelaChars === "function") updateVelaChars();
-  scheduleVelaRender();
-  scheduleBoardSave();
+diagramSourceEl.addEventListener('input', () => {
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
+  scheduleDiagramRender();
+  scheduleDiagramSave();
 });
 
 if (boardIdEditor) {
@@ -86,8 +86,8 @@ if (boardIconSec) boardIconSec.addEventListener("change", function() {
 });
 
 (function(){
-  if (velaDock) {
-    velaDock.querySelectorAll("[data-dock]").forEach(function(btn) {
+  if (diagramDock) {
+    diagramDock.querySelectorAll("[data-dock]").forEach(function(btn) {
       btn.addEventListener("click", function() { toggleDock(btn.getAttribute("data-dock")); });
     });
   }
@@ -162,9 +162,9 @@ function applyBoardItemCap(rem, rerender, persist) {
   }
   paintStyleRange(boardItemCapSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ item_cap: n });
-  if (rerender && document.documentElement.dataset.drawerMode === 'vela'
-    && typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) {
-    renderVela({ fit: false });
+  if (rerender && document.documentElement.dataset.drawerMode === 'diagram'
+    && typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) {
+    renderDiagram({ fit: false });
   }
 }
 function applyPeleThemeVars(theme) {
@@ -197,7 +197,7 @@ function applyKindTheme(theme, opts) {
     persistBoardStyle({ theme: t });
   }
   if (opts && opts.skipRender) return;
-  if (typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) renderVela({ fit: false });
+  if (typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) renderDiagram({ fit: false });
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
 
@@ -262,9 +262,9 @@ function applyBoardTypeStep(raw, persist, rerender) {
   if (boardFontSizeSlider) boardFontSizeSlider.value = String(n);
   paintStyleRange(boardFontSizeSlider);
   if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ type_step: n });
-  if (rerender && document.documentElement.dataset.drawerMode === 'vela'
-    && typeof renderVela === 'function' && velaSourceEl && velaSourceEl.value.trim()) {
-    renderVela({ fit: false });
+  if (rerender && document.documentElement.dataset.drawerMode === 'diagram'
+    && typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) {
+    renderDiagram({ fit: false });
   }
 }
 if (boardFontSizeSlider) {
@@ -306,10 +306,10 @@ if (canvasExportBtn && canvasExportMenu) {
   });
 }
 function activeSourceText() {
-  return velaSourceEl ? velaSourceEl.value : '';
+  return diagramSourceEl ? diagramSourceEl.value : '';
 }
 function activeSourcePath() {
-  return (typeof liveBoardPath === 'string' && liveBoardPath) ? liveBoardPath : '';
+  return (typeof liveDiagramPath === 'string' && liveDiagramPath) ? liveDiagramPath : '';
 }
 $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
   var id = typeof liveRecordId === "function" ? liveRecordId() : "";
@@ -319,7 +319,7 @@ $('#btnSourceCopyId') && ($('#btnSourceCopyId').onclick = () => {
 $('#btnSourceCopy') && ($('#btnSourceCopy').onclick = () => {
   void copyText(activeSourceText(), "Source");
 });
-$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void exportBoardFile(); closeCanvasExport(); });
+$('#btnCanvasCopySrc') && ($('#btnCanvasCopySrc').onclick = () => { void exportDiagramFile(); closeCanvasExport(); });
 $('#btnCanvasDlPng') && ($('#btnCanvasDlPng').onclick = () => { void exportPng(); closeCanvasExport(); });
 /* UI light/dark toggle removed for now */
 
@@ -348,7 +348,7 @@ function toggleSourceEntry() {
 window.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();
-    renderVela();
+    renderDiagram();
   }
   if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
     e.preventDefault();
@@ -357,26 +357,26 @@ window.addEventListener('keydown', (e) => {
 });
 
 function centerView() {
-  fitBoardView();
+  fitDiagramView();
 }
 function fitView() {
-  fitBoardView();
+  fitDiagramView();
 }
 
 function setMode(mode, opts) {
   opts = opts || {};
-  document.documentElement.dataset.drawerMode = "vela";
+  document.documentElement.dataset.drawerMode = "diagram";
   if (opts.persist !== false) saveDrawerUi({ mode: "board" });
-  try { setKindUI(velaSourceEl && velaSourceEl.value); } catch (_e) {}
+  try { setKindUI(diagramSourceEl && diagramSourceEl.value); } catch (_e) {}
   closeExportMenu();
   if (opts.restore) _drawerUiRestoreLock = true;
   var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
   var skipBoard = !!(opts.restore && hasBoard);
   if (!skipBoard) {
-    renderVela({ fit: false, restoreView: true });
+    renderDiagram({ fit: false, restoreView: true });
     if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();
   } else {
-    applyRestoredBoardView();
+    applyRestoredDiagramView();
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { clearDrawerBoot(); });
     });
@@ -398,7 +398,7 @@ function setMode(mode, opts) {
 applyTransform();
 function restoreDrawerMode() {
   var ui = loadDrawerUi();
-  document.documentElement.dataset.drawerMode = "vela";
+  document.documentElement.dataset.drawerMode = "diagram";
   saveDrawerUi({ mode: "board" });
   setMode("board", { restore: true, persist: false });
   try {
@@ -408,27 +408,27 @@ function restoreDrawerMode() {
     }
   } catch (_e) {}
 }
-await bootstrapVela();
+await bootstrapDiagram();
 restoreDrawerMode();
-if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
-  setInterval(() => { void loadBoardPolled(); }, 1500);
+if (typeof diagramPersistMode !== "function" || diagramPersistMode() !== "hash") {
+  setInterval(() => { void loadDiagramPolled(); }, 1500);
 } else {
   window.addEventListener("hashchange", function() {
     // Never drop a navigation: flush the outgoing cloud board first, then load the new one.
     var pending = Promise.resolve();
-    if (boardDirty || boardSaveTimer) {
-      clearTimeout(boardSaveTimer);
-      boardSaveTimer = null;
+    if (diagramDirty || diagramSaveTimer) {
+      clearTimeout(diagramSaveTimer);
+      diagramSaveTimer = null;
       var outgoingId = "";
-      outgoingId = typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "";
-      if (boardDirty && outgoingId && !cloudPlusDraftActive && typeof saveVelaToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
-        pending = saveVelaToCloud({ explicit: false }).catch(function() { return false; });
+      outgoingId = typeof liveDiagramId !== "undefined" ? String(liveDiagramId || "") : "";
+      if (diagramDirty && outgoingId && !cloudPlusDraftActive && typeof saveDiagramToCloud === "function" && !(typeof isShareGuest === "function" && isShareGuest())) {
+        pending = saveDiagramToCloud({ explicit: false }).catch(function() { return false; });
       }
-      boardDirty = false;
+      diagramDirty = false;
     }
-    void pending.then(function() { return bootstrapVela(); }).then(function() {
-      if (typeof renderVela === "function" && velaSourceEl && velaSourceEl.value.trim()) {
-        renderVela({ fit: false, restoreView: true });
+    void pending.then(function() { return bootstrapDiagram(); }).then(function() {
+      if (typeof renderDiagram === "function" && diagramSourceEl && diagramSourceEl.value.trim()) {
+        renderDiagram({ fit: false, restoreView: true });
       }
     });
   });
@@ -436,8 +436,8 @@ if (typeof boardPersistMode !== "function" || boardPersistMode() !== "hash") {
 
 async function openOnboardingHash() {
   // On a cloud board, keep it open: the welcome board opens as a local #z: board in a new tab.
-  var inNewTab = typeof boardPersistMode === "function" && boardPersistMode() !== "hash";
-  if (typeof encodeBoardHash !== "function") {
+  var inNewTab = typeof diagramPersistMode === "function" && diagramPersistMode() !== "hash";
+  if (typeof encodeDiagramHash !== "function") {
     setStatus("Onboarding is unavailable", true);
     return;
   }
@@ -447,7 +447,7 @@ async function openOnboardingHash() {
     var text = await res.text();
     if (typeof stripDocumentMeta === "function") text = stripDocumentMeta(text);
     if (!String(text).trim()) throw new Error("Onboarding is unavailable");
-    var token = await encodeBoardHash(text, 1);
+    var token = await encodeDiagramHash(text, 1);
     if (inNewTab) {
       window.open(location.origin + location.pathname + "#" + token, "_blank", "noopener");
       setStatus("Welcome opened in a new tab");

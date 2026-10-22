@@ -1,6 +1,6 @@
 # drawer-app
 
-All-kinds vela host. The opened document is a diagram; Board (Z) is one kind. The Z engine stays in `packages/board`.
+All-kinds diagram host. The opened document is a diagram; Board (Z) is one kind. The Z engine stays in `packages/board`.
 
 ```
 packages/drawer-app/
@@ -33,7 +33,7 @@ packages/drawer-app/
     00-pele-theme.js
     01-shell-state.js
     01-canvas-interaction.js
-    02-vela.js
+    02-diagram.js
     02-board.js
     03-flowchart.js
     03-flowchart-shapes.js

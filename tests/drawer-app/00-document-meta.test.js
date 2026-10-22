@@ -51,14 +51,14 @@ function token(id, version) {
   const seed = Meta.blankHashFlowchartSource();
   assert.strictEqual(seed, '%% title Untitled\nflowchart TD\n');
   assert.strictEqual(Style.bodyKind(seed), 'flowchart');
-  assert.strictEqual(Meta.velaTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
 }
 
 {
   const seed = Meta.blankHashMindmapSource();
   assert.strictEqual(seed, '%% title Untitled\nmindmap\n  Topic\n');
   assert.strictEqual(Style.bodyKind(seed), 'mindmap');
-  assert.strictEqual(Meta.velaTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
 }
 
 {
@@ -72,8 +72,8 @@ function token(id, version) {
   assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
   const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
-  const vela = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-vela.js'), 'utf8');
-  assert.ok(!/joinDocument/.test(shell + boardJs + vela), 'drawer production does not join envelope');
+  const diagram = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-diagram.js'), 'utf8');
+  assert.ok(!/joinDocument/.test(shell + boardJs + diagram), 'drawer production does not join envelope');
 }
 
 console.log('ok document-meta');

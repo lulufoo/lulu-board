@@ -56,7 +56,7 @@ assert.doesNotMatch(mobileHero, /^\s*(?:block-size|min-height|height):/m, 'LB-38
 assert.match(baseCss, /@media \(min-width: 768px\) \{\s*\.hero \{[^}]*block-size: 100vh;[^}]*block-size: 100dvh;/, 'LB-386: wide hero is exactly one viewport tall');
 
 // Sign-in blank address still opens as a blank board in the workspace
-Persist.decodeBoardHash(BLANK).then((decoded) => {
+Persist.decodeDiagramHash(BLANK).then((decoded) => {
   assert.strictEqual(decoded.bmd, 'board "Untitled"\n');
   assert.strictEqual(decoded.version, 1);
   console.log('ok landing-page');

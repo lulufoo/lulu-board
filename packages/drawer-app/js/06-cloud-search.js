@@ -12,7 +12,7 @@ function cloudSearchSplit(rows) {
     var item = {
       title: row.title || "",
       shareId: row.share_id || "",
-      boardId: row.graph_id || "",
+      diagramId: row.graph_id || "",
       note: row.category === "public" ? "Public" : "Mine",
     };
     if (row.category === "public") pub.push(item);
@@ -21,7 +21,7 @@ function cloudSearchSplit(rows) {
   return { mine: mine, public: pub };
 }
 
-async function cloudSearchBoards(query) {
+async function cloudSearchDiagrams(query) {
   var q = String(query || "").trim();
   if (!q || !cloudSearchSignedIn() || !cloudClient) return { mine: [], public: [] };
   var result = await cloudClient.rpc("search_graphs", { p_query: q });

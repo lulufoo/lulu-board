@@ -4,14 +4,14 @@ var cloudSession = null;
 var cloudSessionReady = Promise.resolve(null);
 var cloudLoadSeq = 0;
 var cloudSaveSeq = 0;
-var cloudSiblingBoardIds = [];
+var cloudSiblingDiagramIds = [];
 var cloudGroupId = "";
 var cloudGroupMembers = [];
 var cloudPlusDraft = false;
 var cloudPlusDraftActive = false;
 var cloudPlusDraftSource = "";
 var cloudPlusDraftRev = 1;
-var cloudBoardCache = {};
+var cloudDiagramCache = {};
 
 function cloudCachePut(store, row) {
   if (!store || !row || !row.graph_id) return null;
@@ -29,44 +29,44 @@ function cloudCachePut(store, row) {
   return store[row.graph_id];
 }
 
-function cloudCacheGet(store, boardId) {
-  var id = String(boardId || "");
+function cloudCacheGet(store, diagramId) {
+  var id = String(diagramId || "");
   return id && store && store[id] ? store[id] : null;
 }
 
-function cloudRememberBoardRow(row) {
-  return cloudCachePut(cloudBoardCache, row);
+function cloudRememberDiagramRow(row) {
+  return cloudCachePut(cloudDiagramCache, row);
 }
 
-function cloudCachedBoardRow(boardId) {
-  return cloudCacheGet(cloudBoardCache, boardId);
+function cloudCachedDiagramRow(diagramId) {
+  return cloudCacheGet(cloudDiagramCache, diagramId);
 }
 
-function cloudParkDirtyBoard() {
-  var id = typeof cloudVelaId === "function" ? cloudVelaId() : "";
-  if (!id || !velaSourceEl) return;
-  var prev = cloudCachedBoardRow(id) || {};
-  var source = velaSourceEl.value;
-  cloudRememberBoardRow({
+function cloudParkDirtyDiagram() {
+  var id = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
+  if (!id || !diagramSourceEl) return;
+  var prev = cloudCachedDiagramRow(id) || {};
+  var source = diagramSourceEl.value;
+  cloudRememberDiagramRow({
     graph_id: id,
-    title: (typeof cloudBoardTitle === "function" ? cloudBoardTitle(source) : "") || prev.title,
+    title: (typeof cloudDiagramTitle === "function" ? cloudDiagramTitle(source) : "") || prev.title,
     bmd: source,
-    version: Number(prev.version || boardServerRev) || 1,
+    version: Number(prev.version || diagramServerRev) || 1,
     share_id: prev.share_id,
     created_at: prev.created_at,
     updated_at: prev.updated_at,
     dirty: true,
-    localRev: Number(velaLocalRev) || 1,
+    localRev: Number(diagramLocalRev) || 1,
   });
 }
 
-function cloudForgetBoardCache(ids) {
+function cloudForgetDiagramCache(ids) {
   if (!ids) {
-    cloudBoardCache = {};
+    cloudDiagramCache = {};
     return;
   }
   (ids || []).forEach(function (id) {
-    if (id) delete cloudBoardCache[id];
+    if (id) delete cloudDiagramCache[id];
   });
 }
 
@@ -84,9 +84,9 @@ function cloudConfigured() {
     && !!(globalThis.LuluBoardSupabase && globalThis.LuluBoardSupabase.createClient);
 }
 
-function cloudVelaId() {
-  return typeof cloudBoardIdFromHash === "function"
-    ? cloudBoardIdFromHash(typeof location !== "undefined" ? location.hash : "")
+function cloudDiagramId() {
+  return typeof cloudDiagramIdFromHash === "function"
+    ? cloudDiagramIdFromHash(typeof location !== "undefined" ? location.hash : "")
     : "";
 }
 
@@ -173,12 +173,12 @@ function cloudSignInDialogOpen() {
   return !!(dialog && !dialog.hidden);
 }
 
-async function cloudDeclineCloudBoard() {
+async function cloudDeclineCloudDiagram() {
   cloudHideSignInDialog();
-  if (!cloudVelaId()) return;
+  if (!cloudDiagramId()) return;
   history.replaceState(null, "", location.pathname + location.search);
-  if (typeof bootstrapVelaFromHash === "function") await bootstrapVelaFromHash();
-  if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
+  if (typeof bootstrapDiagramFromHash === "function") await bootstrapDiagramFromHash();
+  if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
 }
 
 function cloudCloseAccountMenus() {
@@ -208,8 +208,8 @@ function cloudSaveButtonCopy(signedIn, aligned) {
   return { hidden: false, pending: true, current: false, label: "Saved", title: "Save" };
 }
 
-function cloudSaveUncreated(signedIn, boardId) {
-  return !!(signedIn && !String(boardId || "").trim());
+function cloudSaveUncreated(signedIn, diagramId) {
+  return !!(signedIn && !String(diagramId || "").trim());
 }
 
 // Hover tip and aria-label say what a click does (LB-376).
@@ -241,8 +241,8 @@ function syncCloudSaveChrome() {
     return;
   }
   save.classList.remove("is-signed-out");
-  var ownCloud = typeof cloudVelaId === "function" ? cloudVelaId() : "";
-  if (!ownCloud && typeof liveBoardId !== "undefined") ownCloud = String(liveBoardId || "");
+  var ownCloud = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
+  if (!ownCloud && typeof liveDiagramId !== "undefined") ownCloud = String(liveDiagramId || "");
   if (cloudPlusDraftActive) ownCloud = "";
   if (cloudSaveUncreated(signedIn, ownCloud)) {
     save.hidden = false;
@@ -254,7 +254,7 @@ function syncCloudSaveChrome() {
     return;
   }
   save.classList.remove("is-uncreated");
-  var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(boardServerRev, velaLocalRev));
+  var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(diagramServerRev, diagramLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
   cloudSetActionLabel(save, copy.pending ? copy.title : "");
@@ -316,53 +316,53 @@ function cloudSetAccountUi() {
   }
 }
 
-function cloudBoardTitle(source) {
+function cloudDiagramTitle(source) {
   var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(source) : String(source || "");
-  return typeof velaTitleFromBody === "function" ? velaTitleFromBody(body) : "";
+  return typeof diagramTitleFromBody === "function" ? diagramTitleFromBody(body) : "";
 }
 
 // The board shown in the editor right now: its cloud id, or "" when it has none
 // (local server, #z: hash board, share link, unsaved + draft).
-function cloudOpenBoardId() {
+function cloudOpenDiagramId() {
   if (typeof cloudPlusDraftActive !== "undefined" && cloudPlusDraftActive) return "";
-  return typeof cloudVelaId === "function" ? cloudVelaId() : "";
+  return typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
 }
 
 // SSOT for a board's display title: in-memory md first (the open board's live
 // source, then the cached bmd), else the queried boards.title, else Untitled.
 // An empty id means the open board without a cloud id: read the editor md.
-function getBoardTitle(boardId, queriedTitle) {
-  var id = String(boardId || "");
+function getDiagramTitle(diagramId, queriedTitle) {
+  var id = String(diagramId || "");
   var source = null;
-  var editor = typeof velaSourceEl !== "undefined" && velaSourceEl ? velaSourceEl : null;
-  if (editor && (!id || id === cloudOpenBoardId())) {
+  var editor = typeof diagramSourceEl !== "undefined" && diagramSourceEl ? diagramSourceEl : null;
+  if (editor && (!id || id === cloudOpenDiagramId())) {
     source = editor.value;
   } else {
-    var cached = cloudCachedBoardRow(id);
+    var cached = cloudCachedDiagramRow(id);
     if (cached && cached.bmd) source = cached.bmd;
   }
-  var title = source != null ? cloudBoardTitle(source) : String(queriedTitle || "");
+  var title = source != null ? cloudDiagramTitle(source) : String(queriedTitle || "");
   return title.trim() || "Untitled";
 }
 
-function cloudSetBoardHash(boardId, replace) {
-  if (!boardId || typeof cloudBoardHash !== "function") return;
-  var hash = cloudBoardHash(boardId);
+function cloudSetDiagramHash(diagramId, replace) {
+  if (!diagramId || typeof cloudDiagramHash !== "function") return;
+  var hash = cloudDiagramHash(diagramId);
   if (location.hash === hash) return;
   if (replace) history.replaceState(null, "", location.pathname + location.search + hash);
   else location.hash = hash;
 }
 
-function cloudClearOpenBoard() {
+function cloudClearOpenDiagram() {
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  if (!cloudVelaId() || !velaSourceEl) return;
-  velaSourceEl.value = "";
-  boardDirty = false;
-  velaLocalRev = 0;
-  boardServerRev = 0;
-  if (typeof updateVelaChars === "function") updateVelaChars();
-  if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
-  if (typeof renderVela === "function") renderVela({ fit: false });
+  if (!cloudDiagramId() || !diagramSourceEl) return;
+  diagramSourceEl.value = "";
+  diagramDirty = false;
+  diagramLocalRev = 0;
+  diagramServerRev = 0;
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
+  if (typeof applyDiagramLiveMeta === "function") applyDiagramLiveMeta({ id: "" });
+  if (typeof renderDiagram === "function") renderDiagram({ fit: false });
   syncCloudSaveChrome();
 }
 
@@ -403,10 +403,10 @@ function cloudInit() {
       cloudSession = session || null;
       cloudSetAccountUi();
       if (typeof cloudShareIdFromHash === "function" && cloudShareIdFromHash(location.hash)) {
-        if (typeof loadSharedBoardByHash === "function") void loadSharedBoardByHash(location.hash);
+        if (typeof loadSharedDiagramByHash === "function") void loadSharedDiagramByHash(location.hash);
       } else if (cloudSession) {
         void cloudRefreshGroups();
-        if (cloudVelaId()) void loadCloudVelaByHash(location.hash);
+        if (cloudDiagramId()) void loadCloudDiagramByHash(location.hash);
       }
     });
     cloudSessionReady = cloudClient.auth.getSession().then(function (result) {
@@ -455,14 +455,14 @@ async function cloudSignOut() {
     return;
   }
   cloudSession = null;
-  var leaveCloud = !!cloudVelaId();
-  cloudForgetBoardCache();
+  var leaveCloud = !!cloudDiagramId();
+  cloudForgetDiagramCache();
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
   cloudSetAccountUi();
   if (leaveCloud) {
     history.replaceState(null, "", location.pathname + location.search);
-    if (typeof bootstrapVelaFromHash === "function") await bootstrapVelaFromHash();
-    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
+    if (typeof bootstrapDiagramFromHash === "function") await bootstrapDiagramFromHash();
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
   }
   setStatus("Signed out");
 }
@@ -474,41 +474,41 @@ function cloudRowSource(row, fallback) {
   return fallback == null ? "" : String(fallback);
 }
 
-function applyCloudBoardRow(row, opts) {
+function applyCloudDiagramRow(row, opts) {
   opts = opts || {};
-  var source = cloudRowSource(row, velaSourceEl ? velaSourceEl.value : "");
-  if (velaSourceEl) velaSourceEl.value = source;
-  boardDirty = !!(row && row.dirty);
-  boardServerRev = Number(row && row.version) || 1;
-  if (boardDirty && Number(row.localRev) > 0) velaLocalRev = Number(row.localRev);
-  else velaLocalRev = boardServerRev;
-  if (typeof applyBoardLiveMeta === "function") {
-    applyBoardLiveMeta({
+  var source = cloudRowSource(row, diagramSourceEl ? diagramSourceEl.value : "");
+  if (diagramSourceEl) diagramSourceEl.value = source;
+  diagramDirty = !!(row && row.dirty);
+  diagramServerRev = Number(row && row.version) || 1;
+  if (diagramDirty && Number(row.localRev) > 0) diagramLocalRev = Number(row.localRev);
+  else diagramLocalRev = diagramServerRev;
+  if (typeof applyDiagramLiveMeta === "function") {
+    applyDiagramLiveMeta({
       id: row && row.graph_id || "",
-      version: velaLocalRev,
+      version: diagramLocalRev,
     });
   }
-  if (typeof updateVelaChars === "function") updateVelaChars();
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof rememberOwnerShareId === "function") rememberOwnerShareId(row && row.share_id);
   if (!opts.skipShare && typeof refreshOwnShareState === "function") void refreshOwnShareState();
-  cloudRememberBoardRow({
+  cloudRememberDiagramRow({
     graph_id: row && row.graph_id,
-    title: (row && row.title) || cloudBoardTitle(source),
+    title: (row && row.title) || cloudDiagramTitle(source),
     bmd: source,
-    version: boardServerRev,
+    version: diagramServerRev,
     share_id: row && row.share_id,
     created_at: row && row.created_at,
     updated_at: row && row.updated_at,
-    dirty: boardDirty,
-    localRev: velaLocalRev,
+    dirty: diagramDirty,
+    localRev: diagramLocalRev,
   });
   syncCloudSaveChrome();
 }
 
-function groupBoardRowsByGroup(boardRows, memberships) {
+function groupDiagramRowsByGroup(diagramRows, memberships) {
   var groupOf = {};
   (memberships || []).forEach(function (row) {
     if (!row || !row.graph_id || !row.group_id) return;
@@ -516,7 +516,7 @@ function groupBoardRowsByGroup(boardRows, memberships) {
   });
   var groups = [];
   var seen = {};
-  (boardRows || []).forEach(function (row) {
+  (diagramRows || []).forEach(function (row) {
     if (!row || !row.graph_id) return;
     var groupId = groupOf[row.graph_id];
     if (!groupId) return;
@@ -531,8 +531,8 @@ function groupBoardRowsByGroup(boardRows, memberships) {
   return groups;
 }
 
-function loadSiblingBoardIds(boardId, memberships) {
-  var id = String(boardId || "");
+function loadSiblingDiagramIds(diagramId, memberships) {
+  var id = String(diagramId || "");
   var groupId = "";
   (memberships || []).forEach(function (row) {
     if (row && row.graph_id === id) groupId = row.group_id;
@@ -547,35 +547,35 @@ function loadSiblingBoardIds(boardId, memberships) {
   return siblings;
 }
 
-async function saveVelaToCloud(opts) {
+async function saveDiagramToCloud(opts) {
   opts = opts || {};
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     if (opts.explicit) setStatus("Sign in to save to cloud", true);
     return false;
   }
   if (cloudPlusDraftActive && !opts.explicit) {
-    setBoardSyncUI("ok");
+    setDiagramSyncUI("ok");
     syncCloudSaveChrome();
     return false;
   }
   var source = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(velaSourceEl && velaSourceEl.value)
-    : String(velaSourceEl && velaSourceEl.value || "");
-  if (velaSourceEl && source !== velaSourceEl.value) velaSourceEl.value = source;
-  var boardId = (typeof cloudVelaId === "function" && cloudVelaId())
-    || (typeof liveBoardId !== "undefined" ? String(liveBoardId || "") : "");
-  if (cloudPlusDraftActive) boardId = "";
-  var title = cloudBoardTitle(source) || "Untitled";
+    ? stripDocumentMeta(diagramSourceEl && diagramSourceEl.value)
+    : String(diagramSourceEl && diagramSourceEl.value || "");
+  if (diagramSourceEl && source !== diagramSourceEl.value) diagramSourceEl.value = source;
+  var diagramId = (typeof cloudDiagramId === "function" && cloudDiagramId())
+    || (typeof liveDiagramId !== "undefined" ? String(liveDiagramId || "") : "");
+  if (cloudPlusDraftActive) diagramId = "";
+  var title = cloudDiagramTitle(source) || "Untitled";
   var seq = ++cloudSaveSeq;
-  setBoardSyncUI("saving");
+  setDiagramSyncUI("saving");
   try {
     var result;
-    if (!boardId) {
-      boardId = typeof newGraphId === "function" ? newGraphId() : "";
-      if (!boardId) throw new Error("Could not mint a board id");
+    if (!diagramId) {
+      diagramId = typeof newGraphId === "function" ? newGraphId() : "";
+      if (!diagramId) throw new Error("Could not mint a board id");
       var joinGroupId = cloudPlusDraftActive && cloudGroupId ? cloudGroupId : null;
       result = await cloudClient.rpc("create_owned_graph_with_group", {
-        p_graph_id: boardId,
+        p_graph_id: diagramId,
         p_title: title,
         p_bmd: source,
         p_group_id: joinGroupId,
@@ -591,56 +591,56 @@ async function saveVelaToCloud(opts) {
         cloudPlusDraftSource = "";
         cloudPlusDraftRev = 1;
       }
-      applyCloudBoardRow(created);
-      cloudSetBoardHash(boardId, true);
-      if (typeof refreshCloudGroupMembers === "function") await refreshCloudGroupMembers(boardId);
+      applyCloudDiagramRow(created);
+      cloudSetDiagramHash(diagramId, true);
+      if (typeof refreshCloudGroupMembers === "function") await refreshCloudGroupMembers(diagramId);
     } else {
-      var expected = Number(boardServerRev);
+      var expected = Number(diagramServerRev);
       if (!(expected > 0)) expected = 1;
       result = await cloudClient.from("graphs").update({
         title: title,
         bmd: source,
-      }).eq("graph_id", boardId).eq("version", expected).select("graph_id,title,bmd,version,share_id,updated_at");
+      }).eq("graph_id", diagramId).eq("version", expected).select("graph_id,title,bmd,version,share_id,updated_at");
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var rows = result.data || [];
       if (!rows.length) {
         var latest = await cloudClient.from("graphs")
           .select("graph_id,title,bmd,version,share_id,updated_at")
-          .eq("graph_id", boardId)
+          .eq("graph_id", diagramId)
           .maybeSingle();
         if (latest.error) throw latest.error;
         if (!latest.data) throw new Error("Cloud diagram not found");
-        applyCloudBoardRow(latest.data);
-        if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
-        setBoardSyncUI("conflict");
+        applyCloudDiagramRow(latest.data);
+        if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+        setDiagramSyncUI("conflict");
         setStatus("Cloud version conflict — reloaded", true);
         return false;
       }
-      applyCloudBoardRow(rows[0]);
+      applyCloudDiagramRow(rows[0]);
     }
     // Do not steal the hash back if the user already navigated to another cloud board.
-    var openId = cloudVelaId();
-    if (!openId || openId === boardId) cloudSetBoardHash(boardId, true);
+    var openId = cloudDiagramId();
+    if (!openId || openId === diagramId) cloudSetDiagramHash(diagramId, true);
     syncCloudSaveChrome();
-    setBoardSyncUI("ok");
+    setDiagramSyncUI("ok");
     setStatus("Saved to cloud");
     if (opts.explicit && typeof showCopyTip === "function") showCopyTip("Saved to cloud");
     await cloudRefreshGroups();
     return true;
   } catch (error) {
     if (seq !== cloudSaveSeq) return false;
-    setBoardSyncUI("error");
+    setDiagramSyncUI("error");
     setStatus(error && error.message ? error.message : "Cloud save failed", true);
     return false;
   }
 }
 
-async function loadCloudVelaByHash(raw) {
+async function loadCloudDiagramByHash(raw) {
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
-  var boardId = typeof cloudBoardIdFromHash === "function" ? cloudBoardIdFromHash(raw) : "";
-  if (!boardId) return false;
+  var diagramId = typeof cloudDiagramIdFromHash === "function" ? cloudDiagramIdFromHash(raw) : "";
+  if (!diagramId) return false;
   if (typeof cloudParkPlusDraft === "function" && cloudPlusDraftActive) cloudParkPlusDraft();
   if (!cloudConfigured() || !cloudClient) {
     setStatus("Cloud sync is not configured", true);
@@ -648,26 +648,26 @@ async function loadCloudVelaByHash(raw) {
   }
   await cloudSessionReady;
   if (!cloudSession || !cloudSession.user) {
-    cloudClearOpenBoard();
+    cloudClearOpenDiagram();
     cloudShowSignInDialog();
     setStatus("Sign in to open this cloud diagram", true);
     return true;
   }
   var seq = ++cloudLoadSeq;
-  var known = typeof cloudKnownGroupBoard === "function" && cloudKnownGroupBoard(boardId);
-  var cached = cloudCachedBoardRow(boardId);
+  var known = typeof cloudKnownGroupDiagram === "function" && cloudKnownGroupDiagram(diagramId);
+  var cached = cloudCachedDiagramRow(diagramId);
   if (cached) {
     if (seq !== cloudLoadSeq) return true;
     cloudPlusDraftActive = false;
-    applyCloudBoardRow(cached, { skipShare: known });
+    applyCloudDiagramRow(cached, { skipShare: known });
     if (known) {
       if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
     } else if (typeof refreshCloudGroupMembers === "function") {
-      await refreshCloudGroupMembers(boardId);
+      await refreshCloudGroupMembers(diagramId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
-    setBoardSyncUI("ok");
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+    setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     if (!known) void cloudRefreshGroups();
     return true;
@@ -676,28 +676,28 @@ async function loadCloudVelaByHash(raw) {
   try {
     var result = await cloudClient.from("graphs")
       .select("graph_id,title,bmd,version,share_id,created_at,updated_at")
-      .eq("graph_id", boardId)
+      .eq("graph_id", diagramId)
       .maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
     if (!result.data) throw new Error("Cloud diagram not found");
     cloudPlusDraftActive = false;
-    applyCloudBoardRow(result.data, { skipShare: known });
+    applyCloudDiagramRow(result.data, { skipShare: known });
     if (known) {
       if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
     } else if (typeof refreshCloudGroupMembers === "function") {
-      await refreshCloudGroupMembers(boardId);
+      await refreshCloudGroupMembers(diagramId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
-    setBoardSyncUI("ok");
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+    setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     if (!known) void cloudRefreshGroups();
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
-    cloudClearOpenBoard();
-    setBoardSyncUI("error");
+    cloudClearOpenDiagram();
+    setDiagramSyncUI("error");
     setStatus(error && error.message ? error.message : "Cloud diagram load failed", true);
     return true;
   }
@@ -720,9 +720,9 @@ async function cloudRefreshGroups() {
   }
 }
 
-async function deleteCloudGroup(groupId, boardIds) {
+async function deleteCloudGroup(groupId, diagramIds) {
   if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
-  var ids = (boardIds || []).filter(Boolean);
+  var ids = (diagramIds || []).filter(Boolean);
   if (!ids.length) return;
   if (typeof askConfirm !== "function") return;
   if (!(await askConfirm({
@@ -734,15 +734,15 @@ async function deleteCloudGroup(groupId, boardIds) {
   try {
     var boards = await cloudClient.from("graphs").delete().in("graph_id", ids);
     if (boards.error) throw boards.error;
-    cloudForgetBoardCache(ids);
-    var openId = cloudVelaId();
+    cloudForgetDiagramCache(ids);
+    var openId = cloudDiagramId();
     if (openId && ids.indexOf(openId) >= 0) {
       history.replaceState(null, "", location.pathname + location.search);
-      await bootstrapVelaFromHash();
-      if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
+      await bootstrapDiagramFromHash();
+      if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
     }
     if (typeof refreshCloudGroupMembers === "function") {
-      await refreshCloudGroupMembers(cloudVelaId());
+      await refreshCloudGroupMembers(cloudDiagramId());
     }
     setStatus("Deleted group");
     await cloudRefreshGroups();
@@ -781,8 +781,8 @@ async function deleteCloudGroup(groupId, boardIds) {
   });
   var closeDialog = document.getElementById("btnShellSignInClose");
   var backdrop = document.getElementById("shellSignInBackdrop");
-  if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
-  if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudBoard(); });
+  if (closeDialog) closeDialog.addEventListener("click", function () { void cloudDeclineCloudDiagram(); });
+  if (backdrop) backdrop.addEventListener("click", function () { void cloudDeclineCloudDiagram(); });
   var save = document.getElementById("btnShellSaveCloud");
   if (save && typeof bindChromeTip === "function") {
     bindChromeTip(save, function () { return save.getAttribute("aria-label") || ""; });
@@ -793,11 +793,11 @@ async function deleteCloudGroup(groupId, boardIds) {
       return;
     }
     cloudCloseAccountMenus();
-    if (typeof isShareGuest === "function" && isShareGuest() && typeof forkSharedBoard === "function") {
-      void forkSharedBoard();
+    if (typeof isShareGuest === "function" && isShareGuest() && typeof forkSharedDiagram === "function") {
+      void forkSharedDiagram();
       return;
     }
-    void saveVelaToCloud({ explicit: true });
+    void saveDiagramToCloud({ explicit: true });
   });
   var signOut = document.getElementById("btnShellSessionOut");
   if (signOut) signOut.addEventListener("click", function () {
@@ -811,7 +811,7 @@ async function deleteCloudGroup(groupId, boardIds) {
   });
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
-      if (cloudSignInDialogOpen()) void cloudDeclineCloudBoard();
+      if (cloudSignInDialogOpen()) void cloudDeclineCloudDiagram();
       else cloudHideSignInDialog();
       cloudCloseAccountMenus();
     }

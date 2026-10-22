@@ -21,18 +21,18 @@ assert.doesNotMatch(tabCss, /flex-basis:\s*16px/, 'every line slot is the same h
 assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outlines the whole tab');
 
 {
-  const start = order.indexOf('function moveBoardId');
+  const start = order.indexOf('function moveDiagramId');
   const end = order.indexOf('async function cloudReorderGroupTabs');
-  assert.ok(start >= 0 && end > start, 'moveBoardId is a closed function');
-  const { moveBoardId } = new Function(order.slice(start, end) + '\nreturn { moveBoardId };')();
+  assert.ok(start >= 0 && end > start, 'moveDiagramId is a closed function');
+  const { moveDiagramId } = new Function(order.slice(start, end) + '\nreturn { moveDiagramId };')();
   const ids = ['b_1', 'b_2', 'b_3'];
-  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_1', false), ['b_2', 'b_1', 'b_3'], 'drag 2 before 1');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_1', true), ids, 'drag 2 after 1 is a no-op');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_1', 'b_3', true), ['b_2', 'b_3', 'b_1'], 'drag 1 after 3');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_1', 'b_3', false), ['b_2', 'b_1', 'b_3'], 'drag 1 before 3');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_3', 'b_1', false), ['b_3', 'b_1', 'b_2'], 'drag 3 before 1');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_2', 'b_2', false), ids, 'same tab before is a no-op');
-  assert.deepStrictEqual(moveBoardId(ids, 'b_9', 'b_1', false), ids, 'unknown id is a no-op');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_2', 'b_1', false), ['b_2', 'b_1', 'b_3'], 'drag 2 before 1');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_2', 'b_1', true), ids, 'drag 2 after 1 is a no-op');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_1', 'b_3', true), ['b_2', 'b_3', 'b_1'], 'drag 1 after 3');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_1', 'b_3', false), ['b_2', 'b_1', 'b_3'], 'drag 1 before 3');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_3', 'b_1', false), ['b_3', 'b_1', 'b_2'], 'drag 3 before 1');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_2', 'b_2', false), ids, 'same tab before is a no-op');
+  assert.deepStrictEqual(moveDiagramId(ids, 'b_9', 'b_1', false), ids, 'unknown id is a no-op');
   assert.deepStrictEqual(ids, ['b_1', 'b_2', 'b_3'], 'input is not mutated');
 }
 
@@ -44,24 +44,24 @@ assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outline
     order.slice(start, end) + '\nreturn { cloudTabDropTarget };'
   )();
   const tab = (top, height, id) => ({
-    dataset: { boardId: id },
+    dataset: { diagramId: id },
     getBoundingClientRect: () => ({ top, height, bottom: top + height }),
   });
   const root = { querySelectorAll: () => [tab(0, 32, 'b_1'), tab(36, 32, 'b_2'), tab(72, 32, 'b_3')] };
-  assert.strictEqual(cloudTabDropTarget(root, 10).tab.dataset.boardId, 'b_1', 'top of 1');
+  assert.strictEqual(cloudTabDropTarget(root, 10).tab.dataset.diagramId, 'b_1', 'top of 1');
   assert.strictEqual(cloudTabDropTarget(root, 10).after, false, 'top of 1 is before 1');
   assert.strictEqual(cloudTabDropTarget(root, 20).after, true, 'bottom of 1 is after 1');
-  assert.strictEqual(cloudTabDropTarget(root, 20).tab.dataset.boardId, 'b_1', 'bottom of 1 still names 1');
+  assert.strictEqual(cloudTabDropTarget(root, 20).tab.dataset.diagramId, 'b_1', 'bottom of 1 still names 1');
   assert.strictEqual(cloudTabDropTarget(root, 40).after, false, 'top of 2 is before 2');
   assert.strictEqual(cloudTabDropTarget(root, 90).after, true, 'below last tab is after last');
-  assert.strictEqual(cloudTabDropTarget(root, 90).tab.dataset.boardId, 'b_3', 'below last names last');
+  assert.strictEqual(cloudTabDropTarget(root, 90).tab.dataset.diagramId, 'b_3', 'below last names last');
 }
 
 const reorder = order.slice(order.indexOf('async function cloudReorderGroupTabs'), order.indexOf('function cloudTabFromEvent'));
 assert.match(reorder, /rpc\("reorder_group_graphs"/, 'drop saves through the reorder rpc');
 assert.match(reorder, /p_group_id:\s*groupId/, 'rpc carries the group id');
 assert.match(reorder, /p_graph_ids:\s*next/, 'rpc carries the full new order');
-assert.match(reorder, /moveBoardId\(ids, fromId, toId, after\)/, 'rpc uses the before\/after slot');
+assert.match(reorder, /moveDiagramId\(ids, fromId, toId, after\)/, 'rpc uses the before\/after slot');
 assert.match(reorder, /cloudGroupMembers = before/, 'a failed save restores the old order');
 assert.match(reorder, /groupId !== cloudGroupId/, 'a group switch mid-save leaves state alone');
 assert.doesNotMatch(reorder, /from\("group_members"\)|\.update\(/, 'order is not written row by row from the browser');

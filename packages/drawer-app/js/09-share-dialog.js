@@ -16,23 +16,23 @@ function shareDialogRandomId() {
   return out;
 }
 
-function shareDialogFind(boardId) {
+function shareDialogFind(diagramId) {
   var shares = typeof shellShares !== "undefined" ? shellShares : [];
-  return shares.filter(function (item) { return item.boardId === boardId; })[0] || null;
+  return shares.filter(function (item) { return item.diagramId === diagramId; })[0] || null;
 }
 
 // The board open now: its share row if it has one, otherwise a not-yet-shared stand-in.
 function shareDialogCurrentItem(wantNew) {
   if (shellIsPreview()) {
     var sample = shellSampleShares().filter(function (item) { return item.isCurrent; })[0];
-    var copy = Object.assign({ boardId: "x0", title: "Untitled", shareId: "", role: "view", isPublic: false, isCurrent: true }, sample);
+    var copy = Object.assign({ diagramId: "x0", title: "Untitled", shareId: "", role: "view", isPublic: false, isCurrent: true }, sample);
     if (wantNew) copy.shareId = "";
     return copy;
   }
-  var boardId = cloudVelaId();
-  var known = shareDialogFind(boardId);
+  var diagramId = cloudDiagramId();
+  var known = shareDialogFind(diagramId);
   if (known) return known;
-  return { boardId: boardId, title: getBoardTitle(cloudOpenBoardId()), shareId: "", role: "view", isPublic: false, isCurrent: true };
+  return { diagramId: diagramId, title: getDiagramTitle(cloudOpenDiagramId()), shareId: "", role: "view", isPublic: false, isCurrent: true };
 }
 
 function shareDialogLink(shareId) {
@@ -57,10 +57,10 @@ function shareDialogPaint() {
   if (!item) return;
   var shared = !!item.shareId;
   var isPublic = !!item.isPublic;
-  shareDialogEl("shareDialogBoard").textContent = item.title || "Untitled";
+  shareDialogEl("shareDialogDiagram").textContent = item.title || "Untitled";
   shareDialogEl("shareDialogOff").hidden = shared;
   shareDialogEl("shareDialogOn").hidden = !shared;
-  shareDialogEl("shareOpenBoard").hidden = !!item.isCurrent;
+  shareDialogEl("shareOpenDiagram").hidden = !!item.isCurrent;
   if (!shared) return;
   shareDialogEl("shareLinkInput").value = shareDialogLink(item.shareId);
   shareDialogEl("shareRoleHint").textContent = shareDialogRoleHint(item.role);
@@ -105,8 +105,8 @@ async function shareDialogApply(rpc, args, okStatus, preview) {
   }
   shareDialogBusy = true;
   try {
-    await cloudShareMutate(item.boardId, rpc, args, okStatus);
-    var fresh = shareDialogFind(item.boardId);
+    await cloudShareMutate(item.diagramId, rpc, args, okStatus);
+    var fresh = shareDialogFind(item.diagramId);
     if (shareDialogItem) {
       shareDialogItem = fresh ? Object.assign({}, fresh, { isCurrent: item.isCurrent }) : Object.assign({}, item, { shareId: "" });
       shareDialogPaint();
@@ -152,12 +152,12 @@ async function shareDialogCopyLink() {
   setTimeout(function () { btn.textContent = "Copy"; }, 1400);
 }
 
-function shareDialogOpenBoard() {
+function shareDialogOpenDiagram() {
   var item = shareDialogItem;
   shareDialogClose();
   if (!item || item.isCurrent || !shareDialogLive()) return;
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
-  if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(item.boardId);
+  if (typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(item.diagramId);
 }
 
 // "Share this board" in the Shared tab. wantNew: review links only, shows the not-yet-shared state.
@@ -173,7 +173,7 @@ function shareDialogOpenCurrent(wantNew) {
   shareDialogEl("shareCreate").addEventListener("click", shareDialogCreateLink);
   shareDialogEl("shareCopy").addEventListener("click", function () { void shareDialogCopyLink(); });
   shareDialogEl("shareNewLink").addEventListener("click", shareDialogRenewLink);
-  shareDialogEl("shareOpenBoard").addEventListener("click", shareDialogOpenBoard);
+  shareDialogEl("shareOpenDiagram").addEventListener("click", shareDialogOpenDiagram);
   shareDialogEl("shareLinkInput").addEventListener("focus", function (event) { event.target.select(); });
   Array.prototype.forEach.call(document.querySelectorAll("[data-share-role]"), function (btn) {
     btn.addEventListener("click", function () { shareDialogSetRole(btn.getAttribute("data-share-role")); });

@@ -46,7 +46,7 @@ assert.match(js, /Math\.abs\(\(els\.list\.scrollTop \|\| 0\) - noteRailLock\) < 
 assert.match(js, /vis >= step/, 'a group shows once one item appears');
 assert.doesNotMatch(js, /view\.top \+ step/, 'does not wait for the previous group to leave');
 assert.match(js, /event\.key !== "Escape"/, 'Esc is cancel');
-assert.doesNotMatch(js, /saveVelaToHash|blankHashBoardSource|blankHashFlowchartSource|blankHashMindmapSource|velaSourceEl/, 'does not write hash or source');
+assert.doesNotMatch(js, /saveDiagramToHash|blankHashBoardSource|blankHashFlowchartSource|blankHashMindmapSource|diagramSourceEl/, 'does not write hash or source');
 
 function makeEl(id) {
   const attrs = {};

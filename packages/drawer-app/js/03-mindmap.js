@@ -20,7 +20,7 @@ function isMindmapKind() {
 }
 
 function mindmapSource() {
-  return velaSourceEl ? velaSourceEl.value : "";
+  return diagramSourceEl ? diagramSourceEl.value : "";
 }
 
 function currentMindmapLayout() {
@@ -46,13 +46,13 @@ function mindmapEditAction(action) {
   try {
     if (typeof MindmapEdit === "undefined") throw new Error("MindmapEdit missing — hard refresh (cache)");
     var result = action();
-    if (result && result.source != null && velaSourceEl) {
-      velaSourceEl.value = result.source;
-      if (typeof updateVelaChars === "function") updateVelaChars();
-      if (typeof scheduleBoardSave === "function") scheduleBoardSave();
+    if (result && result.source != null && diagramSourceEl) {
+      diagramSourceEl.value = result.source;
+      if (typeof updateDiagramChars === "function") updateDiagramChars();
+      if (typeof scheduleDiagramSave === "function") scheduleDiagramSave();
     }
     if (result && result.selection) selectedMindmap = result.selection;
-    if (typeof renderVela === "function") renderVela({ fit: false });
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false });
     return result;
   } catch (err) {
     if (typeof setStatus === "function") setStatus(err instanceof Error ? err.message : String(err), true);
@@ -163,17 +163,17 @@ function commitMindmapLayout() {
   var next = mindmapLayoutEditor ? mindmapLayoutEditor.value : "radial";
   if (next === currentMindmapLayout()) return;
   setMindmapLayout(next);
-  if (typeof renderVela === "function") renderVela({ fit: false });
+  if (typeof renderDiagram === "function") renderDiagram({ fit: false });
 }
 
 function addMindmapRoot() {
   if (mindmapHasRoot()) return;
-  if (!velaSourceEl) return;
-  velaSourceEl.value = MINDMAP_SEED;
+  if (!diagramSourceEl) return;
+  diagramSourceEl.value = MINDMAP_SEED;
   selectedMindmap = null;
-  if (typeof updateVelaChars === "function") updateVelaChars();
-  if (typeof scheduleBoardSave === "function") scheduleBoardSave();
-  if (typeof renderVela === "function") renderVela({ fit: true });
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
+  if (typeof scheduleDiagramSave === "function") scheduleDiagramSave();
+  if (typeof renderDiagram === "function") renderDiagram({ fit: true });
 }
 
 function addMindmapChild(parentRef) {
@@ -217,7 +217,7 @@ document.addEventListener("keydown", function (event) {
   if (event.key !== "Delete" && event.key !== "Backspace") return;
   if (!selectedMindmap || selectedMindmap.isRoot) return;
   var target = event.target;
-  if (target === velaSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   deleteMindmapTopic();
 });

@@ -16,7 +16,7 @@ assert.match(sync, /await cloudFetchGroupSummaries\(\)/, 'the old history list r
 
 const grab = (src, from, to) => src.slice(src.indexOf(from), src.indexOf(to));
 const { cloudGroupSummaries } = new Function(
-  grab(sync, 'function groupBoardRowsByGroup', 'function loadSiblingBoardIds') +
+  grab(sync, 'function groupDiagramRowsByGroup', 'function loadSiblingDiagramIds') +
   grab(groups, 'function cloudGroupSummaries', '// Throws on a cloud error') +
   '\nreturn { cloudGroupSummaries };'
 )();
@@ -35,12 +35,12 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
   const out = cloudGroupSummaries(rows, members, 'b_2');
   assert.deepStrictEqual(out.map((g) => g.groupId), ['g_b', 'g_a'], 'newest-edited group first; a board without a group is not listed');
   assert.strictEqual(out[0].title, 'Payments', 'title comes from the most recently edited board');
-  assert.strictEqual(out[0].boardCount, 2, 'counts the boards in the group');
-  assert.deepStrictEqual(out[0].boardIds, ['b_3', 'b_2']);
+  assert.strictEqual(out[0].diagramCount, 2, 'counts the boards in the group');
+  assert.deepStrictEqual(out[0].diagramIds, ['b_3', 'b_2']);
   assert.strictEqual(out[0].updatedAt, '2026-10-03T00:00:00Z');
   assert.strictEqual(out[0].isCurrent, true, 'current board inside the group marks it');
   assert.strictEqual(out[1].isCurrent, false);
-  assert.strictEqual(out[0].faceBoardId, 'b_3', 'opening the group goes to its face board');
+  assert.strictEqual(out[0].faceDiagramId, 'b_3', 'opening the group goes to its face board');
 }
 {
   const rows = [b('b_1', 'LLM', '2026-10-01T00:00:00Z')];

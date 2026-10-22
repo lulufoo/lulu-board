@@ -56,12 +56,12 @@ function boardLinkPickFromEvent(event, root, board) {
     return true;
   }
   try {
-    var result = BoardRender.addLink(velaSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
+    var result = BoardRender.addLink(diagramSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
     applyBoardEditResult(result);
     setBoardLinkMode(false);
     setStatus("Linked " + boardLinkRefKey(from) + " → " + boardLinkRefKey(to));
   } catch (err) {
-    showVelaError(err instanceof Error ? err.message : String(err));
+    showDiagramError(err instanceof Error ? err.message : String(err));
   }
   return true;
 }
@@ -72,14 +72,14 @@ function setBoardLinkMode(active) {
   document.querySelectorAll(".board-link-source").forEach(function(el) { el.classList.remove("board-link-source"); });
   if (boardLinkMode) {
     selectedBoardEdge = null;
-    delete velaSourceEl.dataset.boardEdgeSelectionKey;
+    delete diagramSourceEl.dataset.boardEdgeSelectionKey;
     clearBoardSelection();
     showPropsForLinkMode();
     setStatus("Link mode · type and title, then click source / target box or item");
   } else {
     hidePropsLinkOnlyChrome();
     clearBoardSelection();
-    if (document.documentElement.dataset.drawerMode === "vela") setStatus("Board mode");
+    if (document.documentElement.dataset.drawerMode === "diagram") setStatus("Board mode");
   }
 }
 function boardLinkTitleValue() {
@@ -234,15 +234,15 @@ function commitBoardNodeFont(persist, rerender) {
   previewBoardNodeFont(n);
   if (!persist) return;
   try {
-    var raw = velaSourceEl.value;
+    var raw = diagramSourceEl.value;
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
     var nextBody = BoardRender.updateNodeTypeStep(body, selectedBoardNode, n);
     var next = nextBody;
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
-      updateVelaChars();
-      if (rerender && typeof renderVela === "function") renderVela({ fit: false });
-      scheduleBoardSave();
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      updateDiagramChars();
+      if (rerender && typeof renderDiagram === "function") renderDiagram({ fit: false });
+      scheduleDiagramSave();
     }
     var board = BoardRender.parse(nextBody);
     var node = typeof BoardRender.findNode === "function" ? BoardRender.findNode(board, selectedBoardNode) : null;
@@ -252,7 +252,7 @@ function commitBoardNodeFont(persist, rerender) {
       setBoardIdField(true, id);
     }
     setBoardNodeFontField(true, id ? BoardRender.authoredNodeTypeStep(board, id) : null, BoardRender.resolveStyle(board).type_step);
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function setAuthoredTip(el, show, authored) {
   if (!el) return;
@@ -411,7 +411,7 @@ function syncBoardIdDup() {
   var draft = boardIdEditor ? normalizeBoardIdInput(boardIdEditor.value) : "";
   var taken = false;
   if (draft && selectedBoardNode && typeof BoardRender !== "undefined" && typeof BoardRender.isIdTaken === "function") {
-    try { taken = !!BoardRender.isIdTaken(velaSourceEl.value, selectedBoardNode, draft); }
+    try { taken = !!BoardRender.isIdTaken(diagramSourceEl.value, selectedBoardNode, draft); }
     catch (_) { taken = false; }
   }
   if (boardIdEditor) boardIdEditor.classList.toggle("is-dup", taken);
@@ -463,17 +463,17 @@ function commitBoardId() {
   if (syncBoardIdDup()) return;
   var keepSelection = boardSelectionWithId(selectedBoardNode, next);
   try {
-    var source = BoardRender.updateId(velaSourceEl.value, selectedBoardNode, next);
-    if (source !== velaSourceEl.value) {
-      velaSourceEl.value = source;
+    var source = BoardRender.updateId(diagramSourceEl.value, selectedBoardNode, next);
+    if (source !== diagramSourceEl.value) {
+      diagramSourceEl.value = source;
       selectedBoardNode = keepSelection;
-      velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
     }
   } catch (err) {
-    showVelaError(err instanceof Error ? err.message : String(err));
+    showDiagramError(err instanceof Error ? err.message : String(err));
   }
 }
 function setBoardIconField(show, icon) {
@@ -491,16 +491,16 @@ function commitBoardIcon(nextIcon) {
   if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") || typeof BoardRender.updateIcon !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateIcon(velaSourceEl.value, selectedBoardNode, nextIcon);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateIcon(diagramSourceEl.value, selectedBoardNode, nextIcon);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus(nextIcon == null ? "Icon cleared" : "Icon · " + nextIcon);
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 
 
@@ -588,8 +588,8 @@ function applyBoardEdgeSelection(root) {
     el.classList.remove("board-edge-selected");
     restoreBoardEdgePaint(el);
   });
-  if (!selectedBoardEdge && velaSourceEl.dataset.boardEdgeSelectionKey) {
-    var index = Number(String(velaSourceEl.dataset.boardEdgeSelectionKey).split(":")[1]);
+  if (!selectedBoardEdge && diagramSourceEl.dataset.boardEdgeSelectionKey) {
+    var index = Number(String(diagramSourceEl.dataset.boardEdgeSelectionKey).split(":")[1]);
     if (Number.isInteger(index)) selectedBoardEdge = { kind: "link", key: "link:" + index, index: index };
   }
   if (!selectedBoardEdge || !root) return;
@@ -630,12 +630,12 @@ function applyBoardEdgeSelection(root) {
 function selectBoardEdge(root, index) {
   var nextKey = "link:" + index;
   selectedBoardNode = null; selectedBoardEdge = { kind: "link", key: nextKey, index: index };
-  delete velaSourceEl.dataset.boardSelectionKey; velaSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
+  delete diagramSourceEl.dataset.boardSelectionKey; diagramSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
   var title = "control";
   var type = "solid";
   var arrow = "forward";
   try {
-    var board = BoardRender.parse(velaSourceEl.value);
+    var board = BoardRender.parse(diagramSourceEl.value);
     var link = (board.links || [])[index];
     if (link && (link.title || link.label)) title = link.title || link.label;
     if (link && link.type) type = link.type;
@@ -653,7 +653,7 @@ function syncBoardEditControls() {
 function currentBoardSelectionKey() {
   if (selectedBoardEdge) return selectedBoardEdge.key;
   if (selectedBoardNode) return selectedBoardNode.key;
-  return velaSourceEl.dataset.boardSelectionKey || velaSourceEl.dataset.boardEdgeSelectionKey || "";
+  return diagramSourceEl.dataset.boardSelectionKey || diagramSourceEl.dataset.boardEdgeSelectionKey || "";
 }
 function selectionKeyFromEl(el) {
   if (!el) return "";
@@ -688,8 +688,8 @@ function clearBoardSelection() {
   boardInspectGesture = null;
   selectedBoardNode = null;
   selectedBoardEdge = null;
-  delete velaSourceEl.dataset.boardSelectionKey;
-  delete velaSourceEl.dataset.boardEdgeSelectionKey;
+  delete diagramSourceEl.dataset.boardSelectionKey;
+  delete diagramSourceEl.dataset.boardEdgeSelectionKey;
   document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); });
   document.querySelectorAll(".board-edge-selected").forEach(function(el) {
     el.classList.remove("board-edge-selected");
@@ -718,7 +718,7 @@ function boardItemSelectionFromEl(el) {
     index: Number(el.dataset.boardItemIndex)
   };
 }
-function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); }); if (restoreFromDataset && !selectedBoardNode && velaSourceEl.dataset.boardSelectionKey) { var parts = velaSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: velaSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(velaSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
+function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); }); if (restoreFromDataset && !selectedBoardNode && diagramSourceEl.dataset.boardSelectionKey) { var parts = diagramSourceEl.dataset.boardSelectionKey.split(":"); selectedBoardNode = parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: diagramSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: diagramSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(diagramSourceEl.dataset.boardSelectionKey); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
   if (!match && selectedBoardNode.kind === "title") {
     match = (typeof boardPinnedTitleNode === "function" && boardPinnedTitleNode())
       || document.querySelector("#boardTitlePin [data-board-key=\"title:board\"]")
@@ -814,7 +814,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     }
     var orderInfo = null;
     if (!isTitle && typeof BoardRender !== "undefined" && typeof BoardRender.reorderInfo === "function") {
-      try { orderInfo = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
+      try { orderInfo = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
     }
     setBoardOrderField(!!orderInfo, orderInfo);
     if (propsHint) propsHint.textContent = isTitle
@@ -845,8 +845,8 @@ function selectBoardElement(el, root, board, event) {
   }
   selectedBoardEdge = null;
   selectedBoardNode = next;
-  delete velaSourceEl.dataset.boardEdgeSelectionKey;
-  velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+  diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
   applyBoardSelection(root, board);
 }
 function pickBoardElement(el, root, board, event) {
@@ -1144,7 +1144,7 @@ function wireBoardDrag(root, board) {
       var toIndex = BoardRender.reorderFinalIndex(fromIndex, done.insertBefore);
       if (fromIndex < 0 || toIndex === fromIndex) return;
       var reorderKeep = Object.assign({}, selectedBoardNode);
-      try { var reordered = BoardRender.reorderNode(velaSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+      try { var reordered = BoardRender.reorderNode(diagramSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
       event.preventDefault(); event.stopPropagation(); return;
     }
     if (cancelled || !done.moved) return;
@@ -1153,20 +1153,20 @@ function wireBoardDrag(root, board) {
     done.hit.style.left = x + "px"; done.hit.style.top = y + "px";
     var keep = Object.assign({}, selectedBoardNode);
     try {
-      velaSourceEl.value = BoardRender.updatePosition(velaSourceEl.value, keep, x, y);
+      diagramSourceEl.value = BoardRender.updatePosition(diagramSourceEl.value, keep, x, y);
       selectedBoardNode = keep;
-      velaSourceEl.dataset.boardSelectionKey = keep.key || velaSourceEl.dataset.boardSelectionKey || "";
-      updateVelaChars();
-      scheduleBoardSave();
+      diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
+      updateDiagramChars();
+      scheduleDiagramSave();
       // Avoid full remount flash: keep live DOM positions, only refresh edges.
       var liveRoot = previewEl.querySelector(".board-render");
       if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-        BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
-        applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
+        BoardRender.refreshEdges(liveRoot, BoardRender.parse(diagramSourceEl.value));
+        applyBoardSelection(liveRoot, BoardRender.parse(diagramSourceEl.value));
         done.hit.classList.add("board-selection", "canvas-selected");
       }
       setStatus("Moved · saved layout");
-    } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showVelaError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showDiagramError(err instanceof Error ? err.message : String(err)); }
     event.preventDefault(); event.stopPropagation();
   };
   canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
@@ -1177,28 +1177,28 @@ function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(
 function commitBoardArrow() {
   if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
   try {
-    var nextLink = BoardRender.updateLinkArrow(velaSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
-    if (nextLink !== velaSourceEl.value) {
-      velaSourceEl.value = nextLink;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+    var nextLink = BoardRender.updateLinkArrow(diagramSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
+    if (nextLink !== diagramSourceEl.value) {
+      diagramSourceEl.value = nextLink;
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Link arrow · " + (boardArrowEditor.value === "both" ? "<->" : "->"));
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardReverse() {
   if (!selectedBoardEdge || typeof BoardRender.reverseLink !== "function") return;
   try {
-    var nextLink = BoardRender.reverseLink(velaSourceEl.value, selectedBoardEdge);
-    if (nextLink !== velaSourceEl.value) {
-      velaSourceEl.value = nextLink;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+    var nextLink = BoardRender.reverseLink(diagramSourceEl.value, selectedBoardEdge);
+    if (nextLink !== diagramSourceEl.value) {
+      diagramSourceEl.value = nextLink;
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Link reversed");
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardShape(shape) {
   var nextShape = shape === "diamond" ? "diamond" : "rect";
@@ -1206,17 +1206,17 @@ function commitBoardShape(shape) {
   if (typeof BoardRender.updateShape !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateShape(velaSourceEl.value, selectedBoardNode, nextShape);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateShape(diagramSourceEl.value, selectedBoardNode, nextShape);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Shape · " + nextShape);
     }
     setBoardShapeField(true, nextShape);
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function persistMermaidStyle(body, patch) {
   if (typeof DrawerStyleLine === "undefined") return body;
@@ -1241,10 +1241,10 @@ function persistMermaidStyle(body, patch) {
 }
 
 function persistBoardStyle(patch) {
-  if (!velaSourceEl || !velaSourceEl.value.trim()) return;
-  if (document.documentElement.dataset.drawerMode !== "vela") return;
+  if (!diagramSourceEl || !diagramSourceEl.value.trim()) return;
+  if (document.documentElement.dataset.drawerMode !== "diagram") return;
   try {
-    var raw = velaSourceEl.value;
+    var raw = diagramSourceEl.value;
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
     var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
       ? DrawerStyleLine.bodyKind(body)
@@ -1258,12 +1258,12 @@ function persistBoardStyle(patch) {
       nextBody = BoardRender.updateStyle(body, patch || {});
     }
     var next = nextBody;
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
-      updateVelaChars();
-      scheduleBoardSave();
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      updateDiagramChars();
+      scheduleDiagramSave();
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function syncBoardStyleChrome(board) {
   if (typeof BoardRender === "undefined" || typeof BoardRender.resolveStyle !== "function") return;
@@ -1283,82 +1283,82 @@ function commitBoardCap() {
   var nextCap = boardCapEditor.value === "off" ? "off" : "on";
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateCap(velaSourceEl.value, selectedBoardNode, nextCap);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateCap(diagramSourceEl.value, selectedBoardNode, nextCap);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Width Cap · " + nextCap);
     }
     setBoardCapField(true, nextCap);
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardType() {
   if (!boardTypeEditor) return;
   if (selectedBoardEdge && typeof BoardRender.updateLinkType === "function") {
     try {
-      var nextLink = BoardRender.updateLinkType(velaSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
-      if (nextLink !== velaSourceEl.value) {
-        velaSourceEl.value = nextLink;
-        updateVelaChars();
-        renderVela();
-        scheduleBoardSave();
+      var nextLink = BoardRender.updateLinkType(diagramSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
+      if (nextLink !== diagramSourceEl.value) {
+        diagramSourceEl.value = nextLink;
+        updateDiagramChars();
+        renderDiagram();
+        scheduleDiagramSave();
         setStatus("Link type · " + boardTypeEditor.value);
       }
-    } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
     return;
   }
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoardRender.updateType !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateType(velaSourceEl.value, selectedBoardNode, boardTypeEditor.value);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateType(diagramSourceEl.value, selectedBoardNode, boardTypeEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Type · " + boardTypeEditor.value);
       // Refresh props so layout hides title/icon immediately
       try {
-        var b = typeof BoardRender !== "undefined" ? BoardRender.parse(velaSourceEl.value) : null;
+        var b = typeof BoardRender !== "undefined" ? BoardRender.parse(diagramSourceEl.value) : null;
         var root = previewEl && previewEl.querySelector(".board-render");
         if (b && root) applyBoardSelection(root, b);
       } catch (_e) {}
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardDir() {
   if (!selectedBoardNode || selectedBoardNode.kind === "item" || !boardDirEditor || typeof BoardRender.updateDir !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateDir(velaSourceEl.value, selectedBoardNode, boardDirEditor.value);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateDir(diagramSourceEl.value, selectedBoardNode, boardDirEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus("Direction · " + boardDirEditor.value);
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardBoxFlex(kind, editor, updateFn) {
   if (!selectedBoardNode || selectedBoardNode.kind !== "box" || !editor || typeof updateFn !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = updateFn(velaSourceEl.value, selectedBoardNode, editor.value);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = updateFn(diagramSourceEl.value, selectedBoardNode, editor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
       setStatus(kind + " · " + editor.value);
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardAlign() {
   commitBoardBoxFlex("Align", boardAlignEditor, BoardRender.updateAlign);
@@ -1370,42 +1370,42 @@ function commitBoardTitle() {
   if (!boardTitleEditor) return;
   if (selectedBoardEdge && typeof BoardRender.updateLinkTitle === "function") {
     try {
-      var nextLink = BoardRender.updateLinkTitle(velaSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
-      if (nextLink !== velaSourceEl.value) {
-        velaSourceEl.value = nextLink;
-        updateVelaChars();
-        renderVela();
-        scheduleBoardSave();
+      var nextLink = BoardRender.updateLinkTitle(diagramSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
+      if (nextLink !== diagramSourceEl.value) {
+        diagramSourceEl.value = nextLink;
+        updateDiagramChars();
+        renderDiagram();
+        scheduleDiagramSave();
         setStatus("Link title · saved");
       }
-    } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+    } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
     return;
   }
   if (!selectedBoardNode) return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateTitle(velaSourceEl.value, selectedBoardNode, boardTitleEditor.value);
-    if (next !== velaSourceEl.value) {
-      velaSourceEl.value = next;
+    var next = BoardRender.updateTitle(diagramSourceEl.value, selectedBoardNode, boardTitleEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
-      updateVelaChars();
-      renderVela();
-      scheduleBoardSave();
+      updateDiagramChars();
+      renderDiagram();
+      scheduleDiagramSave();
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function applyBoardEditResult(result) {
-  velaSourceEl.value = result.source;
+  diagramSourceEl.value = result.source;
   selectedBoardNode = result.selection && result.selection.kind !== "link" ? result.selection : null; selectedBoardEdge = result.selection && result.selection.kind === "link" ? result.selection : null;
-  if (selectedBoardNode) velaSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
-  else delete velaSourceEl.dataset.boardSelectionKey; if (selectedBoardEdge) velaSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key; else delete velaSourceEl.dataset.boardEdgeSelectionKey;
-  updateVelaChars();
-  renderVela();
-  scheduleBoardSave();
+  if (selectedBoardNode) diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  else delete diagramSourceEl.dataset.boardSelectionKey; if (selectedBoardEdge) diagramSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key; else delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+  updateDiagramChars();
+  renderDiagram();
+  scheduleDiagramSave();
 }
 function boardEditAction(action) {
   try { applyBoardEditResult(action()); }
-  catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 
 function syncBoardLinkRouteButton() {
@@ -1432,11 +1432,11 @@ function applyBoardLinkRouteStyle(style, persist) {
   // Re-route without resetting zoom/pan.
   try {
     var root = previewEl && previewEl.querySelector(".board-render");
-    if (root && velaSourceEl && velaSourceEl.value.trim()) {
-      BoardRender.refreshEdges(root, BoardRender.parse(velaSourceEl.value));
+    if (root && diagramSourceEl && diagramSourceEl.value.trim()) {
+      BoardRender.refreshEdges(root, BoardRender.parse(diagramSourceEl.value));
       setStatus("Link route · " + BoardRender.getLinkRouteStyle());
     }
-  } catch (err) { showVelaError(err instanceof Error ? err.message : String(err)); }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 (function wireBoardLinkRouteSeg() {
   var trunkBtn = $("#btnRouteTrunk");
@@ -1454,25 +1454,25 @@ function applyBoardLinkRouteStyle(style, persist) {
   }
 })();
 
-if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoardRender.addBox(velaSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
-if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoardRender.addItem(velaSourceEl.value, selectedBoardNode); }); };
-if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(velaSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(velaSourceEl.value, selectedBoardNode); }); };
+if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoardRender.addBox(diagramSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
+if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoardRender.addItem(diagramSourceEl.value, selectedBoardNode); }); };
+if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(diagramSourceEl.value, selectedBoardNode); }); };
 if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!boardLinkMode); };
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
   var target = event.target;
-  if (target === velaSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
-  boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(velaSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(velaSourceEl.value, selectedBoardNode); });
+  boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(diagramSourceEl.value, selectedBoardNode); });
 });
 function boardNudgeOrder(delta) {
   if (!selectedBoardNode || typeof BoardRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var next = info.index + delta;
   if (next < 0 || next >= info.count) return;
-  boardEditAction(function() { return BoardRender.reorderNode(velaSourceEl.value, selectedBoardNode, next); });
+  boardEditAction(function() { return BoardRender.reorderNode(diagramSourceEl.value, selectedBoardNode, next); });
 }
 if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
 if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
@@ -1486,7 +1486,7 @@ function boardNudgeSelection(delta) {
   var from = kids.indexOf(el);
   var next = from + delta;
   if (from < 0 || next < 0 || next >= kids.length) return false;
-  selectBoardElement(kids[next], root, BoardRender.parse(velaSourceEl.value));
+  selectBoardElement(kids[next], root, BoardRender.parse(diagramSourceEl.value));
   return true;
 }
 var BOARD_NUDGE_STEPS = [1, 2, 4, 8, 16, 32];
@@ -1506,15 +1506,15 @@ function boardNudgeStepPx(key, isRepeat) {
 }
 function boardWriteLivePosition(el, x, y) {
   var keep = Object.assign({}, selectedBoardNode);
-  velaSourceEl.value = BoardRender.updatePosition(velaSourceEl.value, keep, x, y);
+  diagramSourceEl.value = BoardRender.updatePosition(diagramSourceEl.value, keep, x, y);
   selectedBoardNode = keep;
-  velaSourceEl.dataset.boardSelectionKey = keep.key || velaSourceEl.dataset.boardSelectionKey || "";
-  updateVelaChars();
-  scheduleBoardSave();
+  diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
+  updateDiagramChars();
+  scheduleDiagramSave();
   var liveRoot = previewEl.querySelector(".board-render");
   if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-    BoardRender.refreshEdges(liveRoot, BoardRender.parse(velaSourceEl.value));
-    applyBoardSelection(liveRoot, BoardRender.parse(velaSourceEl.value));
+    BoardRender.refreshEdges(liveRoot, BoardRender.parse(diagramSourceEl.value));
+    applyBoardSelection(liveRoot, BoardRender.parse(diagramSourceEl.value));
     el.classList.add("board-selection", "canvas-selected");
   }
 }
@@ -1539,19 +1539,19 @@ function boardNudgeTopLevel(dx, dy) {
   } catch (err) {
     el.style.left = prevX + "px";
     el.style.top = prevY + "px";
-    showVelaError(err instanceof Error ? err.message : String(err));
+    showDiagramError(err instanceof Error ? err.message : String(err));
   }
   return true;
 }
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
   var delta = 0;
   if (event.key === "ArrowUp" || event.key === "ArrowLeft") delta = -1;
   else if (event.key === "ArrowDown" || event.key === "ArrowRight") delta = 1;
   if (!delta) return;
   var target = event.target;
-  if (target === velaSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   if (target && target.closest && target.closest("#boardIconField")) return;
   if (boardNudgeSelection(delta)) {
     event.preventDefault();
@@ -1572,13 +1572,13 @@ document.addEventListener("keyup", function(event) {
 });
 window.addEventListener("blur", boardNudgeResetSlide);
 document.addEventListener("keydown", function(event) {
-  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "vela" || !event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || !event.altKey || event.metaKey || event.ctrlKey) return;
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
   var target = event.target;
-  if (target === velaSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   if (typeof BoardRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(velaSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var row = info.direction === "row";
   var delta = 0;
@@ -1603,7 +1603,7 @@ previewEl.addEventListener("dblclick", function(event) {
   var root = canvas.closest(".board-render");
   var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
   if (!hit || !canvas.contains(hit)) return;
-  selectBoardElement(hit, root, BoardRender.parse(velaSourceEl.value));
+  selectBoardElement(hit, root, BoardRender.parse(diagramSourceEl.value));
   inspectBoardSelection();
   if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
 });

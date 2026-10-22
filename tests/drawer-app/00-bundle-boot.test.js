@@ -75,8 +75,8 @@ function load(hash) {
   });
   sandbox.window = global;
   sandbox.globalThis = global;
-  // the page's named elements (id="velaDock" ...) are globals in a browser
-  ['velaDock', 'boardCanvas', 'velaSource'].forEach((id) => { sandbox[id] = withDock({}); });
+  // the page's named elements (id="diagramDock" ...) are globals in a browser
+  ['diagramDock', 'boardCanvas', 'diagramSource'].forEach((id) => { sandbox[id] = withDock({}); });
   const ctx = vm.createContext(global);
   // the script has a top-level await (it is a module in the page); the part before it runs synchronously
   const done = vm.runInContext('(async function () {\n' + script + '\n})()', ctx, { filename: 'drawer-app.js' });

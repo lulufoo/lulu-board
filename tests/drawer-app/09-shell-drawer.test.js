@@ -38,8 +38,8 @@ console.log('ok 09-shell-drawer');
   const end = src.indexOf('function shellSearchGroups');
   const shellSearchMatches = new Function(src.slice(start, end) + '\nreturn shellSearchMatches;')();
   const groups = [
-    { groupId: 'g1', title: 'Payments retry flow', boardCount: 2, faceBoardId: 'b_1', members: [{ graph_id: 'b_1', title: 'Flow' }, { graph_id: 'b_2', title: 'Retry notes' }] },
-    { groupId: 'g2', title: 'Onboarding', boardCount: 1, faceBoardId: 'b_3', members: [{ graph_id: 'b_3', title: 'Welcome' }] },
+    { groupId: 'g1', title: 'Payments retry flow', diagramCount: 2, faceDiagramId: 'b_1', members: [{ graph_id: 'b_1', title: 'Flow' }, { graph_id: 'b_2', title: 'Retry notes' }] },
+    { groupId: 'g2', title: 'Onboarding', diagramCount: 1, faceDiagramId: 'b_3', members: [{ graph_id: 'b_3', title: 'Welcome' }] },
   ];
   const empty = shellSearchMatches('', groups, 'a\nb');
   assert.equal(empty.boards.length, 2, 'empty query lists recent groups');
@@ -47,14 +47,14 @@ console.log('ok 09-shell-drawer');
   const byGroup = shellSearchMatches('RETRY', groups, '');
   assert.deepEqual(byGroup.boards.map((b) => b.groupId), ['g1'], 'matches group title case-insensitively');
   const byBoard = shellSearchMatches('notes', groups, '');
-  assert.equal(byBoard.boards[0].boardId, 'b_2', 'a board-title hit opens that board');
+  assert.equal(byBoard.boards[0].diagramId, 'b_2', 'a board-title hit opens that board');
   assert.match(byBoard.boards[0].note, /Retry notes/, 'board-title hit names the board');
   const lines = shellSearchMatches('item', groups, 'box A\n  item one\nitem two');
   assert.deepEqual(lines.lines.map((l) => l.line), [1, 2], 'source line hits keep line numbers');
   assert.equal(shellSearchMatches('zzz', groups, 'abc').boards.length, 0, 'no match');
   assert.match(src, /section\("Mine"/, 'signed-in search lists own boards');
   assert.match(src, /section\("Public"/, 'signed-in search lists others public boards');
-  assert.match(src, /cloudSearchBoards/, 'board search goes through the search rpc');
+  assert.match(src, /cloudSearchDiagrams/, 'board search goes through the search rpc');
   assert.match(src, /cloudSearchSignedIn\(\)/, 'empty or signed-out search does not call the rpc');
   assert.match(src, /hit\.kind === "public"/, 'a Public hit opens the share link');
 }
@@ -144,7 +144,7 @@ console.log('ok 09-shell-drawer');
 // ---- blank #z waits for kind ----
 {
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-vela.js'), 'utf8');
+  const board = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-diagram.js'), 'utf8');
   assert.match(src, /function shellOfferBlankStartKind/, 'blank start opens the kind dialog');
   assert.match(src, /onCancel: function \(\) \{ open\(\); \}/, 'blank start Esc keeps the dialog open');
   assert.match(board, /function shouldWaitForCreateKind/, 'empty hash does not seed while waiting for kind');
@@ -154,18 +154,18 @@ console.log('ok 09-shell-drawer');
 // ---- New board picks kind before writing #z ----
 {
   const src = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shell-drawer.js'), 'utf8');
-  const start = src.indexOf('async function shellNewBlankBoard');
-  const end = src.indexOf('async function shellCommitBlankBoard');
+  const start = src.indexOf('async function shellNewBlankDiagram');
+  const end = src.indexOf('async function shellCommitBlankDiagram');
   const open = src.slice(start, end);
-  assert.match(open, /cloudConfirmLeaveBoard/, 'leave-confirm stays before the kind dialog');
+  assert.match(open, /cloudConfirmLeaveDiagram/, 'leave-confirm stays before the kind dialog');
   assert.match(open, /openCreateKindDialog/, 'New board opens the kind dialog');
   assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
-  assert.doesNotMatch(open, /history\.replaceState|bootstrapVelaFromHash|saveVelaToHash/, 'does not write hash before pick');
+  assert.doesNotMatch(open, /history\.replaceState|bootstrapDiagramFromHash|saveDiagramToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));
   assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
   assert.match(commit, /blankHashMindmapSource\("Untitled"\)/, 'mindmap seed after pick');
   assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
-  assert.match(commit, /saveVelaToHash\(\{ bump: false \}\)/, 'writes #z after pick');
+  assert.match(commit, /saveDiagramToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
 }
 

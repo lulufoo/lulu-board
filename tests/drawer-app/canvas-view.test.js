@@ -24,7 +24,7 @@ assert.ok(/function fitWorld/.test(canvas), 'fit lives on Canvas');
 assert.ok(/persistDocumentView/.test(canvas), 'writes viewport into document style');
 assert.ok(/forgetDocumentView/.test(canvas), 'Fit clears document viewport');
 assert.ok(!/querySelector\("\.board-canvas"\)/.test(canvas), 'Canvas does not query a kind root');
-assert.ok(!/function fitBoardView|BoardRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
+assert.ok(!/function fitDiagramView|BoardRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
 assert.ok(!/measureDiagramOnCanvas|panAfterScaleAroundPoint/.test(canvas), 'no diagram-rect pan math left');
 assert.ok(!/id="boardView/.test(html), 'Style panel does not expose viewport');
 assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into three style keys');
@@ -56,7 +56,7 @@ assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into thr
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const interact = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-canvas-interaction.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
-  const boardSrc = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-vela.js'), 'utf8');
+  const boardSrc = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-diagram.js'), 'utf8');
   assert.ok(/function setCanvasZoom/.test(shell), 'zoom keeps the camera point at the stage centre');
   assert.ok(/setCanvasZoom\(scale \* 1\.08\)/.test(chrome), 'plus zooms about the stage centre');
   assert.ok(/setCanvasZoom\(scale \/ 1\.08\)/.test(chrome), 'minus zooms about the stage centre');

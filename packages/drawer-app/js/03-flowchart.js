@@ -29,7 +29,7 @@ function isFlowchartKind() {
 }
 
 function flowchartSource() {
-  return velaSourceEl ? velaSourceEl.value : "";
+  return diagramSourceEl ? diagramSourceEl.value : "";
 }
 
 function peleDataId(el) {
@@ -193,20 +193,20 @@ function flowchartEditAction(action) {
     if (!result || typeof result.source !== "string") return;
     applyFlowchartEditResult(result);
   } catch (err) {
-    if (typeof showVelaError === "function") showVelaError(err instanceof Error ? err.message : String(err));
+    if (typeof showDiagramError === "function") showDiagramError(err instanceof Error ? err.message : String(err));
   }
 }
 
 function applyFlowchartEditResult(result) {
   if (!result || typeof result.source !== "string") return;
-  velaSourceEl.value = result.source;
+  diagramSourceEl.value = result.source;
   selectedFlowchart = result.selection || null;
   flowchartLinkMode = false;
   flowchartLinkStart = null;
   syncFlowchartLinkChrome();
-  if (typeof updateVelaChars === "function") updateVelaChars();
-  if (typeof scheduleBoardSave === "function") scheduleBoardSave();
-  if (typeof renderVela === "function") renderVela({ fit: false });
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
+  if (typeof scheduleDiagramSave === "function") scheduleDiagramSave();
+  if (typeof renderDiagram === "function") renderDiagram({ fit: false });
 }
 
 function restoreFlowchartSelection() {
@@ -560,7 +560,7 @@ function flowchartSelectionFromEvent(event) {
 }
 
 function flowchartEventOnChrome(event) {
-  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .vela-dock, .zoom-float, .props-panel, button, input, textarea, select"));
+  return !!(event.target.closest && event.target.closest(".top-float, .menu, .sheet, .diagram-dock, .zoom-float, .props-panel, button, input, textarea, select"));
 }
 
 function flowchartHitSelect(event) {
@@ -659,7 +659,7 @@ document.addEventListener("keydown", function (event) {
   if (event.key !== "Delete" && event.key !== "Backspace") return;
   if (!selectedFlowchart) return;
   var target = event.target;
-  if (target === velaSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   flowchartEditAction(function () { return FlowchartEdit.deleteSelection(flowchartSource(), selectedFlowchart); });
 });
@@ -690,7 +690,7 @@ if (previewEl) {
 document.addEventListener("pointerdown", function (event) {
   if (!isFlowchartKind() || event.button !== 0) return;
   if (!event.target.closest) return;
-  if (event.target.closest(".flowchart-edit-tools, .props-panel, .vela-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
+  if (event.target.closest(".flowchart-edit-tools, .props-panel, .diagram-dock, .sheet, #flowchartPropsFields, input, textarea, select, label")) return;
   if (event.target.closest(".top-float, .zoom-float, .shell-search, .menu")) {
     clearFlowchartInteraction();
   }

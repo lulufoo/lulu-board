@@ -8,13 +8,13 @@ const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 
 const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/09-shortcuts.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/09-shortcuts.css'), 'utf8');
 
-const rail = html.slice(html.indexOf('class="vela-dock-rail'), html.indexOf('id="propsPanel"'));
-assert.strictEqual((rail.match(/vela-dock-help"/g) || []).length, 1, 'the dock rail has one help entry');
+const rail = html.slice(html.indexOf('class="diagram-dock-rail'), html.indexOf('id="propsPanel"'));
+assert.strictEqual((rail.match(/diagram-dock-help"/g) || []).length, 1, 'the dock rail has one help entry');
 assert.doesNotMatch(rail, /id="btnBoardOnboarding"|id="btnBoardShortcuts"/, 'Welcome and Shortcuts are not separate dock buttons');
-assert.match(rail, /id="btnVelaHelp"[^>]*aria-haspopup="menu"[^>]*aria-expanded="false"[^>]*aria-controls="velaHelpMenu"/, 'help button announces its menu');
-assert.match(rail, /vela-dock-help-glyph" aria-hidden="true">\?</, 'help button shows ?');
+assert.match(rail, /id="btnDiagramHelp"[^>]*aria-haspopup="menu"[^>]*aria-expanded="false"[^>]*aria-controls="diagramHelpMenu"/, 'help button announces its menu');
+assert.match(rail, /diagram-dock-help-glyph" aria-hidden="true">\?</, 'help button shows ?');
 
-const menu = html.slice(html.indexOf('id="velaHelpMenu"'), html.indexOf('id="shortcutsDialog"'));
+const menu = html.slice(html.indexOf('id="diagramHelpMenu"'), html.indexOf('id="shortcutsDialog"'));
 assert.match(menu, /role="menu"/, 'menu role');
 const items = menu.match(/role="menuitem"/g) || [];
 assert.strictEqual(items.length, 2, 'two menu items');
@@ -27,5 +27,5 @@ assert.match(js, /event\.key === "Escape"[\s\S]*setOpen\(false\)/, 'Esc closes')
 assert.match(js, /item\.addEventListener\("click", function \(\) \{ setOpen\(false\); \}, true\)/, 'choosing an item closes');
 assert.match(js, /event\.key === "\?"/, '? still opens the shortcuts dialog');
 assert.match(js, /shortcuts=open/, '?shortcuts=open still works');
-assert.match(css, /\.vela-help-menu\[hidden\] \{ display: none; \}/, 'hidden menu stays hidden');
+assert.match(css, /\.diagram-help-menu\[hidden\] \{ display: none; \}/, 'hidden menu stays hidden');
 console.log('ok help-menu');

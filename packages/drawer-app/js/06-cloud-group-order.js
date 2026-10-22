@@ -3,7 +3,7 @@ var cloudTabDragId = "";
 var cloudTabDropAfter = false;
 var cloudTabDropId = "";
 
-function moveBoardId(ids, fromId, toId, after) {
+function moveDiagramId(ids, fromId, toId, after) {
   var from = ids.indexOf(fromId);
   var to = ids.indexOf(toId);
   if (from < 0 || to < 0) return ids.slice();
@@ -21,7 +21,7 @@ async function cloudReorderGroupTabs(fromId, toId, after) {
   var groupId = cloudGroupId;
   var before = cloudGroupMembers.slice();
   var ids = before.map(function (row) { return row.graph_id; });
-  var next = moveBoardId(ids, fromId, toId, after);
+  var next = moveDiagramId(ids, fromId, toId, after);
   if (next.join(",") === ids.join(",")) return false;
   var byId = {};
   before.forEach(function (row) { byId[row.graph_id] = row; });
@@ -88,23 +88,23 @@ function cloudMarkTabDrop(root, event) {
   cloudClearDropOn(root);
   if (!target || !cloudTabDragId) return;
   var ids = Array.prototype.map.call(root.querySelectorAll(".group-tab[data-board-id]"), function (tab) {
-    return tab.dataset.boardId;
+    return tab.dataset.diagramId;
   });
-  if (moveBoardId(ids, cloudTabDragId, target.tab.dataset.boardId, target.after).join(",") === ids.join(",")) return;
+  if (moveDiagramId(ids, cloudTabDragId, target.tab.dataset.diagramId, target.after).join(",") === ids.join(",")) return;
   var line = cloudSlotLine(target.tab, target.after);
   if (!line) return;
-  cloudTabDropId = target.tab.dataset.boardId;
+  cloudTabDropId = target.tab.dataset.diagramId;
   cloudTabDropAfter = target.after;
   line.classList.add("is-on");
 }
 
 (function wireCloudGroupOrder() {
-  var root = document.getElementById("vela-group-tabs");
+  var root = document.getElementById("diagram-group-tabs");
   if (!root) return;
   root.addEventListener("dragstart", function (event) {
     var tab = cloudTabFromEvent(event);
     if (!tab) return;
-    cloudTabDragId = tab.dataset.boardId;
+    cloudTabDragId = tab.dataset.diagramId;
     cloudTabDropId = "";
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", cloudTabDragId);

@@ -14,14 +14,14 @@ const pack = read('scripts/examples-templates-build/build.mjs');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 const src = read('packages/drawer-app/onboarding.bmd');
 
-assert.match(html, /id="velaHelpMenu"[\s\S]*id="btnBoardOnboarding"[^>]*role="menuitem"/, 'help menu exposes the welcome board');
-assert.match(html, /vela-dock-help/, 'onboarding help sits on the dock rail');
+assert.match(html, /id="diagramHelpMenu"[\s\S]*id="btnBoardOnboarding"[^>]*role="menuitem"/, 'help menu exposes the welcome board');
+assert.match(html, /diagram-dock-help/, 'onboarding help sits on the dock rail');
 assert.match(appBuild, /onboarding\.bmd/, 'drawer app build copies onboarding');
 assert.match(webBuild, /onboarding\.bmd/, 'web build requires onboarding in .cache/web');
 assert.doesNotMatch(boardBuild, /examples-templates-build/, 'board build does not pack examples into skill');
 assert.match(pack, /skip examples-templates-build/, 'example packer is a no-op');
 assert.match(boot, /function openOnboardingHash/, 'hash persist can open onboarding');
-assert.match(boot, /encodeBoardHash/, 'onboarding is encoded into #z:');
+assert.match(boot, /encodeDiagramHash/, 'onboarding is encoded into #z:');
 assert.match(src, /board "Lulu Vela"/, 'onboarding source is the welcome Vela');
 assert.ok(!fs.existsSync(path.join(root, 'skill/board/templates/onboarding.bmd')), 'skill no longer holds onboarding');
 assert.ok(fs.existsSync(path.join(root, 'skill/board/templates/demo.bmd')), 'AI demo template stays');

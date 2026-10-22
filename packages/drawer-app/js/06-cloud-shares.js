@@ -1,13 +1,13 @@
 /* drawer-app/06-cloud-shares.js — the boards I shared out (link shares), as data plus per-board actions. */
 
 // boards: owner rows with a share_id; roles: { [shareId]: "view" | "edit" }.
-function cloudShareSummaries(boardRows, roles, currentBoardId, publics) {
-  var current = String(currentBoardId || "");
+function cloudShareSummaries(diagramRows, roles, currentDiagramId, publics) {
+  var current = String(currentDiagramId || "");
   var out = [];
-  (boardRows || []).forEach(function (row) {
+  (diagramRows || []).forEach(function (row) {
     if (!row || !row.graph_id || !row.share_id) return;
     out.push({
-      boardId: row.graph_id,
+      diagramId: row.graph_id,
       title: row.title || "",
       shareId: row.share_id,
       role: roles && roles[row.share_id] === "edit" ? "edit" : "view",
@@ -40,15 +40,15 @@ async function cloudFetchOwnShares() {
     if (state && state.role) roles[row.share_id] = state.role;
     if (state && state.is_public) publics[row.share_id] = true;
   }));
-  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
+  var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
   return cloudShareSummaries(rows, roles, current, publics);
 }
 
 // One RPC on one board. Keeps the open board's own share state (status chrome) in step.
-async function cloudShareMutate(boardId, name, args, okStatus) {
+async function cloudShareMutate(diagramId, name, args, okStatus) {
   try {
-    var row = await runShareRpc(name, Object.assign({ p_graph_id: boardId }, args || {}));
-    if (boardId === cloudVelaId()) {
+    var row = await runShareRpc(name, Object.assign({ p_graph_id: diagramId }, args || {}));
+    if (diagramId === cloudDiagramId()) {
       if (name === "unshare") { ownerShareRole = "view"; ownerIsPublic = false; rememberOwnerShareId(""); }
       else if (row) {
         ownerShareRole = row.role === "edit" ? "edit" : "view";

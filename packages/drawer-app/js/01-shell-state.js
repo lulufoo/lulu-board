@@ -33,7 +33,7 @@ function setCharsLabel(el, n) {
   el.appendChild(document.createTextNode(" chars"));
 }
 function liveDocumentVersion() {
-  return Number.isFinite(velaLocalRev) && velaLocalRev > 0 ? velaLocalRev : 0;
+  return Number.isFinite(diagramLocalRev) && diagramLocalRev > 0 ? diagramLocalRev : 0;
 }
 
 function wrapEditorApi(api) {
@@ -54,9 +54,9 @@ function wrapEditorApi(api) {
 
 /* drawer-app/01-shell-state.js — lines 1-699 of former inline module */
 const $ = (s) => document.querySelector(s);
-const velaSourceEl = $('#velaSource');
-const velaError = $("#velaError");
-const velaDock = $("#velaDock");
+const diagramSourceEl = $('#diagramSource');
+const diagramError = $("#diagramError");
+const diagramDock = $("#diagramDock");
 const propsPanel = $("#propsPanel");
 const propsEmpty = $("#propsEmpty");
 const propsFields = $("#propsFields");
@@ -114,15 +114,15 @@ const boardIconSec = $("#boardIconSec");
 var boardIconPick = 1;
 var boardIconSecId = ""; // first section comes from BoardIcons / icons.json
 function currentDockTab() {
-  return (velaDock && velaDock.getAttribute("data-open")) || "";
+  return (diagramDock && diagramDock.getAttribute("data-open")) || "";
 }
 function openDock(tab) {
-  if (!velaDock) return;
+  if (!diagramDock) return;
   var next = tab || "";
   if (next !== "props" && next !== "layout" && next !== "source" && next !== "export" && next !== "style") next = "";
-  velaDock.setAttribute("data-open", next);
+  diagramDock.setAttribute("data-open", next);
   if (propsPanel) propsPanel.setAttribute("data-collapsed", next === "props" ? "false" : "true");
-  Array.from(velaDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
+  Array.from(diagramDock.querySelectorAll("[data-dock]")).forEach(function(btn) {
     var on = btn.getAttribute("data-dock") === next && next !== "";
     btn.setAttribute("aria-selected", on ? "true" : "false");
     btn.classList.toggle("is-active", on);
@@ -163,23 +163,23 @@ const boardDeleteButton = $("#btnBoardDelete");
 const boardLinkButton = $("#btnBoardLink");
 const previewEl = $('#preview');
 const stageEl = $('#preview-stage');
-const boardSelectionObserver = new MutationObserver(() => { var key = velaSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection", "canvas-selected"); });
+const boardSelectionObserver = new MutationObserver(() => { var key = diagramSourceEl.dataset.boardSelectionKey; if (!key) return; if (key.indexOf("tree:") === 0) key = "box:" + key.slice(5); const selected = Array.from(previewEl.querySelectorAll("[data-board-key]")).find((el) => el.dataset.boardKey === key); if (selected) selected.classList.add("board-selection", "canvas-selected"); });
 boardSelectionObserver.observe(previewEl, { childList: true, subtree: true });
 
-let velaLocalRev = 0;
-let boardServerRev = 0;
-let boardDirty = false;
-let boardSaveSeq = 0;
-let boardRenderTimer = null;
+let diagramLocalRev = 0;
+let diagramServerRev = 0;
+let diagramDirty = false;
+let diagramSaveSeq = 0;
+let diagramRenderTimer = null;
 let selectedBoardNode = null;
 let selectedBoardEdge = null;
 let boardInspectGesture = null;
 let boardLinkMode = false;
 let boardLinkStart = null;
-let boardSaveTimer = null;
-let liveBoardId = "";
-let liveBoardArchive = "";
-let liveBoardPath = "";
+let diagramSaveTimer = null;
+let liveDiagramId = "";
+let liveDiagramArchive = "";
+let liveDiagramPath = "";
 /* Live camera only. The per-board source of truth is the document's style.viewport
  * (00-canvas-view.js); nothing here is persisted or carried across boards. */
 let scale = 1, panX = 0, panY = 0;
@@ -207,13 +207,13 @@ function clampDockWidth(n) {
 }
 function applyDockWidth(n, persist) {
   var w = clampDockWidth(n);
-  if (velaDock) velaDock.style.setProperty("--dock-open-width", w + "px");
+  if (diagramDock) diagramDock.style.setProperty("--dock-open-width", w + "px");
   if (persist) saveDrawerUi({ dockWidth: w });
   return w;
 }
 function currentDockWidth() {
-  if (velaDock) {
-    var raw = velaDock.style.getPropertyValue("--dock-open-width");
+  if (diagramDock) {
+    var raw = diagramDock.style.getPropertyValue("--dock-open-width");
     var n = parseInt(raw, 10);
     if (isFinite(n) && n > 0) return clampDockWidth(n);
   }
@@ -278,15 +278,15 @@ document.addEventListener("visibilitychange", function() {
   applyDockWidth(loadDrawerUi().dockWidth, false);
 })();
 (function wireDockResize() {
-  var handle = document.getElementById("velaDockResize");
-  if (!handle || !velaDock) return;
+  var handle = document.getElementById("diagramDockResize");
+  if (!handle || !diagramDock) return;
   var drag = null;
   handle.addEventListener("pointerdown", function(e) {
-    if (!velaDock.getAttribute("data-open")) return;
+    if (!diagramDock.getAttribute("data-open")) return;
     e.preventDefault();
     try { handle.setPointerCapture(e.pointerId); } catch (_e) {}
     drag = { x: e.clientX, w: currentDockWidth() };
-    velaDock.classList.add("is-resizing");
+    diagramDock.classList.add("is-resizing");
   });
   handle.addEventListener("pointermove", function(e) {
     if (!drag) return;
@@ -295,7 +295,7 @@ document.addEventListener("visibilitychange", function() {
   function endDrag() {
     if (!drag) return;
     drag = null;
-    velaDock.classList.remove("is-resizing");
+    diagramDock.classList.remove("is-resizing");
     saveDrawerUi({ dockWidth: currentDockWidth() });
   }
   handle.addEventListener("pointerup", endDrag);
@@ -314,20 +314,20 @@ function archiveBase(path) {
   return parts[parts.length - 1] || '—';
 }
 
-function applyBoardLiveMeta(meta = {}) {
-  if (meta && meta.id) liveBoardId = String(meta.id);
-  else if (meta && meta.id === "") liveBoardId = "";
+function applyDiagramLiveMeta(meta = {}) {
+  if (meta && meta.id) liveDiagramId = String(meta.id);
+  else if (meta && meta.id === "") liveDiagramId = "";
   // Protocol: meta.current points at the editable history record (SSOT).
   // Legacy clients may still send archive — treat it as current.
   if (meta && Object.prototype.hasOwnProperty.call(meta, "current")) {
-    liveBoardArchive = meta.current ? String(meta.current).split("/").pop() : "";
+    liveDiagramArchive = meta.current ? String(meta.current).split("/").pop() : "";
   } else if (meta && Object.prototype.hasOwnProperty.call(meta, "archive")) {
-    liveBoardArchive = meta.archive ? String(meta.archive).split("/").pop() : "";
+    liveDiagramArchive = meta.archive ? String(meta.archive).split("/").pop() : "";
   }
-  if (meta && meta.path) liveBoardPath = String(meta.path);
-  else if (meta && meta.current && String(meta.current).startsWith("/")) liveBoardPath = String(meta.current);
+  if (meta && meta.path) liveDiagramPath = String(meta.path);
+  else if (meta && meta.current && String(meta.current).startsWith("/")) liveDiagramPath = String(meta.current);
   if (meta && Number.isFinite(Number(meta.version != null ? meta.version : meta.rev))) {
-    if (!Number.isFinite(velaLocalRev) || velaLocalRev <= 0) velaLocalRev = Number(meta.version != null ? meta.version : meta.rev);
+    if (!Number.isFinite(diagramLocalRev) || diagramLocalRev <= 0) diagramLocalRev = Number(meta.version != null ? meta.version : meta.rev);
   }
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
@@ -355,7 +355,7 @@ function syncStyleLayoutSections() {
 }
 
 function liveKindLabel() {
-  var text = velaSourceEl ? velaSourceEl.value : "";
+  var text = diagramSourceEl ? diagramSourceEl.value : "";
   if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.bodyKindLabel === "function") {
     return DrawerStyleLine.bodyKindLabel(text);
   }
@@ -379,7 +379,7 @@ function syncSourceDockLabel() {
   if (typeof syncSourceIdChrome === "function") syncSourceIdChrome();
 }
 function liveRecordId() {
-  return String(typeof liveBoardId !== "undefined" ? liveBoardId : "");
+  return String(typeof liveDiagramId !== "undefined" ? liveDiagramId : "");
 }
 function syncSourceIdChrome() {
   var id = liveRecordId();
@@ -435,20 +435,20 @@ function setCanvasZoom(nextScale) {
   scale = nextScale;
   applyTransform();
 }
-function applyRestoredBoardView() {
-  if (typeof pinVelaTitle === "function") pinVelaTitle();
+function applyRestoredDiagramView() {
+  if (typeof pinDiagramTitle === "function") pinDiagramTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.restoreOrFit === "function") {
     Canvas.restoreOrFit();
     return;
   }
 }
-function fitBoardView() {
+function fitDiagramView() {
   if (!previewEl) return;
-  pinVelaTitle();
+  pinDiagramTitle();
   if (typeof Canvas !== "undefined" && typeof Canvas.fitWorld === "function") Canvas.fitWorld();
   requestAnimationFrame(function () {
-    if (!previewEl || !velaSourceEl) return;
-    var key = velaSourceEl.dataset.boardSelectionKey;
+    if (!previewEl || !diagramSourceEl) return;
+    var key = diagramSourceEl.dataset.boardSelectionKey;
     if (key && key.indexOf("tree:") === 0) key = "box:" + key.slice(5);
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
     if (retained) retained.classList.add("board-selection", "canvas-selected");
@@ -457,10 +457,10 @@ function fitBoardView() {
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
 }
-function updateVelaChars() {
-  setCharsLabel($('#velaCharsPill'), [...velaSourceEl.value].length);
+function updateDiagramChars() {
+  setCharsLabel($('#diagramCharsPill'), [...diagramSourceEl.value].length);
 }
-function showVelaError(message) { velaError.textContent = message || ''; velaError.classList.toggle('show', !!message); }
+function showDiagramError(message) { diagramError.textContent = message || ''; diagramError.classList.toggle('show', !!message); }
 
 wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
 wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);
