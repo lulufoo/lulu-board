@@ -67,13 +67,17 @@
   }
 
   function createKindRowHtml(it) {
-    var picked = it.kind === createKindPicked;
-    var cls = "create-kind-row" + (picked ? " is-picked" : "");
+    var spot = it.kind === "welcome";
+    var cls = "create-kind-row" + (spot ? " create-kind-spot" : "") + (it.kind === createKindPicked ? " is-picked" : "");
     var note = it.cls === "Mermaid" ? "" : "<span>" + it.note + "</span>";
+    var title = "<b>" + it.name + "</b>";
+    if (spot) {
+      title = "<span class=\"create-kind-spot-head\">" + title
+        + "<i class=\"create-kind-spot-mark\" aria-hidden=\"true\"></i></span>";
+    }
     return "<button type=\"button\" class=\"" + cls + "\" data-create-kind=\"" + it.kind + "\""
       + (it.ready ? "" : " disabled") + ">"
-      + "<span class=\"create-kind-main\"><b>" + it.name + "</b>" + note + "</span>"
-      + "</button>";
+      + "<span class=\"create-kind-main\">" + title + note + "</span></button>";
   }
 
   function createKindNoteTitle(note) {

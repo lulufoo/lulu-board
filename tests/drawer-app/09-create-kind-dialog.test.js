@@ -130,7 +130,11 @@ function clickKind(t, kind, disabled) {
   assert.strictEqual(t.els.createKindDialog.hidden, false, 'opens');
   assert.strictEqual(t.els.createKindFilter.focused, true, 'focuses filter');
   assert.doesNotMatch(t.els.createKindList.innerHTML, /create-kind-label">Welcome/, 'Welcome is not a class header');
+  assert.match(t.els.createKindList.innerHTML, /create-kind-spot-head/);
+  assert.match(t.els.createKindList.innerHTML, /create-kind-spot-mark/);
   assert.match(t.els.createKindList.innerHTML, /data-create-kind="welcome"[\s\S]*<b>Welcome<\/b>[\s\S]*<span>Onboarding board<\/span>/);
+  assert.match(css, /\.create-kind-spot:hover \.create-kind-spot-mark\s*\{[^}]*rotate/, 'Welcome keeps the sparkle motion');
+  assert.doesNotMatch(js + css, /create-kind-ad/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Board/);
   assert.match(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Mermaid/);
