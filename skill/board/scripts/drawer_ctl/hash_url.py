@@ -5,7 +5,7 @@ import base64
 import json
 import zlib
 
-PUBLIC_WEB_ORIGIN = "https://luluvela.app"
+PUBLIC_WEB_ORIGIN = "https://luluboard.app"
 
 
 def encode_board_hash(text: str, version: int = 1) -> str:

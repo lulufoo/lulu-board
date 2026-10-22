@@ -7,7 +7,7 @@
 <p align="center"><b>Structured whiteboard. A way to collaborate visually with AI.</b></p>
 
 <p align="center">
-  <a href="https://luluvela.app/">luluvela.app</a>
+  <a href="https://luluboard.app/">luluboard.app</a>
   &nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License" align="absmiddle"></a>
 </p>
@@ -73,15 +73,15 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 {
   "mcpServers": {
     "lulu-board": {
-      "url": "https://mcp.luluvela.app/mcp"
+      "url": "https://mcp.luluboard.app/mcp"
     }
   }
 }
 ```
 
-In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://preview.luluvela.app/#b:…` instead of `#z:`.
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://preview.luluboard.app/#b:…` instead of `#z:`.
 
-Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluvela.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
+Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
 
 ## Examples
 

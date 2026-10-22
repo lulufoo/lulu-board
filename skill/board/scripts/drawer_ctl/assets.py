@@ -23,7 +23,7 @@ from pathlib import Path
 
 from drawer_ctl import paths
 
-DEFAULT_BASE_URL = "https://luluvela.app/skill-assets"
+DEFAULT_BASE_URL = "https://luluboard.app/skill-assets"
 BASE_URL_ENV = "BOARD_ASSETS_BASE_URL"  # tests / staging override
 TIMEOUT = 5
 KNOWN_FILES = ("vocab.md", "icons.json")

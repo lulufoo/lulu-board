@@ -37,6 +37,6 @@ assert.doesNotMatch(js, /service_role|SERVICE_ROLE/, 'consent holds no service k
 assert.match(siteWorker, /directory = "\.\/\.cache\/web\/"/, 'static Worker still serves generated assets');
 assert.doesNotMatch(siteWorker, /vela-mcp|mcp\.lulu/, 'static Worker stays off the MCP host');
 assert.match(mcpWorker, /name = "lulu-vela-mcp"/, 'MCP is a separate Worker');
-assert.match(mcpWorker, /PUBLIC_ORIGIN = "https:\/\/mcp\.luluvela\.app"/, 'MCP origin is the hosted hostname');
+assert.match(mcpWorker, /PUBLIC_ORIGIN = "https:\/\/mcp\.luluboard\.app"/, 'MCP origin is the hosted hostname');
 
 console.log('ok oauth-consent');
