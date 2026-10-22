@@ -27,6 +27,8 @@ assert.match(js, /MindmapEdit\.updateTopicLabel/);
 assert.match(js, /MindmapEdit\.addChild/);
 assert.match(js, /MindmapEdit\.deleteTopic/);
 assert.match(js, /mindmapAddRootButton\.disabled = hasRoot/);
+assert.match(js, /mindmapDocTitleField\.hidden = topicOn/, 'node props hide document title');
+assert.match(js, /mindmapLayoutField\.hidden = topicOn/, 'node props hide layout');
 assert.match(js, /selectedMindmap\.isRoot/);
 assert.match(js, /data-add-parent/);
 assert.match(css, /html\[data-diagram-kind="mindmap"\] \.mindmap-edit-tools/);

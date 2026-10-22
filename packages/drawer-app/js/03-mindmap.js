@@ -81,19 +81,20 @@ function fillMindmapProps() {
   }
   mindmapPropsFill = true;
   if (propsEmpty) propsEmpty.hidden = true;
-  if (mindmapDocTitleField) mindmapDocTitleField.hidden = false;
-  if (mindmapLayoutField) mindmapLayoutField.hidden = false;
-  if (mindmapDocTitleEditor && typeof MindmapEdit !== "undefined" && MindmapEdit.getTitle) {
-    mindmapDocTitleEditor.value = MindmapEdit.getTitle(mindmapSource()) || "";
-  }
-  if (mindmapLayoutEditor) mindmapLayoutEditor.value = currentMindmapLayout();
-  if (selectedMindmap) {
+  var topicOn = !!selectedMindmap;
+  if (mindmapDocTitleField) mindmapDocTitleField.hidden = topicOn;
+  if (mindmapLayoutField) mindmapLayoutField.hidden = topicOn;
+  if (!topicOn) {
+    if (mindmapDocTitleEditor && typeof MindmapEdit !== "undefined" && MindmapEdit.getTitle) {
+      mindmapDocTitleEditor.value = MindmapEdit.getTitle(mindmapSource()) || "";
+    }
+    if (mindmapLayoutEditor) mindmapLayoutEditor.value = currentMindmapLayout();
+    if (mindmapPropsFields) mindmapPropsFields.hidden = true;
+    if (mindmapPropsHint) mindmapPropsHint.textContent = "";
+  } else {
     if (mindmapPropsFields) mindmapPropsFields.hidden = false;
     if (mindmapTextEditor) mindmapTextEditor.value = selectedMindmap.label || "";
     if (mindmapPropsHint) mindmapPropsHint.textContent = selectedMindmap.isRoot ? "Root selected · cannot delete" : "Topic selected";
-  } else {
-    if (mindmapPropsFields) mindmapPropsFields.hidden = true;
-    if (mindmapPropsHint) mindmapPropsHint.textContent = "";
   }
   syncMindmapButtons();
   mindmapPropsFill = false;
