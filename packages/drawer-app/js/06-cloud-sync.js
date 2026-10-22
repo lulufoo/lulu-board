@@ -583,7 +583,7 @@ async function saveVelaToCloud(opts) {
       if (result.error) throw result.error;
       if (seq !== cloudSaveSeq) return false;
       var created = Array.isArray(result.data) ? result.data[0] : result.data;
-      if (!created) throw new Error("Could not create cloud Vela");
+      if (!created) throw new Error("Could not create cloud diagram");
       if (typeof cloudClearPlusDraftSlot === "function") cloudClearPlusDraftSlot();
       else {
         cloudPlusDraft = false;
@@ -650,7 +650,7 @@ async function loadCloudVelaByHash(raw) {
   if (!cloudSession || !cloudSession.user) {
     cloudClearOpenBoard();
     cloudShowSignInDialog();
-    setStatus("Sign in to open this cloud Vela", true);
+    setStatus("Sign in to open this cloud diagram", true);
     return true;
   }
   var seq = ++cloudLoadSeq;
@@ -672,7 +672,7 @@ async function loadCloudVelaByHash(raw) {
     if (!known) void cloudRefreshGroups();
     return true;
   }
-  setStatus("Loading cloud Vela…");
+  setStatus("Loading cloud diagram…");
   try {
     var result = await cloudClient.from("graphs")
       .select("graph_id,title,bmd,version,share_id,created_at,updated_at")

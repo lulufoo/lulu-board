@@ -31,7 +31,7 @@ async function cloudDeleteSavedVela() {
   var boardId = cloudVelaId();
   if (!cloudClient || !boardId) return false;
   var confirmed = await askConfirm({
-    title: "Delete this Vela?",
+    title: "Delete this diagram?",
     copy: "This board will be deleted from the cloud.",
     ok: "Delete",
     cancel: "Cancel",

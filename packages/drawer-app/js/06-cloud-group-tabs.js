@@ -366,5 +366,5 @@ async function cloudCommitPlusDraft(kind) {
   if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
-  setStatus("New Vela in this group");
+  setStatus("New diagram in this group");
 }

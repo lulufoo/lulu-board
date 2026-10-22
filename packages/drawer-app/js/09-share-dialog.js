@@ -41,14 +41,14 @@ function shareDialogLink(shareId) {
 
 function shareDialogRoleHint(role) {
   return role === "edit"
-    ? "Signed-in people with the link can edit this Vela."
-    : "Anyone with the link can view this Vela.";
+    ? "Signed-in people with the link can edit this diagram."
+    : "Anyone with the link can view this diagram.";
 }
 
 function shareDialogPublicHint(item) {
-  if (item.role === "edit") return "Turn link access to View before listing this Vela in search.";
+  if (item.role === "edit") return "Turn link access to View before listing this diagram in search.";
   return item.isPublic
-    ? "Signed-in people can find this Vela in search."
+    ? "Signed-in people can find this diagram in search."
     : "Off. This Vela is not listed in search.";
 }
 

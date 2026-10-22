@@ -473,7 +473,7 @@ async function bootstrapVelaFromHash() {
       applyBoardLiveMeta({ id: "", version: 1 });
     }
     await saveVelaToHash({ bump: false });
-    setStatus("New Vela");
+    setStatus("New diagram");
     return;
   }
   try {
