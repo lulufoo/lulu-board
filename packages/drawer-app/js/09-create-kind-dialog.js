@@ -12,7 +12,7 @@
     { cls: "Board", name: "Board", note: "Structured whiteboard", ready: true, kind: "board" },
     { cls: "Mermaid", name: "Flowchart", note: "flow", ready: true, kind: "flowchart" },
     { cls: "Mermaid", name: "Block", note: "flow", ready: false, kind: "block-beta" },
-    { cls: "Mermaid", name: "Mindmap", note: "flow", ready: false, kind: "mindmap" },
+    { cls: "Mermaid", name: "Mindmap", note: "flow", ready: true, kind: "mindmap" },
     { cls: "Mermaid", name: "Architecture", note: "flow", ready: false, kind: "architecture" },
     { cls: "Mermaid", name: "Swimlane", note: "flow", ready: false, kind: "swimlane-beta" },
     { cls: "Mermaid", name: "Agentflow", note: "flow", ready: false, kind: "agentflow-beta" },

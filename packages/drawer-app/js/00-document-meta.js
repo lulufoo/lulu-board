@@ -9,6 +9,7 @@
   root.newGraphId = api.newGraphId;
   root.blankHashBoardSource = api.blankHashBoardSource;
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
+  root.blankHashMindmapSource = api.blankHashMindmapSource;
   root.velaTitleFromBody = api.velaTitleFromBody;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
@@ -118,6 +119,12 @@
     return "%% title " + name + "\nflowchart TD\n";
   }
 
+  function blankHashMindmapSource(title) {
+    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
+    if (!name) name = "Untitled";
+    return "%% title " + name + "\nmindmap\n  Topic\n";
+  }
+
   function velaTitleFromBody(body) {
     var text = String(body || "");
     var board = /^\s*board\s+"([^"]*)"/.exec(text);
@@ -142,6 +149,7 @@
     newGraphId: newGraphId,
     blankHashBoardSource: blankHashBoardSource,
     blankHashFlowchartSource: blankHashFlowchartSource,
+    blankHashMindmapSource: blankHashMindmapSource,
     velaTitleFromBody: velaTitleFromBody,
   };
 });
@@ -152,4 +160,5 @@ var sourceBody = globalThis.sourceBody;
 var newGraphId = globalThis.newGraphId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
+var blankHashMindmapSource = globalThis.blankHashMindmapSource;
 var velaTitleFromBody = globalThis.velaTitleFromBody;

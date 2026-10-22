@@ -1250,7 +1250,7 @@ function persistBoardStyle(patch) {
       ? DrawerStyleLine.bodyKind(body)
       : "board";
     var nextBody;
-    if (kind === "flowchart" || kind === "mermaid-unsupported") {
+    if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") {
       if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
@@ -1610,7 +1610,7 @@ previewEl.addEventListener("dblclick", function(event) {
 
 function isBoardCanvasKind() {
   var kind = document.documentElement.dataset.diagramKind || "";
-  return kind !== "flowchart" && kind !== "mermaid-unsupported";
+  return kind !== "flowchart" && kind !== "mindmap" && kind !== "mermaid-unsupported";
 }
 
 function boardCanvasHit(target) {

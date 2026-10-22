@@ -7,6 +7,7 @@ const root = path.join(__dirname, '../..');
 const refs = path.join(root, 'skill/mermaid/references');
 const catalog = fs.readFileSync(path.join(refs, 'catalog.md'), 'utf8');
 const flowchart = fs.readFileSync(path.join(refs, 'flow/flowchart.md'), 'utf8');
+const mindmap = fs.readFileSync(path.join(refs, 'flow/mindmap.md'), 'utf8');
 const block = fs.readFileSync(path.join(refs, 'flow/block.md'), 'utf8');
 const railroad = fs.readFileSync(path.join(refs, 'design/railroad.md'), 'utf8');
 const ishikawa = fs.readFileSync(path.join(refs, 'map/ishikawa.md'), 'utf8');
@@ -14,8 +15,9 @@ const treemap = fs.readFileSync(path.join(refs, 'chart/treemap.md'), 'utf8');
 
 assert.match(catalog, /Mermaid 12\.1\.0/, 'catalog pins Mermaid 12.1.0');
 assert.match(catalog, /Pele 1\.7\.0/, 'catalog pins Pele 1.7.0');
-assert.match(catalog, /\*\*Open\*\* is only `flowchart`/, 'only flowchart is open');
+assert.match(catalog, /\*\*Open\*\* is `flowchart` and `mindmap`/, 'flowchart and mindmap are open');
 assert.match(catalog, /\| flowchart \| `flowchart` \/ `graph` \| open \|/, 'flowchart row is open');
+assert.match(catalog, /\| mindmap \| `mindmap` \| open \|/, 'mindmap row is open');
 assert.match(catalog, /`flowchart-elk` \| `flowchart`/, 'elk is an alias');
 assert.match(catalog, /\| block \| `block` \/ `block-beta` \| closed \|/, 'block lists the short name');
 assert.match(catalog, /\| xychart \| `xychart` \/ `xychart-beta` \| closed \|/, 'xychart lists the short name');
@@ -33,11 +35,13 @@ assert.match(catalog, /\| venn \| `venn-beta` \| closed \|/, 'venn is closed');
 assert.match(catalog, /\| ishikawa \| `ishikawa` \/ `ishikawa-beta` \| closed \|/, 'ishikawa lists the short name');
 assert.match(catalog, /\| treemap \| `treemap` \/ `treemap-beta` \| closed \|/, 'treemap lists the short name');
 assert.match(flowchart, /`flowchart-elk` is an alias/, 'flowchart file marks elk as alias');
+assert.match(mindmap, /Radial or Logic/, 'mindmap names Radial and Logic');
+assert.match(mindmap, /Toolbar: Root, Node, Delete/, 'mindmap names the toolbar');
 assert.match(block, /Keyword: `block`/, 'block file authors the short name');
 assert.match(railroad, /Author `railroad-beta`/, 'railroad authors the IR keyword');
 assert.match(ishikawa, /Author `ishikawa`/, 'ishikawa authors the short name');
 assert.match(treemap, /Author `treemap`/, 'treemap authors the short name');
-assert.strictEqual((catalog.match(/\| open \|/g) || []).length, 1, 'only one open type row');
+assert.strictEqual((catalog.match(/\| open \|/g) || []).length, 2, 'two open type rows');
 
 const files = [
   'flow/flowchart.md', 'flow/block.md', 'flow/mindmap.md', 'flow/architecture.md',

@@ -163,6 +163,7 @@ console.log('ok 09-shell-drawer');
   assert.doesNotMatch(open, /history\.replaceState|bootstrapVelaFromHash|saveVelaToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));
   assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
+  assert.match(commit, /blankHashMindmapSource\("Untitled"\)/, 'mindmap seed after pick');
   assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
   assert.match(commit, /saveVelaToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');

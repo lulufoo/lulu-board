@@ -51,7 +51,7 @@ for (const [name, outName] of Object.entries(earlyMap)) {
   if (ext.status) process.exit(ext.status || 1);
 }
 
-for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js']) {
+for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js', 'mindmap.min.js']) {
   const src = path.join(srcDir, 'vendor', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(vendorOut, name));
@@ -69,10 +69,13 @@ const domain = [
   '00-canvas-view.js',
   '01-shell-state.js',
   '01-canvas-interaction.js',
+  '01-mermaid-halo.js',
   '02-vela.js',
   '02-board.js',
   '03-flowchart-shapes.js',
   '03-flowchart.js',
+  '03-mindmap.js',
+  '03-mindmap-select.js',
   '05-render-io.js',
   '05-export-png.js',
   '06-confirm.js',

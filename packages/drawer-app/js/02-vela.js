@@ -45,7 +45,7 @@ function applyDrawerKind(kind) {
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
       ? "Select a group, node, or link"
-      : "Select a title, box, or item";
+      : (kind === "mindmap" ? "Select a topic" : "Select a title, box, or item");
   }
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
@@ -53,6 +53,12 @@ function applyDrawerKind(kind) {
   if (flowDir && kind !== "flowchart") flowDir.hidden = true;
   var flowTitle = document.getElementById("flowchartDocTitleField");
   if (flowTitle && kind !== "flowchart") flowTitle.hidden = true;
+  var mmProps = document.getElementById("mindmapPropsFields");
+  if (mmProps && kind !== "mindmap") mmProps.hidden = true;
+  var mmTitle = document.getElementById("mindmapDocTitleField");
+  if (mmTitle && kind !== "mindmap") mmTitle.hidden = true;
+  var mmLayout = document.getElementById("mindmapLayoutField");
+  if (mmLayout && kind !== "mindmap") mmLayout.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {
@@ -177,9 +183,63 @@ function refuseUnsupportedMermaid() {
   previewEl.innerHTML = "";
   bindCanvasWorld(null, null);
   updateVelaChars();
-  showVelaError("Only flowchart can be rendered.");
-  setStatus("Only flowchart can be rendered.", true);
+  showVelaError("Only flowchart and mindmap can be rendered.");
+  setStatus("Only flowchart and mindmap can be rendered.", true);
   finishCanvasView({});
+}
+
+function renderMindmap(opts) {
+  opts = opts || {};
+  syncBoardEditControls();
+  previewEl.classList.remove("board-preview");
+  syncMermaidStyleChrome(velaSourceEl ? velaSourceEl.value : "");
+  var body = sourceBodyForKind(velaSourceEl.value);
+  updateVelaChars();
+  if (!body.trim()) {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError("");
+    setStatus("No mindmap source");
+    finishCanvasView(opts);
+    return;
+  }
+  if (typeof MindmapEdit === "undefined" || typeof MindmapEdit.render !== "function") {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError("Mindmap renderer missing");
+    setStatus("Mindmap renderer missing", true);
+    finishCanvasView(opts);
+    return;
+  }
+  try {
+    var theme = "default";
+    if (typeof DrawerStyleLine !== "undefined") {
+      theme = DrawerStyleLine.themeFromStyleToken(
+        DrawerStyleLine.splitRendererStyle(velaSourceEl ? velaSourceEl.value : "").token
+      ) || "default";
+    }
+    var layout = typeof currentMindmapLayout === "function" ? currentMindmapLayout() : "radial";
+    var result = MindmapEdit.render(body, { layout: layout, theme: theme, id: "mm" });
+    if (result && result.errors && result.errors.length && !result.svg) {
+      throw new Error(result.errors.join("; "));
+    }
+    previewEl.innerHTML = result && result.svg ? result.svg : "";
+    var svg = previewEl.querySelector("svg");
+    fixSvgIntrinsic(svg);
+    bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
+    showVelaError("");
+    setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
+    if (typeof restoreMindmapSelection === "function") restoreMindmapSelection();
+    if (typeof fillMindmapProps === "function") fillMindmapProps();
+    else if (typeof syncMindmapButtons === "function") syncMindmapButtons();
+    if (typeof applyMindmapSelectionVisual === "function") applyMindmapSelectionVisual();
+  } catch (err) {
+    previewEl.innerHTML = "";
+    bindCanvasWorld(null, null);
+    showVelaError(err instanceof Error ? err.message : String(err));
+    setStatus("Invalid mindmap source", true);
+  }
+  finishCanvasView(opts);
 }
 
 function renderVela(opts) {
@@ -190,6 +250,7 @@ function renderVela(opts) {
     : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "board" : "unknown");
   applyDrawerKind(kind);
   if (kind === "flowchart") return renderFlowchart(opts);
+  if (kind === "mindmap") return renderMindmap(opts);
   if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
   syncBoardEditControls();
   previewEl.classList.add('board-preview');

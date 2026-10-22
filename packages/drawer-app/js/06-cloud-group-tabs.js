@@ -111,6 +111,9 @@ function blankPlusDraftSource(kind) {
   if (kind === "flowchart" && typeof blankHashFlowchartSource === "function") {
     return blankHashFlowchartSource("Untitled");
   }
+  if (kind === "mindmap" && typeof blankHashMindmapSource === "function") {
+    return blankHashMindmapSource("Untitled");
+  }
   return typeof blankHashBoardSource === "function"
     ? blankHashBoardSource("Untitled")
     : "board \"Untitled\"\n";

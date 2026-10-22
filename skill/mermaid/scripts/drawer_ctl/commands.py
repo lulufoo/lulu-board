@@ -10,7 +10,8 @@ from urllib.parse import quote
 from drawer_ctl import hash_url
 from drawer_ctl import titles
 
-OPEN_KIND = "flowchart"
+OPEN_KINDS = ("flowchart", "mindmap")
+DEFAULT_KIND = "flowchart"
 
 
 def open_viewer(url: str, mode: str = "ide") -> str:
@@ -32,14 +33,14 @@ def open_viewer(url: str, mode: str = "ide") -> str:
 
 
 def status():
-    return {"ok": True, "kind": OPEN_KIND}
+    return {"ok": True, "kind": DEFAULT_KIND}
 
 
 def resolve_preview_body(path: str | None, stdin=None) -> str | None:
     if path:
         text = Path(path).read_text(encoding="utf-8")
         if not str(text).strip():
-            raise RuntimeError("flowchart source must not be empty")
+            raise RuntimeError("source must not be empty")
         return text
     stream = sys.stdin if stdin is None else stdin
     if getattr(stream, "isatty", lambda: False)():
@@ -50,24 +51,24 @@ def resolve_preview_body(path: str | None, stdin=None) -> str | None:
     return text
 
 
-def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = OPEN_KIND, source_id: str | None = None) -> None:
+def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = DEFAULT_KIND, source_id: str | None = None) -> None:
     if open_mode is None:
         open_mode = "ide" if should_open else "none"
-    if kind and kind != OPEN_KIND:
-        raise RuntimeError("invalid --kind (expected flowchart)")
+    if kind not in OPEN_KINDS:
+        raise RuntimeError("invalid --kind (expected flowchart or mindmap)")
     body = resolve_preview_body(path)
     if body is None:
         text, fields, open_kind = "", {"id": "", "title": "", "version": 0}, "current"
     else:
         text = titles.strip_leading_meta_lines(body)
         if not str(text).strip():
-            raise RuntimeError("flowchart source must not be empty")
+            raise RuntimeError("source must not be empty")
         fields = {"id": "", "title": titles.derive_title(text), "version": 1}
         open_kind = "created"
     web = hash_url.board_web_url(text, version=fields["version"]) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
     payload = {
         "ok": True,
-        "kind": OPEN_KIND,
+        "kind": kind,
         "open": open_kind,
         "url": web,
         "web_url": web,

@@ -143,7 +143,7 @@ function currentBoardItemCap() {
 }
 function applyBoardItemCap(rem, rerender, persist) {
   const kind = document.documentElement && document.documentElement.dataset.diagramKind;
-  if (kind === "flowchart" || kind === "mermaid-unsupported") {
+  if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") {
     if (boardItemCapSlider) {
       boardItemCapSlider.disabled = kind === "flowchart";
       paintStyleRange(boardItemCapSlider);

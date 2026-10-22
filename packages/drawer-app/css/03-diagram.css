@@ -118,12 +118,17 @@
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
 html[data-drawer-mode="vela"] .board-edit-tools { display: inline-flex; }
 html[data-diagram-kind="flowchart"] .board-edit-tools,
+html[data-diagram-kind="mindmap"] .board-edit-tools,
 html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
 html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
-.flowchart-edit-tools { display: none; align-items: center; gap: 8px; }
+.flowchart-edit-tools,
+.mindmap-edit-tools { display: none; align-items: center; gap: 8px; }
 html[data-diagram-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
-html[data-diagram-kind="flowchart"] #propsFields { display: none !important; }
+html[data-diagram-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
+html[data-diagram-kind="flowchart"] #propsFields,
+html[data-diagram-kind="mindmap"] #propsFields { display: none !important; }
 html[data-diagram-kind="flowchart"] #preview,
+html[data-diagram-kind="mindmap"] #preview,
 html[data-diagram-kind="mermaid-unsupported"] #preview {
   width: max-content;
   height: max-content;
@@ -234,6 +239,44 @@ html[data-diagram-kind="flowchart"] .canvas-hover-halo {
   stroke-width: 1px !important;
   stroke-dasharray: 4 3;
   pointer-events: none !important;
+}
+html[data-diagram-kind="mindmap"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
+html[data-diagram-kind="mindmap"] g.canvas-hover {
+  outline: none !important;
+  overflow: visible;
+}
+html[data-diagram-kind="mindmap"] .mindmap-selection-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring, #db4c84) !important;
+  stroke-width: var(--canvas-ring-width, 2px) !important;
+  stroke-dasharray: none;
+  pointer-events: none !important;
+}
+html[data-diagram-kind="mindmap"] .canvas-hover-halo {
+  fill: none !important;
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .4)) !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 4 3;
+  pointer-events: none !important;
+}
+html[data-diagram-kind="mindmap"] .mindmap-node {
+  cursor: pointer;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add {
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add-zone:hover .mindmap-add {
+  opacity: 1;
+  pointer-events: auto;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add-bg {
+  fill: var(--canvas-ring, #db4c84);
+}
+html[data-diagram-kind="mindmap"] .mindmap-node-label {
+  paint-order: stroke;
+  stroke: transparent;
 }
 html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
 html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
@@ -1857,6 +1900,9 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTypeField[hidden],
 #flowchartTitleField[hidden],
 #flowchartIdWrap[hidden],
+#mindmapPropsFields[hidden],
+#mindmapDocTitleField[hidden],
+#mindmapLayoutField[hidden],
 #propsEmpty[hidden] { display: none !important; }
 
 .props-field {
@@ -1866,7 +1912,9 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
   min-width: 0;
 }
 #flowchartDocTitleField,
-#flowchartDirField { margin: 4px 0 10px; }
+#flowchartDirField,
+#mindmapDocTitleField,
+#mindmapLayoutField { margin: 4px 0 10px; }
 .props-control {
   display: flex;
   flex-direction: column;
@@ -1893,7 +1941,10 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTitleEditor,
 #flowchartIdEditor,
 #flowchartDocTitleEditor,
-#flowchartDirEditor {
+#flowchartDirEditor,
+#mindmapDocTitleEditor,
+#mindmapLayoutEditor,
+#mindmapTextEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
@@ -1917,7 +1968,8 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 #boardTitleEditor,
-#flowchartTitleEditor {
+#flowchartTitleEditor,
+#mindmapTextEditor {
   resize: vertical;
   min-height: 38px;
   line-height: 1.4;
@@ -1942,7 +1994,10 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTitleEditor:focus,
 #flowchartIdEditor:focus,
 #flowchartDocTitleEditor:focus,
-#flowchartDirEditor:focus {
+#flowchartDirEditor:focus,
+#mindmapDocTitleEditor:focus,
+#mindmapLayoutEditor:focus,
+#mindmapTextEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 #diagramThemeSelect,
@@ -1954,7 +2009,8 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #boardArrowEditor,
 #boardCapEditor,
 #flowchartTypeEditor,
-#flowchartDirEditor {
+#flowchartDirEditor,
+#mindmapLayoutEditor {
   appearance: none; -webkit-appearance: none;
   padding-right: 32px;
   background-color: var(--panel-solid);

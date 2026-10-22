@@ -11,9 +11,13 @@ assert.match(build, /02-vela\.js/, 'host file is in the drawer bundle');
 assert.ok(build.indexOf("'02-vela.js'") < build.indexOf("'02-board.js'"), 'host file concatenates before Board edit');
 assert.doesNotMatch(boardEdit, /function renderVela/, 'Board edit file no longer owns render');
 assert.match(boardJs, /function renderFlowchart/, 'flowchart render path exists');
+assert.match(boardJs, /function renderMindmap/, 'mindmap render path exists');
 assert.match(boardJs, /function refuseUnsupportedMermaid/, 'unsupported mermaid is refused');
-assert.match(boardJs, /Only flowchart can be rendered/, 'refuse copy is locked');
+assert.match(boardJs, /Only flowchart and mindmap can be rendered/, 'refuse copy is locked');
 assert.match(boardJs, /kind === "flowchart"/, 'renderVela dispatches flowchart');
+assert.match(boardJs, /kind === "mindmap"/, 'renderVela dispatches mindmap');
 assert.match(boardJs, /kind === "mermaid-unsupported"/, 'renderVela dispatches unsupported mermaid');
+assert.match(boardJs, /MindmapEdit\.render/, 'mindmap uses the custom SVG renderer');
+assert.doesNotMatch(boardJs, /function renderMindmap[\s\S]*window\.pele/, 'mindmap does not render through Pele');
 
 console.log('ok kind-route');

@@ -335,16 +335,16 @@ function applyBoardLiveMeta(meta = {}) {
 
 function syncStyleLayoutSections() {
   var kind = document.documentElement && document.documentElement.dataset.diagramKind;
-  var mermaid = kind === "flowchart" || kind === "mermaid-unsupported";
+  var mermaid = kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported";
   var flowchart = kind === "flowchart";
   var board = document.getElementById("boardLayoutSection");
   if (board) board.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
-  if (typeSec) typeSec.hidden = kind === "mermaid-unsupported";
+  if (typeSec) typeSec.hidden = kind === "mermaid-unsupported" || kind === "mindmap";
   var capSec = document.getElementById("boardItemCapSection");
   var capSlider = document.getElementById("boardItemCapSlider");
   if (capSec) {
-    capSec.hidden = kind === "mermaid-unsupported";
+    capSec.hidden = kind === "mermaid-unsupported" || kind === "mindmap";
     capSec.classList.toggle("is-disabled", flowchart);
   }
   if (capSlider) {

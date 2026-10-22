@@ -1,11 +1,11 @@
 # Mermaid type catalog
 
-Author Mermaid 12.1.0 built-in syntax. Drawer renders with Pele 1.7.0, not
-Mermaid.js. Route loads **one** type file. `info`, `error`, and `---` are not
-author types.
+Author Mermaid 12.1.0 built-in syntax. Drawer renders flowchart with Pele 1.7.0
+and mindmap with a custom SVG pipeline, not Mermaid.js. Route loads **one**
+type file. `info`, `error`, and `---` are not author types.
 
-**Open** is only `flowchart`. Closed types may be listed; do not author them
-for the drawer.
+**Open** is `flowchart` and `mindmap`. Closed types may be listed; do not
+author them for the drawer.
 
 ## Aliases
 
@@ -21,7 +21,7 @@ for the drawer.
 |---|---|---|---|
 | flowchart | `flowchart` / `graph` | open | [flow/flowchart.md](./flow/flowchart.md) |
 | block | `block` / `block-beta` | closed | [flow/block.md](./flow/block.md) |
-| mindmap | `mindmap` | closed | [flow/mindmap.md](./flow/mindmap.md) |
+| mindmap | `mindmap` | open | [flow/mindmap.md](./flow/mindmap.md) |
 | architecture | `architecture` / `architecture-beta` | closed | [flow/architecture.md](./flow/architecture.md) |
 | swimlane | `swimlane-beta` | closed | [flow/swimlane.md](./flow/swimlane.md) |
 | agentflow | `agentflow-beta` | closed | [flow/agentflow.md](./flow/agentflow.md) |
