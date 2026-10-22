@@ -11,6 +11,7 @@
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
   root.blankHashMindmapSource = api.blankHashMindmapSource;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
+  root.updateMermaidTitle = api.updateMermaidTitle;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -125,18 +126,60 @@
     return "%% title " + name + "\nmindmap\n  Topic\n";
   }
 
+  function matchMermaidTitleLine(line) {
+    return /^%%\s*title\s*:?\s*(.*)$/i.exec(String(line || "").trim());
+  }
+
+  function mermaidTitleFromMatch(hit) {
+    if (!hit) return "";
+    return String(hit[1] || "").replace(/^["']|["']$/g, "").trim();
+  }
+
+  function firstDiagramLineIndex(lines) {
+    for (var i = 0; i < lines.length; i += 1) {
+      var t = String(lines[i] || "").trim();
+      if (!t) continue;
+      if (/^%%/.test(t)) continue;
+      if (/^(?:%%\s*)?style\s+/i.test(t)) continue;
+      if (/^(?:%%\s*)?meta\s+/i.test(t)) continue;
+      return i;
+    }
+    return 0;
+  }
+
   function diagramTitleFromBody(body) {
     var text = String(body || "");
     var board = /^\s*board\s+"([^"]*)"/.exec(text);
     if (board) return board[1];
     var lines = text.split(/\r?\n/);
     for (var i = 0; i < lines.length; i += 1) {
-      var mermaid = /^%%\s*title\s*:?\s*(.+?)\s*$/i.exec(String(lines[i] || "").trim());
-      if (!mermaid) continue;
-      var title = mermaid[1].replace(/^["']|["']$/g, "").trim();
+      var title = mermaidTitleFromMatch(matchMermaidTitleLine(lines[i]));
       if (title) return title;
     }
     return "";
+  }
+
+  function updateMermaidTitle(source, title) {
+    var name = String(title == null ? "" : title).replace(/[\r\n]/g, " ").trim();
+    var lines = String(source == null ? "" : source).replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+    var found = -1;
+    for (var i = 0; i < lines.length; i += 1) {
+      if (matchMermaidTitleLine(lines[i])) {
+        found = i;
+        break;
+      }
+    }
+    if (!name) {
+      if (found >= 0) lines.splice(found, 1);
+      return lines.join("\n");
+    }
+    var next = "%% title " + name;
+    if (found >= 0) {
+      lines[found] = next;
+      return lines.join("\n");
+    }
+    lines.splice(firstDiagramLineIndex(lines), 0, next);
+    return lines.join("\n");
   }
 
   return {
@@ -151,6 +194,7 @@
     blankHashFlowchartSource: blankHashFlowchartSource,
     blankHashMindmapSource: blankHashMindmapSource,
     diagramTitleFromBody: diagramTitleFromBody,
+    updateMermaidTitle: updateMermaidTitle,
   };
 });
 var splitDocument = globalThis.splitDocument;
@@ -162,3 +206,4 @@ var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
 var blankHashMindmapSource = globalThis.blankHashMindmapSource;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
+var updateMermaidTitle = globalThis.updateMermaidTitle;

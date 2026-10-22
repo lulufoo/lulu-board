@@ -62,6 +62,14 @@ function token(id, version) {
 }
 
 {
+  const body = 'classDiagram\n  class Service\n';
+  const titled = Meta.updateMermaidTitle(body, 'Catalog');
+  assert.strictEqual(titled, '%% title Catalog\nclassDiagram\n  class Service\n');
+  assert.strictEqual(Meta.diagramTitleFromBody(titled), 'Catalog');
+  assert.strictEqual(Meta.updateMermaidTitle(titled, ''), body);
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');

@@ -61,6 +61,8 @@ function applyDrawerKind(kind) {
   if (mmTitle && kind !== "mindmap") mmTitle.hidden = true;
   var mmLayout = document.getElementById("mindmapLayoutField");
   if (mmLayout && kind !== "mindmap") mmLayout.hidden = true;
+  var designTitle = document.getElementById("designDocTitleField");
+  if (designTitle && !isDesignKind(kind)) designTitle.hidden = true;
 }
 
 function fixSvgIntrinsic(svg) {
@@ -200,6 +202,7 @@ function renderFlowchart(opts) {
 
 function renderDesignPele(opts) {
   paintPeleSvg(opts, { label: "diagram" });
+  if (typeof fillDesignProps === "function") fillDesignProps();
 }
 
 function refuseUnsupportedMermaid() {
