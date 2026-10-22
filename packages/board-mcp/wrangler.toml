@@ -11,5 +11,5 @@ SUPABASE_URL = "https://xjwlxxuafhsfzksxxmtu.supabase.co"
 PUBLIC_ORIGIN = "https://mcp.luluboard.app"
 
 [[routes]]
-pattern = "mcp.luluvela.app"
+pattern = "mcp.luluboard.app"
 custom_domain = true
