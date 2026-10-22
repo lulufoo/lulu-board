@@ -32,7 +32,7 @@ const emptyJson = JSON.parse(empty.stdout);
 assert.strictEqual(emptyJson.ok, true);
 assert.strictEqual(emptyJson.kind, 'flowchart');
 assert.strictEqual(emptyJson.open, 'current');
-assert.strictEqual(emptyJson.url, 'https://luluvela.app/');
+assert.strictEqual(emptyJson.url, 'https://luluboard.app/');
 
 const drawn = run(['preview', '--kind', 'flowchart', '--no-open'], 'flowchart LR\n  A --> B\n');
 assert.strictEqual(drawn.status, 0, drawn.stderr);
@@ -40,7 +40,7 @@ const drawnJson = JSON.parse(drawn.stdout);
 assert.strictEqual(drawnJson.ok, true);
 assert.strictEqual(drawnJson.kind, 'flowchart');
 assert.strictEqual(drawnJson.open, 'created');
-assert.match(drawnJson.url, /^https:\/\/luluvela\.app\/#z:/);
+assert.match(drawnJson.url, /^https:\/\/luluboard\.app\/#z:/);
 assert.strictEqual(drawnJson.version, 1);
 
 const mindmapDrawn = run(['preview', '--kind', 'mindmap', '--no-open'], 'mindmap\n  Topic\n');
@@ -49,7 +49,7 @@ const mindmapJson = JSON.parse(mindmapDrawn.stdout);
 assert.strictEqual(mindmapJson.ok, true);
 assert.strictEqual(mindmapJson.kind, 'mindmap');
 assert.strictEqual(mindmapJson.open, 'created');
-assert.match(mindmapJson.url, /^https:\/\/luluvela\.app\/#z:/);
+assert.match(mindmapJson.url, /^https:\/\/luluboard\.app\/#z:/);
 
 const designSeeds = {
   sequence: 'sequenceDiagram\n  actor User\n  participant UI\n  User->>UI: action\n',
@@ -69,7 +69,7 @@ Object.keys(designSeeds).forEach(function (kind) {
   assert.strictEqual(json.ok, true);
   assert.strictEqual(json.kind, kind);
   assert.strictEqual(json.open, 'created');
-  assert.match(json.url, /^https:\/\/luluvela\.app\/#z:/);
+  assert.match(json.url, /^https:\/\/luluboard\.app\/#z:/);
 });
 
 const titled = run(

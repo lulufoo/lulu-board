@@ -12,16 +12,16 @@ import {
   createGraph,
   saveGraph,
   stripPersistedMeta,
-} from '../../packages/vela-mcp/src/graphs.js';
-import { metadataDocument, unauthorized } from '../../packages/vela-mcp/src/meta.js';
-import { decodePayload } from '../../packages/vela-mcp/src/jwt.js';
-import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/vela-mcp/src/brand.js';
+} from '../../packages/board-mcp/src/graphs.js';
+import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
+import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
+import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/board-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
-const graphsSrc = readFileSync(path.join(root, 'packages/vela-mcp/src/graphs.js'), 'utf8');
-const worker = readFileSync(path.join(root, 'packages/vela-mcp/src/index.js'), 'utf8');
+const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
+const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
 const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 
@@ -240,24 +240,24 @@ try {
 
 const meta = metadataDocument({
   SUPABASE_URL: 'https://xjwlxxuafhsfzksxxmtu.supabase.co',
-  PUBLIC_ORIGIN: 'https://mcp.luluvela.app',
+  PUBLIC_ORIGIN: 'https://mcp.luluboard.app',
 });
-assert.equal(meta.resource, 'https://mcp.luluvela.app/mcp');
+assert.equal(meta.resource, 'https://mcp.luluboard.app/mcp');
 assert.deepEqual(meta.authorization_servers, ['https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1']);
 const viaAlias = metadataDocument(
   {
     SUPABASE_URL: 'https://xjwlxxuafhsfzksxxmtu.supabase.co',
-    PUBLIC_ORIGIN: 'https://mcp.luluvela.app',
+    PUBLIC_ORIGIN: 'https://mcp.luluboard.app',
   },
   new Request('https://example.workers.dev/mcp')
 );
-assert.equal(viaAlias.resource, 'https://mcp.luluvela.app/mcp');
+assert.equal(viaAlias.resource, 'https://mcp.luluboard.app/mcp');
 const denied = unauthorized(
-  { PUBLIC_ORIGIN: 'https://mcp.luluvela.app' },
-  new Request('https://mcp.luluvela.app/mcp')
+  { PUBLIC_ORIGIN: 'https://mcp.luluboard.app' },
+  new Request('https://mcp.luluboard.app/mcp')
 );
 assert.equal(denied.status, 401);
-assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\/\/mcp\.luluvela\.app\/\.well-known\/oauth-protected-resource"/);
+assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\/\/mcp\.luluboard\.app\/\.well-known\/oauth-protected-resource"/);
 
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_diagram"/, 'get_diagram is registered');
@@ -304,12 +304,12 @@ assert.equal(
 assert.match(FAVICON_SVG, /fill="#db4c84"/, 'svg uses the landing pink');
 assert.match(FAVICON_SVG, /fill="#ffd166"/, 'svg uses the landing yellow');
 
-const info = serverInfo({ PUBLIC_ORIGIN: 'https://mcp.luluvela.app' });
-assert.equal(PUBLIC_WEB_ORIGIN, 'https://luluvela.app');
+const info = serverInfo({ PUBLIC_ORIGIN: 'https://mcp.luluboard.app' });
+assert.equal(PUBLIC_WEB_ORIGIN, 'https://luluboard.app');
 assert.equal(info.websiteUrl, PUBLIC_WEB_ORIGIN);
-assert.equal(info.icons[0].src, 'https://mcp.luluvela.app/favicon-32.png');
+assert.equal(info.icons[0].src, 'https://mcp.luluboard.app/favicon-32.png');
 assert.equal(info.icons[0].mimeType, 'image/png');
-assert.equal(info.icons[1].src, 'https://mcp.luluvela.app/favicon.svg');
+assert.equal(info.icons[1].src, 'https://mcp.luluboard.app/favicon.svg');
 assert.match(worker, /new McpServer\(serverInfo\(env\)\)/, 'initialize carries brand icons');
 assert.match(worker, /isBrandPath\(url\.pathname\)/, 'favicon is served before /mcp auth');
 
@@ -325,4 +325,4 @@ assert.deepEqual(
   readFileSync(path.join(brandDir, 'favicon-32.png'))
 );
 
-console.log('ok vela-mcp graphs');
+console.log('ok board-mcp graphs');

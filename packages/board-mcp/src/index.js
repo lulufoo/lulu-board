@@ -1,4 +1,4 @@
-/* vela-mcp Worker — Streamable HTTP MCP + Supabase user JWT */
+/* board-mcp Worker — Streamable HTTP MCP + Supabase user JWT */
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
@@ -35,7 +35,7 @@ function mcpDoc(row) {
 
 function createServer(env, identity, token) {
   const server = new McpServer(serverInfo(env));
-  server.registerTool("whoami", { description: "Return the authorized Lulu Vela account.", inputSchema: {} }, async () => (
+  server.registerTool("whoami", { description: "Return the authorized Lulu Board account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
   server.registerTool("get_diagram", {
@@ -81,7 +81,7 @@ const handler = createMcpHandler((context) => {
   return createServer(extra.env, extra.identity, extra.token);
 }, {
   route: "/mcp",
-  allowedHostnames: ["mcp.luluvela.app", "mcp.luluboard.app", "localhost", "127.0.0.1"],
+  allowedHostnames: ["mcp.luluboard.app", "mcp.luluvela.app", "localhost", "127.0.0.1"],
   allowedOriginHostnames: ["localhost", "127.0.0.1"],
 });
 

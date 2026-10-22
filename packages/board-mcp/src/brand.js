@@ -1,4 +1,4 @@
-/* vela-mcp/brand.js — same mark as drawer-app/brand, served from the MCP origin */
+/* board-mcp/brand.js — same mark as drawer-app/brand, served from the MCP origin */
 
 export const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect x="2" y="2" width="28" height="28" rx="8" fill="#db4c84"/>
@@ -10,11 +10,11 @@ export const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0
 export const FAVICON_PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAtUlEQVR4nGNgGOmAkZCC2z4t/ym1RHVLDU57GGlpMTEOYaKX5bjMZaKX5bjMZ6Kn5djsYWIYYMBIyPdSK4vxGvAsvBfOVml9hCF/p1oOb6JkYqASwGY5PvFBEwVMow5gGC4OuIMjtePLBSDAQi0HEGPZoIwCFkoNIFRQoRdWgy4EmEYdwDDqgJHuAMaBaJIht5CZGAYYMBHbgaAmQLaHCZ8krS3H6gBaOgKbuYyENNG6bzjgAABi0Dyv9+kONgAAAABJRU5ErkJggg==";
 
-export const PUBLIC_WEB_ORIGIN = "https://luluvela.app";
+export const PUBLIC_WEB_ORIGIN = "https://luluboard.app";
 
 function origin(env) {
   var fromEnv = String(env && env.PUBLIC_ORIGIN || "").replace(/\/$/, "");
-  return fromEnv || "https://mcp.luluvela.app";
+  return fromEnv || "https://mcp.luluboard.app";
 }
 
 export function serverInfo(env) {

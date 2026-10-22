@@ -27,8 +27,8 @@ assert.strictEqual(Template.kindTemplateFileName('block-beta'), '');
 {
   const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8'));
   assert.match(untitled, /^board "Untitled"/m);
-  assert.doesNotMatch(untitled, /board "Lulu Vela"/);
-  assert.match(untitled, /Welcome to Lulu Vela/);
+  assert.doesNotMatch(untitled, /board "Lulu Board"/);
+  assert.match(untitled, /Welcome to Lulu Board/);
 }
 
 {

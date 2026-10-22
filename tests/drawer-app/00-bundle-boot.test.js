@@ -53,7 +53,7 @@ function load(hash) {
   const sandbox = {
     console, URL, URLSearchParams, TextEncoder, TextDecoder, Promise, Blob,
     setTimeout: () => 0, clearTimeout() {}, setInterval: () => 0, requestAnimationFrame: () => 0,
-    location: { hash, hostname: 'preview.luluvela.app', href: 'https://preview.luluvela.app/' + hash, pathname: '/', search: '', origin: 'https://preview.luluvela.app' },
+    location: { hash, hostname: 'preview.luluboard.app', href: 'https://preview.luluboard.app/' + hash, pathname: '/', search: '', origin: 'https://preview.luluboard.app' },
     document,
     localStorage: { getItem: (k) => (k in store ? store[k] : null), setItem(k, v) { store[k] = String(v); }, removeItem(k) { delete store[k]; } },
     sessionStorage: { getItem: () => null, setItem() {}, removeItem() {} },

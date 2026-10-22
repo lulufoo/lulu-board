@@ -63,7 +63,7 @@ function load(opts) {
       querySelectorAll: (sel) => (sel === '[data-share-role]' ? roleBtns : []),
       addEventListener() {},
     },
-    location: { origin: 'https://preview.luluvela.app', search: opts.search || '' },
+    location: { origin: 'https://preview.luluboard.app', search: opts.search || '' },
     window: {}, setTimeout() {}, console,
     shellIsPreview: () => !!opts.preview,
     shellShares: opts.shares || [],
@@ -71,7 +71,7 @@ function load(opts) {
     cloudDiagramId: () => 'b_open',
     cloudOpenDiagramId: () => 'b_open',
     getDiagramTitle: (id) => (id === 'b_open' ? 'Open board title' : 'Untitled'),
-    cloudShareLinkFor: (id) => 'https://preview.luluvela.app/#s:' + id,
+    cloudShareLinkFor: (id) => 'https://preview.luluboard.app/#s:' + id,
     cloudShareMutate: async (diagramId, rpc, args) => { calls.push({ diagramId, rpc, args }); if (opts.after) opts.after(ctx, rpc, args); return {}; },
     cloudShareCopyLink: async (id) => { calls.push({ copy: id }); },
   };

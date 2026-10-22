@@ -1,5 +1,5 @@
 {
-  "name": "lulu-vela-mcp",
+  "name": "lulu-board-mcp",
   "private": true,
   "type": "module",
   "dependencies": {
