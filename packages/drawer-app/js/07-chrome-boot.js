@@ -472,10 +472,6 @@ async function openOnboardingHash() {
   }
 }
 function applyCreateKindPick(kind, commit) {
-  if (kind === "welcome") {
-    void openOnboardingHash();
-    return;
-  }
   if (typeof commit === "function") commit(kind);
 }
 

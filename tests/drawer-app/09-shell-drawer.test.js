@@ -159,11 +159,12 @@ console.log('ok 09-shell-drawer');
   const open = src.slice(start, end);
   assert.match(open, /cloudConfirmLeaveDiagram/, 'leave-confirm stays before the kind dialog');
   assert.match(open, /openCreateKindDialog/, 'New board opens the kind dialog');
-  assert.match(open, /applyCreateKindPick/, 'Welcome pick opens onboarding instead of a blank');
+  assert.match(open, /applyCreateKindPick/, 'kind pick including Welcome uses the shared commit');
   assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
   assert.doesNotMatch(open, /history\.replaceState|bootstrapDiagramFromHash|saveDiagramToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));
-  assert.match(commit, /blankHashSourceForKind\(kind, "Untitled"\)/, 'kind pick uses the shared seed');
+  assert.match(commit, /loadKindTemplateSource\(kind\)/, 'kind pick fetches the built-in template');
+  assert.doesNotMatch(commit, /blankHashSourceForKind/, 'kind pick does not use the JS seed');
   assert.match(commit, /saveDiagramToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
 }

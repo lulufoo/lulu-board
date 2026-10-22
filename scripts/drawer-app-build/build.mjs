@@ -64,6 +64,7 @@ const domain = [
   '00-flowchart-type-scale.js',
   '00-pele-theme.js',
   '00-document-meta.js',
+  '00-kind-template.js',
   '00-cloud-route.js',
   '00-hash-persist.js',
   '00-canvas-view.js',

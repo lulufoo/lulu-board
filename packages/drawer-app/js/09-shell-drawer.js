@@ -301,9 +301,14 @@ async function shellCommitBlankDiagram(kind) {
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
   history.replaceState(null, "", location.pathname + location.search);
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  var source = typeof blankHashSourceForKind === "function"
-    ? blankHashSourceForKind(kind, "Untitled")
-    : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
+  var source;
+  try {
+    if (typeof loadKindTemplateSource !== "function") throw new Error("Template is unavailable");
+    source = await loadKindTemplateSource(kind);
+  } catch (err) {
+    if (typeof setStatus === "function") setStatus(err instanceof Error ? err.message : String(err), true);
+    return;
+  }
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof diagramSourceEl !== "undefined" && diagramSourceEl) {

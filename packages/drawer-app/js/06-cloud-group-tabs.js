@@ -107,13 +107,9 @@ function cloudGroupTabsVisible() {
   return true;
 }
 
-function blankPlusDraftSource(kind) {
-  if (typeof blankHashSourceForKind === "function") {
-    return blankHashSourceForKind(kind, "Untitled");
-  }
-  return typeof blankHashBoardSource === "function"
-    ? blankHashBoardSource("Untitled")
-    : "board \"Untitled\"\n";
+async function blankPlusDraftSource(kind) {
+  if (typeof loadKindTemplateSource !== "function") throw new Error("Template is unavailable");
+  return loadKindTemplateSource(kind);
 }
 
 function cloudClearPlusDraftSlot() {
@@ -302,7 +298,7 @@ async function cloudSwitchToPlusDraft() {
   cloudClearDirtyLeave();
   cloudPlusDraftActive = true;
   if (diagramSourceEl) {
-    diagramSourceEl.value = cloudPlusDraftSource || blankPlusDraftSource();
+    diagramSourceEl.value = cloudPlusDraftSource || "";
     delete diagramSourceEl.dataset.boardSelectionKey;
     delete diagramSourceEl.dataset.boardEdgeSelectionKey;
   }
@@ -346,7 +342,15 @@ async function cloudCommitPlusDraft(kind) {
   cloudClearDirtyLeave();
   cloudPlusDraft = true;
   cloudPlusDraftActive = true;
-  cloudPlusDraftSource = blankPlusDraftSource(kind);
+  try {
+    cloudPlusDraftSource = await blankPlusDraftSource(kind);
+  } catch (err) {
+    cloudPlusDraft = false;
+    cloudPlusDraftActive = false;
+    cloudPlusDraftSource = "";
+    if (typeof setStatus === "function") setStatus(err instanceof Error ? err.message : String(err), true);
+    return;
+  }
   cloudPlusDraftRev = 1;
   if (diagramSourceEl) {
     diagramSourceEl.value = cloudPlusDraftSource;
