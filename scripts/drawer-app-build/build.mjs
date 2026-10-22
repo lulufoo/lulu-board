@@ -147,13 +147,6 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
 }
 
 {
-  const src = path.join(srcDir, 'onboarding.bmd');
-  if (!existsSync(src)) throw new Error('missing ' + src);
-  copyFileSync(src, path.join(webDir, 'onboarding.bmd'));
-  console.log('ok onboarding.bmd');
-}
-
-{
   const srcTemplates = path.join(srcDir, 'templates');
   const outTemplates = path.join(webDir, 'templates');
   if (!existsSync(srcTemplates)) throw new Error('missing ' + srcTemplates);

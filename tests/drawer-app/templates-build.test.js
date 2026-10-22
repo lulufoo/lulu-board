@@ -12,9 +12,9 @@ assert.strictEqual(names.length, 13, 'source templates stay at 13');
 assert.match(appBuild, /path\.join\(srcDir, 'templates'\)/, 'drawer-app-build copies templates/');
 assert.match(appBuild, /path\.join\(webDir, 'templates'\)/, 'drawer-app-build writes .cache/web/templates');
 assert.match(appBuild, /expected 13 templates/, 'drawer-app-build refuses a short template set');
-assert.match(appBuild, /onboarding\.bmd/, 'root onboarding.bmd still ships this pass');
+assert.doesNotMatch(appBuild, /onboarding\.bmd/, 'drawer-app-build no longer ships root onboarding.bmd');
 assert.match(webBuild, /\.cache\/web\/templates/, 'web-build checks shipped templates');
 assert.match(webBuild, /expected 13 templates/, 'web-build refuses a short template set');
-assert.match(webBuild, /onboarding\.bmd/, 'web-build still requires root onboarding.bmd');
+assert.doesNotMatch(webBuild, /onboarding\.bmd/, 'web-build no longer requires root onboarding.bmd');
 
 console.log('ok templates-build');

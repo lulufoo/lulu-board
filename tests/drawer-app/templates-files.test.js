@@ -42,9 +42,8 @@ Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
 
 {
   const welcome = fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8');
-  const onboarding = fs.readFileSync(path.join(root, 'packages/drawer-app/onboarding.bmd'), 'utf8');
-  assert.strictEqual(welcome, onboarding, 'welcome.bmd copies onboarding.bmd');
   assert.match(welcome, /board "Lulu Vela"/);
+  assert.ok(!fs.existsSync(path.join(root, 'packages/drawer-app/onboarding.bmd')), 'root onboarding.bmd is gone');
 }
 
 {
