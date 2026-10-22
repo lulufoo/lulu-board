@@ -151,9 +151,15 @@ html[data-pele="1"] {
   --_l: var(--pele-line, #1f1f1f);
   --_s: var(--pele-surface, #fffdf9);
   --_a: var(--pele-surface-alt, #f3ece6);
-  --_b: var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14));
+  --_b: var(--pele-border, color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36))));
   --_c: var(--pele-accent, var(--pele-line, #4a3524));
-  --_r: var(--pele-radius, var(--bf-radius-box, 12px));
+  --_r: var(--pele-radius, 4px);
+}
+html[data-pele="1"] #preview g.pele-node > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo),
+html[data-pele="1"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
+  rx: 4px !important;
+  ry: 4px !important;
+  stroke: var(--_b) !important;
 }
 html[data-kind="flowchart"] #preview g.pele-node,
 html[data-kind="flowchart"] #preview g.pele-cluster,

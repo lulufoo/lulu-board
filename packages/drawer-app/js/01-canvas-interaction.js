@@ -57,11 +57,8 @@
   }
 
   function kindHit(target) {
-    var id;
-    for (id in kinds) {
-      if (kinds[id] && kinds[id].isHit && kinds[id].isHit(target)) return true;
-    }
-    return false;
+    var rec = kinds[activeKindId()];
+    return !!(rec && rec.isHit && rec.isHit(target));
   }
 
   function isBlockedTarget(target) {

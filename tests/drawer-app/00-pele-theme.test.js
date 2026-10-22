@@ -27,28 +27,28 @@ assert.ok(!ids.includes('kami'));
   assert.deepStrictEqual(mapped.series, pack.colors);
   assert.strictEqual(
     mapped.css['--pele-border'],
-    BoardThemes.edgeTint(pack),
-    id + ' node stroke is Board edge over fill',
+    BoardThemes.strokeFromFill('var(--pele-surface)'),
+    id + ' node stroke is fill darkened 10%',
   );
   assert.strictEqual(
     mapped.themeVariables.primaryBorderColor,
-    BoardThemes.edgeTint(pack),
+    BoardThemes.strokeFromFill('var(--pele-surface)'),
   );
   assert.strictEqual(
     mapped.themeVariables.clusterBorder,
-    BoardThemes.edgeTint(pack),
+    BoardThemes.strokeFromFill('var(--pele-surface)'),
     id + ' cluster stroke matches node',
   );
   assert.strictEqual(mapped.css['--bf-rgb'], pack.edgeRgb);
   assert.strictEqual(mapped.themeVariables.clusterBkg, pack.colors[0], id + ' group paper matches Board card');
-  assert.strictEqual(mapped.css['--pele-radius'], 'var(--bf-radius-box, 12px)', id + ' radius follows Board card');
+  assert.strictEqual(mapped.css['--pele-radius'], BoardThemes.BOX_RX + 'px', id + ' radius matches flowchart box');
 });
 
 const defaultMapped = Pele.mapPack('default');
-assert.strictEqual(defaultMapped.css['--pele-border'], 'rgba(74, 53, 36, .14)');
-assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'rgba(74, 53, 36, .14)');
+assert.strictEqual(defaultMapped.css['--pele-border'], 'color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36)))');
+assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36)))');
 assert.strictEqual(defaultMapped.css['--pele-muted'], BoardThemes.get('default').edgeLabel);
-assert.strictEqual(defaultMapped.css['--pele-radius'], 'var(--bf-radius-box, 12px)', 'flowchart corner follows the Board card');
+assert.strictEqual(defaultMapped.css['--pele-radius'], '4px', 'flowchart corner matches the baked box');
 assert.strictEqual(defaultMapped.themeVariables.clusterBkg, BoardThemes.get('default').colors[0], 'group paper is the Board card fill');
 assert.doesNotMatch(fs.readFileSync(path.join(root, 'packages/drawer-app/js/00-pele-theme.js'), 'utf8'), /#5b7bd5/, 'no Pele blue fallback in the mapper');
 assert.match(defaultMapped.css['--pele-font'], /SF Pro Text/);
@@ -60,5 +60,7 @@ assert.match(chrome, /applyPeleThemeVars/, 'host maps Board packs onto Pele');
 assert.match(boardJs, /persistMermaidStyle/, 'flowchart writes %% style');
 assert.doesNotMatch(boardJs, /MermaidFlowchartThemes/, 'mermaid-ext does not own theme packs');
 assert.doesNotMatch(diagramJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
+assert.match(diagramJs, /var PELE_VIEW_SCALE = 1\.5/, 'Pele 100% shows 150% size');
+assert.match(diagramJs, /DrawerPeleTheme\.polishBoxes/, 'Pele paint bakes the shared box radius');
 
 console.log('ok pele-theme');

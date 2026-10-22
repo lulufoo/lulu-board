@@ -697,6 +697,7 @@ document.addEventListener("pointerdown", function (event) {
 }, true);
 
 function flowchartCanvasHit(target) {
+  if (!isFlowchartKind()) return false;
   return !!(target && target.closest && target.closest("g.pele-node, g.pele-cluster, g.pele-cluster-title, g.pele-edge, g.pele-edge-label, path.mermaid-edge-hit"));
 }
 

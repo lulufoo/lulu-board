@@ -12,9 +12,9 @@
   --canvas-ring-offset: 2px;
 }
 /* Ring colour follows the theme (--bf-rgb is set by the theme pack on the board root).
-   Edge of every filled card / chip: the theme edge colour at .14 laid over the node's own fill, so the edge is always a
-   little deeper than whatever fill it sits on. Drawn inside (inset) so it never changes the node's size. The container
-   dash is the same colour at .3. */
+   Edge of every filled card / chip: BoardThemes.strokeFromFill — theme ink mixed into
+   the fill at FILL_STROKE_DARKEN (10%). HTML cards draw that as an inset ring
+   (rgba ink at EDGE_RING_ALPHA). The container dash is the same colour at .3. */
 .board-render {
   --bf-edge: rgba(var(--bf-rgb, 74, 53, 36), .14);
   --bf-edge-in: inset 0 0 0 1px var(--bf-edge);

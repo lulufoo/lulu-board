@@ -65,12 +65,15 @@ function applyDrawerKind(kind) {
   if (designTitle && !isDesignKind(kind)) designTitle.hidden = true;
 }
 
-function fixSvgIntrinsic(svg) {
+var PELE_VIEW_SCALE = 1.5;
+
+function fixSvgIntrinsic(svg, viewScale) {
   if (!svg) return;
   var vb = String(svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  var k = isFinite(viewScale) && viewScale > 0 ? viewScale : 1;
   if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
-    svg.setAttribute("width", String(Math.ceil(vb[2])));
-    svg.setAttribute("height", String(Math.ceil(vb[3])));
+    svg.setAttribute("width", String(Math.ceil(vb[2] * k)));
+    svg.setAttribute("height", String(Math.ceil(vb[3] * k)));
   }
   // Do not write svg.style.* — on this host that rebuilds the style
   // attribute and drops Pele's --_s / --_fg aliases (nodes paint black).
@@ -175,9 +178,12 @@ function paintPeleSvg(opts, paint) {
     });
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
-    fixSvgIntrinsic(svg);
+    fixSvgIntrinsic(svg, PELE_VIEW_SCALE);
     bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
     if (typeof paint.afterPaint === "function") paint.afterPaint(typeStep);
+    if (typeof DrawerPeleTheme !== "undefined" && typeof DrawerPeleTheme.polishBoxes === "function") {
+      DrawerPeleTheme.polishBoxes(previewEl);
+    }
     showDiagramError("");
     setStatus((label.charAt(0).toUpperCase() + label.slice(1)) + " rendered · " + new Date().toLocaleTimeString());
   } catch (err) {

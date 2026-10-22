@@ -39,11 +39,15 @@
     var color = theme.color || "#4a3524";
     var edge = theme.edgeStroke || color;
     var muted = theme.edgeLabel || color;
-    var border = edgeTintOf(theme);
-    var clusterBorder = border;
     var surface = colors[0] || "#fffdf9";
     var alt = colors[6] || colors[1] || surface;
-    var radius = "var(--bf-radius-box, 12px)";
+    var Themes = typeof BoardThemes !== "undefined" ? BoardThemes : null;
+    var border = Themes && typeof Themes.strokeFromFill === "function"
+      ? Themes.strokeFromFill("var(--pele-surface)")
+      : "color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36)))";
+    var clusterBorder = border;
+    var radiusPx = Themes && isFinite(Themes.BOX_RX) ? Themes.BOX_RX : 4;
+    var radius = String(radiusPx) + "px";
     var css = {
       "--bf-rgb": theme.edgeRgb || EDGE_RGB_FALLBACK,
       "--pele-bg": "transparent",
@@ -69,7 +73,7 @@
     css["--_l"] = "var(--pele-line, #1f1f1f)";
     css["--_s"] = "var(--pele-surface, #f3f3f3)";
     css["--_a"] = "var(--pele-surface-alt, #e6e6e6)";
-    css["--_b"] = "var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14))";
+    css["--_b"] = "var(--pele-border, color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36))))";
     css["--_c"] = "var(--pele-accent)";
     css["--_r"] = "var(--pele-radius)";
     return {
@@ -94,6 +98,23 @@
     };
   }
 
+  function polishBoxes(root) {
+    if (!root || !root.querySelectorAll) return;
+    var rx = typeof BoardThemes !== "undefined" && isFinite(BoardThemes.BOX_RX) ? BoardThemes.BOX_RX : 4;
+    var bake = typeof FlowchartShapes !== "undefined" && typeof FlowchartShapes.bakeDefaultRectRadius === "function"
+      ? FlowchartShapes.bakeDefaultRectRadius
+      : function (rect, n) {
+          if (!rect || !rect.setAttribute) return;
+          rect.setAttribute("rx", String(n));
+          rect.setAttribute("ry", String(n));
+        };
+    root.querySelectorAll("g.pele-node > rect, g.pele-cluster > rect").forEach(function (rect) {
+      var cls = String(rect.getAttribute("class") || "");
+      if (cls.indexOf("canvas-hover-halo") >= 0 || cls.indexOf("flowchart-selection-halo") >= 0) return;
+      bake(rect, rx);
+    });
+  }
+
   function applyTo(hosts, themeOrId) {
     var mapped = mapPack(themeOrId);
     var list = Array.isArray(hosts) ? hosts : [hosts];
@@ -109,5 +130,6 @@
   return {
     mapPack: mapPack,
     applyTo: applyTo,
+    polishBoxes: polishBoxes,
   };
 });

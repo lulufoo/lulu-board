@@ -48,3 +48,10 @@ if (designDocTitleEditor) {
   designDocTitleEditor.addEventListener("change", commitDesignDocTitle);
   designDocTitleEditor.addEventListener("blur", commitDesignDocTitle);
 }
+
+if (typeof CanvasInteraction !== "undefined" && typeof CanvasInteraction.registerKind === "function") {
+  CanvasInteraction.registerKind("design", {
+    isHit: function () { return false; },
+    clear: function () {},
+  });
+}

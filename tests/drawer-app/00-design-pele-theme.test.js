@@ -13,6 +13,15 @@ assert.match(diagram, /syncMermaidStyleChrome/, 'Design paint applies theme vars
 assert.match(css, /html\[data-pele="1"\] \{/, 'Design inherits Pele token aliases');
 assert.match(css, /html\[data-pele="1"\] #preview > svg \{/, 'Design SVG is not stretched to 100%');
 assert.match(css, /html\[data-pele="1"\] \.board-edit-tools/, 'Design hides Board tools');
+assert.match(css, /html\[data-pele="1"\] #preview g\.pele-node > rect[\s\S]*rx: 4px/, 'Design box corner matches flowchart');
+assert.match(css, /html\[data-pele="1"\] #preview g\.pele-node > rect[\s\S]*stroke: var\(--_b\)/, 'Design box stroke uses the shared fill-darken rule');
+assert.match(diagram, /DrawerPeleTheme\.polishBoxes/, 'Design bakes rx onto Pele rects');
+assert.match(diagram, /var PELE_VIEW_SCALE = 1\.5/, 'Pele 100% is 1.5× the raw SVG');
+assert.match(diagram, /fixSvgIntrinsic\(svg, PELE_VIEW_SCALE\)/, 'Design paints at the 100%=150% size');
+const designJs = fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-design.js'), 'utf8');
+assert.match(designJs, /registerKind\("design"/, 'Design canvas hit is empty so the figure pans');
+const shell = fs.readFileSync(path.join(root, 'packages/drawer-app/js/01-shell-state.js'), 'utf8');
+assert.match(shell, /var capLocked = flowchart \|\| design/, 'Design greys Max Item Width');
 
 const peleSrc = fs.readFileSync(path.join(root, 'packages/drawer-app/vendor/pele.global.js'), 'utf8');
 const ctx = {};
