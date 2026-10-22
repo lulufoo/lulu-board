@@ -84,6 +84,7 @@ function fillMindmapProps() {
   var topicOn = !!selectedMindmap;
   if (mindmapDocTitleField) mindmapDocTitleField.hidden = topicOn;
   if (mindmapLayoutField) mindmapLayoutField.hidden = topicOn;
+  if (propsKindLabel) propsKindLabel.textContent = topicOn ? (selectedMindmap.isRoot ? "root" : "node") : "—";
   if (!topicOn) {
     if (mindmapDocTitleEditor && typeof MindmapEdit !== "undefined" && MindmapEdit.getTitle) {
       mindmapDocTitleEditor.value = MindmapEdit.getTitle(mindmapSource()) || "";
@@ -129,7 +130,7 @@ function restoreMindmapSelection() {
   var info = MindmapEdit.getTopic(mindmapSource(), selectedMindmap.path);
   if (!info) {
     selectedMindmap = null;
-    syncMindmapButtons();
+    fillMindmapProps();
     return;
   }
   selectedMindmap = {
