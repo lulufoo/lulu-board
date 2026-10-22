@@ -136,9 +136,9 @@
         <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
         <span class="diagram-dock-tab-label">Layout</span>
       </button>
-      <button type="button" class="diagram-dock-tab diagram-dock-help" id="btnDiagramHelp" title="Help" aria-label="Help" aria-haspopup="menu" aria-expanded="false" aria-controls="diagramHelpMenu">
+      <button type="button" class="diagram-dock-tab diagram-dock-help" id="btnDiagramHelp" title="Keyboard shortcuts" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-controls="shortcutsDialog">
         <span class="diagram-dock-tab-icon diagram-dock-help-glyph" aria-hidden="true">?</span>
-        <span class="diagram-dock-tab-label">Help</span>
+        <span class="diagram-dock-tab-label">Shortcuts</span>
       </button>
     </div>
     <div class="diagram-dock-panel" id="propsPanel" data-dock-panel="props" data-collapsed="true">
@@ -450,17 +450,6 @@
     </div>
     <button type="button" class="shell-dialog-close" id="btnShellSignInClose">Not now</button>
   </div>
-</div>
-<div class="diagram-help-menu" id="diagramHelpMenu" role="menu" aria-labelledby="btnDiagramHelp" hidden>
-  <button type="button" class="board-help-item" id="btnBoardOnboarding" role="menuitem" tabindex="-1">
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.75c.4 2.9 1.35 3.85 4.25 4.25C9.35 6.4 8.4 7.35 8 10.25 7.6 7.35 6.65 6.4 3.75 6 6.65 5.6 7.6 4.65 8 1.75Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12.25 10.25c.2 1.3.7 1.8 2 2-1.3.2-1.8.7-2 2-.2-1.3-.7-1.8-2-2 1.3-.2 1.8-.7 2-2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-    <span>Welcome</span>
-  </button>
-  <button type="button" class="board-help-item" id="btnBoardShortcuts" role="menuitem" tabindex="-1" aria-haspopup="dialog" aria-controls="shortcutsDialog">
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.75 3.75h8.5a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-8.5a2 2 0 0 1-2-2v-4.5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 6.5h.01M7 6.5h.01M9.5 6.5h.01M12 6.5h.01M5 9.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-    <span>Keyboard shortcuts</span>
-    <kbd class="shortcuts-key">?</kbd>
-  </button>
 </div>
 <div class="shell-dialog shortcuts" id="shortcutsDialog" hidden>
   <button type="button" class="shell-dialog-backdrop" id="shortcutsBackdrop" aria-label="Close" tabindex="-1"></button>
