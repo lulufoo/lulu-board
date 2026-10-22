@@ -120,22 +120,31 @@ html[data-drawer-mode="diagram"] .board-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] .board-edit-tools,
 html[data-kind="mindmap"] .board-edit-tools,
 html[data-kind="mermaid-unsupported"] .board-edit-tools,
-html[data-kind="unknown"] .board-edit-tools { display: none !important; }
+html[data-kind="unknown"] .board-edit-tools,
+html[data-pele="1"] .board-edit-tools { display: none !important; }
 .flowchart-edit-tools,
 .mindmap-edit-tools { display: none; align-items: center; gap: 8px; }
 html[data-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
 html[data-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] #propsFields,
-html[data-kind="mindmap"] #propsFields { display: none !important; }
+html[data-kind="mindmap"] #propsFields,
+html[data-pele="1"] #propsFields { display: none !important; }
 html[data-kind="flowchart"] #preview,
 html[data-kind="mindmap"] #preview,
-html[data-kind="mermaid-unsupported"] #preview {
+html[data-kind="mermaid-unsupported"] #preview,
+html[data-pele="1"] #preview {
   width: max-content;
   height: max-content;
 }
+html[data-pele="1"] #preview > svg {
+  width: auto;
+  height: auto;
+  max-width: none;
+}
 /* Pele shapes read --_s / --_fg. Mirror the aliases so a wiped SVG style
    still inherits cream paper instead of the SVG default black fill. */
-html[data-kind="flowchart"] {
+html[data-kind="flowchart"],
+html[data-pele="1"] {
   --_bg: var(--pele-bg, #fff);
   --_fg: var(--pele-fg, #1f1f1f);
   --_m: var(--pele-muted, #6e6e6e);

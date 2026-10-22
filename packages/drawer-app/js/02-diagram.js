@@ -38,6 +38,8 @@ function applyDrawerKind(kind) {
   var html = document.documentElement;
   if (!html) return;
   html.dataset.kind = kind === "empty" ? "" : String(kind || "");
+  if (kind === "flowchart" || isDesignKind(kind)) html.dataset.pele = "1";
+  else delete html.dataset.pele;
   // Chrome CSS is gated on data-drawer-mode=diagram. Keep that; kind switches tools/render.
   if (!html.dataset.drawerMode) html.dataset.drawerMode = "diagram";
   if (typeof setKindUI === "function") setKindUI();
