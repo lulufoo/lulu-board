@@ -332,7 +332,7 @@ async function cloudStartPlusDraft() {
   if (!(await cloudConfirmLeaveDiagram())) return;
   if (typeof openCreateKindDialog !== "function") return;
   openCreateKindDialog({
-    onPick: function (kind) { void cloudCommitPlusDraft(kind); },
+    onPick: function (kind) { applyCreateKindPick(kind, function (picked) { void cloudCommitPlusDraft(picked); }); },
     onCancel: function () {},
   });
 }

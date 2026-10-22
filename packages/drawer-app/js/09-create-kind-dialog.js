@@ -9,6 +9,7 @@
   "use strict";
 
   var CREATE_KIND_ITEMS = [
+    { cls: "Welcome", name: "Welcome", note: "Onboarding board", ready: true, kind: "welcome" },
     { cls: "Board", name: "Board", note: "Structured whiteboard", ready: true, kind: "board" },
     { cls: "Mermaid", name: "Flowchart", note: "flow", ready: true, kind: "flowchart" },
     { cls: "Mermaid", name: "Block", note: "flow", ready: false, kind: "block-beta" },
@@ -154,7 +155,7 @@
       var hay = (it.cls + " " + it.name + " " + it.note).toLowerCase();
       if (q && hay.indexOf(q) < 0) return;
       if (q || it.cls !== "Mermaid") {
-        if (!q && it.cls !== lastCls) {
+        if (!q && it.cls !== lastCls && it.cls !== "Welcome") {
           html += "<div class=\"create-kind-label\">" + it.cls + "</div>";
           lastCls = it.cls;
         }

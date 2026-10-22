@@ -471,11 +471,13 @@ async function openOnboardingHash() {
     setStatus(err instanceof Error ? err.message : String(err), true);
   }
 }
-(function wireBoardOnboarding() {
-  var btn = document.getElementById("btnBoardOnboarding");
-  if (!btn) return;
-  btn.addEventListener("click", function() { void openOnboardingHash(); });
-})();
+function applyCreateKindPick(kind, commit) {
+  if (kind === "welcome") {
+    void openOnboardingHash();
+    return;
+  }
+  if (typeof commit === "function") commit(kind);
+}
 
 (function bootGroups() {
   if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();

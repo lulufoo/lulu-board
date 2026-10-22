@@ -35,6 +35,7 @@ assert.match(css, /scrollbar-width: none/, 'list scrollbar is hidden');
 assert.match(css, /justify-self: end/, 'note rail floats on the group');
 assert.match(css, /position: sticky/, 'note rail sticks while the list scrolls');
 assert.doesNotMatch(css, /content: "Expand"|content: "Collapse"/);
+assert.match(js, /cls: "Welcome"/, 'Welcome class');
 assert.match(js, /cls: "Board"/, 'Board class');
 assert.match(js, /cls: "Mermaid"/, 'Mermaid class');
 assert.match(js, /name: "Flowchart"/, 'lists flowchart');
@@ -101,10 +102,11 @@ function clickKind(t, kind, disabled) {
 
 {
   const items = load().ctx.CREATE_KIND_ITEMS;
+  assert.strictEqual(items.filter((it) => it.cls === 'Welcome').length, 1);
   assert.strictEqual(items.filter((it) => it.cls === 'Board').length, 1);
   assert.strictEqual(items.filter((it) => it.cls === 'Mermaid').length, 32);
-  assert.strictEqual(items.length, 33);
-  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'board,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling,railroad-beta');
+  assert.strictEqual(items.length, 34);
+  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'welcome,board,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling,railroad-beta');
   assert.strictEqual(items.filter((it) => it.name === 'Railroad').length, 1, 'Railroad is one create row');
   assert.strictEqual(items.filter((it) => it.name === 'C4').length, 1, 'C4 is one create row');
   const kinds = items.map((it) => it.kind);
@@ -127,6 +129,8 @@ function clickKind(t, kind, disabled) {
   });
   assert.strictEqual(t.els.createKindDialog.hidden, false, 'opens');
   assert.strictEqual(t.els.createKindFilter.focused, true, 'focuses filter');
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /create-kind-label">Welcome/, 'Welcome is not a class header');
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind="welcome"[\s\S]*<b>Welcome<\/b>[\s\S]*<span>Onboarding board<\/span>/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Board/);
   assert.match(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Mermaid/);
@@ -280,6 +284,14 @@ function clickKind(t, kind, disabled) {
   assert.doesNotMatch(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/, 'filter is a flat list');
   assert.doesNotMatch(t.els.createKindList.innerHTML, /create-kind-label/, 'filter hides class headers');
   assert.match(t.els.createKindList.innerHTML, />Mindmap</);
+}
+
+{
+  const t = load();
+  const picks = [];
+  t.ctx.openCreateKindDialog({ onPick: (kind) => picks.push(kind) });
+  clickKind(t, 'welcome');
+  assert.deepStrictEqual(picks, ['welcome'], 'Welcome is a listed pick');
 }
 
 console.log('ok create-kind-dialog');
