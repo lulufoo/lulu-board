@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/readme/lulu-board-icon.webp" width="160" alt="Lulu Vela" />
+  <img src="docs/readme/lulu-board-icon.webp" width="160" alt="Lulu Board" />
 </p>
 
-<h1 align="center">Lulu Vela</h1>
+<h1 align="center">Lulu Board</h1>
 
 <p align="center"><b>Structured whiteboard. A way to collaborate visually with AI.</b></p>
 
@@ -14,16 +14,16 @@
 
 ---
 
-One text protocol — the AI agent writes it, Lulu Vela draws it, you work on the canvas; both stay in sync. A local loop.
+One text protocol — the AI agent writes it, Lulu Board draws it, you work on the canvas; both stay in sync. A local loop.
 
-| Kind | In Lulu Vela | Source ID |
+| Kind | In Lulu Board | Source ID |
 |---|---|---|
 | Board | structured whiteboard text | BMD (`b_…`) |
 | Flowchart | Mermaid flowchart | same `#z:` / `#b:` |
 
 ## Why
 
-Diagrams go stale when only one side can edit them. Lulu Vela keeps one text protocol as the source of truth: the agent writes it, you refine it on the canvas (or in Source), and both stay in sync.
+Diagrams go stale when only one side can edit them. Lulu Board keeps one text protocol as the source of truth: the agent writes it, you refine it on the canvas (or in Source), and both stay in sync.
 
 ## Quick start
 
@@ -41,7 +41,7 @@ The Drawer opens on a built-in template — the onboarding diagram — so you ca
   </a>
 </p>
 
-<p align="center"><strong>Onboarding</strong> — AI writes. Lulu Vela draws. You work on the canvas.</p>
+<p align="center"><strong>Onboarding</strong> — AI writes. Lulu Board draws. You work on the canvas.</p>
 
 **Source** (`<>`) → **History** to browse the built-in templates. New files are stored there too.
 
@@ -81,7 +81,7 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 
 In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://preview.luluvela.app/#b:…` instead of `#z:`.
 
-Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluvela.app/mcp`. The first call opens a Lulu Vela sign-in and consent page.
+Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluvela.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
 
 ## Examples
 

@@ -10,7 +10,7 @@ from drawer_ctl.commands import OPEN_KINDS, preview, status
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Preview Lulu Vela open catalog source.")
+    p = argparse.ArgumentParser(description="Preview Lulu Board open catalog source.")
     commands = p.add_subparsers(dest="command", required=True)
     commands.add_parser("status", help="print mermaid preview status as JSON")
     prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")

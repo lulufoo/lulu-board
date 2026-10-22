@@ -40,7 +40,7 @@ def __dir__():
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Preview and write Lulu Vela source.")
+    p = argparse.ArgumentParser(description="Preview and write Lulu Board source.")
     commands = p.add_subparsers(dest="command", required=True)
     commands.add_parser("status", help="print board status as JSON")
     commands.add_parser(

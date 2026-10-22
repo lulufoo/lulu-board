@@ -784,7 +784,7 @@ html[data-drawer-mode="diagram"] #preview svg {
   padding: 0 !important;
   border-radius: 0 !important;
 }
-/* Top toolbar layout — Source hugs Lulu Drawer sheet; ⋯ far right */
+/* Top toolbar layout — Source hugs Lulu Board sheet; ⋯ far right */
 html[data-drawer-mode="diagram"] .top-float {
   position: absolute;
   top: 12px;

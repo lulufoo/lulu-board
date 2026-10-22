@@ -25,7 +25,7 @@ assert.match(pack, /skip examples-templates-build/, 'example packer is a no-op')
 assert.match(boot, /function applyCreateKindPick/, 'Welcome pick uses the shared commit');
 assert.doesNotMatch(boot, /openOnboardingHash/, 'welcome has no onboarding helper');
 assert.doesNotMatch(boot, /kind === "welcome"/, 'welcome is a template kind');
-assert.match(src, /board "Lulu Vela"/, 'welcome template is the welcome Vela');
+assert.match(src, /board "Lulu Board"/, 'welcome template is the welcome Board');
 assert.ok(!fs.existsSync(path.join(root, 'packages/drawer-app/onboarding.bmd')), 'root onboarding.bmd is gone');
 assert.ok(!fs.existsSync(path.join(root, 'skill/board/templates/onboarding.bmd')), 'skill no longer holds onboarding');
 assert.ok(fs.existsSync(path.join(root, 'skill/board/templates/demo.bmd')), 'AI demo template stays');

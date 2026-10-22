@@ -35,7 +35,7 @@ function mcpDoc(row) {
 
 function createServer(env, identity, token) {
   const server = new McpServer(serverInfo(env));
-  server.registerTool("whoami", { description: "Return the authorized Lulu Vela account.", inputSchema: {} }, async () => (
+  server.registerTool("whoami", { description: "Return the authorized Lulu Board account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
   server.registerTool("get_diagram", {

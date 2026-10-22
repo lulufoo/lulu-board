@@ -208,7 +208,7 @@ function applyKindTheme(theme, opts) {
 }
 const btnDiagramTheme = $('#btnDiagramTheme');
 
-// Keep dropdown panels from covering the left Lulu Drawer sheet
+// Keep dropdown panels from covering the left Lulu Board sheet
 function placeMenuPanel(wrap) {
   if (!wrap) return;
   const panel = wrap.querySelector('.menu-panel');

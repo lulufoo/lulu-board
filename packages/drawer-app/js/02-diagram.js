@@ -8,7 +8,7 @@ function pinDiagramTitle() {
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
   var kind = document.documentElement.dataset.kind || "";
   if (kind && kind !== "board") {
-    if (document.title !== "Lulu Vela") document.title = "Lulu Vela";
+    if (document.title !== "Lulu Board") document.title = "Lulu Board";
     return;
   }
   var title = "";
@@ -19,7 +19,7 @@ function pinDiagramTitle() {
     var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
     title = heading ? String(heading.textContent || "").trim() : "";
   }
-  var next = title || "Lulu Vela";
+  var next = title || "Lulu Board";
   if (document.title !== next) document.title = next;
 }
 

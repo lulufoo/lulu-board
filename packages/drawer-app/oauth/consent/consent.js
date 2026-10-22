@@ -64,8 +64,8 @@
   function showClient(name) {
     if (!name) return;
     $("consent-title").textContent = "Authorize " + name;
-    $("consent-lead").textContent = name + " wants to read and write your Lulu Vela clouds.";
-    document.title = "Authorize " + name + " — Lulu Vela";
+    $("consent-lead").textContent = name + " wants to read and write your Lulu Board clouds.";
+    document.title = "Authorize " + name + " — Lulu Board";
   }
 
   function leaveTo(url) {
