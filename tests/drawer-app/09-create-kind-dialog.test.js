@@ -24,9 +24,9 @@ assert.match(css, /summary\.create-kind-label/, 'Mermaid header is a summary');
 assert.match(css, /\.create-kind-note-rail/, 'Mermaid notes sit in a right rail');
 assert.match(css, /\.create-kind-note-jump\s*\{[^}]*--ink-soft/, 'idle rail stays gray');
 assert.match(css, /\.create-kind-note-jump\.is-current\s*\{[^}]*color-mix/, 'current rail is 10% deeper than the title');
-assert.match(css, /\.create-kind-note-block\s*\{[^}]*border:/, 'notes reserve a frame');
+assert.doesNotMatch(css, /\.create-kind-note-block[^{]*\{[^}]*border:/, 'notes do not reserve a frame');
 assert.match(css, /--note-ink:\s*80,\s*55,\s*30/, 'note wash hue');
-assert.match(css, /\.create-kind-note-block\.is-current[\s\S]{0,80}\.12/, 'current note deepens the frame');
+assert.doesNotMatch(css, /\.create-kind-note-block\.is-current/, 'current note has no selected frame');
 assert.match(css, /\.create-kind-note-block\s*\{[^}]*background:/, 'notes share one wash');
 assert.doesNotMatch(css, /\.create-kind-note-block:nth-child/);
 assert.match(css, /\.create-kind-row:hover:not\(\.is-picked\)/, 'every row can hover');
@@ -130,14 +130,15 @@ function clickKind(t, kind, disabled) {
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Board/);
   assert.match(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/);
   assert.match(t.els.createKindList.innerHTML, /create-kind-label">Mermaid/);
-  ["Flow", "Chart", "Design", "Map", "Time"].forEach(function (note) {
+  ["Design", "Flow", "Chart", "Map", "Time"].forEach(function (note) {
     assert.match(t.els.createKindList.innerHTML, new RegExp('data-create-kind-note="' + note + '"'));
     assert.match(t.els.createKindList.innerHTML, new RegExp('data-create-kind-note-jump="' + note + '"'));
   });
   assert.doesNotMatch(t.els.createKindList.innerHTML, /data-create-kind-group="(chart|design|flow|map|time)"/);
   assert.doesNotMatch(t.els.createKindList.innerHTML, /<details[^>]* open/);
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Design"[\s\S]*>Sequence</);
+  assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Design"[\s\S]*data-create-kind-note="Flow"/);
   assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Flow"[\s\S]*>Flowchart</);
-  assert.match(t.els.createKindList.innerHTML, /data-create-kind-note="Flow"[\s\S]*data-create-kind-note="Chart"/);
   assert.match(t.els.createKindList.innerHTML, />Mindmap</);
   assert.doesNotMatch(t.els.createKindList.innerHTML, /Ready/);
   clickKind(t, 'board');
@@ -276,7 +277,8 @@ function clickKind(t, kind, disabled) {
   assert.doesNotMatch(t.els.createKindList.innerHTML, /<details[^>]* open/, 'Mermaid starts collapsed');
   t.els.createKindFilter.value = 'mind';
   (t.els.createKindFilter.listeners.input || []).forEach((fn) => fn());
-  assert.match(t.els.createKindList.innerHTML, /<details[^>]* open/, 'filter opens Mermaid');
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /data-create-kind-group="Mermaid"/, 'filter is a flat list');
+  assert.doesNotMatch(t.els.createKindList.innerHTML, /create-kind-label/, 'filter hides class headers');
   assert.match(t.els.createKindList.innerHTML, />Mindmap</);
 }
 

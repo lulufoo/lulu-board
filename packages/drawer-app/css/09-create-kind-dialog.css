@@ -75,7 +75,7 @@
   align-items: center;
   justify-content: space-between;
   margin: 12px 0 0;
-  padding: 6px 12px;
+  padding: 12px;
   border-radius: 8px;
   cursor: pointer;
   list-style: none;
@@ -115,11 +115,9 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid transparent;
   border-radius: 10px;
   background: rgba(var(--note-ink), .02);
 }
-.create-kind-note-block.is-current { border-color: rgba(var(--note-ink), .12); }
 .create-kind-note-block + .create-kind-note-block { margin-top: 8px; }
 .create-kind-mermaid .create-kind-row { padding-right: 72px; }
 .create-kind-note-rail {

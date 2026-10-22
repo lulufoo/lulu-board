@@ -44,7 +44,7 @@
     { cls: "Mermaid", name: "Ishikawa", note: "map", ready: false, kind: "ishikawa" },
   ];
 
-  var MERMAID_NOTES = ["flow", "chart", "design", "map", "time"];
+  var MERMAID_NOTES = ["design", "flow", "chart", "map", "time"];
   var createKindWait = null;
   var createKindPicked = "";
   var mermaidOpen = false;
@@ -146,27 +146,25 @@
     var els = createKindEls();
     if (!els.list) return;
     var q = createKindQuery();
-    var board = [];
+    var html = "";
+    var n = 0;
+    var lastCls = "";
     var mermaidByNote = {};
     CREATE_KIND_ITEMS.forEach(function (it) {
       var hay = (it.cls + " " + it.name + " " + it.note).toLowerCase();
       if (q && hay.indexOf(q) < 0) return;
-      if (it.cls !== "Mermaid") {
-        board.push(it);
+      if (q || it.cls !== "Mermaid") {
+        if (!q && it.cls !== lastCls) {
+          html += "<div class=\"create-kind-label\">" + it.cls + "</div>";
+          lastCls = it.cls;
+        }
+        html += createKindRowHtml(it);
+        n += 1;
         return;
       }
       if (!mermaidByNote[it.note]) mermaidByNote[it.note] = [];
       mermaidByNote[it.note].push(it);
     });
-    var html = "";
-    var n = 0;
-    if (board.length) {
-      html += "<div class=\"create-kind-label\">Board</div>";
-      board.forEach(function (it) {
-        html += createKindRowHtml(it);
-        n += 1;
-      });
-    }
     var notes = MERMAID_NOTES.filter(function (note) {
       return mermaidByNote[note] && mermaidByNote[note].length;
     });
@@ -183,14 +181,14 @@
         blocks += "</div>";
         jumps += "<button type=\"button\" class=\"create-kind-note-jump\" data-create-kind-note-jump=\"" + title + "\">" + title + "</button>";
       });
-      html += createKindGroupHtml("Mermaid", mermaidOpen || !!q)
+      html += createKindGroupHtml("Mermaid", mermaidOpen)
         + "<div class=\"create-kind-mermaid\"><div class=\"create-kind-mermaid-list\">" + blocks
         + "</div><nav class=\"create-kind-note-rail\" aria-label=\"Mermaid categories\">" + jumps
         + "</nav></div></details>";
     }
     els.list.innerHTML = n ? html : "<div class=\"create-kind-empty\">No types match</div>";
     pinCreateKindNote(notes.length ? createKindNoteTitle(notes[0]) : "", els.list);
-    syncCreateKindNoteRail();
+    if (!q) syncCreateKindNoteRail();
   }
 
   function createKindCleanup() {
