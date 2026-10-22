@@ -18,6 +18,7 @@
   root.blankHashC4Source = api.blankHashC4Source;
   root.blankHashEventModelingSource = api.blankHashEventModelingSource;
   root.blankHashEventmodelingSource = api.blankHashEventModelingSource;
+  root.blankHashUsecaseSource = api.blankHashUsecaseSource;
   root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
@@ -167,6 +168,10 @@
     return wrapMermaidSeed(title, "eventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded\n");
   }
 
+  function blankHashUsecaseSource(title) {
+    return wrapMermaidSeed(title, "usecase-beta\nactor Customer\nCheckout(\"Place order\")\nCustomer --> Checkout\n");
+  }
+
   function blankHashSourceForKind(kind, title) {
     var key = String(kind || "").trim();
     if (key === "flowchart") return blankHashFlowchartSource(title);
@@ -178,6 +183,7 @@
     if (key === "requirement" || key === "requirementDiagram") return blankHashRequirementSource(title);
     if (key === "c4" || key === "C4Context") return blankHashC4Source(title);
     if (key === "eventmodeling") return blankHashEventModelingSource(title);
+    if (key === "usecase" || key === "usecase-beta") return blankHashUsecaseSource(title);
     return blankHashBoardSource(title);
   }
 
@@ -256,6 +262,7 @@
     blankHashC4Source: blankHashC4Source,
     blankHashEventModelingSource: blankHashEventModelingSource,
     blankHashEventmodelingSource: blankHashEventModelingSource,
+    blankHashUsecaseSource: blankHashUsecaseSource,
     blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
@@ -277,6 +284,7 @@ var blankHashRequirementSource = globalThis.blankHashRequirementSource;
 var blankHashC4Source = globalThis.blankHashC4Source;
 var blankHashEventModelingSource = globalThis.blankHashEventModelingSource;
 var blankHashEventmodelingSource = globalThis.blankHashEventmodelingSource;
+var blankHashUsecaseSource = globalThis.blankHashUsecaseSource;
 var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;
