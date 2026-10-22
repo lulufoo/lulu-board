@@ -120,6 +120,17 @@ function token(id, version) {
 }
 
 {
+  const seed = Meta.blankHashC4Source();
+  assert.match(seed, /^%% title Untitled\nC4Context\n/);
+  assert.match(seed, /Person\(user/);
+  assert.strictEqual(Style.bodyKind(seed), 'c4');
+  assert.strictEqual(Style.bodyKind('C4Container\n  Person(user, "User", "Uses")\n'), 'c4');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.blankHashSourceForKind('C4Context'), seed);
+  assert.strictEqual(Meta.blankHashSourceForKind('c4'), seed);
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');

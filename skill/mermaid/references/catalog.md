@@ -4,7 +4,7 @@ Author Mermaid 12.1.0 built-in syntax. Drawer renders flowchart with Pele 1.7.0
 and mindmap with a custom SVG pipeline, not Mermaid.js. Route loads **one**
 type file. `info`, `error`, and `---` are not author types.
 
-**Open** is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, and `requirement`. Closed types may be listed; do not
+**Open** is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, `requirement`, and `c4`. Closed types may be listed; do not
 author them for the drawer.
 
 ## Aliases
@@ -36,7 +36,7 @@ author them for the drawer.
 | state | `stateDiagram` / `stateDiagram-v2` | open | [design/state.md](./design/state.md) |
 | er | `erDiagram` | open | [design/er.md](./design/er.md) |
 | requirement | `requirement` / `requirementDiagram` | open | [design/requirement.md](./design/requirement.md) |
-| c4 | `C4Context` / `C4Container` / `C4Component` / `C4Dynamic` / `C4Deployment` | closed | [design/c4.md](./design/c4.md) |
+| c4 | `C4Context` / `C4Container` / `C4Component` / `C4Dynamic` / `C4Deployment` | open | [design/c4.md](./design/c4.md) |
 | usecase | `usecase-beta` | closed | [design/usecase.md](./design/usecase.md) |
 | eventmodeling | `eventmodeling` | closed | [design/eventmodeling.md](./design/eventmodeling.md) |
 | railroad | `railroad-beta` / `railroad-ebnf-beta` / `railroad-abnf-beta` / `railroad-peg-beta` | closed | [design/railroad.md](./design/railroad.md) |
