@@ -22,6 +22,17 @@
 
   var FLOWCHART_RE = /^(flowchart|graph|flowchart-elk)\b/i;
   var MINDMAP_RE = /^mindmap\b/i;
+  var DESIGN_KIND_KEYS = {
+    sequence: true,
+    class: true,
+    state: true,
+    er: true,
+    requirement: true,
+    c4: true,
+    usecase: true,
+    eventmodeling: true,
+    railroad: true,
+  };
   var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
   var TYPE_NAMES = {
     board: "Board",
@@ -77,14 +88,26 @@
     return /^board\s+/i.test(firstRealLine(body));
   }
 
-  // board | flowchart | mindmap | mermaid-unsupported | empty | unknown
+  function isDesignKind(kind) {
+    return !!DESIGN_KIND_KEYS[kind];
+  }
+
+  function isMermaidKind(kind) {
+    return kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported" || isDesignKind(kind);
+  }
+
+  // board | flowchart | mindmap | design kinds | mermaid-unsupported | empty | unknown
   function bodyKind(body) {
     var line = firstKindLine(body);
     if (!line) return "empty";
     if (/^board\s+/i.test(line)) return "board";
     if (FLOWCHART_RE.test(line)) return "flowchart";
     if (MINDMAP_RE.test(line)) return "mindmap";
-    if (MERMAID_RE.test(line)) return "mermaid-unsupported";
+    if (MERMAID_RE.test(line)) {
+      var key = normalizeTypeKey((MERMAID_RE.exec(line) || [])[1]);
+      if (isDesignKind(key)) return key;
+      return "mermaid-unsupported";
+    }
     return "unknown";
   }
 
@@ -222,6 +245,8 @@
     isRendererStyleLine: isRendererStyleLine,
     firstKindLine: firstKindLine,
     bodyIsBoard: bodyIsBoard,
+    isDesignKind: isDesignKind,
+    isMermaidKind: isMermaidKind,
     bodyKind: bodyKind,
     bodyTypeKeyword: bodyTypeKeyword,
     bodyKindLabel: bodyKindLabel,

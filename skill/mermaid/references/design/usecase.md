@@ -3,6 +3,8 @@
 Keyword: `usecase-beta`.
 Invariant: actors and the use cases they reach. One statement per line.
 
+Drawer renders through Pele. Properties edit Title. Source edits the body.
+
 ## minimal
 
 ```mermaid

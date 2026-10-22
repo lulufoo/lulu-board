@@ -64,7 +64,7 @@ assert.match(js, /function clearFlowchartInteraction/, 'blank and chrome share o
 assert.match(js, /flowchart-link-mode/, 'Link tool enters a visible mode');
 assert.doesNotMatch(js, /path\.style\.stroke\s*=/, 'selected link color is CSS class, not inline stroke');
 assert.doesNotMatch(js, /\[0, -10\].*\[0, 18\]/, 'blank near a link is not padded into a hit');
-assert.match(css, /--_r: var\(--pele-radius, var\(--bf-radius-box, 12px\)\)/, 'flowchart corner follows the Board card');
+assert.match(css, /--_r: var\(--pele-radius, 4px\)/, 'Pele corner matches the flowchart box');
 assert.doesNotMatch(css, /--_c: var\(--pele-accent, #5b7bd5\)/, 'no Pele blue fallback on the host');
 assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\) \{[\s\S]*rx: 4px !important/, 'group corner matches the selection ring radius');
 assert.doesNotMatch(css, /g\.pele-node\.pele-shape-rect > rect \{[^}]*rx:\s*var\(--_r\)/, 'node corner is the baked 4px, not a second 12px radius');
@@ -119,8 +119,9 @@ assert.match(css, /html\.flowchart-link-mode/, 'link mode cursor is on the canva
 assert.match(board, /isBoardCanvasKind/);
 assert.match(diagram, /restoreFlowchartSelection/);
 assert.match(shell, /typeSec\.hidden = kind === "mermaid-unsupported"/, 'flowchart keeps Font Size visible');
-assert.match(shell, /capSec\.classList\.toggle\("is-disabled", flowchart\)/, 'flowchart greys Max Width');
-assert.match(shell, /capSlider\.disabled = flowchart/, 'flowchart Max Width cannot move');
+assert.match(shell, /capSec\.classList\.toggle\("is-disabled", capLocked\)/, 'flowchart greys Max Width');
+assert.match(shell, /capSlider\.disabled = capLocked/, 'flowchart Max Width cannot move');
+assert.match(shell, /var capLocked = flowchart \|\| design/, 'Design Max Width is locked like flowchart');
 assert.match(shell, /board\.hidden = mermaid/, 'Link stays Board-only');
 assert.doesNotMatch(board, /wrappingWidth/, 'this slice does not wire wrappingWidth');
 assert.match(diagram, /applyBoardTypeStep\(step, false, false\)/, 'read-back does not re-enter render');

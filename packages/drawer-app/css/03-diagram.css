@@ -120,31 +120,46 @@ html[data-drawer-mode="diagram"] .board-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] .board-edit-tools,
 html[data-kind="mindmap"] .board-edit-tools,
 html[data-kind="mermaid-unsupported"] .board-edit-tools,
-html[data-kind="unknown"] .board-edit-tools { display: none !important; }
+html[data-kind="unknown"] .board-edit-tools,
+html[data-pele="1"] .board-edit-tools { display: none !important; }
 .flowchart-edit-tools,
 .mindmap-edit-tools { display: none; align-items: center; gap: 8px; }
 html[data-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
 html[data-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] #propsFields,
-html[data-kind="mindmap"] #propsFields { display: none !important; }
+html[data-kind="mindmap"] #propsFields,
+html[data-pele="1"] #propsFields { display: none !important; }
 html[data-kind="flowchart"] #preview,
 html[data-kind="mindmap"] #preview,
-html[data-kind="mermaid-unsupported"] #preview {
+html[data-kind="mermaid-unsupported"] #preview,
+html[data-pele="1"] #preview {
   width: max-content;
   height: max-content;
 }
+html[data-pele="1"] #preview > svg {
+  width: auto;
+  height: auto;
+  max-width: none;
+}
 /* Pele shapes read --_s / --_fg. Mirror the aliases so a wiped SVG style
    still inherits cream paper instead of the SVG default black fill. */
-html[data-kind="flowchart"] {
+html[data-kind="flowchart"],
+html[data-pele="1"] {
   --_bg: var(--pele-bg, #fff);
   --_fg: var(--pele-fg, #1f1f1f);
   --_m: var(--pele-muted, #6e6e6e);
   --_l: var(--pele-line, #1f1f1f);
   --_s: var(--pele-surface, #fffdf9);
   --_a: var(--pele-surface-alt, #f3ece6);
-  --_b: var(--pele-border, rgba(var(--bf-rgb, 74, 53, 36), .14));
+  --_b: var(--pele-border, color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36))));
   --_c: var(--pele-accent, var(--pele-line, #4a3524));
-  --_r: var(--pele-radius, var(--bf-radius-box, 12px));
+  --_r: var(--pele-radius, 4px);
+}
+html[data-pele="1"] #preview g.pele-node > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo),
+html[data-pele="1"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
+  rx: 4px !important;
+  ry: 4px !important;
+  stroke: var(--_b) !important;
 }
 html[data-kind="flowchart"] #preview g.pele-node,
 html[data-kind="flowchart"] #preview g.pele-cluster,
@@ -1903,6 +1918,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #mindmapPropsFields[hidden],
 #mindmapDocTitleField[hidden],
 #mindmapLayoutField[hidden],
+#designDocTitleField[hidden],
 #propsEmpty[hidden] { display: none !important; }
 
 .props-field {
@@ -1914,7 +1930,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #flowchartDocTitleField,
 #flowchartDirField,
 #mindmapDocTitleField,
-#mindmapLayoutField { margin: 4px 0 10px; }
+#mindmapLayoutField,
+#designDocTitleField { margin: 4px 0 10px; }
 .props-control {
   display: flex;
   flex-direction: column;
@@ -1944,7 +1961,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #flowchartDirEditor,
 #mindmapDocTitleEditor,
 #mindmapLayoutEditor,
-#mindmapTextEditor {
+#mindmapTextEditor,
+#designDocTitleEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
@@ -1997,7 +2015,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #flowchartDirEditor:focus,
 #mindmapDocTitleEditor:focus,
 #mindmapLayoutEditor:focus,
-#mindmapTextEditor:focus {
+#mindmapTextEditor:focus,
+#designDocTitleEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 #kindThemeSelect,

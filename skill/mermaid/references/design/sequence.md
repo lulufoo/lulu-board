@@ -3,6 +3,8 @@
 Keyword: `sequenceDiagram`.
 Invariant: messages over time between participants. Not control-flow diamonds.
 
+Drawer renders through Pele. Properties edit Title. Source edits the body.
+
 ## minimal
 
 ```mermaid

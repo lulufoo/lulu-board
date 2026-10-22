@@ -335,8 +335,13 @@ function applyDiagramLiveMeta(meta = {}) {
 
 function syncStyleLayoutSections() {
   var kind = document.documentElement && document.documentElement.dataset.kind;
-  var mermaid = kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported";
+  var mermaid = typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isMermaidKind === "function"
+    ? DrawerStyleLine.isMermaidKind(kind)
+    : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported");
   var flowchart = kind === "flowchart";
+  var design = typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isDesignKind === "function"
+    && DrawerStyleLine.isDesignKind(kind);
+  var capLocked = flowchart || design;
   var board = document.getElementById("boardLayoutSection");
   if (board) board.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
@@ -345,11 +350,11 @@ function syncStyleLayoutSections() {
   var capSlider = document.getElementById("boardItemCapSlider");
   if (capSec) {
     capSec.hidden = kind === "mermaid-unsupported" || kind === "mindmap";
-    capSec.classList.toggle("is-disabled", flowchart);
+    capSec.classList.toggle("is-disabled", capLocked);
   }
   if (capSlider) {
-    capSlider.disabled = flowchart;
-    if (flowchart) capSlider.setAttribute("aria-disabled", "true");
+    capSlider.disabled = capLocked;
+    if (capLocked) capSlider.setAttribute("aria-disabled", "true");
     else capSlider.removeAttribute("aria-disabled");
   }
 }

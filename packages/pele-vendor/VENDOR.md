@@ -7,5 +7,5 @@
 - License: MIT — see `packages/pele-vendor/LICENSE`
 - Runtime copy: `packages/drawer-app/vendor/pele.global.js` (`dist/pele.global.js`)
 
-Board renders Mermaid 12.1.0 flowchart syntax through Pele. Do not load Mermaid.js.
-This slice only renders `flowchart` / `graph`. Other Mermaid keywords are refused.
+Board renders Mermaid 12.1.0 syntax through Pele. Do not load Mermaid.js.
+This slice renders `flowchart` / `graph` and the design group. Other Mermaid keywords are refused.

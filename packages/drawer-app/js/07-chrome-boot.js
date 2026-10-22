@@ -143,9 +143,16 @@ function currentBoardItemCap() {
 }
 function applyBoardItemCap(rem, rerender, persist) {
   const kind = document.documentElement && document.documentElement.dataset.kind;
-  if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") {
+  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isMermaidKind === "function"
+    ? DrawerStyleLine.isMermaidKind(kind)
+    : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported")) {
     if (boardItemCapSlider) {
-      boardItemCapSlider.disabled = kind === "flowchart";
+      var lockCap = kind === "flowchart" || (typeof DrawerStyleLine !== "undefined"
+        && typeof DrawerStyleLine.isDesignKind === "function"
+        && DrawerStyleLine.isDesignKind(kind));
+      boardItemCapSlider.disabled = lockCap;
+      if (lockCap) boardItemCapSlider.setAttribute("aria-disabled", "true");
+      else boardItemCapSlider.removeAttribute("aria-disabled");
       paintStyleRange(boardItemCapSlider);
     }
     return;

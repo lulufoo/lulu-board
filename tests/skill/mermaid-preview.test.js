@@ -12,10 +12,11 @@ const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8')
 
 assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
 assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
-assert.match(viewer, /`--kind flowchart` or `--kind mindmap`/, 'viewer pins open kinds');
+assert.match(viewer, /`--kind flowchart`, `--kind mindmap`, or a Design kind/, 'viewer pins open kinds');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');
 assert.match(skill, /\$DRAWER_CTL preview --kind mindmap/, 'skill still calls mindmap preview');
+assert.match(skill, /\$DRAWER_CTL preview --kind sequence/, 'skill calls a Design preview');
 
 function run(args, input) {
   return spawnSync('python3', [ctl, ...args], {
@@ -49,6 +50,27 @@ assert.strictEqual(mindmapJson.ok, true);
 assert.strictEqual(mindmapJson.kind, 'mindmap');
 assert.strictEqual(mindmapJson.open, 'created');
 assert.match(mindmapJson.url, /^https:\/\/luluvela\.app\/#z:/);
+
+const designSeeds = {
+  sequence: 'sequenceDiagram\n  actor User\n  participant UI\n  User->>UI: action\n',
+  class: 'classDiagram\n  class Service {\n    +run()\n  }\n',
+  state: 'stateDiagram-v2\n  [*] --> Idle\n',
+  er: 'erDiagram\n  USER ||--o{ NOTE : writes\n',
+  requirement: 'requirementDiagram\n  requirement auth {\n    id: 1\n    text: user must sign in\n    risk: high\n    verifymethod: test\n  }\n',
+  c4: 'C4Context\n  title System Context — Example\n  Person(user, "User", "Uses the product")\n  System(app, "Example System", "Our system")\n  Rel(user, app, "Uses")\n',
+  usecase: 'usecase-beta\nactor Customer\nCheckout("Place order")\nCustomer --> Checkout\n',
+  eventmodeling: 'eventmodeling\ntf 01 ui CartUI\ntf 02 cmd AddItem\ntf 03 evt ItemAdded\n',
+  railroad: 'railroad-beta\nrule = terminal("hello");\n',
+};
+Object.keys(designSeeds).forEach(function (kind) {
+  const drawn = run(['preview', '--kind', kind, '--no-open'], designSeeds[kind]);
+  assert.strictEqual(drawn.status, 0, kind + ' ' + drawn.stderr);
+  const json = JSON.parse(drawn.stdout);
+  assert.strictEqual(json.ok, true);
+  assert.strictEqual(json.kind, kind);
+  assert.strictEqual(json.open, 'created');
+  assert.match(json.url, /^https:\/\/luluvela\.app\/#z:/);
+});
 
 const titled = run(
   ['preview', '--kind', 'flowchart', '--no-open'],

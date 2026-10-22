@@ -1250,7 +1250,9 @@ function persistBoardStyle(patch) {
       ? DrawerStyleLine.bodyKind(body)
       : "board";
     var nextBody;
-    if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") {
+    if (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.isMermaidKind
+      ? DrawerStyleLine.isMermaidKind(kind)
+      : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported")) {
       if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
@@ -1610,6 +1612,9 @@ previewEl.addEventListener("dblclick", function(event) {
 
 function isBoardCanvasKind() {
   var kind = document.documentElement.dataset.kind || "";
+  if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isMermaidKind === "function") {
+    return !DrawerStyleLine.isMermaidKind(kind);
+  }
   return kind !== "flowchart" && kind !== "mindmap" && kind !== "mermaid-unsupported";
 }
 

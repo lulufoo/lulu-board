@@ -301,11 +301,9 @@ async function shellCommitBlankDiagram(kind) {
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
   history.replaceState(null, "", location.pathname + location.search);
   if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-  var source = (kind === "flowchart" && typeof blankHashFlowchartSource === "function")
-    ? blankHashFlowchartSource("Untitled")
-    : (kind === "mindmap" && typeof blankHashMindmapSource === "function")
-      ? blankHashMindmapSource("Untitled")
-      : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
+  var source = typeof blankHashSourceForKind === "function"
+    ? blankHashSourceForKind(kind, "Untitled")
+    : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
   if (typeof diagramSourceEl !== "undefined" && diagramSourceEl) {

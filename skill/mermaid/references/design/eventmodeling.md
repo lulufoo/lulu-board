@@ -3,6 +3,8 @@
 Keyword: `eventmodeling`.
 Invariant: numbered time frames of UI, commands, and events.
 
+Drawer renders through Pele. Properties edit Title. Source edits the body.
+
 ## minimal
 
 ```mermaid

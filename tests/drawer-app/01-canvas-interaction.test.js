@@ -22,7 +22,7 @@ Interaction.registerKind('flowchart', {
   isHit: (t) => !!(t && t.kind === 'pele-node'),
   clear: function () { flowClear += 1; },
 });
-assert.ok(Interaction.isBlockedTarget({ kind: 'pele-node', closest: () => null }), 'flowchart hit is registered');
+assert.ok(!Interaction.isBlockedTarget({ kind: 'pele-node', closest: () => null }), 'inactive flowchart hit does not steal Design / Board pan');
 assert.ok(!Interaction.isBlockedTarget({ closest: () => null }), 'blank is still not a hit');
 let closed = 0;
 globalThis.closePropsPanel = function () { closed += 1; };
@@ -64,6 +64,10 @@ const flow = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/
 const mind = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-mindmap-select.js'), 'utf8');
 assert.match(board, /registerKind\("board"/, 'Board registers hit / clear');
 assert.match(mind, /registerKind\("mindmap"/, 'mindmap registers hit / clear');
+const design = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-design.js'), 'utf8');
+assert.match(src, /kinds\[activeKindId\(\)\]/, 'pan hit uses the live kind only');
+assert.match(design, /registerKind\("design"/, 'Design registers so Pele boxes do not block pan');
+assert.match(flow, /if \(!isFlowchartKind\(\)\) return false/, 'flowchart hit stays on flowchart');
 assert.doesNotMatch(mind, /closePropsPanel/, 'mindmap clear does not hide Properties');
 assert.doesNotMatch(board, /previewEl\.addEventListener\("pointerdown"/, 'Board blank pointerdown is not a second path');
 assert.doesNotMatch(flow, /else clearFlowchartInteraction\(\)/, 'flowchart miss is not a second blank path');
