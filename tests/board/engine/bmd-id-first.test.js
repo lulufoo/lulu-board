@@ -34,7 +34,7 @@ assert.ok(/function syncSourceIdChrome/.test(shell), 'ID chrome syncs with live 
 assert.ok(/btnSourceCopyId/.test(boot), 'Copy ID is wired');
 assert.ok(fs.existsSync(path.join(root, 'skill/SKILL.md')), 'pack SKILL at skill root');
 assert.ok(/\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD Source');
-assert.ok(/vela_id/.test(pointers), 'pointers name vela_id');
+assert.ok(/diagram_id/.test(pointers), 'pointers name diagram_id');
 assert.ok(/Keep `url` first/.test(board), 'board flow keeps the public URL first');
 assert.ok(/`preview` encodes `\{bmd, version\}`/.test(pointers), 'pointers encode a JSON envelope');
 assert.ok(/`--id` \| leftover; ignored/.test(viewer), 'viewer ignores leftover --id');

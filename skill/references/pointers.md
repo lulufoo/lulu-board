@@ -13,16 +13,16 @@ must be read, or when pointer kind changes the next action.
 
 ## `#b:`
 
-Shape: `https://<host>/#b:<vela_id>`.
+Shape: `https://<host>/#b:<diagram_id>`.
 
-`<vela_id>` is `b_` plus 8 lowercase hex. That token is MCP `vela_id`.
+`<diagram_id>` is `b_` plus 8 lowercase hex. That token is MCP `diagram_id`.
 
-From a pasted cloud link: take the token after `#b:`. Pass it as `vela_id`.
+From a pasted cloud link: take the token after `#b:`. Pass it as `diagram_id`.
 
 ## `#z:`
 
-CLI `preview` returns the full URL. Show that `url`. Do not `create_vela` or
-`save_vela`.
+CLI `preview` returns the full URL. Show that `url`. Do not `create_diagram` or
+`save_diagram`.
 
 ## `#s:`
 

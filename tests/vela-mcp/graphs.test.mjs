@@ -290,7 +290,7 @@ assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no servic
 assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
 assert.match(skill, /Do not fall back/, 'failed MCP does not silently use #z:');
 assert.match(cloud, /[Oo]ptional\s+`group_id`/, 'cloud create can join a group');
-assert.match(cloud, /group this `vela_id` belongs to/, 'cloud says group_id is the Vela group');
+assert.match(cloud, /group this `diagram_id` belongs to/, 'cloud says group_id is the diagram group');
 assert.match(cloud, /current account/, 'cloud joins on the current account');
 assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
 
