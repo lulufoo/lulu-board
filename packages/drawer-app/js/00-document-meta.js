@@ -13,6 +13,7 @@
   root.blankHashSequenceSource = api.blankHashSequenceSource;
   root.blankHashClassSource = api.blankHashClassSource;
   root.blankHashStateSource = api.blankHashStateSource;
+  root.blankHashErSource = api.blankHashErSource;
   root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
@@ -146,6 +147,10 @@
     return wrapMermaidSeed(title, "stateDiagram-v2\n  [*] --> Idle\n  Idle --> Open : open\n  Open --> Saving : submit\n  Saving --> Idle : success\n  Saving --> Open : failure\n  Open --> Idle : cancel\n");
   }
 
+  function blankHashErSource(title) {
+    return wrapMermaidSeed(title, "erDiagram\n  USER ||--o{ NOTE : writes\n  NOTE ||--|{ TAG : tagged\n  USER {\n    string id PK\n    string name\n  }\n  NOTE {\n    string id PK\n    string user_id FK\n    string body\n  }\n");
+  }
+
   function blankHashSourceForKind(kind, title) {
     var key = String(kind || "").trim();
     if (key === "flowchart") return blankHashFlowchartSource(title);
@@ -153,6 +158,7 @@
     if (key === "sequence" || key === "sequenceDiagram") return blankHashSequenceSource(title);
     if (key === "class" || key === "classDiagram") return blankHashClassSource(title);
     if (key === "state" || key === "stateDiagram" || key === "stateDiagram-v2") return blankHashStateSource(title);
+    if (key === "er" || key === "erDiagram") return blankHashErSource(title);
     return blankHashBoardSource(title);
   }
 
@@ -226,6 +232,7 @@
     blankHashSequenceSource: blankHashSequenceSource,
     blankHashClassSource: blankHashClassSource,
     blankHashStateSource: blankHashStateSource,
+    blankHashErSource: blankHashErSource,
     blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
@@ -242,6 +249,7 @@ var blankHashMindmapSource = globalThis.blankHashMindmapSource;
 var blankHashSequenceSource = globalThis.blankHashSequenceSource;
 var blankHashClassSource = globalThis.blankHashClassSource;
 var blankHashStateSource = globalThis.blankHashStateSource;
+var blankHashErSource = globalThis.blankHashErSource;
 var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;

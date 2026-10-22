@@ -20,7 +20,7 @@
     { cls: "Mermaid", name: "Sequence", note: "design", ready: true, kind: "sequenceDiagram" },
     { cls: "Mermaid", name: "Class", note: "design", ready: true, kind: "classDiagram" },
     { cls: "Mermaid", name: "State", note: "design", ready: true, kind: "stateDiagram" },
-    { cls: "Mermaid", name: "ER", note: "design", ready: false, kind: "erDiagram" },
+    { cls: "Mermaid", name: "ER", note: "design", ready: true, kind: "erDiagram" },
     { cls: "Mermaid", name: "Requirement", note: "design", ready: false, kind: "requirement" },
     { cls: "Mermaid", name: "C4", note: "design", ready: false, kind: "C4Context" },
     { cls: "Mermaid", name: "Use Case", note: "design", ready: false, kind: "usecase-beta" },
