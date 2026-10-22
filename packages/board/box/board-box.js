@@ -21,9 +21,9 @@
     contentHost(el) { return el; }
 
     /**
-     * Content inset (applyFlex padding) must fit inside the box width/height.
-     * After shell pad went to 0, an undersized frame.w lets row kids overflow
-     * into padding and the 16px LR inset disappears visually.
+     * Kid span plus content inset. Layout pad is 0 on purpose — still report
+     * the row/column span so a linked slot cannot push the last kid past the
+     * box. Container pad is included so the frame keeps its inset.
      */
     contentInsetNeed(el) {
       if (!el || !el.querySelector) return null;
@@ -32,7 +32,6 @@
       const cs = getComputedStyle(content);
       const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
       const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
-      if (padX <= 0 && padY <= 0) return null;
       const kids = Array.from(content.children || []).filter((c) => (
         c.classList.contains('box')
         || c.classList.contains('board-zone')
