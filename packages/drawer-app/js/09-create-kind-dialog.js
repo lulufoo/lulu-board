@@ -25,7 +25,7 @@
     { cls: "Mermaid", name: "C4", note: "design", ready: true, kind: "C4Context" },
     { cls: "Mermaid", name: "Use Case", note: "design", ready: true, kind: "usecase-beta" },
     { cls: "Mermaid", name: "Event Modeling", note: "design", ready: true, kind: "eventmodeling" },
-    { cls: "Mermaid", name: "Railroad", note: "design", ready: false, kind: "railroad-beta" },
+    { cls: "Mermaid", name: "Railroad", note: "design", ready: true, kind: "railroad-beta" },
     { cls: "Mermaid", name: "Gantt", note: "time", ready: false, kind: "gantt" },
     { cls: "Mermaid", name: "Journey", note: "time", ready: false, kind: "journey" },
     { cls: "Mermaid", name: "Timeline", note: "time", ready: false, kind: "timeline" },

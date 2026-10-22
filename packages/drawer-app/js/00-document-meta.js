@@ -19,6 +19,7 @@
   root.blankHashEventModelingSource = api.blankHashEventModelingSource;
   root.blankHashEventmodelingSource = api.blankHashEventModelingSource;
   root.blankHashUsecaseSource = api.blankHashUsecaseSource;
+  root.blankHashRailroadSource = api.blankHashRailroadSource;
   root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
@@ -172,6 +173,10 @@
     return wrapMermaidSeed(title, "usecase-beta\nactor Customer\nCheckout(\"Place order\")\nCustomer --> Checkout\n");
   }
 
+  function blankHashRailroadSource(title) {
+    return wrapMermaidSeed(title, "railroad-beta\nrule = terminal(\"hello\");\n");
+  }
+
   function blankHashSourceForKind(kind, title) {
     var key = String(kind || "").trim();
     if (key === "flowchart") return blankHashFlowchartSource(title);
@@ -184,6 +189,7 @@
     if (key === "c4" || key === "C4Context") return blankHashC4Source(title);
     if (key === "eventmodeling") return blankHashEventModelingSource(title);
     if (key === "usecase" || key === "usecase-beta") return blankHashUsecaseSource(title);
+    if (key === "railroad" || key === "railroad-beta") return blankHashRailroadSource(title);
     return blankHashBoardSource(title);
   }
 
@@ -263,6 +269,7 @@
     blankHashEventModelingSource: blankHashEventModelingSource,
     blankHashEventmodelingSource: blankHashEventModelingSource,
     blankHashUsecaseSource: blankHashUsecaseSource,
+    blankHashRailroadSource: blankHashRailroadSource,
     blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
@@ -285,6 +292,7 @@ var blankHashC4Source = globalThis.blankHashC4Source;
 var blankHashEventModelingSource = globalThis.blankHashEventModelingSource;
 var blankHashEventmodelingSource = globalThis.blankHashEventmodelingSource;
 var blankHashUsecaseSource = globalThis.blankHashUsecaseSource;
+var blankHashRailroadSource = globalThis.blankHashRailroadSource;
 var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;

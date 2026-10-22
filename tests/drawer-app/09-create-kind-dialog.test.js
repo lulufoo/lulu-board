@@ -104,7 +104,8 @@ function clickKind(t, kind, disabled) {
   assert.strictEqual(items.filter((it) => it.cls === 'Board').length, 1);
   assert.strictEqual(items.filter((it) => it.cls === 'Mermaid').length, 32);
   assert.strictEqual(items.length, 33);
-  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'board,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling');
+  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'board,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling,railroad-beta');
+  assert.strictEqual(items.filter((it) => it.name === 'Railroad').length, 1, 'Railroad is one create row');
   assert.strictEqual(items.filter((it) => it.name === 'C4').length, 1, 'C4 is one create row');
   const kinds = items.map((it) => it.kind);
   [
@@ -229,7 +230,15 @@ function clickKind(t, kind, disabled) {
   const t = load();
   const picks = [];
   t.ctx.openCreateKindDialog({ onPick: (kind) => picks.push(kind) });
-  clickKind(t, 'railroad-beta', true);
+  clickKind(t, 'railroad-beta');
+  assert.deepStrictEqual(picks, ['railroad-beta'], 'Railroad is ready');
+}
+
+{
+  const t = load();
+  const picks = [];
+  t.ctx.openCreateKindDialog({ onPick: (kind) => picks.push(kind) });
+  clickKind(t, 'gantt', true);
   assert.deepStrictEqual(picks, [], 'disabled mermaid types do not pick');
 }
 
