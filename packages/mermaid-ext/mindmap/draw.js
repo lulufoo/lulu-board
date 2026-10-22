@@ -35,13 +35,29 @@ function edgePath(from, to, layout) {
   return `M ${x1},${y1} C ${cx1},${cy1} ${cx2},${cy2} ${x2},${y2}`;
 }
 
-function nodeShape(node) {
+function nodePaint(node, pal) {
+  if (node.section == null || node.section < 0) return pal.root;
+  const sections = pal.sections || [];
+  return sections[node.section % Math.max(sections.length, 1)] || pal.root;
+}
+
+function edgeWidth(depth) {
+  if (depth <= 0) return 3.25;
+  if (depth === 1) return 2.5;
+  if (depth === 2) return 2;
+  return 1.75;
+}
+
+function nodeShape(node, paint) {
   const w = node.width || 40;
   const h = node.height || 28;
   const x = -w / 2;
   const y = -h / 2;
   const rx = Math.min(h / 2, node.depth === 0 ? 18 : 16);
-  return `<rect class="node-bkg node-default" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" ry="${rx}"></rect>`;
+  return (
+    `<rect class="node-bkg node-default" x="${x}" y="${y}" width="${w}" height="${h}" ` +
+    `rx="${rx}" ry="${rx}" fill="${esc(paint.fill)}" stroke="${esc(paint.stroke)}" stroke-width="1"></rect>`
+  );
 }
 
 export function drawSvg(model, opts) {
@@ -50,17 +66,23 @@ export function drawSvg(model, opts) {
   const theme = normalizeTheme(opts && opts.theme);
   const pal = themePalette(theme);
   const { nodes, edges, width, height } = model;
+  const edgeStroke = (pal.edges && pal.edges[0]) || "#7a5c3c";
 
   const edgeEls = edges
     .map((e) => {
       const sec = e.section == null || e.section < 0 ? -1 : e.section;
       const depth = Math.min(e.depth || 0, 5);
-      return `<path d="${edgePath(e.from, e.to, layout)}" class="edge section-edge-${sec} edge-depth-${depth}" />`;
+      return (
+        `<path d="${edgePath(e.from, e.to, layout)}" class="edge section-edge-${sec} edge-depth-${depth}" ` +
+        `fill="none" stroke="${esc(edgeStroke)}" stroke-width="${edgeWidth(depth)}" ` +
+        `stroke-linecap="round" stroke-linejoin="round" />`
+      );
     })
     .join("");
 
   const nodeEls = nodes
     .map((n) => {
+      const paint = nodePaint(n, pal);
       const sec = sectionClass(n.section);
       const label = esc(n.label);
       const w = n.width || 40;
@@ -69,61 +91,42 @@ export function drawSvg(model, opts) {
       const gap = 8;
       const addX = w / 2 + gap + addR;
       const path = pathAttr(n);
-      const bodyHit = `<rect class="mindmap-node-hit" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}"></rect>`;
+      const isRoot = n.section == null || n.section < 0;
+      const bodyHit = (
+        `<rect class="mindmap-node-hit" x="${-w / 2}" y="${-h / 2}" width="${w}" height="${h}" ` +
+        `fill="none" stroke="none" pointer-events="all"></rect>`
+      );
       const zonePad = Math.max(4, (addR * 2 - h) / 2);
       const zoneX = w / 2;
       const zoneY = -h / 2 - zonePad;
       const zoneW = gap + addR * 2 + 4;
       const zoneH = h + zonePad * 2;
+      const labelWeight = isRoot ? 650 : 600;
+      const labelSize = isRoot ? 15 : 13;
       return (
         `<g class="mindmap-node ${sec}" data-id="${n.id}" data-path="${path}" transform="translate(${n.x}, ${n.y})">` +
         bodyHit +
-        `${nodeShape(n)}` +
-        `<text class="mindmap-node-label" text-anchor="middle" dominant-baseline="middle">${label}</text>` +
+        `${nodeShape(n, paint)}` +
+        `<text class="mindmap-node-label" text-anchor="middle" dominant-baseline="middle" ` +
+        `fill="${esc(paint.text)}" font-weight="${labelWeight}" font-size="${labelSize}">${label}</text>` +
         `<g class="mindmap-add-zone">` +
-        `<rect class="mindmap-add-zone-hit" x="${zoneX}" y="${zoneY}" width="${zoneW}" height="${zoneH}"></rect>` +
+        `<rect class="mindmap-add-zone-hit" x="${zoneX}" y="${zoneY}" width="${zoneW}" height="${zoneH}" ` +
+        `fill="none" stroke="none" pointer-events="all"></rect>` +
         `<g class="mindmap-add" data-add-parent="${path}" transform="translate(${addX}, 0)">` +
-        `<circle class="mindmap-add-hit" r="${addR + 4}"></circle>` +
-        `<circle class="mindmap-add-bg" r="${addR}"></circle>` +
-        `<rect class="mindmap-add-bar" x="-5" y="-1.25" width="10" height="2.5" rx="1"></rect>` +
-        `<rect class="mindmap-add-bar" x="-1.25" y="-5" width="2.5" height="10" rx="1"></rect>` +
+        `<circle class="mindmap-add-hit" r="${addR + 4}" fill="none" stroke="none" pointer-events="all"></circle>` +
+        `<circle class="mindmap-add-bg" r="${addR}" fill="#db4c84" stroke="none" pointer-events="none"></circle>` +
+        `<rect class="mindmap-add-bar" x="-5" y="-1.25" width="10" height="2.5" rx="1" fill="#fff" pointer-events="none"></rect>` +
+        `<rect class="mindmap-add-bar" x="-1.25" y="-5" width="2.5" height="10" rx="1" fill="#fff" pointer-events="none"></rect>` +
         `</g></g></g>`
       );
     })
     .join("");
 
-  const secCss = Array.from({ length: 11 }, (_, idx) => {
-    const s = pal.sections[idx % Math.max(pal.sections.length, 1)] || pal.sections[0];
-    if (!s) return "";
-    return (
-      `#${id} .section-${idx} .node-bkg{fill:${s.fill};stroke:${s.stroke};stroke-width:1;}` +
-      `#${id} .section-${idx} text{fill:${s.text};font-weight:600;}`
-    );
-  }).join("");
-  const edgeRoot = (pal.edges && pal.edges[0]) || "var(--pele-line, #7a5c3c)";
-  const edgeCss =
-    `#${id} .section-edge--1{stroke:${edgeRoot};}` +
-    Array.from({ length: 11 }, (_, idx) => `#${id} .section-edge-${idx}{stroke:${edgeRoot};}`).join("");
-  const style =
-    `#${id}{font-family:${pal.fontFamily};font-size:13px;}` +
-    `#${id} .edge{fill:none;stroke-linecap:round;stroke-linejoin:round;}` +
-    `#${id} .edge-depth-0{stroke-width:3.25;}` +
-    `#${id} .edge-depth-1{stroke-width:2.5;}` +
-    `#${id} .edge-depth-2{stroke-width:2;}` +
-    `#${id} .edge-depth-3,#${id} .edge-depth-4,#${id} .edge-depth-5{stroke-width:1.75;}` +
-    `#${id} .section-root .node-bkg{fill:${pal.root.fill};stroke:${pal.root.stroke};stroke-width:1;}` +
-    `#${id} .section-root text{fill:${pal.root.text};font-weight:650;font-size:15px;}` +
-    secCss +
-    edgeCss +
-    `#${id} .mindmap-node{cursor:pointer;}` +
-    `#${id} .mindmap-node-hit{fill:transparent;stroke:none;pointer-events:all;}` +
-    `#${id} .mindmap-add-zone-hit{fill:transparent;stroke:none;pointer-events:all;}` +
-    `#${id} .mindmap-add{opacity:0;pointer-events:none;cursor:pointer;}` +
-    `#${id} .mindmap-add-zone:hover .mindmap-add{opacity:1;pointer-events:auto;}` +
-    `#${id} .mindmap-add-hit{fill:transparent;stroke:none;pointer-events:all;}` +
-    `#${id} .mindmap-add-bg{fill:var(--canvas-ring, var(--pele-accent, #db4c84));stroke:none;pointer-events:none;}` +
-    `#${id} .mindmap-add-bar{fill:#fff;pointer-events:none;}` +
-    `#${id} text{paint-order:stroke;stroke:transparent;}`;
-
-  return `<svg id="${esc(id)}" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="graphics-document document" aria-roledescription="mindmap" data-mindmap-layout="${layout}" data-mindmap-theme="${theme}"><style>${style}</style><g class="mindmap-edges">${edgeEls}</g><g class="mindmap-nodes">${nodeEls}</g></svg>`;
+  return (
+    `<svg id="${esc(id)}" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
+    `viewBox="0 0 ${width} ${height}" role="graphics-document document" aria-roledescription="mindmap" ` +
+    `data-mindmap-layout="${layout}" data-mindmap-theme="${theme}" ` +
+    `font-family="${esc(pal.fontFamily)}" font-size="13">` +
+    `<g class="mindmap-edges">${edgeEls}</g><g class="mindmap-nodes">${nodeEls}</g></svg>`
+  );
 }

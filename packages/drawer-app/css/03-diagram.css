@@ -259,6 +259,25 @@ html[data-diagram-kind="mindmap"] .canvas-hover-halo {
   stroke-dasharray: 4 3;
   pointer-events: none !important;
 }
+html[data-diagram-kind="mindmap"] .mindmap-node {
+  cursor: pointer;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add {
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add-zone:hover .mindmap-add {
+  opacity: 1;
+  pointer-events: auto;
+}
+html[data-diagram-kind="mindmap"] .mindmap-add-bg {
+  fill: var(--canvas-ring, #db4c84);
+}
+html[data-diagram-kind="mindmap"] .mindmap-node-label {
+  paint-order: stroke;
+  stroke: transparent;
+}
 html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
 html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
   stroke: var(--canvas-ring, #db4c84) !important;
