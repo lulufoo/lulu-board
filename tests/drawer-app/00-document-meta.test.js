@@ -70,6 +70,16 @@ function token(id, version) {
 }
 
 {
+  const seed = Meta.blankHashSequenceSource();
+  assert.match(seed, /^%% title Untitled\nsequenceDiagram\n/);
+  assert.match(seed, /actor User/);
+  assert.strictEqual(Style.bodyKind(seed), 'sequence');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.blankHashSourceForKind('sequenceDiagram'), seed);
+  assert.strictEqual(Meta.blankHashSourceForKind('sequence'), seed);
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');

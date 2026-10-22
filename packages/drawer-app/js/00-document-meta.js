@@ -10,6 +10,8 @@
   root.blankHashBoardSource = api.blankHashBoardSource;
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
   root.blankHashMindmapSource = api.blankHashMindmapSource;
+  root.blankHashSequenceSource = api.blankHashSequenceSource;
+  root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
@@ -108,22 +110,34 @@
     return "b_" + hex;
   }
 
-  function blankHashBoardSource(title) {
+  function titledName(title) {
     var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
     if (!name) name = "Untitled";
-    return "board \"" + name + "\"\n";
+    return name;
+  }
+
+  function blankHashBoardSource(title) {
+    return "board \"" + titledName(title) + "\"\n";
   }
 
   function blankHashFlowchartSource(title) {
-    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
-    if (!name) name = "Untitled";
-    return "%% title " + name + "\nflowchart TD\n";
+    return "%% title " + titledName(title) + "\nflowchart TD\n";
   }
 
   function blankHashMindmapSource(title) {
-    var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
-    if (!name) name = "Untitled";
-    return "%% title " + name + "\nmindmap\n  Topic\n";
+    return "%% title " + titledName(title) + "\nmindmap\n  Topic\n";
+  }
+
+  function blankHashSequenceSource(title) {
+    return "%% title " + titledName(title) + "\nsequenceDiagram\n  actor User\n  participant UI\n  participant API\n  participant DB\n  User->>UI: action\n  UI->>API: request\n  API->>DB: query\n  DB-->>API: rows\n  API-->>UI: result\n  UI-->>User: render\n";
+  }
+
+  function blankHashSourceForKind(kind, title) {
+    var key = String(kind || "").trim();
+    if (key === "flowchart") return blankHashFlowchartSource(title);
+    if (key === "mindmap") return blankHashMindmapSource(title);
+    if (key === "sequence" || key === "sequenceDiagram") return blankHashSequenceSource(title);
+    return blankHashBoardSource(title);
   }
 
   function matchMermaidTitleLine(line) {
@@ -193,6 +207,8 @@
     blankHashBoardSource: blankHashBoardSource,
     blankHashFlowchartSource: blankHashFlowchartSource,
     blankHashMindmapSource: blankHashMindmapSource,
+    blankHashSequenceSource: blankHashSequenceSource,
+    blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
   };
@@ -205,5 +221,7 @@ var newGraphId = globalThis.newGraphId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
 var blankHashMindmapSource = globalThis.blankHashMindmapSource;
+var blankHashSequenceSource = globalThis.blankHashSequenceSource;
+var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;

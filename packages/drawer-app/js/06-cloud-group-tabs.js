@@ -108,11 +108,8 @@ function cloudGroupTabsVisible() {
 }
 
 function blankPlusDraftSource(kind) {
-  if (kind === "flowchart" && typeof blankHashFlowchartSource === "function") {
-    return blankHashFlowchartSource("Untitled");
-  }
-  if (kind === "mindmap" && typeof blankHashMindmapSource === "function") {
-    return blankHashMindmapSource("Untitled");
+  if (typeof blankHashSourceForKind === "function") {
+    return blankHashSourceForKind(kind, "Untitled");
   }
   return typeof blankHashBoardSource === "function"
     ? blankHashBoardSource("Untitled")

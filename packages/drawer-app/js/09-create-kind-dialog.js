@@ -17,7 +17,7 @@
     { cls: "Mermaid", name: "Swimlane", note: "flow", ready: false, kind: "swimlane-beta" },
     { cls: "Mermaid", name: "Agentflow", note: "flow", ready: false, kind: "agentflow-beta" },
     { cls: "Mermaid", name: "Tree View", note: "flow", ready: false, kind: "treeView-beta" },
-    { cls: "Mermaid", name: "Sequence", note: "design", ready: false, kind: "sequenceDiagram" },
+    { cls: "Mermaid", name: "Sequence", note: "design", ready: true, kind: "sequenceDiagram" },
     { cls: "Mermaid", name: "Class", note: "design", ready: false, kind: "classDiagram" },
     { cls: "Mermaid", name: "State", note: "design", ready: false, kind: "stateDiagram" },
     { cls: "Mermaid", name: "ER", note: "design", ready: false, kind: "erDiagram" },

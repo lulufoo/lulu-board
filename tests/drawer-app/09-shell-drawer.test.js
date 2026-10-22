@@ -162,9 +162,7 @@ console.log('ok 09-shell-drawer');
   assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
   assert.doesNotMatch(open, /history\.replaceState|bootstrapDiagramFromHash|saveDiagramToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));
-  assert.match(commit, /blankHashFlowchartSource\("Untitled"\)/, 'flowchart seed after pick');
-  assert.match(commit, /blankHashMindmapSource\("Untitled"\)/, 'mindmap seed after pick');
-  assert.match(commit, /blankHashBoardSource\("Untitled"\)/, 'Board seed after pick');
+  assert.match(commit, /blankHashSourceForKind\(kind, "Untitled"\)/, 'kind pick uses the shared seed');
   assert.match(commit, /saveDiagramToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
 }
