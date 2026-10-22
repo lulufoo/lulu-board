@@ -3,6 +3,8 @@
 Keyword: `stateDiagram-v2` (prefer over `stateDiagram`).
 Invariant: states and labeled transitions.
 
+Drawer renders through Pele. Properties edit Title. Source edits the body.
+
 ## minimal
 
 ```mermaid

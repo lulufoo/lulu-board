@@ -90,6 +90,16 @@ function token(id, version) {
 }
 
 {
+  const seed = Meta.blankHashStateSource();
+  assert.match(seed, /^%% title Untitled\nstateDiagram-v2\n/);
+  assert.match(seed, /\[\*\] --> Idle/);
+  assert.strictEqual(Style.bodyKind(seed), 'state');
+  assert.strictEqual(Meta.diagramTitleFromBody(seed), 'Untitled');
+  assert.strictEqual(Meta.blankHashSourceForKind('stateDiagram'), seed);
+  assert.strictEqual(Meta.blankHashSourceForKind('state'), seed);
+}
+
+{
   const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
