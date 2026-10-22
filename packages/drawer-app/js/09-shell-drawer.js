@@ -284,7 +284,7 @@ async function shellNewBlankDiagram() {
   if (typeof cloudConfirmLeaveDiagram === "function" && !(await cloudConfirmLeaveDiagram())) return;
   if (typeof openCreateKindDialog !== "function") return;
   openCreateKindDialog({
-    onPick: function (kind) { void shellCommitBlankDiagram(kind); },
+    onPick: function (kind) { applyCreateKindPick(kind, function (picked) { void shellCommitBlankDiagram(picked); }); },
     onCancel: function () {},
   });
 }
@@ -346,7 +346,7 @@ function shellOfferBlankStartKind() {
         if (typeof document !== "undefined" && document.documentElement) {
           delete document.documentElement.dataset.blankStartKind;
         }
-        void shellCommitBlankDiagram(kind);
+        applyCreateKindPick(kind, function (picked) { void shellCommitBlankDiagram(picked); });
       },
       onCancel: function () { open(); },
     });

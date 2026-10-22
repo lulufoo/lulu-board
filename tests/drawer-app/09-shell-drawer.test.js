@@ -159,6 +159,7 @@ console.log('ok 09-shell-drawer');
   const open = src.slice(start, end);
   assert.match(open, /cloudConfirmLeaveDiagram/, 'leave-confirm stays before the kind dialog');
   assert.match(open, /openCreateKindDialog/, 'New board opens the kind dialog');
+  assert.match(open, /applyCreateKindPick/, 'Welcome pick opens onboarding instead of a blank');
   assert.match(open, /onCancel: function \(\) \{\}/, 'cancel does not create');
   assert.doesNotMatch(open, /history\.replaceState|bootstrapDiagramFromHash|saveDiagramToHash/, 'does not write hash before pick');
   const commit = src.slice(end, src.indexOf('function shellIsPreview'));

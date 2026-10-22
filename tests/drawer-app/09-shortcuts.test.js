@@ -24,7 +24,7 @@ assert.strictEqual(shortcutKeyLabel('Alt', true), '⌥');
 assert.strictEqual(shortcutKeyLabel('Alt', false), 'Alt');
 assert.ok(shortcutIsTyping({ tagName: 'TEXTAREA' }) && !shortcutIsTyping({ tagName: 'DIV' }), '? is skipped while typing');
 
-assert.match(html, /id="btnBoardShortcuts"[^>]*role="menuitem"/, 'Keyboard shortcuts is a help-menu item');
+assert.match(html, /id="btnDiagramHelp"[^>]*aria-haspopup="dialog"/, 'dock ? opens Keyboard shortcuts');
 assert.match(html, /id="shortcutsDialog"[\s\S]*role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle"/, 'shortcuts dialog reuses the modal shell');
 assert.match(html, />Keyboard shortcuts</, 'dialog title');
 assert.match(build, /'09-shortcuts\.js'/, 'bundle includes the shortcuts dialog');

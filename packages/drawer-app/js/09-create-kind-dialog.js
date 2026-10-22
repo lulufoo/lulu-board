@@ -9,6 +9,7 @@
   "use strict";
 
   var CREATE_KIND_ITEMS = [
+    { cls: "Welcome", name: "Welcome", note: "Onboarding board", ready: true, kind: "welcome" },
     { cls: "Board", name: "Board", note: "Structured whiteboard", ready: true, kind: "board" },
     { cls: "Mermaid", name: "Flowchart", note: "flow", ready: true, kind: "flowchart" },
     { cls: "Mermaid", name: "Block", note: "flow", ready: false, kind: "block-beta" },
@@ -44,7 +45,7 @@
     { cls: "Mermaid", name: "Ishikawa", note: "map", ready: false, kind: "ishikawa" },
   ];
 
-  var MERMAID_NOTES = ["flow", "chart", "design", "map", "time"];
+  var MERMAID_NOTES = ["design", "flow", "chart", "map", "time"];
   var createKindWait = null;
   var createKindPicked = "";
   var mermaidOpen = false;
@@ -66,13 +67,17 @@
   }
 
   function createKindRowHtml(it) {
-    var picked = it.kind === createKindPicked;
-    var cls = "create-kind-row" + (picked ? " is-picked" : "");
+    var spot = it.kind === "welcome";
+    var cls = "create-kind-row" + (spot ? " create-kind-spot" : "") + (it.kind === createKindPicked ? " is-picked" : "");
     var note = it.cls === "Mermaid" ? "" : "<span>" + it.note + "</span>";
+    var title = "<b>" + it.name + "</b>";
+    if (spot) {
+      title = "<span class=\"create-kind-spot-head\">" + title
+        + "<i class=\"create-kind-spot-mark\" aria-hidden=\"true\"></i></span>";
+    }
     return "<button type=\"button\" class=\"" + cls + "\" data-create-kind=\"" + it.kind + "\""
       + (it.ready ? "" : " disabled") + ">"
-      + "<span class=\"create-kind-main\"><b>" + it.name + "</b>" + note + "</span>"
-      + "</button>";
+      + "<span class=\"create-kind-main\">" + title + note + "</span></button>";
   }
 
   function createKindNoteTitle(note) {
@@ -146,27 +151,25 @@
     var els = createKindEls();
     if (!els.list) return;
     var q = createKindQuery();
-    var board = [];
+    var html = "";
+    var n = 0;
+    var lastCls = "";
     var mermaidByNote = {};
     CREATE_KIND_ITEMS.forEach(function (it) {
       var hay = (it.cls + " " + it.name + " " + it.note).toLowerCase();
       if (q && hay.indexOf(q) < 0) return;
-      if (it.cls !== "Mermaid") {
-        board.push(it);
+      if (q || it.cls !== "Mermaid") {
+        if (!q && it.cls !== lastCls && it.cls !== "Welcome") {
+          html += "<div class=\"create-kind-label\">" + it.cls + "</div>";
+          lastCls = it.cls;
+        }
+        html += createKindRowHtml(it);
+        n += 1;
         return;
       }
       if (!mermaidByNote[it.note]) mermaidByNote[it.note] = [];
       mermaidByNote[it.note].push(it);
     });
-    var html = "";
-    var n = 0;
-    if (board.length) {
-      html += "<div class=\"create-kind-label\">Board</div>";
-      board.forEach(function (it) {
-        html += createKindRowHtml(it);
-        n += 1;
-      });
-    }
     var notes = MERMAID_NOTES.filter(function (note) {
       return mermaidByNote[note] && mermaidByNote[note].length;
     });
@@ -183,14 +186,14 @@
         blocks += "</div>";
         jumps += "<button type=\"button\" class=\"create-kind-note-jump\" data-create-kind-note-jump=\"" + title + "\">" + title + "</button>";
       });
-      html += createKindGroupHtml("Mermaid", mermaidOpen || !!q)
+      html += createKindGroupHtml("Mermaid", mermaidOpen)
         + "<div class=\"create-kind-mermaid\"><div class=\"create-kind-mermaid-list\">" + blocks
         + "</div><nav class=\"create-kind-note-rail\" aria-label=\"Mermaid categories\">" + jumps
         + "</nav></div></details>";
     }
     els.list.innerHTML = n ? html : "<div class=\"create-kind-empty\">No types match</div>";
     pinCreateKindNote(notes.length ? createKindNoteTitle(notes[0]) : "", els.list);
-    syncCreateKindNoteRail();
+    if (!q) syncCreateKindNoteRail();
   }
 
   function createKindCleanup() {

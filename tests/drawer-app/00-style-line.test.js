@@ -101,7 +101,7 @@ function b64(obj) {
 
 {
   const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
-  Create.CREATE_KIND_ITEMS.forEach((item) => {
+  Create.CREATE_KIND_ITEMS.filter((item) => item.kind !== 'welcome').forEach((item) => {
     const src = item.kind === 'board' ? 'board "X"\n' : item.kind + '\n';
     assert.strictEqual(Style.bodyKindLabel(src), item.name, item.kind);
   });
