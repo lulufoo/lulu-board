@@ -53,6 +53,7 @@ assert.match(mind, /mermaidPaintHalo/, 'mindmap uses the shared SVG halo');
 assert.match(mind, /classList\.add\("canvas-selected"\)/, 'mindmap hangs the public selected class');
 assert.match(mind, /classList\.add\("canvas-hover"\)/, 'mindmap hangs the public hover class');
 assert.match(css, /\.mindmap-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'mindmap selected halo reads the same token');
+assert.match(css, /html\[data-diagram-kind="mindmap"\] g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-diagram-kind="mindmap"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'mindmap selection does not also paint the HTML outline');
 assert.match(css, /html\[data-diagram-kind="mindmap"\] \.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'mindmap hover halo reads the soft token');
 const exportPng = read('packages/drawer-app/js/05-export-png.js');
 assert.match(exportPng, /mindmap-selection-halo/, 'PNG export strips mindmap halo');

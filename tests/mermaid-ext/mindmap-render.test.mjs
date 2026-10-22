@@ -42,6 +42,9 @@ assert.match(radial.svg, /class="mindmap-add-zone-hit"[^>]*fill="none"/);
 assert.doesNotMatch(radial.svg, /pele-node/);
 assert.ok(radial.model.nodes[0].height >= 56, 'root pill is larger');
 assert.ok(radial.model.nodes[0].width >= 128, 'root pill is wider');
+assert.match(radial.svg, /stroke-width="2"/, 'root stroke is heavier');
+assert.match(radial.svg, /stroke-width="1"/, 'branch stroke stays thin');
+assert.notEqual(themePalette('default').root.stroke, themePalette('default').sections[0].stroke);
 
 const classic = themePalette('classic');
 const pastel = themePalette('pastel');

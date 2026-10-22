@@ -36,9 +36,12 @@ function edgePath(from, to, layout) {
 }
 
 function nodePaint(node, pal) {
-  if (node.section == null || node.section < 0) return pal.root;
+  if (node.section == null || node.section < 0) {
+    return Object.assign({ strokeWidth: 2 }, pal.root);
+  }
   const sections = pal.sections || [];
-  return sections[node.section % Math.max(sections.length, 1)] || pal.root;
+  const paint = sections[node.section % Math.max(sections.length, 1)] || pal.root;
+  return Object.assign({ strokeWidth: 1 }, paint);
 }
 
 function edgeWidth(depth) {
@@ -56,7 +59,8 @@ function nodeShape(node, paint) {
   const rx = Math.min(h / 2, node.depth === 0 ? 18 : 16);
   return (
     `<rect class="node-bkg node-default" x="${x}" y="${y}" width="${w}" height="${h}" ` +
-    `rx="${rx}" ry="${rx}" fill="${esc(paint.fill)}" stroke="${esc(paint.stroke)}" stroke-width="1"></rect>`
+    `rx="${rx}" ry="${rx}" fill="${esc(paint.fill)}" stroke="${esc(paint.stroke)}" ` +
+    `stroke-width="${paint.strokeWidth || 1}"></rect>`
   );
 }
 

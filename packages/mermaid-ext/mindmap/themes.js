@@ -33,7 +33,7 @@ export function themePalette(id) {
   const sections = colors.map((fill) => ({ fill, stroke: border, text: color }));
   return {
     fontFamily: (theme && theme.fontFamily) || FALLBACK_FONT,
-    root: { fill: surface, stroke: border, text: color },
+    root: { fill: surface, stroke: color, text: color },
     sections,
     edges: [edge],
   };

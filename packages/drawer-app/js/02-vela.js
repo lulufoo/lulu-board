@@ -230,6 +230,8 @@ function renderMindmap(opts) {
     showVelaError("");
     setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
     if (typeof restoreMindmapSelection === "function") restoreMindmapSelection();
+    if (typeof fillMindmapProps === "function") fillMindmapProps();
+    else if (typeof syncMindmapButtons === "function") syncMindmapButtons();
     if (typeof applyMindmapSelectionVisual === "function") applyMindmapSelectionVisual();
   } catch (err) {
     previewEl.innerHTML = "";

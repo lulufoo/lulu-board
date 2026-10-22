@@ -1,5 +1,5 @@
 import { parseMindmap } from "./parse.js";
-import { serializeMindmap, findNodeByRef, findParent, reassignIds, topicKey } from "./source.js";
+import { serializeMindmap, findNodeByRef, findParent, reassignIds, topicKey, getTitle, updateTitle } from "./source.js";
 
 function parseOrThrow(source) {
   const { root, errors } = parseMindmap(source);
@@ -7,10 +7,13 @@ function parseOrThrow(source) {
   return root;
 }
 
-function result(root, selectionNode) {
+function result(root, selectionNode, source) {
   reassignIds(root);
+  let next = serializeMindmap(root);
+  const title = getTitle(source);
+  if (title) next = updateTitle(next, title).source;
   return {
-    source: serializeMindmap(root),
+    source: next,
     selection: selectionNode
       ? {
           kind: "topic",
@@ -50,7 +53,7 @@ export function addChild(source, parentId, label) {
   const node = newNode(label || "Node", "default");
   parent.children = parent.children || [];
   parent.children.push(node);
-  return result(root, node);
+  return result(root, node, source);
 }
 
 export function deleteTopic(source, topicId) {
@@ -61,7 +64,7 @@ export function deleteTopic(source, topicId) {
   const parent = findParent(root, node.id);
   if (!parent) throw new Error("Topic not found");
   parent.children = (parent.children || []).filter((c) => c.id !== node.id);
-  return result(root, parent);
+  return result(root, parent, source);
 }
 
 export function updateTopicLabel(source, topicId, label) {
@@ -69,7 +72,7 @@ export function updateTopicLabel(source, topicId, label) {
   const node = findNodeByRef(root, topicId);
   if (!node) throw new Error("Topic not found");
   node.label = String(label || "").trim() || node.label;
-  return result(root, node);
+  return result(root, node, source);
 }
 
 /** Shape UI removed — always default pill. Kept as no-op for callers. */
@@ -78,7 +81,7 @@ export function updateTopicShape(source, topicId, _shape) {
   const node = findNodeByRef(root, topicId);
   if (!node) throw new Error("Topic not found");
   node.shape = "default";
-  return result(root, node);
+  return result(root, node, source);
 }
 
 export function getTopic(source, topicId) {

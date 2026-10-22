@@ -240,7 +240,7 @@ html[data-diagram-kind="flowchart"] .canvas-hover-halo {
   stroke-dasharray: 4 3;
   pointer-events: none !important;
 }
-html[data-diagram-kind="mindmap"] g.canvas-selected,
+html[data-diagram-kind="mindmap"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
 html[data-diagram-kind="mindmap"] g.canvas-hover {
   outline: none !important;
   overflow: visible;

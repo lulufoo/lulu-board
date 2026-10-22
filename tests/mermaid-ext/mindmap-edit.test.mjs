@@ -90,6 +90,10 @@ const source = `mindmap
   const titled = updateTitle(source, 'Ship');
   assert.equal(getTitle(titled.source), 'Ship');
   assert.match(titled.source, /%% title Ship/);
+  const renamed = updateTopicLabel(titled.source, [0], 'B');
+  assert.equal(getTitle(renamed.source), 'Ship', 'topic edits keep %% title');
+  const grown = addChild(titled.source, [], 'Kid');
+  assert.equal(getTitle(grown.source), 'Ship', 'add child keeps %% title');
 }
 
 console.log('ok mindmap-edit');

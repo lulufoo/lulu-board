@@ -26,6 +26,7 @@ export function selectionFromDom(target) {
     path,
     key: topicKey(path),
     label,
+    isRoot: path.length === 0,
     dom: g,
   };
 }
