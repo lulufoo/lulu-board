@@ -11,6 +11,10 @@ assert.ok(typeof View.flexContentNeed === 'function', 'exports flexContentNeed')
 assert.ok(/fitNested\(el\)/.test(boxJs), 'nested boxes can grow to content');
 assert.ok(/boardContentMinWidth/.test(boxJs), 'nested content width floor is retained');
 assert.ok(
+  !/if \(padX <= 0 && padY <= 0\) return null/.test(boxJs),
+  'layout pad 0 still reports kid span'
+);
+assert.ok(
   /eachBoxPostOrder[\s\S]*fitNestedBoxes[\s\S]*applyRootFrames/.test(render),
   'fits nested rows from leaves to roots before sizing root frames'
 );
@@ -37,5 +41,15 @@ assert.ok(need.w > 833, 'row need is wider than a sibling-stretched frame');
 
 const sumOnly = 163 + 177 + 201 + 179 + 60;
 assert.ok(need.w > sumOnly, 'slot spans are not dropped from the row need');
+
+const layoutNeed = View.flexContentNeed(
+  [
+    { offsetLeft: 0, offsetWidth: 186, offsetHeight: 125 },
+    { offsetLeft: 186, offsetWidth: 36, offsetHeight: 125, isSlot: true },
+    { offsetLeft: 222, offsetWidth: 139, offsetHeight: 125 },
+  ],
+  { row: true, padX: 0, padY: 0, titleH: 0 }
+);
+assert.strictEqual(layoutNeed.w, 361, 'layout pad 0 need is LOGIN + slot + HOME');
 
 console.log('ok nested-row-overflow');
