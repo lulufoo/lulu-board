@@ -2,7 +2,7 @@
 /**
  * drawer-app build: vendor/drawer-app → .cache/web/.
  */
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -150,4 +150,18 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(webDir, 'onboarding.bmd'));
   console.log('ok onboarding.bmd');
+}
+
+{
+  const srcTemplates = path.join(srcDir, 'templates');
+  const outTemplates = path.join(webDir, 'templates');
+  if (!existsSync(srcTemplates)) throw new Error('missing ' + srcTemplates);
+  rmSync(outTemplates, { recursive: true, force: true });
+  mkdirSync(outTemplates, { recursive: true });
+  const names = readdirSync(srcTemplates).sort();
+  if (names.length !== 13) throw new Error('expected 13 templates, got ' + names.length);
+  for (const name of names) {
+    copyFileSync(path.join(srcTemplates, name), path.join(outTemplates, name));
+    console.log('ok templates/' + name);
+  }
 }

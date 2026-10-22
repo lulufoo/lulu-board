@@ -49,6 +49,18 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico', 'onboarding.
   console.log('ok .cache/web/' + name);
 }
 
+{
+  const templatesSrc = path.join(repo, 'packages/drawer-app/templates');
+  const templatesOut = path.join(webDir, 'templates');
+  const names = readdirSync(templatesSrc).sort();
+  if (names.length !== 13) throw new Error('expected 13 templates, got ' + names.length);
+  for (const name of names) {
+    const src = path.join(templatesOut, name);
+    if (!existsSync(src)) throw new Error('missing .cache/web/templates/' + name);
+    console.log('ok .cache/web/templates/' + name);
+  }
+}
+
 let html = readFileSync(srcHtml, 'utf8');
 html = html.replace(
   '<html lang="zh-Hans" data-theme="light">',
