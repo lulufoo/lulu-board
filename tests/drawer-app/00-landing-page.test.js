@@ -18,7 +18,7 @@ assert.strictEqual(wsLinks.length, 3, 'three workspace CTAs point to /?ws=1');
 assert.doesNotMatch(html, /href=["']\/start\/?["'#?]/, 'LB-357: landing has no /start product links');
 assert.match(html, /href="\/\?ws=1"><span class="only-out">Start free</);
 assert.match(html, /href="\/\?ws=1"><span class="only-out">Get Started</);
-assert.match(html, /href="\/\?ws=1">Open a blank Vela</);
+assert.match(html, /href="\/\?ws=1">Open a blank diagram</);
 
 // Sign in keeps blank #z (LB-356 / landing sign-in handoff); not a product CTA
 const blankLinks = html.match(/href="\/#z:[^"]+"/g) || [];
