@@ -42,6 +42,20 @@ const source = `mindmap
 }
 
 {
+  const tree = `mindmap
+  Root
+    A
+    B
+    C
+`;
+  const viaPath = addChild(tree, '1', 'Kid');
+  assert.equal(getTopic(viaPath.source, [1, 0]).label, 'Kid', 'string path 1 is B, not id 1');
+  assert.equal(getTopic(viaPath.source, [0, 0]), null);
+  const viaFirst = addChild(tree, '0', 'Kid');
+  assert.equal(getTopic(viaFirst.source, [0, 0]).label, 'Kid', 'string path 0 is A, not root id 0');
+}
+
+{
   const added = addChild(source, [0], 'Kid');
   const gone = deleteTopic(added.source, added.selection.path);
   assert.ok(!/Kid/.test(gone.source));

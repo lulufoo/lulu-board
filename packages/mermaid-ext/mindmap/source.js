@@ -102,7 +102,7 @@ export function findNodeByPath(root, path) {
 function parsePath(ref) {
   if (Array.isArray(ref)) return ref.map(Number);
   if (ref === "" || ref === "/") return [];
-  if (typeof ref === "string" && /^\d+(\.\d+)*$/.test(ref) && ref.indexOf(".") >= 0) {
+  if (typeof ref === "string" && /^\d+(\.\d+)*$/.test(ref)) {
     return ref.split(".").map(Number);
   }
   return null;
