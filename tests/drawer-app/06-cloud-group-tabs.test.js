@@ -13,10 +13,10 @@ const tabs = read('packages/drawer-app/js/06-cloud-group-tabs.js');
 const tabCss = read('packages/drawer-app/css/06-group-tabs.css');
 const chromeCss = read('packages/drawer-app/css/02-chrome.css');
 const dockCss = read('packages/drawer-app/css/03-diagram.css');
-const boardJs = read('packages/drawer-app/js/02-vela.js');
+const boardJs = read('packages/drawer-app/js/02-diagram.js');
 const boot = read('packages/drawer-app/js/07-chrome-boot.js');
 
-assert.match(html, /id="vela-group-tabs"/, 'canvas keeps a group tab strip');
+assert.match(html, /id="diagram-group-tabs"/, 'canvas keeps a group tab strip');
 assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group tab chrome');
 assert.match(appBuild, /06-confirm\.js/, 'drawer app concatenates the in-app confirm');
 assert.match(html, /id="confirmDialog"/, 'canvas keeps one in-app confirm');
@@ -35,7 +35,7 @@ assert.match(tabs, /shellCloseDrawer/, 'picking a type from plus closes the left
 assert.match(tabs, /blankHashFlowchartSource\("Untitled"\)/, 'plus can seed flowchart');
 assert.match(tabs, /blankHashMindmapSource\("Untitled"\)/, 'plus can seed mindmap');
 assert.match(tabs, /onCancel: function \(\) \{\}/, 'plus cancel does not create a draft');
-assert.match(tabs, /saveVelaToHash/, 'plus writes a blank #z: envelope');
+assert.match(tabs, /saveDiagramToHash/, 'plus writes a blank #z: envelope');
 assert.match(tabs, /cloudGroupMembers\.length \+ 1/, 'plus shows the next numbered tab');
 assert.match(tabs, /plus\.disabled = !!cloudPlusDraft/, 'plus stays disabled until the draft is saved');
 assert.match(tabs, /function cloudParkPlusDraft/, 'leaving the draft parks source in memory');
@@ -48,35 +48,35 @@ assert.doesNotMatch(tabs, /还没有保存/, 'tab leave copy is not Chinese');
 assert.doesNotMatch(tabs, /window\.confirm/, 'tab switch does not use the browser confirm');
 assert.match(cloud, /Delete this group\?/, 'history delete copy is English');
 assert.doesNotMatch(cloud, /删除这一组/, 'history delete copy is not Chinese');
-assert.match(tabs, /cloudParkDirtyBoard/, 'confirming a switch parks dirty source');
+assert.match(tabs, /cloudParkDirtyDiagram/, 'confirming a switch parks dirty source');
 assert.match(tabs, /cloudPlusDraftActive\) return true/, 'parking a draft does not prompt');
 assert.match(cloud, /askConfirm/, 'history delete uses the in-app confirm');
-assert.match(cloud, /function cloudParkDirtyBoard/, 'dirty boards can be parked in memory');
+assert.match(cloud, /function cloudParkDirtyDiagram/, 'dirty boards can be parked in memory');
 assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
 assert.match(cloud, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
 assert.match(cloud, /p_group_id:\s*joinGroupId/);
 assert.match(cloud, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
-assert.match(tabs, /function cloudOpenBoardById/, 'tab switch loads one board id');
-assert.match(tabs, /cloudSetBoardHash\(id, true\)/, 'tab switch replaces the hash without hashchange');
-assert.match(tabs, /loadCloudVelaByHash/, 'tab switch does not wait for hashchange bootstrap');
+assert.match(tabs, /function cloudOpenDiagramById/, 'tab switch loads one board id');
+assert.match(tabs, /cloudSetDiagramHash\(id, true\)/, 'tab switch replaces the hash without hashchange');
+assert.match(tabs, /loadCloudDiagramByHash/, 'tab switch does not wait for hashchange bootstrap');
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
-assert.match(cloud, /cloudKnownGroupBoard/, 'known group members skip a second group list fetch');
+assert.match(cloud, /cloudKnownGroupDiagram/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
 assert.match(cloud, /if \(!known\) void cloudRefreshGroups/, 'sibling switch does not refresh history');
 assert.match(cloud, /function cloudCachePut/, 'visited boards stay in a memory cache');
 assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
-assert.match(cloud, /cloudForgetBoardCache/, 'sign out and group delete drop the memory cache');
+assert.match(cloud, /cloudForgetDiagramCache/, 'sign out and group delete drop the memory cache');
 assert.match(cloud, /async function deleteCloudGroup/, 'history × deletes a group');
 assert.doesNotMatch(cloud, /history-group-members/, 'history lists groups, not member boards');
-assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveVelaToHash/, 'plus draft edits persist in #z:');
+assert.match(boardJs, /cloudPlusDraftActive[\s\S]*saveDiagramToHash/, 'plus draft edits persist in #z:');
 assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active plus draft');
 
 {
-  const start = tabs.indexOf('function sortBoardRowsByGroupOrder');
+  const start = tabs.indexOf('function sortDiagramRowsByGroupOrder');
   const end = tabs.indexOf('function cloudGroupTabsVisible');
   assert.ok(start >= 0 && end > start, 'sort helpers are a closed block');
-  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortBoardRowsByGroupOrder, cloudMembersInclude };')();
-  const sorted = helpers.sortBoardRowsByGroupOrder(
+  const helpers = new Function(tabs.slice(start, end) + '\nreturn { sortDiagramRowsByGroupOrder, cloudMembersInclude };')();
+  const sorted = helpers.sortDiagramRowsByGroupOrder(
     [{ graph_id: 'b_11111111' }, { graph_id: 'b_22222222' }, { graph_id: 'b_33333333' }],
     [
       { graph_id: 'b_11111111', sort_order: 3 },
@@ -85,7 +85,7 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
     ]
   );
   assert.deepStrictEqual(sorted.map((row) => row.graph_id), ['b_22222222', 'b_33333333', 'b_11111111']);
-  const tied = helpers.sortBoardRowsByGroupOrder(
+  const tied = helpers.sortDiagramRowsByGroupOrder(
     [{ graph_id: 'b_bbbbbbbb' }, { graph_id: 'b_aaaaaaaa' }],
     [{ graph_id: 'b_bbbbbbbb', sort_order: 1 }, { graph_id: 'b_aaaaaaaa', sort_order: 1 }]
   );
@@ -107,20 +107,20 @@ assert.match(tabCss, /\.chrome-tip \{[\s\S]*pointer-events: none/, 'tip never st
 assert.match(tabCss, /\.chrome-tip \{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis/, 'tip is a block box so the ellipsis renders');
 assert.match(tabCss, /prefers-reduced-motion/, 'tip honors reduced motion');
 assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
-assert.match(tabs, /getBoardTitle\(row\.graph_id, row\.title\)/, 'tabs take the title only from getBoardTitle');
+assert.match(tabs, /getDiagramTitle\(row\.graph_id, row\.title\)/, 'tabs take the title only from getDiagramTitle');
 assert.match(tabs, /addEventListener\("mouseenter", show\)/, 'title is re-read on hover');
 assert.match(tabs, /addEventListener\("focus", show\)/, 'title is re-read on focus');
 assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; \}\)/, 'unsaved draft tab hovers Untitled');
 assert.match(tabs, /"Add diagram"/, 'plus keeps Add diagram');
 {
   const sync = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-sync.js'), 'utf8');
-  const start = sync.indexOf('function cloudOpenBoardId');
-  const end = sync.indexOf('function cloudSetBoardHash');
-  assert.ok(start > 0 && end > start, 'getBoardTitle lives in 06-cloud-sync');
+  const start = sync.indexOf('function cloudOpenDiagramId');
+  const end = sync.indexOf('function cloudSetDiagramHash');
+  assert.ok(start > 0 && end > start, 'getDiagramTitle lives in 06-cloud-sync');
   const body = sync.slice(start, end);
-  assert.match(body, /cloudBoardTitle\(source\)/, 'reuses the existing md title parser');
-  const make = (env) => new Function('cloudPlusDraftActive', 'cloudVelaId', 'velaSourceEl', 'cloudCachedBoardRow', 'cloudBoardTitle',
-    body + '\nreturn getBoardTitle;')(!!env.draft, () => env.current || '', env.el || null,
+  assert.match(body, /cloudDiagramTitle\(source\)/, 'reuses the existing md title parser');
+  const make = (env) => new Function('cloudPlusDraftActive', 'cloudDiagramId', 'diagramSourceEl', 'cloudCachedDiagramRow', 'cloudDiagramTitle',
+    body + '\nreturn getDiagramTitle;')(!!env.draft, () => env.current || '', env.el || null,
     (id) => (env.cache || {})[id] || null,
     (src) => { const m = /^\s*board\s+"([^"]*)"/.exec(String(src || '')); return m ? m[1] : ''; });
   const el = { value: 'board "Live"\n' };

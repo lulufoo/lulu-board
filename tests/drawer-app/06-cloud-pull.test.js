@@ -19,16 +19,16 @@ assert.match(pull, /bindChromeTip\(status,/, 'green control uses the self-drawn 
 assert.match(appBuild, /06-cloud-sync\.js[\s\S]*06-cloud-pull\.js[\s\S]*06-cloud-group-tabs\.js/, 'pull module is built after sync');
 
 assert.match(pull, /getElementById\("shellCloudStatus"\)/, 'pull is wired to the green control');
-assert.match(pull, /from\("graphs"\)[\s\S]*\.eq\("graph_id", boardId\)[\s\S]*maybeSingle/, 'pull reads the boards row by id');
-assert.doesNotMatch(pull, /cloudCachedBoardRow/, 'pull never reads the memory cache');
-assert.match(pull, /cloudForgetBoardCache\(\[boardId\]\)/, 'pull drops the stale cache slot');
+assert.match(pull, /from\("graphs"\)[\s\S]*\.eq\("graph_id", diagramId\)[\s\S]*maybeSingle/, 'pull reads the boards row by id');
+assert.doesNotMatch(pull, /cloudCachedDiagramRow/, 'pull never reads the memory cache');
+assert.match(pull, /cloudForgetDiagramCache\(\[diagramId\]\)/, 'pull drops the stale cache slot');
 assert.match(pull, /cloudPlusDraftActive\) return false/, 'plus draft has nothing to pull');
 assert.match(pull, /isShareGuest/, 'share guests do not pull');
-assert.match(pull, /boardDirty && typeof askConfirm/, 'dirty local edits ask before overwrite');
-assert.doesNotMatch(pull, /saveVelaToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
+assert.match(pull, /diagramDirty && typeof askConfirm/, 'dirty local edits ask before overwrite');
+assert.doesNotMatch(pull, /saveDiagramToCloud|\.update\(|\.insert\(/, 'pull never writes the cloud');
 
 // brown stays upload
 const wire = sync.slice(sync.indexOf('var save = document.getElementById("btnShellSaveCloud");', sync.indexOf('function wireCloudAuth')));
-assert.match(wire, /saveVelaToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
+assert.match(wire, /saveDiagramToCloud\(\{ explicit: true \}\)/, 'brown Saved still uploads');
 
 console.log('ok cloud-pull');

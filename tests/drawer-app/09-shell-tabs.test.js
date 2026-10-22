@@ -24,8 +24,8 @@ assert.doesNotMatch(drawer, /is-folded|shellFold/, 'the fold logic is gone');
 assert.doesNotMatch(shellCss, /shell-fold|is-folded/, 'the fold rules are gone');
 
 // Share this board: bottom right of the Shared page, no list heading around it
-assert.match(html, /id="shellShared"[\s\S]*id="shellSharedList"[\s\S]*<div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareBoard"/, 'the button sits below the list');
-assert.match(drawer, /row\.hidden = shellOpenBoardShared\(\)/, 'hidden while the open board is already shared');
+assert.match(html, /id="shellShared"[\s\S]*id="shellSharedList"[\s\S]*<div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareDiagram"/, 'the button sits below the list');
+assert.match(drawer, /row\.hidden = shellOpenDiagramShared\(\)/, 'hidden while the open board is already shared');
 assert.doesNotMatch(html, /shell-sec-head/, 'no section headings are left');
 assert.doesNotMatch(shellCss, /shell-sec-head/, 'the heading rules are gone');
 assert.match(css, /\.shell-share-row \{ flex: none; display: flex; justify-content: flex-end;/, 'the button is right aligned');

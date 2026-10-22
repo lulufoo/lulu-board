@@ -5,12 +5,12 @@ const path = require('path');
 
 const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
 const canvas = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/00-canvas-view.js'), 'utf8');
-const board = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/02-vela.js'), 'utf8');
+const board = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/02-diagram.js'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
 
-assert.ok(/function applyRestoredBoardView/.test(shell), 'restore helper');
-assert.ok(/opts\.restoreView\) \{\s*applyRestoredBoardView\(\)/.test(board), 'renderVela restore uses helper');
-assert.ok(/applyRestoredBoardView\(\)/.test(boot), 'setMode skipBoard uses helper');
+assert.ok(/function applyRestoredDiagramView/.test(shell), 'restore helper');
+assert.ok(/opts\.restoreView\) \{\s*applyRestoredDiagramView\(\)/.test(board), 'renderDiagram restore uses helper');
+assert.ok(/applyRestoredDiagramView\(\)/.test(boot), 'setMode skipBoard uses helper');
 
 // The camera is per-board (style.viewport) only: nothing about it is stored in drawer.ui.
 assert.ok(!/boardViewId/.test(shell), 'no per-board view id in drawer.ui');
@@ -34,8 +34,8 @@ assert.ok(/let scale = 1, panX = 0, panY = 0;/.test(shell), 'live camera starts 
   const empty = fit.indexOf('applyCamera({ scale: 1, cx: 0, cy: 0 })');
   assert.ok(/if \(!b\) \{ applyCamera\(\{ scale: 1, cx: 0, cy: 0 \}\); return; \}/.test(fit), 'empty world resets camera to 100% centred');
   assert.ok(empty >= 0 && empty < fit.indexOf('applyCamera({ scale: next'), 'empty branch comes before the fit branch');
-  assert.ok(/function applyRestoredBoardView/.test(shell) && /Canvas\.restoreOrFit/.test(shell), 'restore helper calls Canvas');
-  assert.ok(/function fitBoardView/.test(shell) && /Canvas\.fitWorld/.test(shell), 'fit helper calls Canvas');
+  assert.ok(/function applyRestoredDiagramView/.test(shell) && /Canvas\.restoreOrFit/.test(shell), 'restore helper calls Canvas');
+  assert.ok(/function fitDiagramView/.test(shell) && /Canvas\.fitWorld/.test(shell), 'fit helper calls Canvas');
 }
 
 console.log('ok refresh-restore-fit');

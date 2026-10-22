@@ -10,7 +10,7 @@
   root.blankHashBoardSource = api.blankHashBoardSource;
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
   root.blankHashMindmapSource = api.blankHashMindmapSource;
-  root.velaTitleFromBody = api.velaTitleFromBody;
+  root.diagramTitleFromBody = api.diagramTitleFromBody;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   var META_LINE = /^meta\s+(\S+|{.*})\s*$/;
@@ -125,7 +125,7 @@
     return "%% title " + name + "\nmindmap\n  Topic\n";
   }
 
-  function velaTitleFromBody(body) {
+  function diagramTitleFromBody(body) {
     var text = String(body || "");
     var board = /^\s*board\s+"([^"]*)"/.exec(text);
     if (board) return board[1];
@@ -150,7 +150,7 @@
     blankHashBoardSource: blankHashBoardSource,
     blankHashFlowchartSource: blankHashFlowchartSource,
     blankHashMindmapSource: blankHashMindmapSource,
-    velaTitleFromBody: velaTitleFromBody,
+    diagramTitleFromBody: diagramTitleFromBody,
   };
 });
 var splitDocument = globalThis.splitDocument;
@@ -161,4 +161,4 @@ var newGraphId = globalThis.newGraphId;
 var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
 var blankHashMindmapSource = globalThis.blankHashMindmapSource;
-var velaTitleFromBody = globalThis.velaTitleFromBody;
+var diagramTitleFromBody = globalThis.diagramTitleFromBody;

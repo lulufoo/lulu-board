@@ -22,7 +22,7 @@ assert.match(sheet, /role="radiogroup"[\s\S]*data-share-role="view"[\s\S]*data-s
 assert.match(sheet, /role="switch"[^>]*id="sharePublicToggle"|id="sharePublicToggle"[^>]*role="switch"/, 'Public is a switch on top of the link, not a second access radio');
 assert.match(sheet, /id="sharePublicLabel">Listed in search/, 'Public copy is Listed in search');
 assert.match(sheet, /id="shareNewLink"[\s\S]*The old link stops working/, 'a new link says what happens to the old one');
-assert.match(sheet, /id="shareOpenBoard"[^>]*hidden/, 'Open board is for rows that are not the open board');
+assert.match(sheet, /id="shareOpenDiagram"[^>]*hidden/, 'Open board is for rows that are not the open board');
 assert.doesNotMatch(sheet, /Stop/, 'Stopping a share stays on the row, not in the dialog');
 
 // ---- build, wiring ----
@@ -50,7 +50,7 @@ function makeEl(id) {
   return el;
 }
 function load(opts) {
-  const ids = ['shareDialog', 'shareDialogBackdrop', 'shareDialogBoard', 'shareDialogOff', 'shareDialogOn', 'shareOpenBoard',
+  const ids = ['shareDialog', 'shareDialogBackdrop', 'shareDialogDiagram', 'shareDialogOff', 'shareDialogOn', 'shareOpenDiagram',
     'shareLinkInput', 'shareRoleHint', 'shareDone', 'shareCreate', 'shareCopy', 'shareNewLink', 'sharePublicToggle', 'sharePublicHint'];
   const els = {};
   ids.forEach((id) => { els[id] = makeEl(id); });
@@ -67,12 +67,12 @@ function load(opts) {
     window: {}, setTimeout() {}, console,
     shellIsPreview: () => !!opts.preview,
     shellShares: opts.shares || [],
-    shellSampleShares: () => [{ boardId: 'x2', shareId: 's_' + 'b'.repeat(32), title: 'Android MVI', role: 'edit', isCurrent: false }, { boardId: 'x1', shareId: 's_' + 'a'.repeat(32), title: 'LLM architecture', role: 'view', isCurrent: true }],
-    cloudVelaId: () => 'b_open',
-    cloudOpenBoardId: () => 'b_open',
-    getBoardTitle: (id) => (id === 'b_open' ? 'Open board title' : 'Untitled'),
+    shellSampleShares: () => [{ diagramId: 'x2', shareId: 's_' + 'b'.repeat(32), title: 'Android MVI', role: 'edit', isCurrent: false }, { diagramId: 'x1', shareId: 's_' + 'a'.repeat(32), title: 'LLM architecture', role: 'view', isCurrent: true }],
+    cloudDiagramId: () => 'b_open',
+    cloudOpenDiagramId: () => 'b_open',
+    getDiagramTitle: (id) => (id === 'b_open' ? 'Open board title' : 'Untitled'),
     cloudShareLinkFor: (id) => 'https://preview.luluvela.app/#s:' + id,
-    cloudShareMutate: async (boardId, rpc, args) => { calls.push({ boardId, rpc, args }); if (opts.after) opts.after(ctx, rpc, args); return {}; },
+    cloudShareMutate: async (diagramId, rpc, args) => { calls.push({ diagramId, rpc, args }); if (opts.after) opts.after(ctx, rpc, args); return {}; },
     cloudShareCopyLink: async (id) => { calls.push({ copy: id }); },
   };
   vm.createContext(ctx);
@@ -88,9 +88,9 @@ const tick = () => new Promise((r) => setImmediate(r));
     const t = load({ preview: true });
     t.api.shareDialogOpenCurrent(false);
     assert.strictEqual(t.els.shareDialog.hidden, false, 'opens');
-    assert.strictEqual(t.els.shareDialogBoard.textContent, 'LLM architecture');
+    assert.strictEqual(t.els.shareDialogDiagram.textContent, 'LLM architecture');
     assert.strictEqual(t.els.shareDialogOn.hidden, false, 'a shared board shows its link');
-    assert.strictEqual(t.els.shareOpenBoard.hidden, true, 'no Open board for the open board');
+    assert.strictEqual(t.els.shareOpenDiagram.hidden, true, 'no Open board for the open board');
     assert.match(t.els.shareLinkInput.value, /#s:s_a{32}$/);
     t.api.shareDialogSetRole('edit'); await tick();
     assert.strictEqual(t.roleBtns[1].getAttribute('aria-checked'), 'true', 'Edit becomes the chosen access');
@@ -116,13 +116,13 @@ const tick = () => new Promise((r) => setImmediate(r));
   // a row that is not the open board offers Open board
   {
     const t = load({ preview: true });
-    t.api.shareDialogOpen({ boardId: 'x2', shareId: 's_' + 'b'.repeat(32), title: 'Android MVI', role: 'edit', isCurrent: false });
-    assert.strictEqual(t.els.shareOpenBoard.hidden, false);
+    t.api.shareDialogOpen({ diagramId: 'x2', shareId: 's_' + 'b'.repeat(32), title: 'Android MVI', role: 'edit', isCurrent: false });
+    assert.strictEqual(t.els.shareOpenDiagram.hidden, false);
     assert.strictEqual(t.roleBtns[1].getAttribute('aria-checked'), 'true');
   }
   // live: each choice is one cloud call on that board; the refreshed list decides what is shown
   {
-    const share = { boardId: 'b_1', shareId: 's_' + 'c'.repeat(32), title: 'Live board', role: 'view', isCurrent: false };
+    const share = { diagramId: 'b_1', shareId: 's_' + 'c'.repeat(32), title: 'Live board', role: 'view', isCurrent: false };
     const t = load({ preview: false, shares: [share], after(ctx, rpc) {
       if (rpc === 'set_share_role') ctx.shellShares = [Object.assign({}, share, { role: 'edit' })];
       if (rpc === 'rotate_share') ctx.shellShares = [Object.assign({}, share, { shareId: 's_' + 'd'.repeat(32) })];
@@ -130,7 +130,7 @@ const tick = () => new Promise((r) => setImmediate(r));
     } });
     t.api.shareDialogOpen(share);
     t.api.shareDialogSetRole('edit'); await tick(); await tick();
-    assert.deepStrictEqual(plain(t.calls[0]), { boardId: 'b_1', rpc: 'set_share_role', args: { p_role: 'edit' } });
+    assert.deepStrictEqual(plain(t.calls[0]), { diagramId: 'b_1', rpc: 'set_share_role', args: { p_role: 'edit' } });
     assert.strictEqual(t.roleBtns[1].getAttribute('aria-checked'), 'true');
     t.api.shareDialogSetRole('edit'); await tick();
     assert.strictEqual(t.calls.length, 1, 'choosing the same access again does nothing');
@@ -143,11 +143,11 @@ const tick = () => new Promise((r) => setImmediate(r));
   // live, no link yet: Create link makes one for the open board
   {
     const t = load({ preview: false, shares: [], after(ctx, rpc) {
-      if (rpc === 'open_share') ctx.shellShares = [{ boardId: 'b_open', shareId: 's_' + 'e'.repeat(32), title: 'Open board title', role: 'view', isCurrent: true }];
+      if (rpc === 'open_share') ctx.shellShares = [{ diagramId: 'b_open', shareId: 's_' + 'e'.repeat(32), title: 'Open board title', role: 'view', isCurrent: true }];
     } });
     t.api.shareDialogOpenCurrent(false);
     assert.strictEqual(t.els.shareDialogOff.hidden, false);
-    assert.strictEqual(t.els.shareDialogBoard.textContent, 'Open board title');
+    assert.strictEqual(t.els.shareDialogDiagram.textContent, 'Open board title');
     t.api.shareDialogCreateLink(); await tick(); await tick();
     assert.strictEqual(t.calls[0].rpc, 'open_share');
     assert.strictEqual(t.els.shareDialogOn.hidden, false, 'the link shows once it exists');
@@ -155,7 +155,7 @@ const tick = () => new Promise((r) => setImmediate(r));
   }
   // Public is a separate switch; Edit is disabled while Public is on
   {
-    const share = { boardId: 'b_1', shareId: 's_' + 'c'.repeat(32), title: 'Live board', role: 'view', isPublic: false, isCurrent: false };
+    const share = { diagramId: 'b_1', shareId: 's_' + 'c'.repeat(32), title: 'Live board', role: 'view', isPublic: false, isCurrent: false };
     const t = load({ preview: false, shares: [share], after(ctx, rpc, args) {
       if (rpc === 'set_share_role' && args && args.p_principal === 'public' && args.p_role === 'view') {
         ctx.shellShares = [Object.assign({}, share, { isPublic: true })];
@@ -166,7 +166,7 @@ const tick = () => new Promise((r) => setImmediate(r));
     } });
     t.api.shareDialogOpen(share);
     t.api.shareDialogSetPublic(true); await tick(); await tick();
-    assert.deepStrictEqual(plain(t.calls[0]), { boardId: 'b_1', rpc: 'set_share_role', args: { p_role: 'view', p_principal: 'public' } });
+    assert.deepStrictEqual(plain(t.calls[0]), { diagramId: 'b_1', rpc: 'set_share_role', args: { p_role: 'view', p_principal: 'public' } });
     assert.strictEqual(t.els.sharePublicToggle.getAttribute('aria-checked'), 'true');
     assert.strictEqual(t.roleBtns[1].disabled, true, 'Edit is disabled while Public is on');
     t.api.shareDialogSetRole('edit'); await tick();
@@ -176,7 +176,7 @@ const tick = () => new Promise((r) => setImmediate(r));
   }
   // Edit on: Public switch is disabled
   {
-    const share = { boardId: 'b_2', shareId: 's_' + 'f'.repeat(32), title: 'Edit board', role: 'edit', isPublic: false, isCurrent: false };
+    const share = { diagramId: 'b_2', shareId: 's_' + 'f'.repeat(32), title: 'Edit board', role: 'edit', isPublic: false, isCurrent: false };
     const t = load({ preview: false, shares: [share] });
     t.api.shareDialogOpen(share);
     assert.strictEqual(t.els.sharePublicToggle.disabled, true);

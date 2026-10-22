@@ -2,8 +2,8 @@
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
   root.LuluBoardCloudRoute = api;
-  root.cloudBoardIdFromHash = api.cloudBoardIdFromHash;
-  root.cloudBoardHash = api.cloudBoardHash;
+  root.cloudDiagramIdFromHash = api.cloudDiagramIdFromHash;
+  root.cloudDiagramHash = api.cloudDiagramHash;
   root.cloudShareIdFromHash = api.cloudShareIdFromHash;
   root.cloudShareHash = api.cloudShareHash;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
@@ -12,14 +12,14 @@
   var GRAPH_ID_RE = /^b_[0-9a-f]{8}$/;
   var SHARE_ID_RE = /^s_[0-9a-f]{32}$/;
 
-  function cloudBoardIdFromHash(raw) {
+  function cloudDiagramIdFromHash(raw) {
     var token = String(raw || "").replace(/^#/, "");
     var match = /^b:(b_[0-9a-f]{8})$/.exec(token);
     return match ? match[1] : "";
   }
 
-  function cloudBoardHash(boardId) {
-    var id = String(boardId || "").trim();
+  function cloudDiagramHash(diagramId) {
+    var id = String(diagramId || "").trim();
     if (!GRAPH_ID_RE.test(id)) throw new Error("invalid cloud graph id");
     return "#b:" + id;
   }
@@ -37,14 +37,14 @@
   }
 
   return {
-    cloudBoardIdFromHash: cloudBoardIdFromHash,
-    cloudBoardHash: cloudBoardHash,
+    cloudDiagramIdFromHash: cloudDiagramIdFromHash,
+    cloudDiagramHash: cloudDiagramHash,
     cloudShareIdFromHash: cloudShareIdFromHash,
     cloudShareHash: cloudShareHash,
   };
 });
 
-var cloudBoardIdFromHash = globalThis.cloudBoardIdFromHash;
-var cloudBoardHash = globalThis.cloudBoardHash;
+var cloudDiagramIdFromHash = globalThis.cloudDiagramIdFromHash;
+var cloudDiagramHash = globalThis.cloudDiagramHash;
 var cloudShareIdFromHash = globalThis.cloudShareIdFromHash;
 var cloudShareHash = globalThis.cloudShareHash;

@@ -70,7 +70,7 @@ const domain = [
   '01-shell-state.js',
   '01-canvas-interaction.js',
   '01-mermaid-halo.js',
-  '02-vela.js',
+  '02-diagram.js',
   '02-board.js',
   '03-flowchart-shapes.js',
   '03-flowchart.js',

@@ -166,12 +166,12 @@ function canvasToPngBlob(canvas) {
   });
 }
 
-function exportBoardStem() {
-  const parsed = typeof getBoardTitle === "function" ? getBoardTitle(cloudOpenBoardId()) : "";
+function exportDiagramStem() {
+  const parsed = typeof getDiagramTitle === "function" ? getDiagramTitle(cloudOpenDiagramId()) : "";
   const title = parsed === "Untitled" ? "" : parsed;
   const id = typeof liveRecordId === "function"
     ? liveRecordId()
-    : (typeof liveBoardId === "string" ? liveBoardId : "");
+    : (typeof liveDiagramId === "string" ? liveDiagramId : "");
   const path = typeof activeSourcePath === "function" ? activeSourcePath() : "";
   const fromPath = path ? String(path).split("/").pop().replace(/\.[^.]+$/, "") : "";
   return exportStem(title || fromPath || id, "board");
@@ -208,7 +208,7 @@ async function saveExportBlob(blob, filename, mime) {
   return "download";
 }
 
-async function exportBoardFile() {
+async function exportDiagramFile() {
   const text = typeof activeSourceText === "function" ? activeSourceText() : "";
   if (!String(text).trim()) {
     setStatus("Nothing to export", true);
@@ -216,7 +216,7 @@ async function exportBoardFile() {
   }
   const result = await saveExportBlob(
     new Blob([text], { type: "text/plain;charset=utf-8" }),
-    exportBoardStem() + ".bmd",
+    exportDiagramStem() + ".bmd",
     "text/plain"
   );
   if (result === "abort") return;
@@ -269,7 +269,7 @@ async function exportPng() {
     paintExportGrid(context, output, cropped.surfaceSize);
     context.drawImage(cropped.canvas, 0, 0);
 
-    const result = await writePngExport(await canvasToPngBlob(output), exportBoardStem());
+    const result = await writePngExport(await canvasToPngBlob(output), exportDiagramStem());
     if (result === "abort") return;
     const message = result === "picker" ? "PNG saved" : "PNG exported";
     setStatus(message);

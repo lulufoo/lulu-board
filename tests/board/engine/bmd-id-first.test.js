@@ -22,7 +22,7 @@ assert.ok(/title="Copy Source"[^>]*>Source</.test(html), 'Source button says Sou
 assert.ok(/<button[^>]*id="btnSourceCopyId"[^>]*>/.test(html) && /<button[^>]*class="btn"[^>]*id="btnSourceCopyId"/.test(html) && !/id="btnSourceCopyId"[^>]*ghost/.test(html), 'Copy ID is a bordered button');
 assert.ok(/<button[^>]*class="btn"[^>]*id="btnSourceCopy"[^>]*>/.test(html) && !/<button[^>]*id="btnSourceCopy"[^>]*ghost/.test(html), 'Copy Source is a bordered button');
 assert.ok(!/id="snapPill"/.test(html) && !/id="boardSnapPill"/.test(html), 'no record snap pills');
-assert.ok(/id="velaDockResize"/.test(html), 'sidebar has a resize handle');
+assert.ok(/id="diagramDockResize"/.test(html), 'sidebar has a resize handle');
 assert.ok(/class="source-chars"/.test(html), 'chars sit on the editor');
 assert.ok(/class="props-field"/.test(html) && /id="boardDirEditor"[\s\S]*id="boardDirTip"/.test(html), 'property tips sit under the control');
 assert.ok(/flex-direction:\s*row/.test(css) && /\.dock-source-head\s*\{/.test(css), 'Source head is a row');
@@ -42,7 +42,7 @@ assert.ok(!/mermaid:\s*'default'/.test(themes), 'theme map drops mermaid alias')
 assert.ok(/They are not the Drawer BMD ID/.test(vocab), 'vocab node IDs are not BMD ID');
 assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
 assert.ok(!/id="syncPill"/.test(html), 'Source does not show a rev pill');
-assert.ok(!/id="boardSyncPill"/.test(html), 'Board Source does not show a rev pill');
+assert.ok(!/id="diagramSyncPill"/.test(html), 'Board Source does not show a rev pill');
 assert.ok(/liveDocumentVersion/.test(shell), 'Source title reads document version');
 assert.ok(/id="sourceDockVersion"/.test(html) && /function formatVersionLabel/.test(shell), 'version sits beside the type name');
 assert.ok(/function liveKindLabel/.test(shell) && /title.textContent !== label/.test(shell), 'Source title follows the live diagram type');

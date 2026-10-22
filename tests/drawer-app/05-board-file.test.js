@@ -22,7 +22,7 @@ assert.doesNotMatch(cloud, /refreshCloudBoardHistory|cloudSetHistoryVisible|pain
 assert.match(cloud, /async function cloudRefreshGroups/, 'the drawer list refresh replaces the history refresh');
 assert.doesNotMatch(css, /\.history-(combo|item|pop|list|block)|#boardHistory/, 'history styles are gone');
 assert.doesNotMatch(chromeCss, /#boardHistory/, 'history chrome styles are gone');
-assert.match(chromeCss, /html\[data-drawer-mode="vela"\] \.shell-account-bar\s*\{[^}]*bottom:\s*8px/,
+assert.match(chromeCss, /html\[data-drawer-mode="diagram"\] \.shell-account-bar\s*\{[^}]*bottom:\s*8px/,
   'account chrome sits on the sidebar foot');
 assert.doesNotMatch(chromeCss, /#shellCloudStatus \{\s*display:\s*none/,
   'Saved stays its own control');

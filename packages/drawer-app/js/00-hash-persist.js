@@ -2,13 +2,13 @@
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
   root.DrawerHashPersist = api;
-  root.boardPersistMode = api.boardPersistMode;
-  root.encodeBoardHash = api.encodeBoardHash;
-  root.decodeBoardHash = api.decodeBoardHash;
+  root.diagramPersistMode = api.diagramPersistMode;
+  root.encodeDiagramHash = api.encodeDiagramHash;
+  root.decodeDiagramHash = api.decodeDiagramHash;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  function boardPersistMode() {
+  function diagramPersistMode() {
     var doc = typeof document !== "undefined" ? document.documentElement : null;
     var forced = doc && doc.getAttribute("data-persist");
     if (forced === "hash" || forced === "local") return forced;
@@ -51,7 +51,7 @@
     return new Uint8Array(require("zlib").inflateSync(Buffer.from(bytes)));
   }
 
-  async function encodeBoardHash(text, version) {
+  async function encodeDiagramHash(text, version) {
     var payload = JSON.stringify({
       bmd: String(text || ""),
       version: Number(version) > 0 ? Number(version) : 1,
@@ -60,7 +60,7 @@
     return "z:" + bytesToBase64Url(await compressZlib(input));
   }
 
-  async function decodeBoardHash(raw) {
+  async function decodeDiagramHash(raw) {
     var token = String(raw || "").replace(/^#/, "");
     if (token.indexOf("z:") !== 0) throw new Error("invalid board hash");
     var bytes = base64UrlToBytes(token.slice(2));
@@ -78,11 +78,11 @@
   }
 
   return {
-    boardPersistMode: boardPersistMode,
-    encodeBoardHash: encodeBoardHash,
-    decodeBoardHash: decodeBoardHash,
+    diagramPersistMode: diagramPersistMode,
+    encodeDiagramHash: encodeDiagramHash,
+    decodeDiagramHash: decodeDiagramHash,
   };
 });
-var boardPersistMode = globalThis.boardPersistMode;
-var encodeBoardHash = globalThis.encodeBoardHash;
-var decodeBoardHash = globalThis.decodeBoardHash;
+var diagramPersistMode = globalThis.diagramPersistMode;
+var encodeDiagramHash = globalThis.encodeDiagramHash;
+var decodeDiagramHash = globalThis.decodeDiagramHash;

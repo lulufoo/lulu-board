@@ -106,9 +106,9 @@ var shellShares = shellShares || [];
       if (event.key === "Escape" && !authMenu.hidden) { event.stopPropagation(); setAuthMenu(false); account.focus({ preventScroll: true }); }
     }, true);
   }
-  var newBoard = document.getElementById("shellNewBoard");
-  if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankBoard(); });
-  var shareBtn = document.getElementById("shellShareBoard");
+  var newBoard = document.getElementById("shellNewDiagram");
+  if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankDiagram(); });
+  var shareBtn = document.getElementById("shellShareDiagram");
   if (shareBtn) shareBtn.addEventListener("click", function () {
     if (typeof shareDialogOpenCurrent === "function") shareDialogOpenCurrent(false);
   });
@@ -151,14 +151,14 @@ function shellSampleGroups() {
   var now = new Date();
   var ago = function (d) { return new Date(now.getTime() - d * 86400000).toISOString(); };
   return [
-    { groupId: "s1", title: "LLM architecture", boardCount: 3, updatedAt: ago(0), boardIds: ["s1"], faceBoardId: "", isCurrent: true },
-    { groupId: "s2", title: "Android MVI", boardCount: 2, updatedAt: ago(1), boardIds: ["s2"], faceBoardId: "", isCurrent: false },
-    { groupId: "s3", title: "Onboarding", boardCount: 1, updatedAt: ago(3), boardIds: ["s3"], faceBoardId: "", isCurrent: false },
-    { groupId: "s4", title: "Payments retry flow", boardCount: 4, updatedAt: ago(9), boardIds: ["s4"], faceBoardId: "", isCurrent: false },
-    { groupId: "s5", title: "Q3 planning", boardCount: 2, updatedAt: ago(14), boardIds: ["s5"], faceBoardId: "", isCurrent: false },
+    { groupId: "s1", title: "LLM architecture", diagramCount: 3, updatedAt: ago(0), diagramIds: ["s1"], faceDiagramId: "", isCurrent: true },
+    { groupId: "s2", title: "Android MVI", diagramCount: 2, updatedAt: ago(1), diagramIds: ["s2"], faceDiagramId: "", isCurrent: false },
+    { groupId: "s3", title: "Onboarding", diagramCount: 1, updatedAt: ago(3), diagramIds: ["s3"], faceDiagramId: "", isCurrent: false },
+    { groupId: "s4", title: "Payments retry flow", diagramCount: 4, updatedAt: ago(9), diagramIds: ["s4"], faceDiagramId: "", isCurrent: false },
+    { groupId: "s5", title: "Q3 planning", diagramCount: 2, updatedAt: ago(14), diagramIds: ["s5"], faceDiagramId: "", isCurrent: false },
   ].concat(Array.from({ length: 19 }, function (_, i) {
     var titles = ["Roadmap", "Retro notes", "Search ranking", "Billing", "Design review", "Infra costs", "Hiring loop"];
-    return { groupId: "s" + (i + 6), title: titles[i % titles.length] + (i >= titles.length ? " " + (Math.floor(i / titles.length) + 1) : ""), boardCount: 1 + (i % 3), updatedAt: ago(16 + i * 3), boardIds: ["s" + (i + 6)], faceBoardId: "", isCurrent: false };
+    return { groupId: "s" + (i + 6), title: titles[i % titles.length] + (i >= titles.length ? " " + (Math.floor(i / titles.length) + 1) : ""), diagramCount: 1 + (i % 3), updatedAt: ago(16 + i * 3), diagramIds: ["s" + (i + 6)], faceDiagramId: "", isCurrent: false };
   }));
 }
 
@@ -218,11 +218,11 @@ function shellRenderMine(groups) {
   var empty = document.getElementById("shellMineEmpty");
   if (!list) return;
   if (groups) shellGroups = groups;
-  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
+  var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
   var preview = typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
   var rows = preview ? shellSampleGroups() : shellGroups;
   var frag = document.createDocumentFragment();
-  function inCurrent(group) { return preview ? !!group.isCurrent : !!current && group.boardIds.indexOf(current) >= 0; }
+  function inCurrent(group) { return preview ? !!group.isCurrent : !!current && group.diagramIds.indexOf(current) >= 0; }
   var win = shellMineWindow(rows, shellMineShown || shellMinePage(), inCurrent);
   win.visible.forEach(function (group) {
     var isCurrent = inCurrent(group);
@@ -236,13 +236,13 @@ function shellRenderMine(groups) {
     title.textContent = group.title || "Untitled";
     var meta = document.createElement("span");
     var when = shellWhen(group.updatedAt);
-    meta.textContent = group.boardCount + " diagrams" + (when ? " · " + when : "");
+    meta.textContent = group.diagramCount + " diagrams" + (when ? " · " + when : "");
     row.appendChild(title);
     row.appendChild(meta);
     row.addEventListener("click", function () {
       if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
-      if (preview || isCurrent || !group.faceBoardId) return;
-      if (typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(group.faceBoardId);
+      if (preview || isCurrent || !group.faceDiagramId) return;
+      if (typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(group.faceDiagramId);
     });
     var del = document.createElement("button");
     del.type = "button";
@@ -253,7 +253,7 @@ function shellRenderMine(groups) {
     del.addEventListener("click", function (event) {
       event.stopPropagation();
       if (preview || typeof deleteCloudGroup !== "function") return;
-      void deleteCloudGroup(group.groupId, group.boardIds);
+      void deleteCloudGroup(group.groupId, group.diagramIds);
     });
     li.appendChild(row);
     li.appendChild(del);
@@ -278,13 +278,13 @@ function shellRenderMine(groups) {
 }
 
 // New board: pick Board vs Mermaid first. The first save creates its group.
-async function shellNewBlankBoard() {
+async function shellNewBlankDiagram() {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
   if (typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user)) return;
-  if (typeof cloudConfirmLeaveBoard === "function" && !(await cloudConfirmLeaveBoard())) return;
+  if (typeof cloudConfirmLeaveDiagram === "function" && !(await cloudConfirmLeaveDiagram())) return;
   if (typeof openCreateKindDialog !== "function") return;
   openCreateKindDialog({
-    onPick: function (kind) { void shellCommitBlankBoard(kind); },
+    onPick: function (kind) { void shellCommitBlankDiagram(kind); },
     onCancel: function () {},
   });
 }
@@ -293,10 +293,10 @@ function shellCloseAfterKindPick() {
   if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
 }
 
-async function shellCommitBlankBoard(kind) {
+async function shellCommitBlankDiagram(kind) {
   shellCloseAfterKindPick();
-  if (typeof boardDirty !== "undefined" && boardDirty && typeof cloudVelaId === "function" && cloudVelaId() && typeof cloudParkDirtyBoard === "function") {
-    cloudParkDirtyBoard();
+  if (typeof diagramDirty !== "undefined" && diagramDirty && typeof cloudDiagramId === "function" && cloudDiagramId() && typeof cloudParkDirtyDiagram === "function") {
+    cloudParkDirtyDiagram();
   }
   if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
   history.replaceState(null, "", location.pathname + location.search);
@@ -308,18 +308,18 @@ async function shellCommitBlankBoard(kind) {
       : (typeof blankHashBoardSource === "function" ? blankHashBoardSource("Untitled") : "board \"Untitled\"\n");
   if (typeof setShareView === "function") setShareView(false);
   if (typeof setShareEdit === "function") setShareEdit(false);
-  if (typeof velaSourceEl !== "undefined" && velaSourceEl) {
-    velaSourceEl.value = source;
-    delete velaSourceEl.dataset.boardSelectionKey;
-    delete velaSourceEl.dataset.boardEdgeSelectionKey;
+  if (typeof diagramSourceEl !== "undefined" && diagramSourceEl) {
+    diagramSourceEl.value = source;
+    delete diagramSourceEl.dataset.boardSelectionKey;
+    delete diagramSourceEl.dataset.boardEdgeSelectionKey;
   }
-  velaLocalRev = 1;
-  boardServerRev = 0;
-  if (typeof applyBoardLiveMeta === "function") {
-    applyBoardLiveMeta({ id: "", version: 1 });
+  diagramLocalRev = 1;
+  diagramServerRev = 0;
+  if (typeof applyDiagramLiveMeta === "function") {
+    applyDiagramLiveMeta({ id: "", version: 1 });
   }
-  if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
-  if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
+  if (typeof saveDiagramToHash === "function") await saveDiagramToHash({ bump: false });
+  if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   shellRenderMine();
 }
@@ -348,7 +348,7 @@ function shellOfferBlankStartKind() {
         if (typeof document !== "undefined" && document.documentElement) {
           delete document.documentElement.dataset.blankStartKind;
         }
-        void shellCommitBlankBoard(kind);
+        void shellCommitBlankDiagram(kind);
       },
       onCancel: function () { open(); },
     });
@@ -362,20 +362,20 @@ function shellIsPreview() {
 }
 
 // Is the open board already one of the shares? (Then its row, not this button, is how you reach its dialog.)
-function shellOpenBoardShared() {
+function shellOpenDiagramShared() {
   if (shellIsPreview()) return shellSampleShares().some(function (item) { return item.isCurrent; });
-  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
-  return !!current && shellShares.some(function (item) { return item.boardId === current; });
+  var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
+  return !!current && shellShares.some(function (item) { return item.diagramId === current; });
 }
 
 // "Share this board" works for a saved cloud board you own, and only shows while the open board is not shared yet.
 function shellSyncShareButton() {
-  var btn = document.getElementById("shellShareBoard");
+  var btn = document.getElementById("shellShareDiagram");
   var row = document.getElementById("shellShareRow");
   if (!btn) return;
-  if (row) row.hidden = shellOpenBoardShared();
+  if (row) row.hidden = shellOpenDiagramShared();
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
-  var own = typeof cloudVelaId === "function" && !!cloudVelaId() && !(typeof isShareGuest === "function" && isShareGuest());
+  var own = typeof cloudDiagramId === "function" && !!cloudDiagramId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
   btn.title = btn.disabled ? "Save this diagram to the cloud to share it" : "Share this diagram";
 }
@@ -390,8 +390,8 @@ function shellSampleShares() {
   return [
     { incoming: true, title: "Search ranking v2", note: "from Chen Yu · can view" },
     { incoming: true, title: "Release checklist", note: "from Mia · can edit" },
-    { boardId: "x1", shareId: "s_11111111111111111111111111111111", title: "LLM architecture", role: "view", isCurrent: openIsShared },
-    { boardId: "x2", shareId: "s_22222222222222222222222222222222", title: "Android MVI", role: "edit", isCurrent: false },
+    { diagramId: "x1", shareId: "s_11111111111111111111111111111111", title: "LLM architecture", role: "view", isCurrent: openIsShared },
+    { diagramId: "x2", shareId: "s_22222222222222222222222222222222", title: "Android MVI", role: "edit", isCurrent: false },
   ];
 }
 
@@ -416,7 +416,7 @@ function shellRenderShared(shares) {
   section.hidden = !(signedIn || preview);
   shellSyncTabs(!section.hidden);
   shellSyncShareButton();
-  var current = typeof cloudVelaId === "function" ? cloudVelaId() : "";
+  var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
   var rows = preview ? shellSampleShares() : shellShares;
   var frag = document.createDocumentFragment();
   rows.forEach(function (item) {
@@ -436,7 +436,7 @@ function shellRenderShared(shares) {
       frag.appendChild(li);
       return;
     }
-    var isCurrent = preview ? item.isCurrent : !!current && item.boardId === current;
+    var isCurrent = preview ? item.isCurrent : !!current && item.diagramId === current;
     li.className = "shell-row shell-row-dir shell-row-link" + (isCurrent ? " is-active is-current" : "");
     var icon = document.createElement("i");
     icon.className = "shell-dir is-out";
@@ -470,7 +470,7 @@ function shellRenderShared(shares) {
         ok: "Stop sharing",
         cancel: "Cancel",
       }))) return;
-      void cloudShareMutate(item.boardId, "unshare", null, "Stopped sharing");
+      void cloudShareMutate(item.diagramId, "unshare", null, "Stopped sharing");
     });
     stop.className = "is-danger";
     acts.appendChild(stop);
@@ -505,9 +505,9 @@ function shellSearchMatches(query, groups, source) {
   var q = String(query || "").trim().toLowerCase();
   var boards = [];
   (groups || []).forEach(function (group) {
-    var members = group.members && group.members.length ? group.members : [{ graph_id: group.faceBoardId, title: group.title }];
+    var members = group.members && group.members.length ? group.members : [{ graph_id: group.faceDiagramId, title: group.title }];
     if (!q) {
-      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + " diagrams", boardId: group.faceBoardId });
+      boards.push({ groupId: group.groupId, title: group.title, note: group.diagramCount + " diagrams", diagramId: group.faceDiagramId });
       return;
     }
     var groupHit = String(group.title || "").toLowerCase().indexOf(q) >= 0;
@@ -517,8 +517,8 @@ function shellSearchMatches(query, groups, source) {
     boards.push({
       groupId: group.groupId,
       title: group.title,
-      note: viaBoard ? "Diagram · " + boardHit.title : group.boardCount + " diagrams",
-      boardId: viaBoard ? boardHit.graph_id : group.faceBoardId,
+      note: viaBoard ? "Diagram · " + boardHit.title : group.diagramCount + " diagrams",
+      diagramId: viaBoard ? boardHit.graph_id : group.faceDiagramId,
     });
   });
   var lines = [];
@@ -534,7 +534,7 @@ function shellSearchMatches(query, groups, source) {
 function shellSearchGroups() {
   if (shellIsPreview()) {
     return shellSampleGroups().map(function (g) {
-      return { groupId: g.groupId, title: g.title, boardCount: g.boardCount, faceBoardId: "", members: [{ graph_id: "", title: g.title }] };
+      return { groupId: g.groupId, title: g.title, diagramCount: g.diagramCount, faceDiagramId: "", members: [{ graph_id: "", title: g.title }] };
     });
   }
   return shellGroups;
@@ -591,14 +591,14 @@ async function shellFillSearch() {
   if (!box || !input) return;
   var seq = ++shellSearchSeq;
   var query = input.value;
-  var source = typeof velaSourceEl !== "undefined" && velaSourceEl ? velaSourceEl.value : "";
+  var source = typeof diagramSourceEl !== "undefined" && diagramSourceEl ? diagramSourceEl.value : "";
   var found = shellSearchMatches(query, shellSearchGroups(), source);
   var remote = { mine: [], public: [] };
   shellPaintSearchResults(query, found, remote);
   var q = String(query || "").trim();
-  if (!q || typeof cloudSearchBoards !== "function" || typeof cloudSearchSignedIn !== "function" || !cloudSearchSignedIn()) return;
+  if (!q || typeof cloudSearchDiagrams !== "function" || typeof cloudSearchSignedIn !== "function" || !cloudSearchSignedIn()) return;
   try {
-    remote = await cloudSearchBoards(q);
+    remote = await cloudSearchDiagrams(q);
   } catch (error) {
     if (seq !== shellSearchSeq) return;
     if (typeof setStatus === "function") setStatus(error && error.message ? error.message : "Search failed", true);
@@ -627,7 +627,7 @@ function shellPickSearch() {
   if (typeof window.shellCloseSearch === "function") window.shellCloseSearch();
   if (shellIsPreview()) return;
   if (hit.kind === "board" || hit.kind === "mine") {
-    if (hit.item.boardId && typeof cloudSwitchToBoard === "function") void cloudSwitchToBoard(hit.item.boardId);
+    if (hit.item.diagramId && typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(hit.item.diagramId);
     return;
   }
   if (hit.kind === "public") {
@@ -636,10 +636,10 @@ function shellPickSearch() {
   }
   // A line of the open board: show it in Source and select it.
   if (typeof openDock === "function") openDock("source");
-  if (typeof velaSourceEl === "undefined" || !velaSourceEl) return;
-  var lines = velaSourceEl.value.split("\n");
+  if (typeof diagramSourceEl === "undefined" || !diagramSourceEl) return;
+  var lines = diagramSourceEl.value.split("\n");
   var start = 0;
   for (var i = 0; i < hit.item.line; i++) start += lines[i].length + 1;
-  velaSourceEl.focus();
-  velaSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
+  diagramSourceEl.focus();
+  diagramSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
 }

@@ -29,7 +29,7 @@ assert.strictEqual(Head.isLegalHash('#z:'), false);
 assert.strictEqual(Head.isLegalHash('#z:has space'), false);
 assert.strictEqual(Head.isLegalHash('#b:b_29B9c39c'), false);
 assert.strictEqual(Head.isLegalHash('#s:s_short'), false);
-assert.strictEqual(Boolean(Route.cloudBoardIdFromHash(BOARD)), Head.isLegalHash(BOARD));
+assert.strictEqual(Boolean(Route.cloudDiagramIdFromHash(BOARD)), Head.isLegalHash(BOARD));
 assert.strictEqual(Boolean(Route.cloudShareIdFromHash(SHARE)), Head.isLegalHash(SHARE));
 
 // session marker

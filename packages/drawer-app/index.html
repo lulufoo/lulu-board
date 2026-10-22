@@ -23,7 +23,7 @@
   <div class="shell-scrim" id="shellScrim" hidden></div>
   <aside class="shell-drawer" id="shellDrawer" aria-label="Your diagrams" tabindex="-1" hidden>
     <div class="shell-drawer-body" data-shell-tab="mine">
-      <button class="shell-new" id="shellNewBoard" type="button">
+      <button class="shell-new" id="shellNewDiagram" type="button">
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
         New diagram
       </button>
@@ -37,7 +37,7 @@
       </section>
       <section class="shell-sec shell-shared" id="shellShared" role="tabpanel" aria-labelledby="shellTabShared" hidden>
         <ul class="shell-list" id="shellSharedList"></ul>
-        <div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareBoard" type="button">Share this diagram</button></div>
+        <div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareDiagram" type="button">Share this diagram</button></div>
       </section>
     </div>
     <div class="shell-auth-menu" id="shellAuthMenu" role="menu" hidden>
@@ -103,7 +103,7 @@
       <div id="preview"></div>
     </div>
 
-    <nav class="group-tab-float" id="vela-group-tabs" hidden aria-label="Diagrams in this group"></nav>
+    <nav class="group-tab-float" id="diagram-group-tabs" hidden aria-label="Diagrams in this group"></nav>
     <div class="float zoom-float">
       <button class="btn" id="btnZoomOut">−</button>
       <button class="btn" id="btnZoomReset">90%</button>
@@ -113,35 +113,35 @@
     </div>
   </main>
 
-  <aside class="vela-dock" id="velaDock" data-open="" aria-label="Drawer panels">
-    <div class="vela-dock-resize" id="velaDockResize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
-    <div class="vela-dock-rail" role="tablist" aria-label="Drawer panels">
-      <button type="button" class="vela-dock-tab" id="btnDockProps" data-dock="props" data-dock-icon="inspector" role="tab" aria-selected="false" title="Properties">
-        <svg class="vela-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <span class="vela-dock-tab-label">Properties</span>
+  <aside class="diagram-dock" id="diagramDock" data-open="" aria-label="Drawer panels">
+    <div class="diagram-dock-resize" id="diagramDockResize" role="separator" aria-orientation="vertical" aria-label="Resize sidebar"></div>
+    <div class="diagram-dock-rail" role="tablist" aria-label="Drawer panels">
+      <button type="button" class="diagram-dock-tab" id="btnDockProps" data-dock="props" data-dock-icon="inspector" role="tab" aria-selected="false" title="Properties">
+        <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="diagram-dock-tab-label">Properties</span>
       </button>
-      <button type="button" class="vela-dock-tab" id="btnDockStyle" data-dock="style" data-dock-icon="palette" role="tab" aria-selected="false" title="Style">
-        <svg class="vela-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r="0.95" fill="currentColor"/><circle cx="8.35" cy="5.55" r="0.95" fill="currentColor"/><circle cx="10.85" cy="7.4" r="0.95" fill="currentColor"/></svg>
-        <span class="vela-dock-tab-label">Style</span>
+      <button type="button" class="diagram-dock-tab" id="btnDockStyle" data-dock="style" data-dock-icon="palette" role="tab" aria-selected="false" title="Style">
+        <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r="0.95" fill="currentColor"/><circle cx="8.35" cy="5.55" r="0.95" fill="currentColor"/><circle cx="10.85" cy="7.4" r="0.95" fill="currentColor"/></svg>
+        <span class="diagram-dock-tab-label">Style</span>
       </button>
-      <button type="button" class="vela-dock-tab" id="btnDockSource" data-dock="source" data-dock-icon="code" role="tab" aria-selected="false" title="Source">
-        <svg class="vela-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.25 4.5 1.75 8l3.5 3.5M10.75 4.5 14.25 8l-3.5 3.5M9 3 7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="vela-dock-tab-label" id="sourceDockTabLabel">Source</span>
+      <button type="button" class="diagram-dock-tab" id="btnDockSource" data-dock="source" data-dock-icon="code" role="tab" aria-selected="false" title="Source">
+        <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.25 4.5 1.75 8l3.5 3.5M10.75 4.5 14.25 8l-3.5 3.5M9 3 7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="diagram-dock-tab-label" id="sourceDockTabLabel">Source</span>
       </button>
-      <button type="button" class="vela-dock-tab" id="btnDockExport" data-dock="export" data-dock-icon="export" role="tab" aria-selected="false" title="Export">
-        <svg class="vela-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.6v7.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.15 7.2 8 10 10.85 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 11.2v1.45A1.6 1.6 0 0 0 5 14.25h6a1.6 1.6 0 0 0 1.6-1.6V11.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <span class="vela-dock-tab-label">Export</span>
+      <button type="button" class="diagram-dock-tab" id="btnDockExport" data-dock="export" data-dock-icon="export" role="tab" aria-selected="false" title="Export">
+        <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2.6v7.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.15 7.2 8 10 10.85 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 11.2v1.45A1.6 1.6 0 0 0 5 14.25h6a1.6 1.6 0 0 0 1.6-1.6V11.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span class="diagram-dock-tab-label">Export</span>
       </button>
-      <button type="button" class="vela-dock-tab" id="btnDockLayout" data-dock="layout" role="tab" aria-selected="false" title="Layout" hidden>
-        <svg class="vela-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
-        <span class="vela-dock-tab-label">Layout</span>
+      <button type="button" class="diagram-dock-tab" id="btnDockLayout" data-dock="layout" role="tab" aria-selected="false" title="Layout" hidden>
+        <svg class="diagram-dock-tab-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="4.5" height="4.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span class="diagram-dock-tab-label">Layout</span>
       </button>
-      <button type="button" class="vela-dock-tab vela-dock-help" id="btnVelaHelp" title="Help" aria-label="Help" aria-haspopup="menu" aria-expanded="false" aria-controls="velaHelpMenu">
-        <span class="vela-dock-tab-icon vela-dock-help-glyph" aria-hidden="true">?</span>
-        <span class="vela-dock-tab-label">Help</span>
+      <button type="button" class="diagram-dock-tab diagram-dock-help" id="btnDiagramHelp" title="Help" aria-label="Help" aria-haspopup="menu" aria-expanded="false" aria-controls="diagramHelpMenu">
+        <span class="diagram-dock-tab-icon diagram-dock-help-glyph" aria-hidden="true">?</span>
+        <span class="diagram-dock-tab-label">Help</span>
       </button>
     </div>
-    <div class="vela-dock-panel" id="propsPanel" data-dock-panel="props" data-collapsed="true">
+    <div class="diagram-dock-panel" id="propsPanel" data-dock-panel="props" data-collapsed="true">
       <div class="props-head">
         <strong>Properties</strong>
         <span class="props-kind" id="propsKindLabel">—</span>
@@ -306,13 +306,13 @@
         <p class="props-hint" id="mindmapPropsHint"></p>
       </div>
     </div>
-    <div class="vela-dock-panel" id="layoutPanel" data-dock-panel="layout">
+    <div class="diagram-dock-panel" id="layoutPanel" data-dock-panel="layout">
       <div class="props-layout" id="propsLayout" aria-label="Layout settings">
         <div class="props-layout-head"><span>Layout</span></div>
         <p class="export-type-hint">Layout moved to the Style sidebar.</p>
       </div>
     </div>
-    <div class="vela-dock-panel" id="panelBoard" data-dock-panel="source">
+    <div class="diagram-dock-panel" id="panelDiagram" data-dock-panel="source">
       <div class="dock-source-head">
         <div class="dock-source-identity">
           <strong id="sourceDockTitle">Source</strong>
@@ -327,17 +327,17 @@
         <div class="board-editor-wrap">
           <div class="source-line-editor">
             <div class="source-gutter" aria-hidden="true"></div>
-            <textarea id="velaSource" spellcheck="false" placeholder="board title / style / box / item / link / layout…"></textarea>
+            <textarea id="diagramSource" spellcheck="false" placeholder="board title / style / box / item / link / layout…"></textarea>
           </div>
-          <span class="source-chars" id="velaCharsPill">0 chars</span>
-          <pre id="velaError"></pre>
+          <span class="source-chars" id="diagramCharsPill">0 chars</span>
+          <pre id="diagramError"></pre>
         </div>
       </div>
       <div class="dock-source-foot">
-        <button type="button" class="btn btn-delete" id="btnBoardDeleteCloud" title="Delete this diagram" hidden>Delete</button>
+        <button type="button" class="btn btn-delete" id="btnDiagramDeleteCloud" title="Delete this diagram" hidden>Delete</button>
       </div>
     </div>
-    <div class="vela-dock-panel" id="exportPanel" data-dock-panel="export">
+    <div class="diagram-dock-panel" id="exportPanel" data-dock-panel="export">
       <div class="props-head">
         <strong>Export</strong>
       </div>
@@ -351,7 +351,7 @@
         <button type="button" class="btn" id="btnCanvasDlPng">Export PNG</button>
       </div>
     </div>
-    <div class="vela-dock-panel" id="stylePanel" data-dock-panel="style">
+    <div class="diagram-dock-panel" id="stylePanel" data-dock-panel="style">
       <div class="props-head">
         <strong>Style</strong>
       </div>
@@ -447,7 +447,7 @@
     <button type="button" class="shell-dialog-close" id="btnShellSignInClose">Not now</button>
   </div>
 </div>
-<div class="vela-help-menu" id="velaHelpMenu" role="menu" aria-labelledby="btnVelaHelp" hidden>
+<div class="diagram-help-menu" id="diagramHelpMenu" role="menu" aria-labelledby="btnDiagramHelp" hidden>
   <button type="button" class="board-help-item" id="btnBoardOnboarding" role="menuitem" tabindex="-1">
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.75c.4 2.9 1.35 3.85 4.25 4.25C9.35 6.4 8.4 7.35 8 10.25 7.6 7.35 6.65 6.4 3.75 6 6.65 5.6 7.6 4.65 8 1.75Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12.25 10.25c.2 1.3.7 1.8 2 2-1.3.2-1.8.7-2 2-.2-1.3-.7-1.8-2-2 1.3-.2 1.8-.7 2-2Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
     <span>Welcome</span>
@@ -472,7 +472,7 @@
   <button type="button" class="shell-dialog-backdrop" id="shareDialogBackdrop" aria-label="Close"></button>
   <div class="shell-dialog-sheet share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareDialogTitle">
     <h2 id="shareDialogTitle">Share diagram</h2>
-    <p class="share-board" id="shareDialogBoard"></p>
+    <p class="share-board" id="shareDialogDiagram"></p>
     <div class="share-pane" id="shareDialogOff">
       <p>Create a link to share this diagram. Anyone with the link will be able to view it.</p>
       <button type="button" class="btn primary share-wide" id="shareCreate">Create link</button>
@@ -501,7 +501,7 @@
       </div>
     </div>
     <div class="share-foot">
-      <button type="button" class="btn" id="shareOpenBoard" hidden>Open diagram</button>
+      <button type="button" class="btn" id="shareOpenDiagram" hidden>Open diagram</button>
       <button type="button" class="btn" id="shareDone">Done</button>
     </div>
   </div>

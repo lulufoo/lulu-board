@@ -16,7 +16,7 @@
       location.replace(api.LANDING_PATH);
       return;
     }
-    doc.dataset.drawerMode = "vela";
+    doc.dataset.drawerMode = "diagram";
     // Hide canvas until first transform is applied to avoid left-flash.
     doc.dataset.drawerBoot = "1";
     // Blank start: /?ws=1 (any auth) or signed-in / (LB-355); plan from blankStartPlan.
@@ -40,7 +40,7 @@
 
   var LANDING_PATH = "/landing/";
   var SESSION_KEY_RE = /^sb-.+-auth-token$/;
-  // Same blank Untitled payload landing CTAs use (encodeBoardHash of blankHashBoardSource).
+  // Same blank Untitled payload landing CTAs use (encodeDiagramHash of blankHashBoardSource).
   var BLANK_Z_HASH = "z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY";
 
   // Format check only (same shapes as 00-cloud-route.js); #z: payload is never decoded here.

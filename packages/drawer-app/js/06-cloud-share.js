@@ -16,7 +16,7 @@ function setShareEdit(on) {
 function setShareView(on) {
   if (on) document.documentElement.dataset.shareView = "on";
   else delete document.documentElement.dataset.shareView;
-  if (velaSourceEl) velaSourceEl.readOnly = false;
+  if (diagramSourceEl) diagramSourceEl.readOnly = false;
   if (on) setShareEdit(false);
   syncShareChrome();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
@@ -32,31 +32,31 @@ function rememberOwnerShareId(shareId) {
 function shareRpcError(error, fallback) {
   return error && error.message ? error.message : fallback;
 }
-function applySharedBoardRow(row) {
+function applySharedDiagramRow(row) {
   var source = typeof cloudRowSource === "function"
     ? cloudRowSource(row, "")
     : String(row && row.bmd || "");
-  if (velaSourceEl) velaSourceEl.value = source;
-  boardDirty = false;
-  boardServerRev = Number(row && row.version) || 1;
-  velaLocalRev = boardServerRev;
-  if (typeof applyBoardLiveMeta === "function") {
-    applyBoardLiveMeta({
+  if (diagramSourceEl) diagramSourceEl.value = source;
+  diagramDirty = false;
+  diagramServerRev = Number(row && row.version) || 1;
+  diagramLocalRev = diagramServerRev;
+  if (typeof applyDiagramLiveMeta === "function") {
+    applyDiagramLiveMeta({
       id: "",
-      version: velaLocalRev,
+      version: diagramLocalRev,
     });
   }
-  if (typeof updateVelaChars === "function") updateVelaChars();
+  if (typeof updateDiagramChars === "function") updateDiagramChars();
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
 function applyShareVersion(row) {
   if (!row || row.version == null) return;
-  boardServerRev = Number(row.version) || boardServerRev;
-  velaLocalRev = boardServerRev;
+  diagramServerRev = Number(row.version) || diagramServerRev;
+  diagramLocalRev = diagramServerRev;
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
-async function loadSharedBoardByHash(raw) {
+async function loadSharedDiagramByHash(raw) {
   var shareId = typeof cloudShareIdFromHash === "function" ? cloudShareIdFromHash(raw) : "";
   if (!shareId) return false;
   if (typeof cloudConfigured !== "function" || !cloudConfigured() || !cloudClient) {
@@ -75,9 +75,9 @@ async function loadSharedBoardByHash(raw) {
       setShareView(false);
       setShareEdit(false);
       rememberOwnerShareId(shareId);
-      if (typeof cloudSetBoardHash === "function") cloudSetBoardHash(result.data.graph_id, true);
-      if (typeof loadCloudVelaByHash === "function") {
-        await loadCloudVelaByHash("#b:" + result.data.graph_id);
+      if (typeof cloudSetDiagramHash === "function") cloudSetDiagramHash(result.data.graph_id, true);
+      if (typeof loadCloudDiagramByHash === "function") {
+        await loadCloudDiagramByHash("#b:" + result.data.graph_id);
       }
       return true;
     }
@@ -86,23 +86,23 @@ async function loadSharedBoardByHash(raw) {
     var canEdit = result.data.access === "edit" && signedIn;
     setShareView(!canEdit);
     setShareEdit(canEdit);
-    applySharedBoardRow(result.data);
+    applySharedDiagramRow(result.data);
     if (typeof cloudClearGroupTabs === "function") cloudClearGroupTabs();
-    if (typeof showVelaError === "function") showVelaError("");
-    if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
-    setBoardSyncUI("ok");
+    if (typeof showDiagramError === "function") showDiagramError("");
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+    setDiagramSyncUI("ok");
     setStatus(canEdit ? "Shared diagram · can edit" : "Shared diagram");
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
     setShareView(false);
     setShareEdit(false);
-    if (velaSourceEl) velaSourceEl.value = "";
-    if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
-    if (typeof renderVela === "function") renderVela({ fit: false });
-    setBoardSyncUI("error");
+    if (diagramSourceEl) diagramSourceEl.value = "";
+    if (typeof applyDiagramLiveMeta === "function") applyDiagramLiveMeta({ id: "" });
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false });
+    setDiagramSyncUI("error");
     var message = shareRpcError(error, "Shared diagram load failed");
-    if (typeof showVelaError === "function") showVelaError(message);
+    if (typeof showDiagramError === "function") showDiagramError(message);
     setStatus(message, true);
     return true;
   }
@@ -118,17 +118,17 @@ async function runShareRpc(name, args) {
   return row || null;
 }
 async function refreshOwnShareState() {
-  var boardId = typeof cloudVelaId === "function" ? cloudVelaId() : "";
-  if (!boardId || !cloudClient || !cloudSession || !cloudSession.user) return;
+  var diagramId = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
+  if (!diagramId || !cloudClient || !cloudSession || !cloudSession.user) return;
   try {
-    var row = await runShareRpc("own_share_state", { p_graph_id: boardId });
+    var row = await runShareRpc("own_share_state", { p_graph_id: diagramId });
     if (!row) return;
     ownerShareRole = row.role === "edit" ? "edit" : "view";
     ownerIsPublic = !!row.is_public;
     rememberOwnerShareId(row.share_id || "");
   } catch (_error) {}
 }
-async function saveSharedBoard(opts) {
+async function saveSharedDiagram(opts) {
   opts = opts || {};
   var shareId = typeof cloudShareIdFromHash === "function" ? cloudShareIdFromHash(location.hash) : "";
   if (!shareId || !cloudClient || !cloudSession || !cloudSession.user) {
@@ -136,14 +136,14 @@ async function saveSharedBoard(opts) {
     return false;
   }
   var source = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(velaSourceEl && velaSourceEl.value)
-    : String(velaSourceEl && velaSourceEl.value || "");
-  if (velaSourceEl && source !== velaSourceEl.value) velaSourceEl.value = source;
-  var title = getBoardTitle(cloudOpenBoardId());
-  var expected = Number(boardServerRev);
+    ? stripDocumentMeta(diagramSourceEl && diagramSourceEl.value)
+    : String(diagramSourceEl && diagramSourceEl.value || "");
+  if (diagramSourceEl && source !== diagramSourceEl.value) diagramSourceEl.value = source;
+  var title = getDiagramTitle(cloudOpenDiagramId());
+  var expected = Number(diagramServerRev);
   if (!(expected > 0)) expected = 1;
   var seq = ++cloudSaveSeq;
-  setBoardSyncUI("saving");
+  setDiagramSyncUI("saving");
   try {
     var result = await cloudClient.rpc("save_shared_graph", {
       p_share_id: shareId,
@@ -158,25 +158,25 @@ async function saveSharedBoard(opts) {
       var latest = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
       if (latest.error) throw latest.error;
       if (!latest.data) throw new Error("Shared diagram not found");
-      applySharedBoardRow(latest.data);
-      if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
-      setBoardSyncUI("conflict");
+      applySharedDiagramRow(latest.data);
+      if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+      setDiagramSyncUI("conflict");
       setStatus("Shared version conflict — reloaded", true);
       return false;
     }
-    applySharedBoardRow(row);
-    setBoardSyncUI("ok");
+    applySharedDiagramRow(row);
+    setDiagramSyncUI("ok");
     setStatus("Saved shared diagram");
     return true;
   } catch (error) {
     if (seq !== cloudSaveSeq) return false;
-    setBoardSyncUI("error");
+    setDiagramSyncUI("error");
     setStatus(shareRpcError(error, "Shared save failed"), true);
     return false;
   }
 }
 
-async function forkSharedBoard() {
+async function forkSharedDiagram() {
   if (!cloudClient || !cloudSession || !cloudSession.user) {
     setStatus("Sign in to save a copy", true);
     return false;
@@ -185,8 +185,8 @@ async function forkSharedBoard() {
   var wasEdit = isShareEdit();
   setShareView(false);
   setShareEdit(false);
-  liveBoardId = "";
-  var saved = await saveVelaToCloud({ explicit: true });
+  liveDiagramId = "";
+  var saved = await saveDiagramToCloud({ explicit: true });
   if (!saved) {
     if (wasEdit) setShareEdit(true);
     else if (wasView) setShareView(true);
@@ -195,7 +195,7 @@ async function forkSharedBoard() {
 }
 
 function syncSharedOriginal() {
-  return saveSharedBoard({ explicit: true });
+  return saveSharedDiagram({ explicit: true });
 }
 
 function syncShareChrome() {
@@ -212,6 +212,6 @@ function onShareClick(id, fn) {
   if (el) el.addEventListener("click", fn);
 }
 
-onShareClick("btnShellSaveCopy", function () { void forkSharedBoard(); });
+onShareClick("btnShellSaveCopy", function () { void forkSharedDiagram(); });
 onShareClick("btnShareSync", function () { void syncSharedOriginal(); });
 syncShareChrome();

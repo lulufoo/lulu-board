@@ -34,7 +34,7 @@ assert.deepStrictEqual(cloudShareSummaries([], {}, 'b_1'), []);
     { s_a: 'edit' },
     'b_1'
   );
-  assert.deepStrictEqual(out.map((s) => s.boardId), ['b_2', 'b_1'], 'newest first; boards without a link are not listed');
+  assert.deepStrictEqual(out.map((s) => s.diagramId), ['b_2', 'b_1'], 'newest first; boards without a link are not listed');
   assert.strictEqual(out[1].role, 'edit', 'role from the grant');
   assert.strictEqual(out[0].role, 'view', 'unknown role falls back to view');
   assert.strictEqual(out[1].isCurrent, true, 'the open board is marked');
