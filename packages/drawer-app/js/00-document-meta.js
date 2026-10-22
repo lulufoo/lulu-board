@@ -11,6 +11,7 @@
   root.blankHashFlowchartSource = api.blankHashFlowchartSource;
   root.blankHashMindmapSource = api.blankHashMindmapSource;
   root.blankHashSequenceSource = api.blankHashSequenceSource;
+  root.blankHashClassSource = api.blankHashClassSource;
   root.blankHashSourceForKind = api.blankHashSourceForKind;
   root.diagramTitleFromBody = api.diagramTitleFromBody;
   root.updateMermaidTitle = api.updateMermaidTitle;
@@ -128,8 +129,16 @@
     return "%% title " + titledName(title) + "\nmindmap\n  Topic\n";
   }
 
+  function wrapMermaidSeed(title, body) {
+    return "%% title " + titledName(title) + "\n" + body;
+  }
+
   function blankHashSequenceSource(title) {
-    return "%% title " + titledName(title) + "\nsequenceDiagram\n  actor User\n  participant UI\n  participant API\n  participant DB\n  User->>UI: action\n  UI->>API: request\n  API->>DB: query\n  DB-->>API: rows\n  API-->>UI: result\n  UI-->>User: render\n";
+    return wrapMermaidSeed(title, "sequenceDiagram\n  actor User\n  participant UI\n  participant API\n  participant DB\n  User->>UI: action\n  UI->>API: request\n  API->>DB: query\n  DB-->>API: rows\n  API-->>UI: result\n  UI-->>User: render\n");
+  }
+
+  function blankHashClassSource(title) {
+    return wrapMermaidSeed(title, "classDiagram\n  class Service {\n    +run()\n  }\n  class Store {\n    +load()\n    +save()\n  }\n  Service --> Store : uses\n  class Api\n  Api --> Service : uses\n");
   }
 
   function blankHashSourceForKind(kind, title) {
@@ -137,6 +146,7 @@
     if (key === "flowchart") return blankHashFlowchartSource(title);
     if (key === "mindmap") return blankHashMindmapSource(title);
     if (key === "sequence" || key === "sequenceDiagram") return blankHashSequenceSource(title);
+    if (key === "class" || key === "classDiagram") return blankHashClassSource(title);
     return blankHashBoardSource(title);
   }
 
@@ -208,6 +218,7 @@
     blankHashFlowchartSource: blankHashFlowchartSource,
     blankHashMindmapSource: blankHashMindmapSource,
     blankHashSequenceSource: blankHashSequenceSource,
+    blankHashClassSource: blankHashClassSource,
     blankHashSourceForKind: blankHashSourceForKind,
     diagramTitleFromBody: diagramTitleFromBody,
     updateMermaidTitle: updateMermaidTitle,
@@ -222,6 +233,7 @@ var blankHashBoardSource = globalThis.blankHashBoardSource;
 var blankHashFlowchartSource = globalThis.blankHashFlowchartSource;
 var blankHashMindmapSource = globalThis.blankHashMindmapSource;
 var blankHashSequenceSource = globalThis.blankHashSequenceSource;
+var blankHashClassSource = globalThis.blankHashClassSource;
 var blankHashSourceForKind = globalThis.blankHashSourceForKind;
 var diagramTitleFromBody = globalThis.diagramTitleFromBody;
 var updateMermaidTitle = globalThis.updateMermaidTitle;
