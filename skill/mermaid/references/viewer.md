@@ -10,11 +10,12 @@ Mermaid CLI preview. Loaded from `/mermaid` for `status` or kind.
 
 ## Kind
 
-`--kind flowchart` or `--kind mindmap`
+`--kind flowchart`, `--kind mindmap`, or a Design kind (`sequence`, `class`,
+`state`, `er`, `requirement`, `c4`, `usecase`, `eventmodeling`, `railroad`)
 
 ## Seed
 
-1. `preview --kind flowchart` or `preview --kind mindmap` with no file and no stdin does not create a record.
+1. `preview --kind flowchart`, `preview --kind mindmap`, or `preview --kind sequence` with no file and no stdin does not create a record.
 
 ## Write-back
 

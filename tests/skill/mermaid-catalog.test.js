@@ -24,7 +24,7 @@ const treemap = fs.readFileSync(path.join(refs, 'chart/treemap.md'), 'utf8');
 
 assert.match(catalog, /Mermaid 12\.1\.0/, 'catalog pins Mermaid 12.1.0');
 assert.match(catalog, /Pele 1\.7\.0/, 'catalog pins Pele 1.7.0');
-assert.match(catalog, /\*\*Open\*\* is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, `requirement`, `c4`, `eventmodeling`, `usecase`, and `railroad`/, 'flowchart, mindmap, and Design 9 are open');
+assert.match(catalog, /\*\*Open\*\* is `flowchart`, `mindmap`, and the Design group/, 'flowchart, mindmap, and Design 9 are open');
 assert.match(catalog, /\| flowchart \| `flowchart` \/ `graph` \| open \|/, 'flowchart row is open');
 assert.match(catalog, /\| mindmap \| `mindmap` \| open \|/, 'mindmap row is open');
 assert.match(catalog, /\| sequence \| `sequenceDiagram` \| open \|/, 'sequence row is open');

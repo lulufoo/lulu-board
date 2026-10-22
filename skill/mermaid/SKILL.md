@@ -1,12 +1,12 @@
 ---
 name: mermaid
-description: List Mermaid types, or draw a flowchart or mindmap and open it on the public viewer.
+description: List Mermaid types, or draw an open catalog type and open it on the public viewer.
 argument-hint: "[list | <topic or type>]"
 ---
 
 # mermaid
 
-List the catalog, or author flowchart or mindmap and open it on the public viewer.
+List the catalog, or author an open catalog type and open it on the public viewer.
 Done when the list is shown, a tool `url` is shown, or chat-only source is
 delivered.
 
@@ -42,7 +42,9 @@ Two entries. Do not author during list.
 ## Route
 
 The catalog is the type boundary. **Open** is `flowchart` (`flowchart` /
-`graph`) and `mindmap`. `flowchart-elk` is the flowchart type.
+`graph`), `mindmap`, and the Design group (`sequence`, `class`, `state`,
+`er`, `requirement`, `c4`, `usecase`, `eventmodeling`, `railroad`).
+`flowchart-elk` is the flowchart type.
 
 1. A named type or alias wins.
 2. Else pick the type that matches what must be visible.
@@ -56,7 +58,8 @@ The catalog is the type boundary. **Open** is `flowchart` (`flowchart` /
 What to write, after the open type file is loaded.
 
 1. Use one sample in that file (minimal default). Flowchart: one edge-meaning
-   category. Mindmap: one root, indented branches.
+   category. Mindmap: one root, indented branches. Design: Pele preview;
+   Title and Source.
 2. Replace labels; keep the sample's node and edge kinds.
 3. Prefer ≤ ~12 primary elements unless the user asked for more.
 4. Mint without `%% style`. On update, leave those lines unchanged.
@@ -76,13 +79,15 @@ Publish unsigned.
 
 1. Use the public viewer unless the user explicitly requests chat-only output.
 2. After any preview, Keep `url` first, then `open`. Show the URL and stop.
-3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind flowchart`
-   or `$DRAWER_CTL preview --kind mindmap` with no `--file` and no stdin body.
+3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind flowchart`,
+   `$DRAWER_CTL preview --kind mindmap`, or `$DRAWER_CTL preview --kind sequence`
+   with no `--file` and no stdin body.
 4. For an update, edit this session’s last Source text. If none yet, run
    step 3 first.
-5. For the public viewer, run `$DRAWER_CTL preview --kind flowchart` or
-   `$DRAWER_CTL preview --kind mindmap` with stdin or `--file`. If it reports
-   a DSL error, correct the Source and rerun.
+5. For the public viewer, run `$DRAWER_CTL preview --kind flowchart`,
+   `$DRAWER_CTL preview --kind mindmap`, or `$DRAWER_CTL preview --kind sequence`
+   (and the other Design kinds) with stdin or `--file`. If it reports a DSL
+   error, correct the Source and rerun.
 6. For chat-only output, return one mermaid-fenced block and stop.
 
 ## Cloud flow

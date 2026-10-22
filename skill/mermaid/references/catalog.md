@@ -4,8 +4,9 @@ Author Mermaid 12.1.0 built-in syntax. Drawer renders flowchart with Pele 1.7.0
 and mindmap with a custom SVG pipeline, not Mermaid.js. Route loads **one**
 type file. `info`, `error`, and `---` are not author types.
 
-**Open** is `flowchart`, `mindmap`, `sequence`, `class`, `state`, `er`, `requirement`, `c4`, `eventmodeling`, `usecase`, and `railroad`. Closed types may be listed; do not
-author them for the drawer.
+**Open** is `flowchart`, `mindmap`, and the Design group (`sequence`, `class`,
+`state`, `er`, `requirement`, `c4`, `usecase`, `eventmodeling`, `railroad`).
+Closed types may be listed; do not author them for the drawer.
 
 ## Aliases
 

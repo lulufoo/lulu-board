@@ -10,7 +10,19 @@ from urllib.parse import quote
 from drawer_ctl import hash_url
 from drawer_ctl import titles
 
-OPEN_KINDS = ("flowchart", "mindmap")
+OPEN_KINDS = (
+    "flowchart",
+    "mindmap",
+    "sequence",
+    "class",
+    "state",
+    "er",
+    "requirement",
+    "c4",
+    "usecase",
+    "eventmodeling",
+    "railroad",
+)
 DEFAULT_KIND = "flowchart"
 
 
@@ -55,7 +67,7 @@ def preview(path, should_open: bool = True, open_mode: str | None = None, kind: 
     if open_mode is None:
         open_mode = "ide" if should_open else "none"
     if kind not in OPEN_KINDS:
-        raise RuntimeError("invalid --kind (expected flowchart or mindmap)")
+        raise RuntimeError("invalid --kind (expected an open catalog type)")
     body = resolve_preview_body(path)
     if body is None:
         text, fields, open_kind = "", {"id": "", "title": "", "version": 0}, "current"

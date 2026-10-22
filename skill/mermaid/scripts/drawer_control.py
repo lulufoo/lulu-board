@@ -6,16 +6,16 @@ import argparse
 import json
 import sys
 
-from drawer_ctl.commands import preview, status
+from drawer_ctl.commands import OPEN_KINDS, preview, status
 
 
 def parser():
-    p = argparse.ArgumentParser(description="Preview Lulu Vela flowchart or mindmap source.")
+    p = argparse.ArgumentParser(description="Preview Lulu Vela open catalog source.")
     commands = p.add_subparsers(dest="command", required=True)
     commands.add_parser("status", help="print mermaid preview status as JSON")
     prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
-    prev_p.add_argument("--kind", choices=["flowchart", "mindmap"], default="flowchart", help="which live source to encode")
+    prev_p.add_argument("--kind", choices=list(OPEN_KINDS), default="flowchart", help="which live source to encode")
     prev_p.add_argument("--id", dest="source_id", help="leftover; ignored")
     prev_p.add_argument("--no-open", action="store_true", help="do not open any browser")
     prev_p.add_argument("--open-system", action="store_true", help="open in the macOS/default browser instead")
