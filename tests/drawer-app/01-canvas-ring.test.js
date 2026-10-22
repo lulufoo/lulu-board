@@ -26,7 +26,7 @@ assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-dasharray/, 'flowchart ho
 assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'group stroke leaves the hover halo alone');
 assert.match(css, /g\.pele-node > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'node stroke leaves the hover halo alone');
 assert.match(css, /g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart hover does not also paint the HTML outline');
-assert.match(css, /g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-diagram-kind="flowchart"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart selection does not also paint the HTML outline');
+assert.match(css, /g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-kind="flowchart"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart selection does not also paint the HTML outline');
 assert.doesNotMatch(css, /\.flowchart-selection-halo \{[\s\S]*stroke:\s*var\(--accent/, 'flowchart halo no longer uses --accent');
 assert.doesNotMatch(css, /\.board-selection \{[^}]*outline:\s*2px solid var\(--bf-ring/, 'Board selected outline left the old class');
 
@@ -53,8 +53,8 @@ assert.match(mind, /mermaidPaintHalo/, 'mindmap uses the shared SVG halo');
 assert.match(mind, /classList\.add\("canvas-selected"\)/, 'mindmap hangs the public selected class');
 assert.match(mind, /classList\.add\("canvas-hover"\)/, 'mindmap hangs the public hover class');
 assert.match(css, /\.mindmap-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'mindmap selected halo reads the same token');
-assert.match(css, /html\[data-diagram-kind="mindmap"\] g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-diagram-kind="mindmap"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'mindmap selection does not also paint the HTML outline');
-assert.match(css, /html\[data-diagram-kind="mindmap"\] \.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'mindmap hover halo reads the soft token');
+assert.match(css, /html\[data-kind="mindmap"\] g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-kind="mindmap"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'mindmap selection does not also paint the HTML outline');
+assert.match(css, /html\[data-kind="mindmap"\] \.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'mindmap hover halo reads the soft token');
 const exportPng = read('packages/drawer-app/js/05-export-png.js');
 assert.match(exportPng, /mindmap-selection-halo/, 'PNG export strips mindmap halo');
 assert.match(exportPng, /mindmap-add/, 'PNG export strips hover plus');

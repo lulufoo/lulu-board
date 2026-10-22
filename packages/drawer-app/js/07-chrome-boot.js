@@ -105,7 +105,7 @@ $('#btnZoomIn').onclick = () => { setCanvasZoom(scale * 1.08); if (typeof noteUs
 $('#btnZoomOut').onclick = () => { setCanvasZoom(scale / 1.08); if (typeof noteUserCanvasView === "function") noteUserCanvasView(); };
 $('#btnZoomReset').onclick = () => { centerView(); if (typeof forgetDocumentView === "function") forgetDocumentView(); };
 window.addEventListener("resize", () => { applyTransform(); });
-var zoomTypeFit = $('#zoom-type-label');
+var zoomTypeFit = $('#zoom-kind-label');
 if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 /* $('#btnTheme') removed */
 
@@ -113,10 +113,10 @@ if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 
 // —— Canvas toolbar: diagram theme + export + UI theme ——
 
-const DIAGRAM_THEME_KEY = 'drawer.diagramTheme';
-function currentDiagramTheme() {
-  const legacy = localStorage.getItem('drawer.boardTheme');
-  const v = localStorage.getItem(DIAGRAM_THEME_KEY) || legacy || 'default';
+const KIND_THEME_KEY = 'drawer.kindTheme';
+function currentKindTheme() {
+  const legacy = localStorage.getItem('drawer.diagramTheme') || localStorage.getItem('drawer.boardTheme');
+  const v = localStorage.getItem(KIND_THEME_KEY) || legacy || 'default';
   if (window.BoardThemes && typeof BoardThemes.resolveId === 'function') return BoardThemes.resolveId(v);
   const allowed = ['default', 'classic', 'pastel'];
   return allowed.includes(v) ? v : 'default';
@@ -142,7 +142,7 @@ function currentBoardItemCap() {
   return Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(n)));
 }
 function applyBoardItemCap(rem, rerender, persist) {
-  const kind = document.documentElement && document.documentElement.dataset.diagramKind;
+  const kind = document.documentElement && document.documentElement.dataset.kind;
   if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") {
     if (boardItemCapSlider) {
       boardItemCapSlider.disabled = kind === "flowchart";
@@ -172,22 +172,22 @@ function applyPeleThemeVars(theme) {
   DrawerPeleTheme.applyTo([document.documentElement, document.getElementById("preview")], theme);
 }
 function applyBoardThemeToPreview() {
-  const t = (typeof currentDiagramTheme === 'function') ? currentDiagramTheme() : (localStorage.getItem('drawer.diagramTheme') || 'default');
+  const t = (typeof currentKindTheme === 'function') ? currentKindTheme() : (localStorage.getItem('drawer.kindTheme') || 'default');
   document.querySelectorAll('.board-render').forEach((el) => {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
   applyPeleThemeVars(t);
 }
-function applyDiagramTheme(theme, opts) {
+function applyKindTheme(theme, opts) {
   const t = (window.BoardThemes && typeof BoardThemes.resolveId === 'function')
     ? BoardThemes.resolveId(theme)
     : ((['default', 'classic', 'pastel'].includes(theme) ? theme : 'default'));
-  localStorage.setItem(DIAGRAM_THEME_KEY, t);
+  localStorage.setItem(KIND_THEME_KEY, t);
   localStorage.setItem('drawer.boardTheme', t); // back-compat
-  const themeSelect = document.getElementById('diagramThemeSelect');
+  const themeSelect = document.getElementById('kindThemeSelect');
   if (themeSelect) themeSelect.value = t;
-  document.documentElement.dataset.diagramTheme = t;
+  document.documentElement.dataset.kindTheme = t;
   document.querySelectorAll('.board-render').forEach((el) => {
     if (window.BoardThemes && typeof BoardThemes.applyTo === 'function') BoardThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
@@ -228,23 +228,23 @@ function placeMenuPanel(wrap) {
   });
 }
 
-function closeDiagramThemeMenu() {
+function closeKindThemeMenu() {
   /* Theme lives in Style dock — no popup. */
 }
 
 try { syncStyleLayoutSections(); } catch (_e) {}
 
-const diagramThemeSelect = $('#diagramThemeSelect');
-if (diagramThemeSelect) {
-  diagramThemeSelect.addEventListener('change', () => { applyDiagramTheme(diagramThemeSelect.value, { persist: true }); });
+const kindThemeSelect = $('#kindThemeSelect');
+if (kindThemeSelect) {
+  kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value, { persist: true }); });
 }
 const _themeMo = new MutationObserver(() => {
-  const t = currentDiagramTheme();
+  const t = currentKindTheme();
   document.querySelectorAll('.board-render').forEach((el) => { el.dataset.boardTheme = t; });
 });
 const _themeStage = $('#preview');
 if (_themeStage) _themeMo.observe(_themeStage, { childList: true, subtree: true });
-applyDiagramTheme(currentDiagramTheme());
+applyKindTheme(currentKindTheme());
 applyBoardItemCap();
 if (boardItemCapSlider) {
   boardItemCapSlider.addEventListener('input', function() {
@@ -367,7 +367,7 @@ function setMode(mode, opts) {
   opts = opts || {};
   document.documentElement.dataset.drawerMode = "vela";
   if (opts.persist !== false) saveDrawerUi({ mode: "board" });
-  try { setTypeUI(velaSourceEl && velaSourceEl.value); } catch (_e) {}
+  try { setKindUI(velaSourceEl && velaSourceEl.value); } catch (_e) {}
   closeExportMenu();
   if (opts.restore) _drawerUiRestoreLock = true;
   var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));

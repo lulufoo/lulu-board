@@ -32,8 +32,8 @@ assert.match(js, /mindmapLayoutField\.hidden = topicOn/, 'node props hide layout
 assert.match(js, /propsKindLabel\.textContent = topicOn \? \(selectedMindmap\.isRoot \? "root" : "node"\) : "—"/, 'props head shows ROOT or NODE');
 assert.match(js, /selectedMindmap\.isRoot/);
 assert.match(js, /data-add-parent/);
-assert.match(css, /html\[data-diagram-kind="mindmap"\] \.mindmap-edit-tools/);
-assert.match(css, /html\[data-diagram-kind="mindmap"\] #propsFields/);
+assert.match(css, /html\[data-kind="mindmap"\] \.mindmap-edit-tools/);
+assert.match(css, /html\[data-kind="mindmap"\] #propsFields/);
 assert.doesNotMatch(css, /#stylePanel[\s\S]{0,200}mindmapLayout/);
 assert.match(vela, /currentMindmapLayout/);
 assert.match(vela, /Select a topic/);

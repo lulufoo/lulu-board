@@ -46,7 +46,7 @@
 
   function activeKindId() {
     var html = typeof document !== "undefined" ? document.documentElement : null;
-    var kind = html && html.dataset ? html.dataset.diagramKind : "";
+    var kind = html && html.dataset ? html.dataset.kind : "";
     if (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported") return kind === "mindmap" ? "mindmap" : "flowchart";
     return "board";
   }

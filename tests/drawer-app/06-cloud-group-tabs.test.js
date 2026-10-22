@@ -21,7 +21,7 @@ assert.match(appBuild, /06-cloud-group-tabs\.js/, 'drawer app concatenates group
 assert.match(appBuild, /06-confirm\.js/, 'drawer app concatenates the in-app confirm');
 assert.match(html, /id="confirmDialog"/, 'canvas keeps one in-app confirm');
 assert.match(chromeCss, /\.zoom-float \{[\s\S]*left: 50%;/, 'zoom / type sit at the bottom center');
-assert.match(html, /id="zoom-type-label"/, 'zoom chrome shows the diagram type');
+assert.match(html, /id="zoom-kind-label"/, 'zoom chrome shows the diagram type');
 assert.doesNotMatch(html, /id="btnFit"/, 'zoom chrome has no Fit button');
 assert.match(chromeCss, /show-chrome \.zoom-float/, 'zoom chrome still appears after a zoom change');
 assert.doesNotMatch(tabCss, /right: 88px/, 'group tabs do not shove zoom left');

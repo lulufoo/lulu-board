@@ -6,7 +6,7 @@ function clearDrawerBoot() {
 function pinVelaTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
-  var kind = document.documentElement.dataset.diagramKind || "";
+  var kind = document.documentElement.dataset.kind || "";
   if (kind && kind !== "board") {
     if (document.title !== "Lulu Vela") document.title = "Lulu Vela";
     return;
@@ -37,10 +37,10 @@ function sourceBodyForKind(text) {
 function applyDrawerKind(kind) {
   var html = document.documentElement;
   if (!html) return;
-  html.dataset.diagramKind = kind === "empty" ? "" : String(kind || "");
+  html.dataset.kind = kind === "empty" ? "" : String(kind || "");
   // Chrome CSS is gated on data-drawer-mode=vela. Keep that; kind switches tools/render.
   if (!html.dataset.drawerMode) html.dataset.drawerMode = "vela";
-  if (typeof setTypeUI === "function") setTypeUI();
+  if (typeof setKindUI === "function") setKindUI();
   else if (typeof syncStyleLayoutSections === "function") syncStyleLayoutSections();
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
@@ -112,8 +112,8 @@ function syncMermaidStyleChrome(body) {
   var styled = DrawerStyleLine.splitRendererStyle(body);
   var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
   var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  if (typeof applyDiagramTheme === "function") {
-    applyDiagramTheme(theme, { persist: false, skipRender: true });
+  if (typeof applyKindTheme === "function") {
+    applyKindTheme(theme, { persist: false, skipRender: true });
   } else if (typeof applyPeleThemeVars === "function") {
     applyPeleThemeVars(theme);
   }

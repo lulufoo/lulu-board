@@ -171,7 +171,7 @@
     const rootDoc = doc || (typeof document !== 'undefined' ? document : null);
     if (rootDoc && rootDoc.documentElement) {
       rootDoc.documentElement.style.setProperty('--board-item-cap', next.item_cap + 'rem');
-      rootDoc.documentElement.dataset.diagramTheme = next.theme;
+      rootDoc.documentElement.dataset.kindTheme = next.theme;
       rootDoc.documentElement.dataset.boardTypeStep = String(next.type_step);
     }
     return next;
@@ -2010,7 +2010,7 @@
 
   function themeStroke(name, fallback) {
     const Themes = root.BoardThemes;
-    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.diagramTheme) || 'default';
+    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'default';
     const theme = Themes && Themes.get ? Themes.get(themeId) : null;
     if (theme) {
       if (name === '--board-edge') return theme.edgeStroke || fallback;

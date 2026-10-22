@@ -117,25 +117,25 @@
 .board-render .box.board-nested { position: relative !important; left: auto !important; top: auto !important; }
 .board-edit-tools { display: none; align-items: center; gap: 8px; transition: none !important; }
 html[data-drawer-mode="vela"] .board-edit-tools { display: inline-flex; }
-html[data-diagram-kind="flowchart"] .board-edit-tools,
-html[data-diagram-kind="mindmap"] .board-edit-tools,
-html[data-diagram-kind="mermaid-unsupported"] .board-edit-tools,
-html[data-diagram-kind="unknown"] .board-edit-tools { display: none !important; }
+html[data-kind="flowchart"] .board-edit-tools,
+html[data-kind="mindmap"] .board-edit-tools,
+html[data-kind="mermaid-unsupported"] .board-edit-tools,
+html[data-kind="unknown"] .board-edit-tools { display: none !important; }
 .flowchart-edit-tools,
 .mindmap-edit-tools { display: none; align-items: center; gap: 8px; }
-html[data-diagram-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
-html[data-diagram-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
-html[data-diagram-kind="flowchart"] #propsFields,
-html[data-diagram-kind="mindmap"] #propsFields { display: none !important; }
-html[data-diagram-kind="flowchart"] #preview,
-html[data-diagram-kind="mindmap"] #preview,
-html[data-diagram-kind="mermaid-unsupported"] #preview {
+html[data-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
+html[data-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
+html[data-kind="flowchart"] #propsFields,
+html[data-kind="mindmap"] #propsFields { display: none !important; }
+html[data-kind="flowchart"] #preview,
+html[data-kind="mindmap"] #preview,
+html[data-kind="mermaid-unsupported"] #preview {
   width: max-content;
   height: max-content;
 }
 /* Pele shapes read --_s / --_fg. Mirror the aliases so a wiped SVG style
    still inherits cream paper instead of the SVG default black fill. */
-html[data-diagram-kind="flowchart"] {
+html[data-kind="flowchart"] {
   --_bg: var(--pele-bg, #fff);
   --_fg: var(--pele-fg, #1f1f1f);
   --_m: var(--pele-muted, #6e6e6e);
@@ -146,145 +146,145 @@ html[data-diagram-kind="flowchart"] {
   --_c: var(--pele-accent, var(--pele-line, #4a3524));
   --_r: var(--pele-radius, var(--bf-radius-box, 12px));
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node,
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster,
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label,
-html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
+html[data-kind="flowchart"] #preview g.pele-node,
+html[data-kind="flowchart"] #preview g.pele-cluster,
+html[data-kind="flowchart"] #preview g.pele-cluster-title,
+html[data-kind="flowchart"] #preview g.pele-edge,
+html[data-kind="flowchart"] #preview g.pele-edge-label,
+html[data-kind="flowchart"] #preview path.mermaid-edge-hit {
   cursor: pointer;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
+html[data-kind="flowchart"] #preview g.pele-cluster > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo) {
   pointer-events: all;
   rx: 4px !important;
   ry: 4px !important;
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo),
-html[data-diagram-kind="flowchart"] #preview g.pele-node > polygon:not(.canvas-hover-halo):not(.flowchart-selection-halo),
-html[data-diagram-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+html[data-kind="flowchart"] #preview g.pele-node > rect:not(.canvas-hover-halo):not(.flowchart-selection-halo),
+html[data-kind="flowchart"] #preview g.pele-node > polygon:not(.canvas-hover-halo):not(.flowchart-selection-halo),
+html[data-kind="flowchart"] #preview g.pele-node > path:not(.pele-marker):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
   fill: var(--_s) !important;
   stroke: var(--_b) !important;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node text,
-html[data-diagram-kind="flowchart"] #preview g.pele-node tspan,
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title text,
-html[data-diagram-kind="flowchart"] #preview g.pele-cluster-title tspan {
+html[data-kind="flowchart"] #preview g.pele-node text,
+html[data-kind="flowchart"] #preview g.pele-node tspan,
+html[data-kind="flowchart"] #preview g.pele-cluster-title text,
+html[data-kind="flowchart"] #preview g.pele-cluster-title tspan {
   fill: var(--_fg) !important;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-edge > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
+html[data-kind="flowchart"] #preview g.pele-edge > path:not(.pele-marker):not(.mermaid-edge-hit):not(.flowchart-selection-halo):not(.canvas-hover-halo) {
   stroke: var(--_l);
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
-html[data-diagram-kind="flowchart"] #preview path.mermaid-edge-hit {
+html[data-kind="flowchart"] #preview g.pele-edge path:not(.pele-marker) { pointer-events: stroke; }
+html[data-kind="flowchart"] #preview path.mermaid-edge-hit {
   fill: none;
   stroke: transparent;
   stroke-width: 20px;
   pointer-events: stroke;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label rect,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label text,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label tspan,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label rect.mermaid-edge-label-hit {
+html[data-kind="flowchart"] #preview g.pele-edge-label rect,
+html[data-kind="flowchart"] #preview g.pele-edge-label text,
+html[data-kind="flowchart"] #preview g.pele-edge-label tspan,
+html[data-kind="flowchart"] #preview g.pele-edge-label rect.mermaid-edge-label-hit {
   pointer-events: all;
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label rect:not(.mermaid-edge-label-hit) {
+html[data-kind="flowchart"] #preview g.pele-edge-label rect:not(.mermaid-edge-label-hit) {
   fill: var(--pele-surface, #fffdf9);
   stroke: none;
   stroke-width: 0;
 }
-html[data-diagram-kind="flowchart"] #preview svg,
-html[data-diagram-kind="flowchart"] #preview svg text,
-html[data-diagram-kind="flowchart"] #preview svg tspan {
+html[data-kind="flowchart"] #preview svg,
+html[data-kind="flowchart"] #preview svg text,
+html[data-kind="flowchart"] #preview svg tspan {
   font-family: var(--pele-font, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif);
 }
-html[data-diagram-kind="flowchart"] #preview svg {
+html[data-kind="flowchart"] #preview svg {
   font-size: var(--fc-font-default, 16px);
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect text,
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-rect tspan {
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-rect text,
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-rect tspan {
   font-size: var(--fc-font-default, 16px);
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-stadium text,
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-stadium tspan {
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-stadium text,
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-stadium tspan {
   font-size: var(--fc-font-start-end, 15px);
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-diam text,
-html[data-diagram-kind="flowchart"] #preview g.pele-node.pele-shape-diam tspan {
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-diam text,
+html[data-kind="flowchart"] #preview g.pele-node.pele-shape-diam tspan {
   font-size: var(--fc-font-judgment, 14px);
 }
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label text,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge-label tspan,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge text,
-html[data-diagram-kind="flowchart"] #preview g.pele-edge tspan {
+html[data-kind="flowchart"] #preview g.pele-edge-label text,
+html[data-kind="flowchart"] #preview g.pele-edge-label tspan,
+html[data-kind="flowchart"] #preview g.pele-edge text,
+html[data-kind="flowchart"] #preview g.pele-edge tspan {
   font-size: var(--fc-font-link, 13px);
 }
-html[data-diagram-kind="flowchart"] g.flowchart-selection,
-html[data-diagram-kind="flowchart"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
-html[data-diagram-kind="flowchart"] g.canvas-hover {
+html[data-kind="flowchart"] g.flowchart-selection,
+html[data-kind="flowchart"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
+html[data-kind="flowchart"] g.canvas-hover {
   outline: none !important;
   overflow: visible;
 }
-html[data-diagram-kind="flowchart"] .flowchart-selection-halo {
+html[data-kind="flowchart"] .flowchart-selection-halo {
   fill: none !important;
   stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: var(--canvas-ring-width, 2px) !important;
   stroke-dasharray: none;
   pointer-events: none !important;
 }
-html[data-diagram-kind="flowchart"] .canvas-hover-halo {
+html[data-kind="flowchart"] .canvas-hover-halo {
   fill: none !important;
   stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .4)) !important;
   stroke-width: 1px !important;
   stroke-dasharray: 4 3;
   pointer-events: none !important;
 }
-html[data-diagram-kind="mindmap"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
-html[data-diagram-kind="mindmap"] g.canvas-hover {
+html[data-kind="mindmap"] g.canvas-selected:not(.board-item-diamond):not(.board-diamond),
+html[data-kind="mindmap"] g.canvas-hover {
   outline: none !important;
   overflow: visible;
 }
-html[data-diagram-kind="mindmap"] .mindmap-selection-halo {
+html[data-kind="mindmap"] .mindmap-selection-halo {
   fill: none !important;
   stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: var(--canvas-ring-width, 2px) !important;
   stroke-dasharray: none;
   pointer-events: none !important;
 }
-html[data-diagram-kind="mindmap"] .canvas-hover-halo {
+html[data-kind="mindmap"] .canvas-hover-halo {
   fill: none !important;
   stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .4)) !important;
   stroke-width: 1px !important;
   stroke-dasharray: 4 3;
   pointer-events: none !important;
 }
-html[data-diagram-kind="mindmap"] .mindmap-node {
+html[data-kind="mindmap"] .mindmap-node {
   cursor: pointer;
 }
-html[data-diagram-kind="mindmap"] .mindmap-add {
+html[data-kind="mindmap"] .mindmap-add {
   opacity: 0;
   pointer-events: none;
   cursor: pointer;
 }
-html[data-diagram-kind="mindmap"] .mindmap-add-zone:hover .mindmap-add {
+html[data-kind="mindmap"] .mindmap-add-zone:hover .mindmap-add {
   opacity: 1;
   pointer-events: auto;
 }
-html[data-diagram-kind="mindmap"] .mindmap-add-bg {
+html[data-kind="mindmap"] .mindmap-add-bg {
   fill: var(--canvas-ring, #db4c84);
 }
-html[data-diagram-kind="mindmap"] .mindmap-node-label {
+html[data-kind="mindmap"] .mindmap-node-label {
   paint-order: stroke;
   stroke: transparent;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
-html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
+html[data-kind="flowchart"] g.pele-edge.flowchart-selection > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo),
+html[data-kind="flowchart"] g.pele-edge.canvas-selected > path:not(.pele-marker):not(.mermaid-edge-hit):not(.canvas-hover-halo) {
   stroke: var(--canvas-ring, #db4c84) !important;
   stroke-width: 2.6px !important;
 }
-html[data-diagram-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker,
-html[data-diagram-kind="flowchart"] g.pele-edge.canvas-selected > path.pele-marker {
+html[data-kind="flowchart"] g.pele-edge.flowchart-selection > path.pele-marker,
+html[data-kind="flowchart"] g.pele-edge.canvas-selected > path.pele-marker {
   stroke: var(--canvas-ring, #db4c84) !important;
   fill: var(--canvas-ring, #db4c84) !important;
 }
@@ -292,8 +292,8 @@ html.flowchart-link-mode,
 html.flowchart-link-mode #preview {
   cursor: crosshair;
 }
-html[data-diagram-kind="flowchart"] path.mermaid-edge-hit,
-html[data-diagram-kind="flowchart"] path.mermaid-edge-hit.flowchart-selection {
+html[data-kind="flowchart"] path.mermaid-edge-hit,
+html[data-kind="flowchart"] path.mermaid-edge-hit.flowchart-selection {
   fill: none !important;
   stroke: transparent !important;
 }
@@ -333,13 +333,13 @@ html[data-drawer-mode="vela"] .board-brand { display: inline-flex; }
   text-transform: uppercase;
 }
 .export-type-value,
-#typePill {
+#kindPill {
   font: 13px var(--sans);
   color: var(--text);
   font-weight: 650;
 }
 .export-type-value b,
-#typePill b { font-weight: 700; }
+#kindPill b { font-weight: 700; }
 .export-type-hint {
   margin: -2px 0 0;
   font: 11px var(--sans);
@@ -385,7 +385,7 @@ html[data-drawer-mode="vela"] .board-brand { display: inline-flex; }
   font-weight: 650;
   letter-spacing: .04em;
 }
-#diagramThemeSelect { width: 100%; }
+#kindThemeSelect { width: 100%; }
 #stylePanel .props-seg {
   gap: 8px;
 }
@@ -1927,7 +1927,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
   text-align: right;
 }
 .props-label { font-size: 11px; color: var(--muted, #64748b); margin: 0; letter-spacing: .02em; }
-#diagramThemeSelect,
+#kindThemeSelect,
 #boardTypeEditor,
 #boardTitleEditor,
 #boardDirEditor,
@@ -1980,7 +1980,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #flowchartTitleEditor.is-multiline {
   min-height: 108px;
 }
-#diagramThemeSelect:focus,
+#kindThemeSelect:focus,
 #boardTypeEditor:focus,
 #boardTitleEditor:focus,
 #boardDirEditor:focus,
@@ -2000,7 +2000,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
 #mindmapTextEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
-#diagramThemeSelect,
+#kindThemeSelect,
 #boardTypeEditor,
 #boardDirEditor,
 #boardIconSec,
@@ -2019,7 +2019,7 @@ html[data-drawer-mode="vela"] .vela-dock { display: flex; }
   background-position: right 14px center;
   background-size: 12px 12px;
 }
-html[data-theme="dark"] #diagramThemeSelect,
+html[data-theme="dark"] #kindThemeSelect,
 html[data-theme="dark"] #boardTypeEditor,
 html[data-theme="dark"] #boardDirEditor,
 html[data-theme="dark"] #boardIconSec,

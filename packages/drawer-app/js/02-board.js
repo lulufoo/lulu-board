@@ -1274,7 +1274,7 @@ function syncBoardStyleChrome(board) {
     if (typeof BoardRender.setLinkRouteStyle === "function") BoardRender.setLinkRouteStyle(next.link_route);
     syncBoardLinkRouteButton();
   }
-  var themeSelect = document.getElementById("diagramThemeSelect");
+  var themeSelect = document.getElementById("kindThemeSelect");
   if (themeSelect && next.theme) themeSelect.value = next.theme;
 }
 function commitBoardCap() {
@@ -1609,7 +1609,7 @@ previewEl.addEventListener("dblclick", function(event) {
 });
 
 function isBoardCanvasKind() {
-  var kind = document.documentElement.dataset.diagramKind || "";
+  var kind = document.documentElement.dataset.kind || "";
   return kind !== "flowchart" && kind !== "mindmap" && kind !== "mermaid-unsupported";
 }
 

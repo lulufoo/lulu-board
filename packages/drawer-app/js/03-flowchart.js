@@ -25,7 +25,7 @@ var flowchartDocTitleEditor = document.getElementById("flowchartDocTitleEditor")
 var flowchartPropsHint = document.getElementById("flowchartPropsHint");
 
 function isFlowchartKind() {
-  return document.documentElement.dataset.diagramKind === "flowchart";
+  return document.documentElement.dataset.kind === "flowchart";
 }
 
 function flowchartSource() {

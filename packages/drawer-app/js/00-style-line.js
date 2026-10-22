@@ -59,7 +59,7 @@
     ishikawa: "Ishikawa",
   };
 
-  function firstDiagramLine(body) {
+  function firstKindLine(body) {
     var lines = String(body == null ? "" : body).split(/\r?\n/);
     for (var i = 0; i < lines.length; i += 1) {
       var line = String(lines[i] || "").trim();
@@ -79,7 +79,7 @@
 
   // board | flowchart | mindmap | mermaid-unsupported | empty | unknown
   function bodyKind(body) {
-    var line = firstDiagramLine(body);
+    var line = firstKindLine(body);
     if (!line) return "empty";
     if (/^board\s+/i.test(line)) return "board";
     if (FLOWCHART_RE.test(line)) return "flowchart";
@@ -89,7 +89,7 @@
   }
 
   function bodyTypeKeyword(body) {
-    var line = firstDiagramLine(body);
+    var line = firstKindLine(body);
     if (!line) return "";
     if (/^board\s+/i.test(line)) return "board";
     var flow = FLOWCHART_RE.exec(line);
@@ -109,7 +109,7 @@
     return key;
   }
 
-  function bodyTypeLabel(body) {
+  function bodyKindLabel(body) {
     var kind = bodyKind(body);
     if (kind === "empty" || kind === "unknown") return "Source";
     var name = TYPE_NAMES[normalizeTypeKey(bodyTypeKeyword(body))];
@@ -220,11 +220,11 @@
   return {
     RENDERER_STYLE_RE: RENDERER_STYLE_RE,
     isRendererStyleLine: isRendererStyleLine,
-    firstDiagramLine: firstDiagramLine,
+    firstKindLine: firstKindLine,
     bodyIsBoard: bodyIsBoard,
     bodyKind: bodyKind,
     bodyTypeKeyword: bodyTypeKeyword,
-    bodyTypeLabel: bodyTypeLabel,
+    bodyKindLabel: bodyKindLabel,
     splitRendererStyle: splitRendererStyle,
     joinRendererStyle: joinRendererStyle,
     resolveThemeId: resolveThemeId,
