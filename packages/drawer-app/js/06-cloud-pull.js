@@ -7,7 +7,7 @@ async function pullBoardFromCloud() {
   if (boardDirty && typeof askConfirm === "function") {
     var ok = await askConfirm({
       title: "Replace local edits?",
-      copy: "The board will be reloaded from the cloud.",
+      copy: "The diagram will be reloaded from the cloud.",
       ok: "Pull",
       cancel: "Cancel",
     });
@@ -22,7 +22,7 @@ async function pullBoardFromCloud() {
       .maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return false;
-    if (!result.data) throw new Error("Cloud board not found");
+    if (!result.data) throw new Error("Cloud diagram not found");
     if (typeof cloudClearDirtyLeave === "function") cloudClearDirtyLeave();
     cloudForgetBoardCache([boardId]);
     applyCloudBoardRow(result.data);

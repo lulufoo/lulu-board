@@ -197,7 +197,7 @@ function renderCloudGroupTabs() {
   plus.type = "button";
   plus.className = "group-tab group-tab-plus";
   plus.textContent = "+";
-  plus.setAttribute("aria-label", "Add board");
+  plus.setAttribute("aria-label", "Add diagram");
   plus.disabled = !!cloudPlusDraft;
   plus.addEventListener("click", function () { void cloudStartPlusDraft(); });
   root.appendChild(plus);

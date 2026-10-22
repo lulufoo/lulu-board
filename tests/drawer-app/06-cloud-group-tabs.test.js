@@ -111,7 +111,7 @@ assert.match(tabs, /getBoardTitle\(row\.graph_id, row\.title\)/, 'tabs take the 
 assert.match(tabs, /addEventListener\("mouseenter", show\)/, 'title is re-read on hover');
 assert.match(tabs, /addEventListener\("focus", show\)/, 'title is re-read on focus');
 assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; \}\)/, 'unsaved draft tab hovers Untitled');
-assert.match(tabs, /"Add board"/, 'plus keeps Add board');
+assert.match(tabs, /"Add diagram"/, 'plus keeps Add diagram');
 {
   const sync = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-sync.js'), 'utf8');
   const start = sync.indexOf('function cloudOpenBoardId');

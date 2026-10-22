@@ -15,7 +15,7 @@
 <body>
 <div class="app sheet-collapsed" id="app">
   <!-- Workspace shell: header, left drawer (Mine / Shared) and search -->
-  <button class="shell-search" id="shellSearchOpen" type="button" aria-haspopup="dialog" title="Search boards">
+  <button class="shell-search" id="shellSearchOpen" type="button" aria-haspopup="dialog" title="Search diagrams">
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     <span>Search</span>
     <kbd>⌘K</kbd>
@@ -53,10 +53,10 @@
       <a class="shell-foot-icon" id="linkBoardIntro" href="/landing/" title="Product intro" aria-label="Product intro"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v3.4M8 5.3v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
     </footer>
   </aside>
-  <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search boards" hidden>
+  <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search diagrams" hidden>
     <div class="shell-search-box">
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input id="shellSearchInput" type="text" placeholder="Search your boards" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="shellSearchResults">
+      <input id="shellSearchInput" type="text" placeholder="Search your diagrams" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="shellSearchResults">
       <kbd>ESC</kbd>
     </div>
     <div class="shell-search-results" id="shellSearchResults" role="listbox" aria-label="Search results"></div>
@@ -347,7 +347,7 @@
       </div>
       <p class="export-type-hint" id="exportTypeHint">Current diagram kind (read-only).</p>
       <div class="export-actions" role="group" aria-label="Export actions">
-        <button type="button" class="btn" id="btnCanvasCopySrc" title="Save the current board file">Export File</button>
+        <button type="button" class="btn" id="btnCanvasCopySrc" title="Save the current diagram file">Export File</button>
         <button type="button" class="btn" id="btnCanvasDlPng">Export PNG</button>
       </div>
     </div>
@@ -501,7 +501,7 @@
       </div>
     </div>
     <div class="share-foot">
-      <button type="button" class="btn" id="shareOpenBoard" hidden>Open board</button>
+      <button type="button" class="btn" id="shareOpenBoard" hidden>Open diagram</button>
       <button type="button" class="btn" id="shareDone">Done</button>
     </div>
   </div>

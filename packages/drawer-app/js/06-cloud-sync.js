@@ -610,7 +610,7 @@ async function saveVelaToCloud(opts) {
           .eq("graph_id", boardId)
           .maybeSingle();
         if (latest.error) throw latest.error;
-        if (!latest.data) throw new Error("Cloud board not found");
+        if (!latest.data) throw new Error("Cloud diagram not found");
         applyCloudBoardRow(latest.data);
         if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
         setBoardSyncUI("conflict");
@@ -668,7 +668,7 @@ async function loadCloudVelaByHash(raw) {
     }
     if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
-    setStatus("Cloud board loaded");
+    setStatus("Cloud diagram loaded");
     if (!known) void cloudRefreshGroups();
     return true;
   }
@@ -680,7 +680,7 @@ async function loadCloudVelaByHash(raw) {
       .maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
-    if (!result.data) throw new Error("Cloud board not found");
+    if (!result.data) throw new Error("Cloud diagram not found");
     cloudPlusDraftActive = false;
     applyCloudBoardRow(result.data, { skipShare: known });
     if (known) {
@@ -691,14 +691,14 @@ async function loadCloudVelaByHash(raw) {
     }
     if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
-    setStatus("Cloud board loaded");
+    setStatus("Cloud diagram loaded");
     if (!known) void cloudRefreshGroups();
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
     cloudClearOpenBoard();
     setBoardSyncUI("error");
-    setStatus(error && error.message ? error.message : "Cloud board load failed", true);
+    setStatus(error && error.message ? error.message : "Cloud diagram load failed", true);
     return true;
   }
 }
@@ -716,7 +716,7 @@ async function cloudRefreshGroups() {
     if (typeof shellRenderMine === "function") shellRenderMine(groups);
     if (typeof cloudRefreshShares === "function") void cloudRefreshShares();
   } catch (error) {
-    setStatus(error && error.message ? error.message : "Could not load your boards", true);
+    setStatus(error && error.message ? error.message : "Could not load your diagrams", true);
   }
 }
 
@@ -727,7 +727,7 @@ async function deleteCloudGroup(groupId, boardIds) {
   if (typeof askConfirm !== "function") return;
   if (!(await askConfirm({
     title: "Delete this group?",
-    copy: "All boards in the group will be deleted.",
+    copy: "All diagrams in the group will be deleted.",
     ok: "Delete",
     cancel: "Cancel",
   }))) return;
