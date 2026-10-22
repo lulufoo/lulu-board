@@ -15,29 +15,29 @@
 <body>
 <div class="app sheet-collapsed" id="app">
   <!-- Workspace shell: header, left drawer (Mine / Shared) and search -->
-  <button class="shell-search" id="shellSearchOpen" type="button" aria-haspopup="dialog" title="Search boards">
+  <button class="shell-search" id="shellSearchOpen" type="button" aria-haspopup="dialog" title="Search diagrams">
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     <span>Search</span>
     <kbd>⌘K</kbd>
   </button>
   <div class="shell-scrim" id="shellScrim" hidden></div>
-  <aside class="shell-drawer" id="shellDrawer" aria-label="Your Vela" tabindex="-1" hidden>
+  <aside class="shell-drawer" id="shellDrawer" aria-label="Your diagrams" tabindex="-1" hidden>
     <div class="shell-drawer-body" data-shell-tab="mine">
       <button class="shell-new" id="shellNewBoard" type="button">
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-        New Vela
+        New diagram
       </button>
-      <div class="shell-tabs" id="shellTabs" role="tablist" aria-label="Vela">
+      <div class="shell-tabs" id="shellTabs" role="tablist" aria-label="Diagrams">
         <button class="shell-tab" id="shellTabMine" type="button" role="tab" aria-selected="true" aria-controls="shellMine" data-shell-tab="mine"><span>Mine</span><em id="shellMineCount"></em></button>
         <button class="shell-tab" id="shellTabShared" type="button" role="tab" aria-selected="false" aria-controls="shellShared" data-shell-tab="shared" tabindex="-1" hidden><span>Shared</span><em id="shellSharedCount"></em></button>
       </div>
       <section class="shell-sec" id="shellMine" role="tabpanel" aria-labelledby="shellTabMine">
         <ul class="shell-list" id="shellMineList"></ul>
-        <p class="shell-empty" id="shellMineEmpty" hidden>No Vela yet</p>
+        <p class="shell-empty" id="shellMineEmpty" hidden>No diagrams yet</p>
       </section>
       <section class="shell-sec shell-shared" id="shellShared" role="tabpanel" aria-labelledby="shellTabShared" hidden>
         <ul class="shell-list" id="shellSharedList"></ul>
-        <div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareBoard" type="button">Share this Vela</button></div>
+        <div class="shell-share-row" id="shellShareRow"><button class="shell-ghost" id="shellShareBoard" type="button">Share this diagram</button></div>
       </section>
     </div>
     <div class="shell-auth-menu" id="shellAuthMenu" role="menu" hidden>
@@ -53,10 +53,10 @@
       <a class="shell-foot-icon" id="linkBoardIntro" href="/landing/" title="Product intro" aria-label="Product intro"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v3.4M8 5.3v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
     </footer>
   </aside>
-  <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search boards" hidden>
+  <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search diagrams" hidden>
     <div class="shell-search-box">
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      <input id="shellSearchInput" type="text" placeholder="Search your boards" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="shellSearchResults">
+      <input id="shellSearchInput" type="text" placeholder="Search your diagrams" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="shellSearchResults">
       <kbd>ESC</kbd>
     </div>
     <div class="shell-search-results" id="shellSearchResults" role="listbox" aria-label="Search results"></div>
@@ -75,7 +75,7 @@
     <div class="collapse-hint float" hidden></div>
 
         <div class="float top-float" role="toolbar">
-      <span class="board-brand" id="shellDrawerToggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="shellDrawer" aria-label="Your Vela" title="Your Vela">
+      <span class="board-brand" id="shellDrawerToggle" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="shellDrawer" aria-label="Your diagrams" title="Your diagrams">
         <svg class="board-brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="#db4c84"/><path d="M8 8h7v9h9v7H8z" fill="#f5f5f7"/><rect x="18" y="8" width="6" height="6" rx="1.5" fill="#ffd166"/></svg>
       </span>
       <div class="board-edit-tools" aria-label="Board editing">
@@ -103,7 +103,7 @@
       <div id="preview"></div>
     </div>
 
-    <nav class="group-tab-float" id="vela-group-tabs" hidden aria-label="Vela in this group"></nav>
+    <nav class="group-tab-float" id="vela-group-tabs" hidden aria-label="Diagrams in this group"></nav>
     <div class="float zoom-float">
       <button class="btn" id="btnZoomOut">−</button>
       <button class="btn" id="btnZoomReset">90%</button>
@@ -334,7 +334,7 @@
         </div>
       </div>
       <div class="dock-source-foot">
-        <button type="button" class="btn btn-delete" id="btnBoardDeleteCloud" title="Delete this Vela" hidden>Delete</button>
+        <button type="button" class="btn btn-delete" id="btnBoardDeleteCloud" title="Delete this diagram" hidden>Delete</button>
       </div>
     </div>
     <div class="vela-dock-panel" id="exportPanel" data-dock-panel="export">
@@ -347,7 +347,7 @@
       </div>
       <p class="export-type-hint" id="exportTypeHint">Current diagram kind (read-only).</p>
       <div class="export-actions" role="group" aria-label="Export actions">
-        <button type="button" class="btn" id="btnCanvasCopySrc" title="Save the current board file">Export File</button>
+        <button type="button" class="btn" id="btnCanvasCopySrc" title="Save the current diagram file">Export File</button>
         <button type="button" class="btn" id="btnCanvasDlPng">Export PNG</button>
       </div>
     </div>
@@ -383,7 +383,7 @@
           <button type="button" class="props-seg-btn" id="btnRouteStagger" data-route="stagger" aria-pressed="true" title="Spread stagger routing">Stagger</button>
           <button type="button" class="props-seg-btn" id="btnRouteTrunk" data-route="trunk" aria-pressed="false" title="Bundled trunk routing">Trunk</button>
         </div>
-        <p class="style-hint">Saved with the Vela</p>
+        <p class="style-hint">Saved with the diagram</p>
       </section>
     </div>
   </aside>
@@ -438,8 +438,8 @@
 <div class="shell-dialog" id="shellSignInDialog" hidden>
   <button type="button" class="shell-dialog-backdrop" id="shellSignInBackdrop" aria-label="Dismiss sign in"></button>
   <div class="shell-dialog-sheet" role="dialog" aria-modal="true" aria-labelledby="shellSignInTitle">
-    <h2 id="shellSignInTitle">Sign in to open this Vela</h2>
-    <p>This cloud Vela is only visible after you sign in.</p>
+    <h2 id="shellSignInTitle">Sign in to open this diagram</h2>
+    <p>This cloud diagram is only visible after you sign in.</p>
     <div class="shell-dialog-actions">
       <button type="button" class="shell-auth-provider" data-shell-oauth="google">Continue with Google</button>
       <button type="button" class="shell-auth-provider" data-shell-oauth="github">Continue with GitHub</button>
@@ -471,10 +471,10 @@
 <div class="shell-dialog" id="shareDialog" hidden>
   <button type="button" class="shell-dialog-backdrop" id="shareDialogBackdrop" aria-label="Close"></button>
   <div class="shell-dialog-sheet share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareDialogTitle">
-    <h2 id="shareDialogTitle">Share Vela</h2>
+    <h2 id="shareDialogTitle">Share diagram</h2>
     <p class="share-board" id="shareDialogBoard"></p>
     <div class="share-pane" id="shareDialogOff">
-      <p>Create a link to share this Vela. Anyone with the link will be able to view it.</p>
+      <p>Create a link to share this diagram. Anyone with the link will be able to view it.</p>
       <button type="button" class="btn primary share-wide" id="shareCreate">Create link</button>
     </div>
     <div class="share-pane" id="shareDialogOn" hidden>
@@ -501,7 +501,7 @@
       </div>
     </div>
     <div class="share-foot">
-      <button type="button" class="btn" id="shareOpenBoard" hidden>Open board</button>
+      <button type="button" class="btn" id="shareOpenBoard" hidden>Open diagram</button>
       <button type="button" class="btn" id="shareDone">Done</button>
     </div>
   </div>
@@ -521,7 +521,7 @@
   <button type="button" class="shell-dialog-backdrop" id="createKindBackdrop" aria-label="Cancel"></button>
   <div class="create-kind-pop" role="dialog" aria-modal="true" aria-labelledby="createKindTitle">
     <div class="create-kind-head">
-      <h2 id="createKindTitle">New Vela</h2>
+      <h2 id="createKindTitle">New diagram</h2>
       <p>Pick a diagram type</p>
     </div>
     <div class="create-kind-box">

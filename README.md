@@ -33,11 +33,11 @@ Chat entry is [`/board`](./skill/board/SKILL.md):
 /board
 ```
 
-The Drawer opens on a built-in template — the onboarding Vela — so you can see the loop right away:
+The Drawer opens on a built-in template — the onboarding diagram — so you can see the loop right away:
 
 <p align="center">
   <a href="./examples/board-onboarding/onboarding.bmd">
-    <img src="./docs/readme/lulu-board.webp" alt="Vela · Onboarding" width="720" />
+    <img src="./docs/readme/lulu-board.webp" alt="Diagram · Onboarding" width="720" />
   </a>
 </p>
 
@@ -55,19 +55,19 @@ Describe what you want after `/board`:
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
 
-A signed-in owner can share a saved cloud Vela from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current Vela; Edit lets a signed-in visitor change that same row.
+A signed-in owner can share a saved cloud diagram from the Share dock. The first audience is All, with View or Edit. Anyone with the `#s:` link can open the current diagram; Edit lets a signed-in visitor change that same row.
 
 <p align="center">
   <a href="./examples/board-android-mvi/android-mvi-architecture.bmd">
-    <img src="./docs/readme/agent-chat.webp" alt="Vela · Android MVI" width="720" />
+    <img src="./docs/readme/agent-chat.webp" alt="Diagram · Android MVI" width="720" />
   </a>
 </p>
 
-<p align="center"><strong>Vela · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
+<p align="center"><strong>Diagram · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
 
 ## MCP configuration
 
-`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud Vela for your account, add the hosted MCP and Connect.
+`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud diagram for your account, add the hosted MCP and Connect.
 
 ```json
 {

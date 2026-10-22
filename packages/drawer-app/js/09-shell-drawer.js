@@ -236,7 +236,7 @@ function shellRenderMine(groups) {
     title.textContent = group.title || "Untitled";
     var meta = document.createElement("span");
     var when = shellWhen(group.updatedAt);
-    meta.textContent = group.boardCount + " Vela" + (when ? " · " + when : "");
+    meta.textContent = group.boardCount + " diagrams" + (when ? " · " + when : "");
     row.appendChild(title);
     row.appendChild(meta);
     row.addEventListener("click", function () {
@@ -377,7 +377,7 @@ function shellSyncShareButton() {
   var signedIn = !!(typeof cloudSession !== "undefined" && cloudSession && cloudSession.user);
   var own = typeof cloudVelaId === "function" && !!cloudVelaId() && !(typeof isShareGuest === "function" && isShareGuest());
   btn.disabled = !(signedIn && own) && !shellIsPreview();
-  btn.title = btn.disabled ? "Save this Vela to the cloud to share it" : "Share this Vela";
+  btn.title = btn.disabled ? "Save this diagram to the cloud to share it" : "Share this diagram";
 }
 
 // Functions, not vars: the first render can run before this file's var initialisers do.
@@ -462,10 +462,10 @@ function shellRenderShared(shares) {
     acts.className = "shell-row-acts";
     var live = !preview && typeof cloudShareMutate === "function";
     // Everything else about a share (link, who can do what, a new link) lives in the Share dialog.
-    var stop = shellShareAction("Stop", "Stop sharing this Vela", async function () {
+    var stop = shellShareAction("Stop", "Stop sharing this diagram", async function () {
       if (!live) return;
       if (typeof askConfirm === "function" && !(await askConfirm({
-        title: "Stop sharing this Vela?",
+        title: "Stop sharing this diagram?",
         copy: "Anyone with the link will lose access.",
         ok: "Stop sharing",
         cancel: "Cancel",
@@ -507,7 +507,7 @@ function shellSearchMatches(query, groups, source) {
   (groups || []).forEach(function (group) {
     var members = group.members && group.members.length ? group.members : [{ graph_id: group.faceBoardId, title: group.title }];
     if (!q) {
-      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + " Vela", boardId: group.faceBoardId });
+      boards.push({ groupId: group.groupId, title: group.title, note: group.boardCount + " diagrams", boardId: group.faceBoardId });
       return;
     }
     var groupHit = String(group.title || "").toLowerCase().indexOf(q) >= 0;
@@ -517,7 +517,7 @@ function shellSearchMatches(query, groups, source) {
     boards.push({
       groupId: group.groupId,
       title: group.title,
-      note: viaBoard ? "Vela · " + boardHit.title : group.boardCount + " Vela",
+      note: viaBoard ? "Diagram · " + boardHit.title : group.boardCount + " diagrams",
       boardId: viaBoard ? boardHit.graph_id : group.faceBoardId,
     });
   });
@@ -558,7 +558,7 @@ function shellPaintSearchResults(query, found, remote) {
       row.setAttribute("role", "option");
       var title = document.createElement("b");
       var note = document.createElement("span");
-      if (kind === "line") { title.textContent = item.text; note.textContent = "line " + (item.line + 1) + " of this Vela"; }
+      if (kind === "line") { title.textContent = item.text; note.textContent = "line " + (item.line + 1) + " of this diagram"; }
       else { title.textContent = item.title || "Untitled"; note.textContent = item.note; }
       row.appendChild(title);
       row.appendChild(note);
@@ -571,7 +571,7 @@ function shellPaintSearchResults(query, found, remote) {
   section(String(query).trim() ? "Vela" : "Recent", found.boards, "board");
   section("Mine", (remote && remote.mine) || [], "mine");
   section("Public", (remote && remote.public) || [], "public");
-  section("In this Vela", found.lines, "line");
+  section("In this diagram", found.lines, "line");
   if (!shellSearchHits.length) {
     var none = document.createElement("p");
     none.className = "shell-empty";

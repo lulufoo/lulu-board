@@ -31,8 +31,8 @@ async function cloudDeleteSavedVela() {
   var boardId = cloudVelaId();
   if (!cloudClient || !boardId) return false;
   var confirmed = await askConfirm({
-    title: "Delete this Vela?",
-    copy: "This board will be deleted from the cloud.",
+    title: "Delete this diagram?",
+    copy: "This diagram will be deleted from the cloud.",
     ok: "Delete",
     cancel: "Cancel",
   });
@@ -52,7 +52,7 @@ async function cloudDeleteSavedVela() {
       if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
       cloudClearGroupTabs();
     }
-    setStatus("Deleted board");
+    setStatus("Deleted diagram");
     await cloudRefreshGroups();
     return true;
   } catch (error) {

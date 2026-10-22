@@ -3,9 +3,9 @@
    Key tokens: "Mod" = ⌘ on Mac / Ctrl elsewhere, "Alt" = ⌥ / Alt. */
 var SHORTCUT_GROUPS = [
   { title: "Workspace", rows: [
-    { label: "Search boards", keys: [["Mod", "K"]], src: "09-shell-drawer.js", probe: 'event.key.toLowerCase() === "k"' },
+    { label: "Search diagrams", keys: [["Mod", "K"]], src: "09-shell-drawer.js", probe: 'event.key.toLowerCase() === "k"' },
     { label: "Toggle Source panel", keys: [["Mod", "\\"]], src: "07-chrome-boot.js", probe: "e.key === '\\\\'" },
-    { label: "Re-render board", keys: [["Mod", "Enter"]], src: "07-chrome-boot.js", probe: "e.key === 'Enter'" },
+    { label: "Re-render diagram", keys: [["Mod", "Enter"]], src: "07-chrome-boot.js", probe: "e.key === 'Enter'" },
     { label: "Keyboard shortcuts", keys: [["?"]], src: "09-shortcuts.js", probe: 'event.key === "?"' },
     { label: "Close dialog or panel", keys: [["Esc"]], src: "09-shell-drawer.js", probe: 'event.key === "Escape"' }
   ] },

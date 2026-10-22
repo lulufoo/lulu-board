@@ -65,12 +65,12 @@ async function loadSharedBoardByHash(raw) {
   }
   await cloudSessionReady;
   var seq = ++cloudLoadSeq;
-  setStatus("Loading shared board…");
+  setStatus("Loading shared diagram…");
   try {
     var result = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
     if (result.error) throw result.error;
     if (seq !== cloudLoadSeq) return true;
-    if (!result.data) throw new Error("Shared board not found");
+    if (!result.data) throw new Error("Shared diagram not found");
     if (result.data.is_owner && result.data.graph_id) {
       setShareView(false);
       setShareEdit(false);
@@ -91,7 +91,7 @@ async function loadSharedBoardByHash(raw) {
     if (typeof showVelaError === "function") showVelaError("");
     if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
     setBoardSyncUI("ok");
-    setStatus(canEdit ? "Shared board · can edit" : "Shared board");
+    setStatus(canEdit ? "Shared diagram · can edit" : "Shared diagram");
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
@@ -101,7 +101,7 @@ async function loadSharedBoardByHash(raw) {
     if (typeof applyBoardLiveMeta === "function") applyBoardLiveMeta({ id: "" });
     if (typeof renderVela === "function") renderVela({ fit: false });
     setBoardSyncUI("error");
-    var message = shareRpcError(error, "Shared board load failed");
+    var message = shareRpcError(error, "Shared diagram load failed");
     if (typeof showVelaError === "function") showVelaError(message);
     setStatus(message, true);
     return true;
@@ -132,7 +132,7 @@ async function saveSharedBoard(opts) {
   opts = opts || {};
   var shareId = typeof cloudShareIdFromHash === "function" ? cloudShareIdFromHash(location.hash) : "";
   if (!shareId || !cloudClient || !cloudSession || !cloudSession.user) {
-    if (opts.explicit) setStatus("Sign in to edit this shared board", true);
+    if (opts.explicit) setStatus("Sign in to edit this shared diagram", true);
     return false;
   }
   var source = typeof stripDocumentMeta === "function"
@@ -157,7 +157,7 @@ async function saveSharedBoard(opts) {
     if (!row) {
       var latest = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
       if (latest.error) throw latest.error;
-      if (!latest.data) throw new Error("Shared board not found");
+      if (!latest.data) throw new Error("Shared diagram not found");
       applySharedBoardRow(latest.data);
       if (typeof renderVela === "function") renderVela({ fit: false, restoreView: true });
       setBoardSyncUI("conflict");
@@ -166,7 +166,7 @@ async function saveSharedBoard(opts) {
     }
     applySharedBoardRow(row);
     setBoardSyncUI("ok");
-    setStatus("Saved shared board");
+    setStatus("Saved shared diagram");
     return true;
   } catch (error) {
     if (seq !== cloudSaveSeq) return false;

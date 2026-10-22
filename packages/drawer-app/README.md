@@ -1,6 +1,6 @@
 # drawer-app
 
-All-kinds vela host. The opened document is a Vela; Board (Z) is one kind. The Z engine stays in `packages/board`.
+All-kinds vela host. The opened document is a diagram; Board (Z) is one kind. The Z engine stays in `packages/board`.
 
 ```
 packages/drawer-app/

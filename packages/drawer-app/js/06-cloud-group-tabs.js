@@ -197,7 +197,7 @@ function renderCloudGroupTabs() {
   plus.type = "button";
   plus.className = "group-tab group-tab-plus";
   plus.textContent = "+";
-  plus.setAttribute("aria-label", "Add board");
+  plus.setAttribute("aria-label", "Add diagram");
   plus.disabled = !!cloudPlusDraft;
   plus.addEventListener("click", function () { void cloudStartPlusDraft(); });
   root.appendChild(plus);
@@ -366,5 +366,5 @@ async function cloudCommitPlusDraft(kind) {
   if (typeof saveVelaToHash === "function") await saveVelaToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
-  setStatus("New Vela in this group");
+  setStatus("New diagram in this group");
 }

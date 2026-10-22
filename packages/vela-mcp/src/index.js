@@ -7,7 +7,7 @@ import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
 
-const VELA_ID = z.string().regex(/^b_[0-9a-f]{8}$/).describe("Cloud row id: b_ + 8 lowercase hex");
+const DIAGRAM_ID = z.string().regex(/^b_[0-9a-f]{8}$/).describe("Cloud row id: b_ + 8 lowercase hex");
 
 function toolText(data) {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };
@@ -23,7 +23,7 @@ function toolError(error) {
 function mcpDoc(row) {
   if (!row) return row;
   return {
-    vela_id: row.graph_id,
+    diagram_id: row.graph_id,
     title: row.title,
     bmd: row.bmd,
     version: row.version,
@@ -38,32 +38,32 @@ function createServer(env, identity, token) {
   server.registerTool("whoami", { description: "Return the authorized Lulu Vela account.", inputSchema: {} }, async () => (
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
-  server.registerTool("get_vela", {
-    description: "Load one owned Vela by id. Returns url plus vela_id. group_id is the group this vela_id belongs to.",
-    inputSchema: { vela_id: VELA_ID },
-  }, async ({ vela_id }) => {
-    try { return toolText(mcpDoc(await getGraph(env, token, vela_id))); }
+  server.registerTool("get_diagram", {
+    description: "Load one owned diagram by id. Returns url plus diagram_id. group_id is the group this diagram_id belongs to.",
+    inputSchema: { diagram_id: DIAGRAM_ID },
+  }, async ({ diagram_id }) => {
+    try { return toolText(mcpDoc(await getGraph(env, token, diagram_id))); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("create_vela", {
-    description: "Insert a new owned Vela and return url plus vela_id. group_id is the group this vela_id belongs to. Optional group_id joins that group on the current account so this Vela is classified with other Vela that share it. Omit group_id to create a new group.",
+  server.registerTool("create_diagram", {
+    description: "Insert a new owned diagram and return url plus diagram_id. group_id is the group this diagram_id belongs to. Optional group_id joins that group on the current account so this diagram is classified with other diagrams that share it. Omit group_id to create a new group.",
     inputSchema: {
       bmd: z.string(),
-      vela_id: VELA_ID.optional(),
+      diagram_id: DIAGRAM_ID.optional(),
       group_id: z.string().optional().describe(
-        "If set, join this group on the current account so this vela_id is classified with other Vela that share the same group_id. Omit to create a new group."
+        "If set, join this group on the current account so this diagram_id is classified with other diagrams that share the same group_id. Omit to create a new group."
       ),
     },
-  }, async ({ bmd, vela_id, group_id }) => {
-    try { return toolText(mcpDoc(await createGraph(env, token, identity.user_id, bmd, vela_id, group_id))); }
+  }, async ({ bmd, diagram_id, group_id }) => {
+    try { return toolText(mcpDoc(await createGraph(env, token, identity.user_id, bmd, diagram_id, group_id))); }
     catch (error) { return toolError(error); }
   });
-  server.registerTool("save_vela", {
-    description: "Update an owned Vela when expected_version still matches. row includes url and vela_id. row.group_id is the group this vela_id belongs to.",
-    inputSchema: { vela_id: VELA_ID, bmd: z.string(), expected_version: z.number() },
-  }, async ({ vela_id, bmd, expected_version }) => {
+  server.registerTool("save_diagram", {
+    description: "Update an owned diagram when expected_version still matches. row includes url and diagram_id. row.group_id is the group this diagram_id belongs to.",
+    inputSchema: { diagram_id: DIAGRAM_ID, bmd: z.string(), expected_version: z.number() },
+  }, async ({ diagram_id, bmd, expected_version }) => {
     try {
-      var result = await saveGraph(env, token, vela_id, bmd, expected_version);
+      var result = await saveGraph(env, token, diagram_id, bmd, expected_version);
       return toolText({ conflict: result.conflict, row: mcpDoc(result.row) });
     }
     catch (error) { return toolError(error); }

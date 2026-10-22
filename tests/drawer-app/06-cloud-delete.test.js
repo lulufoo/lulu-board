@@ -45,7 +45,7 @@ assert.match(draft, /cloudClearPlusDraftSlot\(\)/, 'dropping a draft clears the 
 assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.graph_id/, 'draft drop returns to the last saved board');
 
 const saved = del.slice(del.indexOf('async function cloudDeleteSavedVela'), del.indexOf('async function cloudDeleteCurrentBoard'));
-assert.match(saved, /askConfirm\(\{[\s\S]*Delete this Vela\?/, 'saved board asks first, in English');
+assert.match(saved, /askConfirm\(\{[\s\S]*Delete this diagram\?/, 'saved board asks first, in English');
 assert.match(saved, /from\("graphs"\)\.delete\(\)\.eq\("graph_id", boardId\)/, 'deletes the boards row');
 assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
 assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');
