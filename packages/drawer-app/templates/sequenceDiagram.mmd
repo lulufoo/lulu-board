@@ -1,0 +1,11 @@
+sequenceDiagram
+  actor User
+  participant UI
+  participant API
+  participant DB
+  User->>UI: action
+  UI->>API: request
+  API->>DB: query
+  DB-->>API: rows
+  API-->>UI: result
+  UI-->>User: render

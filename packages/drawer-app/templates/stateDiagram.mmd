@@ -1,0 +1,7 @@
+stateDiagram-v2
+  [*] --> Idle
+  Idle --> Open : open
+  Open --> Saving : submit
+  Saving --> Idle : success
+  Saving --> Open : failure
+  Open --> Idle : cancel

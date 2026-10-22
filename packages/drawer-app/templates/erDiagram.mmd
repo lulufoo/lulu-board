@@ -1,0 +1,12 @@
+erDiagram
+  USER ||--o{ NOTE : writes
+  NOTE ||--|{ TAG : tagged
+  USER {
+    string id PK
+    string name
+  }
+  NOTE {
+    string id PK
+    string user_id FK
+    string body
+  }
