@@ -45,7 +45,7 @@ item HERO type text "Hi"
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   const out = Render.serialize(board);
-  assert.ok(out.startsWith('board "Demo"\nstyle '), out);
+  assert.ok(out.startsWith('boxes "Demo"\nstyle '), out);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
     theme: 'pastel',

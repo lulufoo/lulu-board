@@ -445,7 +445,7 @@
 
   function parse(text) {
     const source = String(text == null ? '' : text).replace(/\r\n?/g, '\n');
-    const lines = source.split('\n');    const board = { kind: 'board', title: '', views: [], boxes: [], links: [], layout: { board: {}, boxes: {}, places: [], aligns: [], constraints: [], barriers: [] } };
+    const lines = source.split('\n');    const board = { kind: 'boxes', title: '', views: [], boxes: [], links: [], layout: { board: {}, boxes: {}, places: [], aligns: [], constraints: [], barriers: [] } };
     const byId = new Map();
     let sawBoard = false;
     let inLayout = false;
@@ -459,8 +459,8 @@
       const indent = (raw.match(/^\s*/) || [''])[0].replace(/\t/g, '  ').length;
       const line = raw.trim();
       if (!sawBoard) {
-        if (!/^board\s+/i.test(line)) fail('first statement must be `board <title>`', lineNo);
-        board.title = parseTitle(line.replace(/^board\s+/i, ''), lineNo);
+        if (!/^(?:board|boxes)\s+/i.test(line)) fail('first statement must be `boxes <title>`', lineNo);
+        board.title = parseTitle(line.replace(/^(?:board|boxes)\s+/i, ''), lineNo);
         sawBoard = true;
         return;
       }
@@ -471,7 +471,7 @@
         return;
       }
       if (/^layout\s*$/i.test(line)) { inLayout = true; currentBox = null; return; }
-      if (/^board\s+/i.test(line)) fail('only one board statement is allowed', lineNo);
+      if (/^(?:board|boxes)\s+/i.test(line)) fail('only one boxes statement is allowed', lineNo);
       if (inLayout) {
         // `A -> B` ends the layout block (board beta has no `link` keyword).
         if (indent === 0 && (/^(box|item)\b/.test(line) || /^\S+\s*(<->|->)\s+\S+/.test(line))) inLayout = false;
@@ -512,7 +512,7 @@
       fail(`unknown statement '${line.split(/\s+/, 1)[0]}'`, lineNo);
     });
 
-    if (!sawBoard) fail('missing `board <title>`');
+    if (!sawBoard) fail('missing `boxes <title>`');
     // Multi-word item text is the default. Promote the first token to an id when
     // a link names it, or when the remainder is an explicit quoted label.
     const linkIds = new Set(board.links.flatMap((link) => [link.from, link.to]));
@@ -776,7 +776,7 @@
     });
   }
   function quote(value) { return JSON.stringify(String(value == null ? "" : value)); }
-  function serialize(board) { var lines = ["board " + quote(board.title)]; var styleLine = writeStyleLine(board.style); if (styleLine) lines.push(styleLine); var writeItem = function(item, indent) { var it = (item.type || "chip"); var prefix = " ".repeat(indent) + "item" + (item.id ? (" " + item.id) : "") + (it !== "chip" ? (" type " + it) : "") + (it === "chip" && item.shape === "diamond" ? " shape diamond" : "") + (item.cap === "off" && it !== "icon" ? " cap off" : ""); if (it === "icon") { var icon = Number(item.icon); if (!Number.isInteger(icon)) fail("icon n must be an integer"); requireKnownIcon(icon); var iconLine = prefix + " " + String(icon).padStart(3, "0"); if (item.text) iconLine += " " + quote(item.text); lines.push(iconLine); return; } lines.push(prefix + " " + quote(item.text)); }; var writeBox = function(box, indent) { var prefix = " ".repeat(indent); var bt = shapeType(box); var isLayout = bt === "layout"; var boxTitle = isLayout ? "" : String(box.title == null ? "" : box.title); var boxIcon = Number(box.icon); var iconBit = ""; if (!isLayout && box.icon != null && box.icon !== "" && Number.isInteger(boxIcon)) { requireKnownIcon(boxIcon); iconBit = " " + String(boxIcon).padStart(3, "0"); } lines.push(prefix + "box " + box.id + (bt !== "card" && bt !== "diamond" ? (" type " + bt) : "") + iconBit + (boxTitle ? (" " + quote(boxTitle)) : "")); var kids = Array.isArray(box.kids) ? box.kids : (box.items || []).concat(box.boxes || []); kids.forEach(function(kid) { if (kid && (kid.role === "item" || kid.kind === "item")) writeItem(kid, indent + 2); else writeBox(kid, indent + 2); }); }; var roots = (board.views && board.views.length) ? board.views : (board.boxes || []); roots.forEach(function(node) { if (node && (node.role === "item" || node.kind === "item")) writeItem(node, 0); else writeBox(node, 0); }); (board.links || []).forEach(function(link) { var title = linkTitle(link); var lt = linkType(link); var op = linkArrow(link) === "both" ? " <-> " : " -> "; lines.push(link.from + op + link.to + (lt === "dashed" ? " type dashed" : "") + (title ? " title " + quote(title) : "")); }); writeLayoutLines(lines, board.layout || {}); return lines.join("\n") + "\n"; }
+  function serialize(board) { var lines = ["boxes " + quote(board.title)]; var styleLine = writeStyleLine(board.style); if (styleLine) lines.push(styleLine); var writeItem = function(item, indent) { var it = (item.type || "chip"); var prefix = " ".repeat(indent) + "item" + (item.id ? (" " + item.id) : "") + (it !== "chip" ? (" type " + it) : "") + (it === "chip" && item.shape === "diamond" ? " shape diamond" : "") + (item.cap === "off" && it !== "icon" ? " cap off" : ""); if (it === "icon") { var icon = Number(item.icon); if (!Number.isInteger(icon)) fail("icon n must be an integer"); requireKnownIcon(icon); var iconLine = prefix + " " + String(icon).padStart(3, "0"); if (item.text) iconLine += " " + quote(item.text); lines.push(iconLine); return; } lines.push(prefix + " " + quote(item.text)); }; var writeBox = function(box, indent) { var prefix = " ".repeat(indent); var bt = shapeType(box); var isLayout = bt === "layout"; var boxTitle = isLayout ? "" : String(box.title == null ? "" : box.title); var boxIcon = Number(box.icon); var iconBit = ""; if (!isLayout && box.icon != null && box.icon !== "" && Number.isInteger(boxIcon)) { requireKnownIcon(boxIcon); iconBit = " " + String(boxIcon).padStart(3, "0"); } lines.push(prefix + "box " + box.id + (bt !== "card" && bt !== "diamond" ? (" type " + bt) : "") + iconBit + (boxTitle ? (" " + quote(boxTitle)) : "")); var kids = Array.isArray(box.kids) ? box.kids : (box.items || []).concat(box.boxes || []); kids.forEach(function(kid) { if (kid && (kid.role === "item" || kid.kind === "item")) writeItem(kid, indent + 2); else writeBox(kid, indent + 2); }); }; var roots = (board.views && board.views.length) ? board.views : (board.boxes || []); roots.forEach(function(node) { if (node && (node.role === "item" || node.kind === "item")) writeItem(node, 0); else writeBox(node, 0); }); (board.links || []).forEach(function(link) { var title = linkTitle(link); var lt = linkType(link); var op = linkArrow(link) === "both" ? " <-> " : " -> "; lines.push(link.from + op + link.to + (lt === "dashed" ? " type dashed" : "") + (title ? " title " + quote(title) : "")); }); writeLayoutLines(lines, board.layout || {}); return lines.join("\n") + "\n"; }
   function findNode(board, selection) {
     if (!selection) return null;
     if (selection.kind === "item" && selection.id && (selection.boxId == null || selection.boxId === "")) {

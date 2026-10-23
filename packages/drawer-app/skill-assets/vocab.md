@@ -5,13 +5,13 @@ A Board document has these layers:
 | Layer | Syntax | Purpose |
 |---|---|---|
 | Stash | `style <base64>` | Drawer-owned; see Protocol boundary |
-| Structure | `board`, `box`, `item` | Define nodes and containment |
+| Structure | `boxes`, `box`, `item` | Define nodes and containment |
 | Relation | `A -> B`, `A <-> B` | Connect nodes semantically |
 | Layout | `layout` | Position nodes (`arrange`, `flush`, `pin`) |
 
 ## Common syntax
 
-- The first drawing statement is `board "<title>"`; one document contains one board.
+- The first drawing statement is `boxes "<title>"`; one document contains one root.
 - IDs match `[A-Za-z_][A-Za-z0-9_.-]*` and are unique across boxes and id’d items.
   These are node IDs inside BMD Source. They are not the Drawer BMD ID (`b_…`).
 - Canonical output: lowercase keywords, double-quoted strings, `\n` for a line
@@ -25,7 +25,7 @@ A Board document has these layers:
 
 | Node | Syntax | Meaning |
 |---|---|---|
-| Board | `board "<title>"` | Document root and canvas title |
+| Board | `boxes "<title>"` | Document root and canvas title |
 | Box | `box <id> [type <box-type>] [<n>] ["<title>"]` | Container; indentation defines nesting |
 | Item | `item [<id>] [type <item-type>] [shape …] [cap off] <body>` | Leaf inside a box or at board level |
 
