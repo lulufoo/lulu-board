@@ -47,7 +47,7 @@ global.fetch = async function (url) {
 (async function () {
   const board = await Template.loadKindTemplateSource('boxes');
   assert.match(board, /^boxes "Untitled"/m);
-  assert.match(board, /box IN 501 "Inbox"/);
+  assert.match(board, /box CARD 002 "Card"/);
   const welcome = await Template.loadKindTemplateSource('welcome');
   assert.match(welcome, /^sketch "What each one is for\."/);
   const sequence = await Template.loadKindTemplateSource('sequenceDiagram');

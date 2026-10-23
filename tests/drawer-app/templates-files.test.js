@@ -53,8 +53,8 @@ Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
   assert.strictEqual(board, demo, 'boxes.bmd copies skill demo.bmd');
   assert.ok(!/^\s*meta\s+/.test(board), 'board template has no document meta');
   const parsed = Render.parse(board);
-  assert.strictEqual(parsed.title, 'Demo');
-  assert.ok(parsed.boxes.some((b) => b.id === 'IN'));
+  assert.strictEqual(parsed.title, 'Boxes');
+  assert.ok(parsed.boxes.some((b) => b.id === 'CARD'));
 }
 
 console.log('ok templates-files');

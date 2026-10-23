@@ -1,35 +1,39 @@
-# Built-in Demo. icon <n> and box-face <n> come from icons.json.
+# Boxes template. icon <n> and box-face <n> come from icons.json.
 
-boxes "Demo"
+boxes "Boxes"
 
-box IN 501 "Inbox"
-  item type text "from source"
-  item Raw
-  item type note "# Check\n- Quote **must** match.\n- Use `version` from meta."
-  item Flag type icon 502 "rejected"
+box CARD 002 "Card"
+  item type text "Text"
+  item "Chip"
+  item type note "# Note\nThis is the Boxes template.\n- Each label names its piece.\n- Replace the labels with your own."
+  item MARK type icon 008 "Icon"
 
-box WORK type container "Work"
-  box STEP "Process"
-    item Run
+item GATE shape diamond "Diamond"
+
+box GROUP type container "Container"
+  box INNER "Card"
+    item "Chip"
   box ROW type layout
-    item HOLD "Hold"
+    item "Chip"
 
-item GATE shape diamond "Ready?"
+box NEXT "Card"
+  item "Chip"
 
-box OUT "Outbox"
-  item Result
-
-IN -> GATE title "ask"
-GATE -> STEP title "go"
-IN <-> OUT title "sync"
-GATE -> OUT type dashed title "skip"
+CARD -> GATE title "solid"
+GATE -> INNER title "solid"
+CARD <-> NEXT title "both"
+GATE -> NEXT type dashed title "dashed"
 
 layout
-  direction ROW row
-  align IN start
-  arrange WORK after IN
-  arrange GATE after WORK
-  arrange OUT after GATE
-  flush IN, OUT top
-  pin OUT.start to GATE.end 32
-  pin IN.start to parent.start 24
+  direction ROW, GROUP row
+  align CARD, INNER start
+  align GROUP center
+  align NEXT stretch
+  pin CARD.start to parent.start -31
+  pin CARD.top to parent.top 172
+  pin GATE.start to parent.start 352
+  pin GATE.top to parent.top 284
+  pin GROUP.start to parent.start 557
+  pin GROUP.top to parent.top 205
+  pin NEXT.start to parent.start 352
+  pin NEXT.top to parent.top 503
