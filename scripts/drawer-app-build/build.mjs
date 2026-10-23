@@ -72,6 +72,7 @@ const domain = [
   '01-canvas-interaction.js',
   '01-mermaid-halo.js',
   '02-diagram.js',
+  '03-sketch.js',
   '02-board.js',
   '03-flowchart-shapes.js',
   '03-flowchart.js',
@@ -153,7 +154,7 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   rmSync(outTemplates, { recursive: true, force: true });
   mkdirSync(outTemplates, { recursive: true });
   const names = readdirSync(srcTemplates).sort();
-  if (names.length !== 13) throw new Error('expected 13 templates, got ' + names.length);
+  if (names.length !== 14) throw new Error('expected 14 templates, got ' + names.length);
   for (const name of names) {
     copyFileSync(path.join(srcTemplates, name), path.join(outTemplates, name));
     console.log('ok templates/' + name);

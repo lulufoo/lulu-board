@@ -46,7 +46,7 @@ function renderSourceGutter(gutter, heights) {
   var n = heights.length;
   var digits = String(Math.max(1, n)).length;
   gutter.style.minWidth = (Math.max(2, digits) + 1.6) + "ch";
-  // Built with DOM calls: the page CSP (style-src 'self') drops style="" written through innerHTML.
+  // Built with DOM calls. Inline styles are allowed (style-src 'unsafe-inline'); scripts stay on script-src 'self'.
   var frag = document.createDocumentFragment();
   var i;
   for (i = 0; i < n; i++) {

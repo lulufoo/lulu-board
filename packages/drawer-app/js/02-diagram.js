@@ -47,7 +47,7 @@ function applyDrawerKind(kind) {
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
       ? "Select a group, node, or link"
-      : (kind === "mindmap" ? "Select a topic" : "Select a title, box, or item");
+      : (kind === "mindmap" ? "Select a topic" : (kind === "sketch" ? "Sketch" : "Select a title, box, or item"));
   }
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
@@ -285,6 +285,7 @@ function renderDiagram(opts) {
   applyDrawerKind(kind);
   if (kind === "flowchart") return renderFlowchart(opts);
   if (kind === "mindmap") return renderMindmap(opts);
+  if (kind === "sketch") return renderSketch(opts);
   if (isDesignKind(kind)) return renderDesignPele(opts);
   if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
   syncBoardEditControls();
