@@ -41,6 +41,36 @@
    </div>
   </section>
 
+  <section class="kinds" aria-label="What each one is for">
+    <h2>What each one is for.</h2>
+    <p class="kinds-lead">The agent writes it. You keep the diagram.</p>
+    <div class="kinds-grid">
+      <article class="kind-card">
+        <h3>Sketch</h3>
+        <p class="kind-use">Present the idea visually. Written in HTML.</p>
+        <pre class="kind-sample">sketch
+content base64(HTML)</pre>
+        <p class="kind-how">Use an AI agent to create or edit.<br><code>/sketch</code></p>
+      </article>
+      <article class="kind-card">
+        <h3>Boxes</h3>
+        <p class="kind-use">A structured whiteboard. Boxes, items, and links.</p>
+        <pre class="kind-sample">boxes "System"
+box IN "Inbox"
+IN -&gt; OUT</pre>
+        <p class="kind-how">Use the canvas to collaborate.<br><code>/boxes</code></p>
+      </article>
+      <article class="kind-card">
+        <h3>Mermaid</h3>
+        <p class="kind-use">A professional expression. Flowchart, mindmap, or design.</p>
+        <pre class="kind-sample">flowchart TD
+A --&gt; B
+B --&gt; C</pre>
+        <p class="kind-how">Use the canvas to collaborate.<br><code>/mermaid</code></p>
+      </article>
+    </div>
+  </section>
+
   <section class="connect" id="connect">
     <h2>Connect your agent</h2>
     <p class="connect-lead">Two steps, and your agent draws diagrams in your account.</p>
