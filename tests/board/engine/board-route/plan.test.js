@@ -1,10 +1,10 @@
 'use strict';
 
-const World = require('../../../../packages/board/engine/board-route/world');
-const Choose = require('../../../../packages/board/engine/board-route/choose');
-const Plan = require('../../../../packages/board/engine/board-route/plan');
-const Compose = require('../../../../packages/board/engine/board-route/compose');
-const Route = require('../../../../packages/board/engine/board-route');
+const World = require('../../../../packages/boxes/engine/board-route/world');
+const Choose = require('../../../../packages/boxes/engine/board-route/choose');
+const Plan = require('../../../../packages/boxes/engine/board-route/plan');
+const Compose = require('../../../../packages/boxes/engine/board-route/compose');
+const Route = require('../../../../packages/boxes/engine/board-route');
 
 function assert(cond, message) {
   if (!cond) throw new Error(message);
@@ -143,7 +143,7 @@ function makeLinks(order) {
 
 // --- trunk rank no longer rewards overlap ---
 {
-  const Rank = require('../../../../packages/board/engine/board-route/rank');
+  const Rank = require('../../../../packages/boxes/engine/board-route/rank');
   const occupied = [{ from: World.point(0, 0), to: World.point(100, 0) }];
   const candidate = { points: [World.point(0, 0), World.point(80, 0)], source: { side: 'right' }, target: { side: 'left' }, length: 80, folds: 1 };
   const row = Rank.scoreRow(candidate, 0, { occupied, fromRect: A, toRect: T, obstacles: [] }, Rank.table('trunk'));

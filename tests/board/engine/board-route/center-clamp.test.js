@@ -1,7 +1,7 @@
 'use strict';
 
-const World = require('../../../../packages/board/engine/board-route/world');
-const Choose = require('../../../../packages/board/engine/board-route/choose');
+const World = require('../../../../packages/boxes/engine/board-route/world');
+const Choose = require('../../../../packages/boxes/engine/board-route/choose');
 
 function assert(cond, message) {
   if (!cond) throw new Error(message);

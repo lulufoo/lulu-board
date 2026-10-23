@@ -1,9 +1,9 @@
 'use strict';
 
-const Arrow = require('../../../../packages/board/engine/board-route/arrow');
-const Choose = require('../../../../packages/board/engine/board-route/choose');
-const Gates = require('../../../../packages/board/engine/board-route/gates');
-const Route = require('../../../../packages/board/engine/board-route');
+const Arrow = require('../../../../packages/boxes/engine/board-route/arrow');
+const Choose = require('../../../../packages/boxes/engine/board-route/choose');
+const Gates = require('../../../../packages/boxes/engine/board-route/gates');
+const Route = require('../../../../packages/boxes/engine/board-route');
 
 function assert(cond, message) {
   if (!cond) throw new Error(message);

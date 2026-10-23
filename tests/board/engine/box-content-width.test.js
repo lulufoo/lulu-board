@@ -1,11 +1,11 @@
 'use strict';
 const assert = require('assert');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-require('../../../packages/board/box/board-box.js');
-const Layout = require('../../../packages/board/engine/board-layout.js');
+require('../../../packages/boxes/box/board-box.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 const layout = (source) => {
   const board = Render.parse(source);

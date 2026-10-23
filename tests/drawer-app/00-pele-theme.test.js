@@ -6,7 +6,7 @@ const path = require('path');
 const root = path.join(__dirname, '../..');
 assert.ok(!fs.existsSync(path.join(root, 'packages/mermaid-themes')), 'no standalone mermaid-themes package');
 
-const BoardThemes = require('../../packages/board/themes/index.js');
+const BoardThemes = require('../../packages/boxes/themes/index.js');
 global.BoardThemes = BoardThemes;
 const Pele = require('../../packages/drawer-app/js/00-pele-theme.js');
 

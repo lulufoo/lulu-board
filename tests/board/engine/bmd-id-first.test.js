@@ -12,7 +12,7 @@ const board = fs.readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
 const viewer = fs.readFileSync(path.join(root, 'skill/boxes/references/viewer.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'packages/drawer-app/skill-assets/vocab.md'), 'utf8');
-const themes = fs.readFileSync(path.join(root, 'packages/board/themes/index.js'), 'utf8');
+const themes = fs.readFileSync(path.join(root, 'packages/boxes/themes/index.js'), 'utf8');
 
 assert.ok(/id="btnSourceCopyId"/.test(html), 'Source has Copy ID');
 assert.ok(!/id="sourceDockId"/.test(html), 'Source title does not print the record ID');

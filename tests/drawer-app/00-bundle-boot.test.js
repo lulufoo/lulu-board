@@ -13,7 +13,7 @@ const start = build.indexOf('const domain = [');
 const files = [...build.slice(start, build.indexOf('];', start)).matchAll(/'([^']+\.js)'/g)].map((m) => m[1]);
 assert.ok(files.length > 20 && files.includes('01-shell-state.js') && files.includes('07-chrome-boot.js'), 'build list was read');
 const script = [
-  fs.readFileSync(path.join(root, 'packages/board/engine/style-token.js'), 'utf8'),
+  fs.readFileSync(path.join(root, 'packages/boxes/engine/style-token.js'), 'utf8'),
 ].concat(files.map((f) => fs.readFileSync(path.join(root, 'packages/drawer-app/js', f), 'utf8')))
   .join('\n')
   .replace(/^import .*$/gm, 'var snapdom = {};');
@@ -62,13 +62,13 @@ function load(hash) {
     MutationObserver: class { observe() {} }, ResizeObserver: class { observe() {} }, Image: class {}, HTMLTextAreaElement: class {},
     fetch: () => new Promise(() => {}),
   };
-  // globals other scripts of the page provide (board.min.js, the supabase client): answer with inert stubs
+  // globals other scripts of the page provide (boxes.min.js, the supabase client): answer with inert stubs
   const vendorGlobal = /^(Board[A-Z]\w*|LuluBoard\w*)$/;
   const global = new Proxy(sandbox, {
     has: (t, key) => key in t || (typeof key === 'string' && vendorGlobal.test(key)),
     get: (t, key) => {
       if (key in t) return t[key];
-      if (key === 'BoardRender') return { render: () => Promise.resolve(inert()) };
+      if (key === 'BoxesRender') return { render: () => Promise.resolve(inert()) };
       if (typeof key === 'string' && vendorGlobal.test(key)) return inert();
       return globalThis[key]; // built-ins (Math, JSON, ...)
     },

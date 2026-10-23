@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const Rotation = require('../../../packages/board/themes/rotation');
+const Rotation = require('../../../packages/boxes/themes/rotation');
 
 const item = (id, type) => ({ role: 'item', kind: 'item', id, type: type || 'chip' });
 const box = (id, kids, type) => ({ kind: type || 'card', type: type || 'card', id, kids });

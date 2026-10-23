@@ -99,10 +99,10 @@ const domain = [
   '09-shortcuts.js',
   '10-source-style.js',
 ];
-const styleToken = path.join(packages, 'board/engine/style-token.js');
+const styleToken = path.join(packages, 'boxes/engine/style-token.js');
 if (!existsSync(styleToken)) throw new Error('missing ' + styleToken);
 const parts = [
-  `/* === board/engine/style-token.js === */\n` + readFileSync(styleToken, 'utf8'),
+  `/* === boxes/engine/style-token.js === */\n` + readFileSync(styleToken, 'utf8'),
 ].concat(domain.map((f) => {
   const p = path.join(jsDir, f);
   if (!existsSync(p)) throw new Error('missing ' + p);

@@ -2,11 +2,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-const Layout = require('../../../packages/board/engine/board-layout.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 const src = fs.readFileSync(
   path.join(__dirname, '../../../packages/drawer-app/templates/welcome.bmd'),

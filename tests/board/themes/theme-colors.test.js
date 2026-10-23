@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const Themes = require('../../../packages/board/themes');
+const Themes = require('../../../packages/boxes/themes');
 
 // every theme has one list of plain fills, in rotation order
 Themes.ORDER.forEach((id) => {

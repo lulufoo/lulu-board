@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // the engine colours nodes through the rotation only: no global counter, no per-box tone call
-const root = path.join(__dirname, '../../../packages/board');
+const root = path.join(__dirname, '../../../packages/boxes');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const render = read('engine/board-render.js');
 assert.match(render, /fills: Rotation && Themes \? Rotation\.resolve\(board, Themes\.get\(themeId\)\.colors\)/);

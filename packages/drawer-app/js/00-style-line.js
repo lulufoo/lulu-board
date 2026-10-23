@@ -164,7 +164,7 @@
   function styleTokenApi() {
     if (typeof BoardStyleToken !== "undefined") return BoardStyleToken;
     if (typeof require === "function") {
-      try { return require("../../board/engine/style-token.js"); } catch (_e) {}
+      try { return require("../../boxes/engine/style-token.js"); } catch (_e) {}
     }
     return null;
   }

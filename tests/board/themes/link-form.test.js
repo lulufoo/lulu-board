@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Themes = require('../../../packages/board/themes');
+const Themes = require('../../../packages/boxes/themes');
 const read = (p) => fs.readFileSync(path.join(__dirname, '../../..', p), 'utf8');
 
 // default theme: warm brown line + deep brown label; the other packs keep their own colours
@@ -10,7 +10,7 @@ assert.strictEqual(Themes.get('default').edgeStroke, '#7a5c3c');
 assert.strictEqual(Themes.get('default').edgeLabel, '#5a4330');
 assert.notStrictEqual(Themes.get('classic').edgeStroke, '#7a5c3c');
 
-const render = read('packages/board/engine/board-render.js');
+const render = read('packages/boxes/engine/board-render.js');
 // small rounded solid triangle, same shape both directions
 assert.match(render, /markerWidth', '6\.4'/);
 assert.match(render, /stroke-linejoin', 'round'/);

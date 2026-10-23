@@ -2,8 +2,8 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Themes = require('../../../packages/board/themes');
-const Scale = require('../../../packages/board/themes/type-scale');
+const Themes = require('../../../packages/boxes/themes');
+const Scale = require('../../../packages/boxes/themes/type-scale');
 
 // One font stack and one title weight for every theme; they live next to the size ladder.
 assert.match(Scale.FONT_FAMILY, /SF Pro Text.*Inter/, 'the shared stack is the site font stack');
@@ -13,7 +13,7 @@ const root = path.join(__dirname, '../../..');
 for (const id of Themes.ORDER) {
   const theme = Themes.get(id);
   assert.strictEqual(theme.fontFamily, Scale.FONT_FAMILY, id + ' uses the shared font');
-  const src = fs.readFileSync(path.join(root, 'packages/board/themes/packs/' + id + '.js'), 'utf8');
+  const src = fs.readFileSync(path.join(root, 'packages/boxes/themes/packs/' + id + '.js'), 'utf8');
   assert.doesNotMatch(src, /fontFamily/, id + ' pack does not define its own font');
   const box = Themes.kitFor(theme, 'card', 0, 8);
   assert.strictEqual(box.titleWeight, Scale.TITLE_WEIGHT, id + ' card title uses the shared weight');

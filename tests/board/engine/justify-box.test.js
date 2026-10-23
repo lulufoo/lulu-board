@@ -1,10 +1,10 @@
 'use strict';
 const assert = require('assert');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-const Layout = require('../../../packages/board/engine/board-layout.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 {
   const board = Render.parse(
@@ -38,7 +38,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 {
   const fs = require('fs');
   const path = require('path');
-  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
+  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
   assert.ok(/function applyMainStretch/.test(renderJs), 'stretch grows kids');
   assert.ok(/flex = '1 0 auto'/.test(renderJs), 'stretch flex grow');
   assert.ok(/board-justify-stretch/.test(renderJs), 'stretch class');

@@ -16,7 +16,7 @@ Both were taken from the `@fontsource/instrument-serif` and `@fontsource-variabl
 
 ## Own layers
 
-- `packages/board/` — Lulu Board renderer
+- `packages/boxes/` — Lulu Board renderer
 - `packages/drawer-app/` — Drawer shell UI
 
 These are part of this project and covered by the root `LICENSE` (MIT).

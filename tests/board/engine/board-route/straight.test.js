@@ -1,10 +1,10 @@
 'use strict';
 
 const assert = require('assert');
-const World = require('../../../../packages/board/engine/board-route/world');
+const World = require('../../../../packages/boxes/engine/board-route/world');
 global.BoardRouteWorld = World;
-const Straight = require('../../../../packages/board/engine/board-route/straight');
-const Route = require('../../../../packages/board/engine/board-route');
+const Straight = require('../../../../packages/boxes/engine/board-route/straight');
+const Route = require('../../../../packages/boxes/engine/board-route');
 
 function box(id, left, top, right, bottom, extra) {
   const width = right - left;

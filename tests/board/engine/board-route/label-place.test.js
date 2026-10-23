@@ -1,6 +1,6 @@
 'use strict';
 
-const Label = require('../../../../packages/board/engine/board-route/label');
+const Label = require('../../../../packages/boxes/engine/board-route/label');
 
 function assert(cond, message) {
   if (!cond) throw new Error(message);

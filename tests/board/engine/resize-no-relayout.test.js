@@ -3,9 +3,9 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const render = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
-const view = fs.readFileSync(path.join(__dirname, '../../../packages/board/view/board-view.js'), 'utf8');
-const box = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/board-box.js'), 'utf8');
+const render = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
+const view = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/view/board-view.js'), 'utf8');
+const box = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/board-box.js'), 'utf8');
 
 assert.ok(!/new ResizeObserver/.test(render), 'preview resize does not re-solve');
 assert.ok(!/window\.addEventListener\("resize", scheduleResolve\)/.test(render), 'window resize does not re-solve');

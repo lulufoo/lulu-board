@@ -17,7 +17,7 @@ function flashChrome(ms = 900) {
     if (!title) return;
     event.stopPropagation();
     try {
-      var board = BoardRender.parse(diagramSourceEl.value);
+      var board = BoxesRender.parse(diagramSourceEl.value);
       var root = previewEl.querySelector(".board-render");
       pickBoardElement(title, root || previewEl, board);
     } catch (err) {}

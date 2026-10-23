@@ -2,11 +2,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-const Layout = require('../../../packages/board/engine/board-layout.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 function src(text) {
   return String(text).replace(/^\n/, '');
@@ -294,7 +294,7 @@ box HERO "Hi"
 }
 
 {
-  const Token = require('../../../packages/board/engine/style-token.js');
+  const Token = require('../../../packages/boxes/engine/style-token.js');
   const obj = { theme: 'classic', type_step: 2 };
   assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');
   assert.deepStrictEqual(Render.decodeStylePayload(Token.encodeStylePayload(obj)), obj);
