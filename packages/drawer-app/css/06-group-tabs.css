@@ -8,7 +8,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  padding: 0 4px 8px;
+  padding: 8px 4px 8px;
   border-radius: 10px;
   border: 1px solid var(--stroke);
   background: var(--panel);
@@ -52,6 +52,8 @@
   background: transparent;
 }
 .group-tab-drop-line.is-on::after { background: var(--accent); }
+/* Start slot sits in the strip's own top inset, so the gap stays when the slot is absent. */
+.group-tab-drop-line.is-start { margin-top: -8px; }
 .group-tab:disabled {
   opacity: .4;
   cursor: default;

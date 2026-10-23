@@ -16,7 +16,8 @@ assert.match(tabCss, /\.group-tab\.is-dragging/, 'dragged tab is dimmed');
 assert.match(tabCss, /\.group-tab-drop-line \{/, 'slots live in the tab strip');
 assert.match(tabCss, /background: transparent/, 'idle slots are invisible');
 assert.match(tabCss, /\.group-tab-drop-line\.is-on::after/, 'the chosen slot lights up');
-assert.match(tabCss, /padding:\s*0 4px 8px/, 'no extra pad above the first line');
+assert.match(tabCss, /padding:\s*8px 4px 8px/, 'the strip owns an 8px top inset');
+assert.match(tabCss, /\.group-tab-drop-line\.is-start \{ margin-top: -8px; \}/, 'the start slot sits in that inset');
 assert.doesNotMatch(tabCss, /flex-basis:\s*16px/, 'every line slot is the same height');
 assert.doesNotMatch(tabCss, /\.group-tab\.is-drop\s*\{/, 'drop no longer outlines the whole tab');
 
