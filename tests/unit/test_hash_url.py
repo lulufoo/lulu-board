@@ -5,7 +5,7 @@ import sys
 import unittest
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
 
 from drawer_ctl.hash_url import board_web_url, decode_board_hash, encode_board_hash
 

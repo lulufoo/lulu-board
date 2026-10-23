@@ -1,12 +1,12 @@
 ---
-name: board
-description: Create a structured visual board from a scene or system.
+name: boxes
+description: Create a structured Boxes diagram from a scene or system.
 argument-hint: "[scene intent]"
 ---
 
-# board
+# boxes
 
-Define one diagram with the Board protocol and open it on the public viewer.
+Define one diagram with the boxes protocol and open it on the public viewer.
 Done when a tool `url` is shown, or chat-only BMD Source is delivered.
 
 ## Script Macros
@@ -48,19 +48,19 @@ Publish unsigned.
 
 1. Use the public viewer unless the user explicitly requests chat-only output.
 2. After any preview, Keep `url` first, then `open`. Show the URL and stop.
-3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind board`
+3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind boxes`
    with no `--file` and no stdin body.
 4. For an update, edit this session’s last BMD Source text. If none yet, run
    step 3 first.
-5. For the public viewer, run `$DRAWER_CTL preview --kind board` with stdin or
+5. For the public viewer, run `$DRAWER_CTL preview --kind boxes` with stdin or
    `--file`. If it reports a DSL error, correct the BMD Source and rerun.
-6. For chat-only output, return one `board`-fenced block and stop.
+6. For chat-only output, return one `boxes`-fenced block and stop.
 
 ## Cloud flow
 
 Publish owned.
 
-Follow [cloud](../references/cloud.md). Chat-only: one `board`-fenced block.
+Follow [cloud](../references/cloud.md). Chat-only: one `boxes`-fenced block.
 
 ## Open wording
 
@@ -68,8 +68,8 @@ Say one line with the URL, from stdout `open` or MCP `url`:
 
 | `open` | Say |
 |---|---|
-| `created` | The new board is now current. |
-| `current` | This is the current board. |
+| `created` | The new boxes is now current. |
+| `current` | This is the current boxes. |
 
 ## Boundaries
 

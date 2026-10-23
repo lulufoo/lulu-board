@@ -28,6 +28,7 @@ function b64(obj) {
   assert.strictEqual(Style.isRendererStyleLine('%% style classic'), true);
   assert.strictEqual(Style.isRendererStyleLine('style A fill:#f9f'), false);
   assert.strictEqual(Style.bodyIsBoard('board "Demo"\nstyle xxx\n'), true);
+  assert.strictEqual(Style.bodyIsBoard('boxes "Demo"\nstyle xxx\n'), true);
 }
 
 {
@@ -61,7 +62,8 @@ function b64(obj) {
 }
 
 {
-  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'board');
+  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'boxes');
+  assert.strictEqual(Style.bodyKind('boxes "Demo"\n'), 'boxes');
   assert.strictEqual(Style.bodyKind('flowchart TD\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('%% title Demo\nflowchart TD\nA-->B\n'), 'flowchart');
@@ -102,7 +104,7 @@ function b64(obj) {
 {
   const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
   Create.CREATE_KIND_ITEMS.filter((item) => item.kind !== 'welcome').forEach((item) => {
-    const src = item.kind === 'board' ? 'board "X"\n' : item.kind + '\n';
+    const src = item.kind === 'boxes' ? 'boxes "X"\n' : item.kind + '\n';
     assert.strictEqual(Style.bodyKindLabel(src), item.name, item.kind);
   });
   assert.strictEqual(Style.bodyKindLabel('mindmap\nRoot\n'), 'Mindmap');
@@ -122,7 +124,7 @@ function b64(obj) {
   const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
   assert.match(drawerBuild, /board\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
   assert.match(boardBuild, /engine\/style-token\.js/, 'board bundle loads the shared token');
-  const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
+  const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');

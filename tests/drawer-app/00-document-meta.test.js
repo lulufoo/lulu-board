@@ -39,7 +39,7 @@ function token(id, version) {
 
 {
   const blank = Meta.blankHashBoardSource("Untitled");
-  assert.strictEqual(blank, 'board "Untitled"\n');
+  assert.strictEqual(blank, 'boxes "Untitled"\n');
   assert.strictEqual(Meta.stripDocumentMeta('meta {"id":"b_0fc10001","version":3}\nboard "A"\n'), 'board "A"\n');
   assert.strictEqual(
     Meta.stripDocumentMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
@@ -80,7 +80,7 @@ function token(id, version) {
 }
 
 {
-  const board = fs.readFileSync(path.join(__dirname, '../../skill/board/SKILL.md'), 'utf8');
+  const board = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');

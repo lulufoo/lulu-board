@@ -12,7 +12,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import hash_url
@@ -44,18 +44,18 @@ class BoardSourceIdTest(unittest.TestCase):
             patch.object(sys, "stdin", _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(path, should_open=False, open_mode="none", kind="board", source_id=source_id)
+            dc.preview(path, should_open=False, open_mode="none", kind="boxes", source_id=source_id)
         return json.loads(buf.getvalue())
 
     def test_get_source_is_retired(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "retired"):
-            dc.get_source(kind="board")
+            dc.get_source(kind="boxes")
         with self.assertRaisesRegex(RuntimeError, "retired"):
-            dc.get_source(kind="board", source_id="b_deadbeef")
+            dc.get_source(kind="boxes", source_id="b_deadbeef")
 
     def test_set_source_is_retired(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "retired"):
-            dc.set_source(None, kind="board", source_id="b_deadbeef")
+            dc.set_source(None, kind="boxes", source_id="b_deadbeef")
 
     def test_preview_encodes_body_without_id(self) -> None:
         src = self.tmp / "new.bmd"

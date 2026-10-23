@@ -11,7 +11,7 @@
 
   var FILES = {
     welcome: "welcome.bmd",
-    board: "board.bmd",
+    boxes: "boxes.bmd",
     flowchart: "flowchart.mmd",
     mindmap: "mindmap.mmd",
     sequence: "sequenceDiagram.mmd",
@@ -36,7 +36,7 @@
 
   function kindTemplateFileName(kind) {
     var key = String(kind || "").trim();
-    if (!key) return FILES.board;
+    if (!key) return FILES.boxes;
     return FILES[key] || "";
   }
 
@@ -44,10 +44,11 @@
     var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
     if (!name) name = "Untitled";
     var text = String(source == null ? "" : source).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-    if (/^\s*board\s+"/m.test(text)) {
-      return text.replace(/^\s*board\s+"[^"]*"/m, "board \"" + name + "\"");
+    var hit = /^\s*(board|boxes)\s+"/im.exec(text);
+    if (hit) {
+      return text.replace(/^\s*(board|boxes)\s+"[^"]*"/im, hit[1].toLowerCase() + " \"" + name + "\"");
     }
-    return "board \"" + name + "\"\n" + text.replace(/^\n+/, "");
+    return "boxes \"" + name + "\"\n" + text.replace(/^\n+/, "");
   }
 
   function applyUntitledTitle(source) {

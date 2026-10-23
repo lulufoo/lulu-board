@@ -11,15 +11,15 @@ const root = path.join(__dirname, '../..');
 const dir = path.join(root, 'packages/drawer-app/templates');
 
 assert.strictEqual(Template.kindTemplateFileName('welcome'), 'welcome.bmd');
-assert.strictEqual(Template.kindTemplateFileName('board'), 'board.bmd');
-assert.strictEqual(Template.kindTemplateFileName(''), 'board.bmd');
+assert.strictEqual(Template.kindTemplateFileName('boxes'), 'boxes.bmd');
+assert.strictEqual(Template.kindTemplateFileName(''), 'boxes.bmd');
 assert.strictEqual(Template.kindTemplateFileName('sequence'), 'sequenceDiagram.mmd');
 assert.strictEqual(Template.kindTemplateFileName('sequenceDiagram'), 'sequenceDiagram.mmd');
 assert.strictEqual(Template.kindTemplateFileName('C4Context'), 'C4Context.mmd');
 assert.strictEqual(Template.kindTemplateFileName('block-beta'), '');
 
 {
-  const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'board.bmd'), 'utf8'));
+  const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'boxes.bmd'), 'utf8'));
   assert.match(untitled, /^board "Untitled"/m);
   assert.doesNotMatch(untitled, /board "Demo"/);
 }
@@ -45,7 +45,7 @@ global.fetch = async function (url) {
 };
 
 (async function () {
-  const board = await Template.loadKindTemplateSource('board');
+  const board = await Template.loadKindTemplateSource('boxes');
   assert.match(board, /^board "Untitled"/m);
   assert.match(board, /box IN 501 "Inbox"/);
   const welcome = await Template.loadKindTemplateSource('welcome');

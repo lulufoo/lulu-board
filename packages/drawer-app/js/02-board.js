@@ -733,13 +733,13 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
   if (boardTitleEditor && selectedBoardNode) {
     var isTitle = selectedBoardNode.kind === "title";
     var isItem = selectedBoardNode.kind === "item";
-    var node = isTitle ? { title: (board && board.title) || "", type: "board" } : boardNodeForSelection(board, selectedBoardNode);
+    var node = isTitle ? { title: (board && board.title) || "", type: "boxes" } : boardNodeForSelection(board, selectedBoardNode);
     if (!node && !isTitle) { clearBoardSelection(); return; }
     boardInspector.hidden = false;
     hidePropsLinkOnlyChrome();
     if (propsEmpty) propsEmpty.hidden = true;
     if (propsFields) propsFields.hidden = false;
-    if (propsKindLabel) propsKindLabel.textContent = isTitle ? "board" : (isItem ? "item" : (selectedBoardNode.scope === "tree" ? "box tree" : "box"));
+    if (propsKindLabel) propsKindLabel.textContent = isTitle ? "boxes" : (isItem ? "item" : (selectedBoardNode.scope === "tree" ? "box tree" : "box"));
     var itemType = isItem ? String((node && node.type) || "chip") : "";
     var isNote = itemType === "note";
     var isChipItem = itemType === "chip";
@@ -752,8 +752,8 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     boardTitleEditor.rows = isMd ? 6 : 1;
     boardTitleEditor.classList.toggle("is-multiline", !!isMd);
     if (boardTypeEditor) {
-      var opts = isTitle ? ["board"] : (isItem ? ["chip", "text", "note", "icon"] : ["card", "container", "layout"]);
-      var cur = isTitle ? "board" : (isItem ? (node.type || "chip") : (node.type || node.kind || "card"));
+      var opts = isTitle ? ["boxes"] : (isItem ? ["chip", "text", "note", "icon"] : ["card", "container", "layout"]);
+      var cur = isTitle ? "boxes" : (isItem ? (node.type || "chip") : (node.type || node.kind || "card"));
       boardTypeEditor.innerHTML = opts.map(function(v){ return "<option value=\"" + v + "\">" + v + "</option>"; }).join("");
       boardTypeEditor.value = opts.indexOf(cur) >= 0 ? cur : opts[0];
       boardTypeEditor.disabled = !!isTitle;
@@ -1248,7 +1248,7 @@ function persistBoardStyle(patch) {
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
     var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
       ? DrawerStyleLine.bodyKind(body)
-      : "board";
+      : "boxes";
     var nextBody;
     if (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.isMermaidKind
       ? DrawerStyleLine.isMermaidKind(kind)

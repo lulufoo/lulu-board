@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "board" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import commands as _commands
@@ -69,7 +69,7 @@ class BoardPreviewOpenTest(unittest.TestCase):
             patch.object(sys, "stdin", stdin or _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(path, should_open=False, open_mode="none", kind="board", source_id=source_id)
+            dc.preview(path, should_open=False, open_mode="none", kind="boxes", source_id=source_id)
         return json.loads(buf.getvalue())
 
     def _history_names(self) -> list[str]:
@@ -142,7 +142,7 @@ class BoardPreviewOpenTest(unittest.TestCase):
             patch.object(sys, "stdin", _Tty()),
             redirect_stdout(buf),
         ):
-            dc.preview(str(src), should_open=True, open_mode="ide", kind="board")
+            dc.preview(str(src), should_open=True, open_mode="ide", kind="boxes")
         data = json.loads(buf.getvalue())
         self.assertIn((data["url"], "system"), opened)
         self.assertTrue(data["url"].startswith("https://luluboard.app/#z:"))

@@ -1,20 +1,20 @@
 # Viewer
 
-Board CLI preview. Loaded from `/board` for `status` or kind.
+Boxes CLI preview. Loaded from `/boxes` for `status` or kind.
 
 ## CLI
 
-1. Use `$DRAWER_CTL` from the board entry.
+1. Use `$DRAWER_CTL` from the boxes entry.
 2. Extra verb: `status`.
 3. Subcommand contract: `$DRAWER_CTL --help`.
 
 ## Kind
 
-`--kind board`
+`--kind boxes`
 
 ## Seed
 
-1. `preview --kind board` with no file and no stdin does not create a record.
+1. `preview --kind boxes` with no file and no stdin does not create a record.
 2. `templates/demo.bmd` is not opened by preview.
 
 ## Write-back

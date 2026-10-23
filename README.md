@@ -18,7 +18,7 @@ One text protocol — the AI agent writes it, Lulu Board draws it, you work on t
 
 | Kind | In Lulu Board | Source ID |
 |---|---|---|
-| Board | structured whiteboard text | BMD (`b_…`) |
+| Boxes | structured whiteboard text | BMD (`b_…`) |
 | Flowchart | Mermaid flowchart | same `#z:` / `#b:` |
 
 ## Why
@@ -27,10 +27,10 @@ Diagrams go stale when only one side can edit them. Lulu Board keeps one text pr
 
 ## Quick start
 
-Chat entry is [`/board`](./skill/board/SKILL.md):
+Chat entry is [`/boxes`](./skill/boxes/SKILL.md):
 
 ```text
-/board
+/boxes
 ```
 
 The Drawer opens on a built-in template — the onboarding diagram — so you can see the loop right away:
@@ -47,10 +47,10 @@ The Drawer opens on a built-in template — the onboarding diagram — so you ca
 
 ## Draw from a prompt
 
-Describe what you want after `/board`:
+Describe what you want after `/boxes`:
 
 ```text
-/board Draw an Android MVI architecture diagram for me.
+/boxes Draw an Android MVI architecture diagram for me.
 ```
 
 The agent authors the source and opens the Drawer. From there you can drag and edit on the canvas, change Source by hand, or ask again — same document, shared with the agent.
@@ -67,7 +67,7 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 
 ## MCP configuration
 
-`/board` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud diagram for your account, add the hosted MCP and Connect.
+`/boxes` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud diagram for your account, add the hosted MCP and Connect.
 
 ```json
 {
@@ -79,7 +79,7 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 }
 ```
 
-In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/board` writes `https://preview.luluboard.app/#b:…` instead of `#z:`.
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/boxes` writes `https://preview.luluboard.app/#b:…` instead of `#z:`.
 
 Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
 
@@ -105,7 +105,7 @@ Click a preview to open the source.
 
 ## Skill
 
-Chat entry is `/board`.
+Chat entry is `/boxes`.
 
 ```text
 skill/
@@ -115,10 +115,10 @@ skill/
 ## Develop
 
 ```text
-examples/    # README previews (source) → packed into skill/board/templates
+examples/    # README previews (source) → packed into skill/boxes/templates
 packages/    # board, drawer-app, board-mcp
 scripts/     # build tooling
-skill/       # /board skill
+skill/       # /boxes skill
 tests/
 .cache/web/  # generated public viewer
 ```

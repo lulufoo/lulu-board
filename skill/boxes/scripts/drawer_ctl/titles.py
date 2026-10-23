@@ -22,7 +22,7 @@ def derive_board_title(text: str, fallback: str | None = None) -> str:
             continue
         if _RENDERER_STYLE_LINE.match(line):
             continue
-        m = re.match(r"^board\s+(.+)$", line, flags=re.IGNORECASE)
+        m = re.match(r"^(?:board|boxes)\s+(.+)$", line, flags=re.IGNORECASE)
         if m:
             rest = m.group(1).strip()
             if len(rest) >= 2 and rest[0] == rest[-1] and rest[0] in ('"', "'"):

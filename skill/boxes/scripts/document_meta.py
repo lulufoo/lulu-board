@@ -13,6 +13,7 @@ import re
 META_LINE = re.compile(r"^(?:%%\s*)?meta\s+(\S+|{.*})\s*$")
 ID_RE = {
     "board": re.compile(r"^b_[0-9a-f]{8}$"),
+    "boxes": re.compile(r"^b_[0-9a-f]{8}$"),
 }
 
 

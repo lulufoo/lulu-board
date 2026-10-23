@@ -9,7 +9,7 @@ const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8')
 const cloud = fs.readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 
-assert.match(pack, /`board\/`/, 'pack lists board/');
+assert.match(pack, /`boxes\/`/, 'pack lists boxes/');
 assert.match(pack, /`mermaid\/`/, 'pack lists mermaid/');
 assert.match(skill, /Author Mermaid 12\.1\.0/, 'syntax is Mermaid 12.1.0');
 assert.match(skill, /Pele 1\.7\.0/, 'renderer is Pele 1.7.0');
