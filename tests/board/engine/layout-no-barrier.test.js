@@ -9,7 +9,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 {
   let threw = false;
   try {
-    Render.parse('board Demo\nbox A "A"\nbox B "B"\nlayout\n  barrier BASE bottom of A, B\n');
+    Render.parse('boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  barrier BASE bottom of A, B\n');
   } catch (err) {
     threw = /barrier is not valid/.test(String(err.message));
   }
@@ -18,7 +18,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  C below A, B\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  C below A, B\n'
   );
   assert.ok(!Render.serialize(board).includes('barrier'));
   const out = Layout.layout(board, new Map([

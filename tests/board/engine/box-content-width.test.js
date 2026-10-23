@@ -15,9 +15,9 @@ const layout = (source) => {
   });
 };
 
-const empty = layout('board Demo\nbox IN 501 "Inbox"\n');
+const empty = layout('boxes Demo\nbox IN 501 "Inbox"\n');
 const withMultilineNote = layout(
-  'board Demo\nbox IN 501 "Inbox"\n  item type note "# Check\\n- Quote **must** match.\\n- Keep History labels short."\n'
+  'boxes Demo\nbox IN 501 "Inbox"\n  item type note "# Check\\n- Quote **must** match.\\n- Keep History labels short."\n'
 );
 
 assert.strictEqual(

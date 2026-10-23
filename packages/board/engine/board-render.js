@@ -459,8 +459,8 @@
       const indent = (raw.match(/^\s*/) || [''])[0].replace(/\t/g, '  ').length;
       const line = raw.trim();
       if (!sawBoard) {
-        if (!/^(?:board|boxes)\s+/i.test(line)) fail('first statement must be `boxes <title>`', lineNo);
-        board.title = parseTitle(line.replace(/^(?:board|boxes)\s+/i, ''), lineNo);
+        if (!/^boxes\s+/i.test(line)) fail('first statement must be `boxes <title>`', lineNo);
+        board.title = parseTitle(line.replace(/^boxes\s+/i, ''), lineNo);
         sawBoard = true;
         return;
       }
@@ -471,7 +471,7 @@
         return;
       }
       if (/^layout\s*$/i.test(line)) { inLayout = true; currentBox = null; return; }
-      if (/^(?:board|boxes)\s+/i.test(line)) fail('only one boxes statement is allowed', lineNo);
+      if (/^boxes\s+/i.test(line)) fail('only one boxes statement is allowed', lineNo);
       if (inLayout) {
         // `A -> B` ends the layout block (board beta has no `link` keyword).
         if (indent === 0 && (/^(box|item)\b/.test(line) || /^\S+\s*(<->|->)\s+\S+/.test(line))) inLayout = false;

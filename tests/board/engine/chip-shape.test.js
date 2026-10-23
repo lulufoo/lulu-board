@@ -12,7 +12,7 @@ function src(text) {
 
 {
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 box AGENT "Agent"
 box UA type container "浏览器"
   box MC "ModelContext"
@@ -42,21 +42,21 @@ layout
 }
 
 {
-  const board = Render.parse('board Demo\nitem X shape diamond "Executor Interface"\n');
+  const board = Render.parse('boxes Demo\nitem X shape diamond "Executor Interface"\n');
   assert.strictEqual(board.views[0].shape, 'diamond');
   assert.strictEqual(Render.serialize(board).includes('item X shape diamond "Executor Interface"'), true);
 }
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nitem type text shape diamond "no"\n'); }
+  try { Render.parse('boxes Demo\nitem type text shape diamond "no"\n'); }
   catch (err) { threw = /shape is only valid on chip/.test(String(err.message)); }
   assert.ok(threw, 'text+shape rejected');
 }
 
 {
   const source = src(`
-board Demo
+boxes Demo
 box UA type container "UA"
   box MC "MC"
   item GATE shape diamond "闸门"

@@ -14,7 +14,7 @@ function src(text) {
 
 {
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 item HERO type text "Welcome"
 item BANNER type text cap off "Welcome wide"
 item NOTE type note cap on "still default"
@@ -32,7 +32,7 @@ item NOTE type note cap on "still default"
 }
 
 {
-  const board = Render.parse('board Demo\nitem X shape diamond cap off "Gate"\n');
+  const board = Render.parse('boxes Demo\nitem X shape diamond cap off "Gate"\n');
   assert.strictEqual(board.views[0].shape, 'diamond');
   assert.strictEqual(board.views[0].cap, 'off');
   assert.ok(Render.serialize(board).includes('item X shape diamond cap off "Gate"'));
@@ -41,7 +41,7 @@ item NOTE type note cap on "still default"
 
 {
   // serialize omits `type chip`; id + cap off must still parse
-  const board = Render.parse('board Demo\nitem GW cap off "API Gateway"\n');
+  const board = Render.parse('boxes Demo\nitem GW cap off "API Gateway"\n');
   const gw = board.views.find((n) => n.id === 'GW');
   assert.ok(gw, 'GW id recognized');
   assert.strictEqual(gw.type, 'chip');
@@ -53,21 +53,21 @@ item NOTE type note cap on "still default"
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nitem type icon cap off 001\n'); }
+  try { Render.parse('boxes Demo\nitem type icon cap off 001\n'); }
   catch (err) { threw = /cap is only valid on chip, text, or note/.test(String(err.message)); }
   assert.ok(threw, 'icon+cap rejected');
 }
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nitem type text cap maybe "no"\n'); }
+  try { Render.parse('boxes Demo\nitem type text cap maybe "no"\n'); }
   catch (err) { threw = /cap must be on or off/.test(String(err.message)); }
   assert.ok(threw, 'bad cap rejected');
 }
 
 {
   const source = src(`
-board Demo
+boxes Demo
 item HERO type text "Welcome"
 `);
   const sel = { kind: 'item', id: 'HERO', boxId: null, index: -1 };

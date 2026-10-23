@@ -6,7 +6,7 @@ const Layout = require('../../../packages/board/engine/board-layout.js');
 global.BoardLayout = Layout;
 const Render = require('../../../packages/board/engine/board-render.js');
 
-const src = 'board Demo\nbox A "A"\n';
+const src = 'boxes Demo\nbox A "A"\n';
 
 {
   const out = Render.updateAlign(src, { kind: 'box', id: 'A' }, 'center');

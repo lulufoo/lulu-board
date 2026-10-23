@@ -139,7 +139,7 @@
 
   function diagramTitleFromBody(body) {
     var text = String(body || "");
-    var board = /^\s*(?:board|boxes)\s+"([^"]*)"/.exec(text);
+    var board = /^\s*boxes\s+"([^"]*)"/.exec(text);
     if (board) return board[1];
     var lines = text.split(/\r?\n/);
     for (var i = 0; i < lines.length; i += 1) {

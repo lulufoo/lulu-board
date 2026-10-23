@@ -85,7 +85,7 @@
   }
 
   function bodyIsBoard(body) {
-    return /^(?:board|boxes)\s+/i.test(firstRealLine(body));
+    return /^boxes\s+/i.test(firstRealLine(body));
   }
 
   function isDesignKind(kind) {
@@ -100,7 +100,7 @@
   function bodyKind(body) {
     var line = firstKindLine(body);
     if (!line) return "empty";
-    if (/^(?:board|boxes)\s+/i.test(line)) return "boxes";
+    if (/^boxes\s+/i.test(line)) return "boxes";
     if (FLOWCHART_RE.test(line)) return "flowchart";
     if (MINDMAP_RE.test(line)) return "mindmap";
     if (MERMAID_RE.test(line)) {
@@ -114,7 +114,7 @@
   function bodyTypeKeyword(body) {
     var line = firstKindLine(body);
     if (!line) return "";
-    if (/^(?:board|boxes)\s+/i.test(line)) return "boxes";
+    if (/^boxes\s+/i.test(line)) return "boxes";
     var flow = FLOWCHART_RE.exec(line);
     if (flow) return flow[1];
     var mermaid = MERMAID_RE.exec(line);
@@ -124,7 +124,7 @@
   function normalizeTypeKey(keyword) {
     var key = String(keyword || "").toLowerCase();
     if (!key) return "";
-    if (key === "board" || key === "boxes") return "boxes";
+    if (key === "boxes") return "boxes";
     if (key === "graph" || key === "flowchart" || key === "flowchart-elk") return "flowchart";
     if (/^c4/.test(key)) return "c4";
     key = key.replace(/-v2$/, "").replace(/-beta$/, "").replace(/-(?:ebnf|abnf|peg)$/, "").replace(/diagram$/, "");

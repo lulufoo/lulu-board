@@ -11,13 +11,13 @@ function b64(obj) {
 
 {
   const token = b64({ theme: 'pastel' });
-  const body = 'board "Demo"\nitem X type text "Hi"\n';
+  const body = 'boxes "Demo"\nitem X type text "Hi"\n';
   assert.strictEqual(Style.joinRendererStyle(token, body), `style ${token}\n` + body);
   assert.strictEqual(Style.splitRendererStyle(`style ${token}\n` + body).token, token);
 }
 
 {
-  const src = 'board "Demo"\n';
+  const src = 'boxes "Demo"\n';
   const split = Style.splitRendererStyle(src);
   assert.strictEqual(split.token, '');
   assert.strictEqual(split.body, src);
@@ -27,7 +27,7 @@ function b64(obj) {
   assert.strictEqual(Style.isRendererStyleLine('style eyJ0aGVtZSI6ImthbWkifQ=='), true);
   assert.strictEqual(Style.isRendererStyleLine('%% style classic'), true);
   assert.strictEqual(Style.isRendererStyleLine('style A fill:#f9f'), false);
-  assert.strictEqual(Style.bodyIsBoard('board "Demo"\nstyle xxx\n'), true);
+  assert.strictEqual(Style.bodyIsBoard('board "Demo"\nstyle xxx\n'), false);
   assert.strictEqual(Style.bodyIsBoard('boxes "Demo"\nstyle xxx\n'), true);
 }
 
@@ -36,7 +36,7 @@ function b64(obj) {
   assert.strictEqual(Style.joinRendererStyle('classic', flow), '%% style classic\n' + flow);
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
-  assert.strictEqual(Style.joinRendererStyle('classic', 'board "A"\n'), 'style classic\nboard "A"\n');
+  assert.strictEqual(Style.joinRendererStyle('classic', 'boxes "A"\n'), 'style classic\nboxes "A"\n');
   assert.strictEqual(Style.mermaidStyleToken('classic'), Token.encodeStylePayload({ theme: 'classic' }));
   assert.strictEqual(Style.mermaidStyleToken('classic'), b64({ theme: 'classic' }));
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
@@ -62,7 +62,7 @@ function b64(obj) {
 }
 
 {
-  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'boxes');
+  assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'unknown');
   assert.strictEqual(Style.bodyKind('boxes "Demo"\n'), 'boxes');
   assert.strictEqual(Style.bodyKind('flowchart TD\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');

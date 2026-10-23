@@ -14,15 +14,13 @@ const Render = require('../../../packages/board/engine/board-render.js');
 }
 
 {
-  const board = Render.parse('board "Legacy"\nbox A "Input"\n');
-  assert.strictEqual(board.kind, 'boxes');
-  assert.strictEqual(board.title, 'Legacy');
-  assert.ok(Render.serialize(board).startsWith('boxes "Legacy"\n'));
+  assert.throws(() => Render.parse('board "Legacy"\nbox A "Input"\n'), /boxes <title>/);
 }
 
 {
   assert.throws(() => Render.parse('box A "Input"\n'), /boxes <title>/);
-  assert.throws(() => Render.parse('boxes "A"\nboard "B"\n'), /only one boxes statement/);
+  assert.throws(() => Render.parse('boxes "A"\nboxes "B"\n'), /only one boxes statement/);
+  assert.throws(() => Render.parse('boxes "A"\nboard "B"\n'), /unknown statement 'board'/);
 }
 
 console.log('ok root-keyword');

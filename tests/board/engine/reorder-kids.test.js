@@ -11,7 +11,7 @@ function src(text) {
 }
 
 const mixed = src(`
-board Demo
+boxes Demo
 box P "Parent"
   item A "alpha"
   box B "Bravo"
@@ -75,7 +75,7 @@ function kidIds(board, boxId) {
 
 {
   const column = src(`
-board Demo
+boxes Demo
 box P "Parent"
   item A "alpha"
   item B "beta"

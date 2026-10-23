@@ -8,7 +8,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n'
   );
   const out = Layout.layout(board, new Map([
     ['A', { w: 100, h: 80 }],
@@ -20,7 +20,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n  flush A, B bottom\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n  flush A, B bottom\n'
   );
   const out = Layout.layout(board, new Map([
     ['A', { w: 100, h: 80 }],

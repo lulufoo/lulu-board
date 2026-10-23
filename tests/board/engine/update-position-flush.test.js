@@ -11,7 +11,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'A' }, 24, 200);
   const layout = parseLayout(out);
   assert.deepStrictEqual(layout.aligns, []);
@@ -21,7 +21,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  flush A, B, C top\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  flush A, B, C top\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'A' }, 24, 200);
   const layout = parseLayout(out);
   assert.strictEqual(layout.aligns.length, 1);
@@ -33,7 +33,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n  flush A, B start\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n  flush A, B start\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'A' }, 80, 40);
   const layout = parseLayout(out);
   assert.deepStrictEqual(layout.aligns, []);
@@ -41,7 +41,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  arrange B after A\n  flush A, B top\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'A' }, 24, 200);
   const layout = parseLayout(out);
   assert.deepStrictEqual(layout.aligns, []);
@@ -52,7 +52,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'B' }, 200, 200);
   const layout = parseLayout(out);
   assert.deepStrictEqual(layout.aligns, []);
@@ -61,7 +61,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  flush B, C top\n';
+  const src = 'boxes Demo\nbox A "A"\nbox B "B"\nbox C "C"\nlayout\n  flush B, C top\n';
   const out = Render.updatePosition(src, { kind: 'box', id: 'A' }, 24, 200);
   const layout = parseLayout(out);
   assert.strictEqual(layout.aligns.length, 1);
@@ -69,7 +69,7 @@ function parseLayout(source) {
 }
 
 {
-  const src = 'board Demo\nitem A "A"\nitem B "B"\nlayout\n  flush A, B top\n';
+  const src = 'boxes Demo\nitem A "A"\nitem B "B"\nlayout\n  flush A, B top\n';
   const out = Render.updatePosition(src, { kind: 'item', id: 'A', boxId: null }, 24, 200);
   const layout = parseLayout(out);
   assert.deepStrictEqual(layout.aligns, []);

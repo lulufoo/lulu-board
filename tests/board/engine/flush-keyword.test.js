@@ -8,7 +8,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B top\n'
   );
   assert.strictEqual(board.layout.aligns[0].edge, 'top');
   assert.deepStrictEqual(board.layout.aligns[0].ids, ['A', 'B']);
@@ -19,7 +19,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 {
   let threw = false;
   try {
-    Render.parse('board Demo\nbox A "A"\nbox B "B"\nlayout\n  align A, B bottom\n');
+    Render.parse('boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  align A, B bottom\n');
   } catch (err) {
     threw = /align value must be start/.test(String(err.message));
   }
@@ -28,7 +28,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nlayout\n  align A start\n'
+    'boxes Demo\nbox A "A"\nlayout\n  align A start\n'
   );
   assert.strictEqual(board.layout.boxes.A.align, 'start');
   const out = Render.serialize(board);
@@ -37,7 +37,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B start\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B start\n'
   );
   assert.strictEqual(board.layout.aligns[0].edge, 'start');
   const out = Render.serialize(board);
@@ -47,7 +47,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 {
   // Legacy left / right still parse and serialize as start / end.
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B left\n  flush A, B right\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B left\n  flush A, B right\n'
   );
   assert.strictEqual(board.layout.aligns[0].edge, 'start');
   assert.strictEqual(board.layout.aligns[1].edge, 'end');
@@ -60,7 +60,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 {
   let threw = false;
   try {
-    Render.parse('board Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B center\n');
+    Render.parse('boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  flush A, B center\n');
   } catch (err) {
     threw = /flush edge must be start, end, top, or bottom/.test(String(err.message));
   }

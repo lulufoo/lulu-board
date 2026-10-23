@@ -26,7 +26,7 @@ function pinOf(source, id, edge) {
 }
 
 const nested = src(`
-board Demo
+boxes Demo
 box P "Parent"
   item A "alpha"
   box G type container "Group"
@@ -72,7 +72,7 @@ layout
 }
 
 const top = src(`
-board Demo
+boxes Demo
 box WRAP type layout
   box SCENE "Scene"
   item NOTE type note "read"

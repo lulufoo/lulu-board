@@ -44,16 +44,16 @@
     var name = String(title == null ? "Untitled" : title).replace(/"/g, "");
     if (!name) name = "Untitled";
     var text = String(source == null ? "" : source).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-    var hit = /^\s*(board|boxes)\s+"/im.exec(text);
+    var hit = /^\s*boxes\s+"/im.exec(text);
     if (hit) {
-      return text.replace(/^\s*(board|boxes)\s+"[^"]*"/im, hit[1].toLowerCase() + " \"" + name + "\"");
+      return text.replace(/^\s*boxes\s+"[^"]*"/im, "boxes \"" + name + "\"");
     }
     return "boxes \"" + name + "\"\n" + text.replace(/^\n+/, "");
   }
 
   function applyUntitledTitle(source) {
     var text = String(source == null ? "" : source);
-    if (/^\s*(?:board|boxes)\s+"/m.test(text)) return applyBoardTitle(text, "Untitled");
+    if (/^\s*boxes\s+"/m.test(text)) return applyBoardTitle(text, "Untitled");
     if (typeof updateMermaidTitle === "function") return updateMermaidTitle(text, "Untitled");
     return "%% title Untitled\n" + text.replace(/^\n+/, "");
   }
