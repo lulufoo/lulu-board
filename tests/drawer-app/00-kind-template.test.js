@@ -28,9 +28,7 @@ assert.strictEqual(Template.kindTemplateFileName('block-beta'), '');
 
 {
   const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8'));
-  assert.match(untitled, /^boxes "Untitled"/m);
-  assert.doesNotMatch(untitled, /boxes "Lulu Board"/);
-  assert.match(untitled, /Welcome to Lulu Board/);
+  assert.match(untitled, /^sketch "What each one is for\."/);
 }
 
 {
@@ -51,7 +49,7 @@ global.fetch = async function (url) {
   assert.match(board, /^boxes "Untitled"/m);
   assert.match(board, /box IN 501 "Inbox"/);
   const welcome = await Template.loadKindTemplateSource('welcome');
-  assert.match(welcome, /^boxes "Untitled"/m);
+  assert.match(welcome, /^sketch "What each one is for\."/);
   const sequence = await Template.loadKindTemplateSource('sequenceDiagram');
   assert.match(sequence, /^%% title Untitled\nsequenceDiagram\n/);
   await assert.rejects(() => Template.loadKindTemplateSource('block-beta'), /Template is unavailable/);
