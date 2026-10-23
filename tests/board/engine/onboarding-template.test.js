@@ -15,7 +15,7 @@ assert.doesNotMatch(src, /(?:style|content)\s+\{/);
 assert.doesNotMatch(src, /^boxes /m);
 const fragment = Style.decodeSketchContent(src);
 assert.match(fragment, /What each one is for\./);
-assert.match(fragment, /The agent writes it\. You keep the diagram\./);
+assert.match(fragment, /The AI agent writes it\. You keep the diagram\./);
 assert.match(fragment, /Present the idea visually\. Written in HTML\./);
 assert.match(fragment, /A structured whiteboard\. Boxes, items, and links\./);
 assert.match(fragment, /A professional expression\. Flowchart, mindmap, or design\./);
