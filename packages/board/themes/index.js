@@ -1,19 +1,23 @@
-/* Board drawing themes — vendor/board/themes (packs + type scale). Public API: BoardThemes. */
+/* Box chrome for BoardThemes. The shared palette loads first. */
 (function (root, factory) {
   const Scale = root.BoardTypeScale || (typeof require === 'function' ? require('./type-scale') : null);
-  const packs = root.BoardThemePacks || {};
-  const loadPack = (name) => packs[name] || (typeof require === 'function' ? require('./packs/' + name) : null);
-  const DefaultPack = loadPack('default');
-  const ClassicPack = loadPack('classic');
-  const PastelPack = loadPack('pastel');
-  if (!Scale || !DefaultPack || !ClassicPack || !PastelPack) throw new Error('BoardThemes parts are not loaded');
-  const api = factory(Scale, { default: DefaultPack, classic: ClassicPack, pastel: PastelPack });
-  if (typeof module === 'object' && module.exports) module.exports = api;
-  root.BoardThemes = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (Scale, packs) {
+  const Palette = root.BoardThemes || (typeof require === 'function' ? require('../../board-themes') : null);
+  const partials = root.BoardTypePartials || {};
+  const loadPartial = (name) => partials[name] || (typeof require === 'function' ? require('./packs/' + name) : null);
+  const loaded = { default: loadPartial('default'), classic: loadPartial('classic'), pastel: loadPartial('pastel') };
+  if (!Scale || !Palette || !loaded.default || !loaded.classic || !loaded.pastel) {
+    throw new Error('Board box chrome parts are not loaded');
+  }
+  const api = factory(Scale, Palette, loaded);
+  Object.assign(Palette, api);
+  if (typeof module === 'object' && module.exports) module.exports = Palette;
+  root.BoardThemes = Palette;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Scale, Palette, partials) {
   'use strict';
 
   const BOX_TYPES = ['card', 'container', 'layout'];
+  const EDGE_DASH_ALPHA = 0.3;
+  const typesById = {};
 
   function typeChrome(partial) {
     return Object.assign({
@@ -27,105 +31,43 @@
       cardPad: '6px 10px',
       cardSize: Scale.sizeForCard(),
       cardColor: '#333',
-      // transparent shell types ignore zone fill from kit
-      shell: 'filled', // filled | outline | hollow
+      shell: 'filled',
       borderStyle: 'solid',
     }, partial || {});
   }
 
-  function hydrate(pack) {
+  function typesFor(id) {
+    if (typesById[id]) return typesById[id];
+    const partial = partials[id] || partials.default;
     const types = {};
     BOX_TYPES.forEach((typeName) => {
-      const chrome = typeChrome((pack.typePartials && pack.typePartials[typeName]) || {});
+      const chrome = typeChrome(partial[typeName] || {});
       chrome.titleSize = Scale.sizeForTitle(typeName);
       chrome.cardSize = Scale.sizeForCard();
       types[typeName] = chrome;
     });
-    return {
-      id: pack.id,
-      label: pack.label,
-      fontFamily: Scale.FONT_FAMILY,
-      color: pack.color,
-      edgeStroke: pack.edgeStroke,
-      edgeLabel: pack.edgeLabel,
-      edgeEvidence: pack.edgeEvidence,
-      edgeFeedback: pack.edgeFeedback,
-      bandBg: pack.bandBg,
-      bandBorder: pack.bandBorder,
-      colors: pack.colors,
-      edgeRgb: pack.edgeRgb || '74, 53, 36',
-      types,
-    };
+    typesById[id] = types;
+    return types;
   }
 
-  const THEMES = {
-    default: hydrate(packs.default),
-    classic: hydrate(packs.classic),
-    pastel: hydrate(packs.pastel),
-  };
-
-  const ORDER = ['default', 'classic', 'pastel'];
-  const LEGACY_IDS = { minimal: 'classic', slate: 'pastel' };
-  const EDGE_RING_ALPHA = 0.14;
-  const EDGE_DASH_ALPHA = 0.3;
-  const EDGE_RGB_FALLBACK = '74, 53, 36';
-  const BOX_RX = 4;
-  const FILL_STROKE_DARKEN = 0.10;
-  const FILL_STROKE_INK = 'rgb(var(--bf-rgb, 74, 53, 36))';
-
-  function formatAlpha(alpha) {
-    const n = Number(alpha);
-    if (!Number.isFinite(n)) return '.14';
-    return String(n).replace(/^0\./, '.');
-  }
-
-  function edgeTint(themeOrId, alpha) {
-    const theme = typeof themeOrId === 'string' ? get(themeOrId) : (themeOrId || get());
-    const rgb = (theme && theme.edgeRgb) || EDGE_RGB_FALLBACK;
-    const a = alpha == null ? EDGE_RING_ALPHA : Number(alpha);
-    return 'rgba(' + rgb + ', ' + formatAlpha(a) + ')';
-  }
-
-  /**
-   * Edge of a filled box: mix `amount` of the theme ink into the fill.
-   * Default is 10% — the same rule as Board `--bf-edge` over a card fill.
-   */
-  function strokeFromFill(fill, amount, ink) {
-    const darken = Number.isFinite(Number(amount)) ? Number(amount) : FILL_STROKE_DARKEN;
-    const keep = Math.round((1 - darken) * 100);
-    const src = fill == null || fill === '' ? 'var(--_s)' : String(fill);
-    const dye = ink == null || ink === '' ? FILL_STROKE_INK : String(ink);
-    return 'color-mix(in srgb, ' + src + ' ' + keep + '%, ' + dye + ')';
-  }
-
-  function resolveId(id) {
-    const raw = String(id == null || id === '' ? 'default' : id);
-    const mapped = LEGACY_IDS[raw] || raw;
-    return THEMES[mapped] ? mapped : 'default';
-  }
-
-  function get(id) {
-    return THEMES[resolveId(id)];
-  }
-
-  function list() {
-    return ORDER.map((id) => ({ id, label: THEMES[id].label }));
+  function withChrome(themeOrId) {
+    const theme = typeof themeOrId === 'string' || themeOrId == null
+      ? Palette.get(themeOrId)
+      : themeOrId;
+    if (theme.types) return theme;
+    return Object.assign({}, theme, { types: typesFor(theme.id) });
   }
 
   function typeChromeOf(theme, typeName) {
     const key = BOX_TYPES.includes(typeName) ? typeName : 'card';
-    return (theme.types && theme.types[key]) || theme.types.card;
+    return theme.types[key] || theme.types.card;
   }
 
-  /**
-   * Chrome tokens for one box type. Fills of filled nodes come from the rotation (themes/rotation.js, painted inline);
-   * the first colour of the list is only the fallback for tokens that no node overrides.
-   */
   function kitFor(themeOrId, typeName) {
-    const theme = typeof themeOrId === 'string' ? get(themeOrId) : themeOrId;
+    const theme = withChrome(themeOrId);
     const chrome = typeChromeOf(theme, typeName);
     const fill = theme.colors[0];
-    const edge = edgeTint(theme, EDGE_DASH_ALPHA);
+    const edge = Palette.edgeTint(theme, EDGE_DASH_ALPHA);
     const kit = {
       zoneBg: fill,
       zoneBorder: edge,
@@ -137,14 +79,12 @@
       borderStyle: chrome.borderStyle || 'solid',
     };
     if (chrome.shell === 'hollow') {
-      // Pure layout / invisible chrome
       kit.zoneBg = 'transparent';
       kit.zoneBorder = 'transparent';
       kit.panelBg = 'transparent';
       kit.panelHeaderBg = 'transparent';
       kit.borderStyle = 'none';
     } else if (chrome.shell === 'outline') {
-      // Grouping: transparent fill, visible border (container default = dashed)
       kit.zoneBg = 'transparent';
       kit.panelBg = 'transparent';
       kit.panelHeaderBg = 'transparent';
@@ -175,10 +115,9 @@
     return Scale.clampStep(raw);
   }
 
-  /** Apply theme-level defaults on .board-render root (first colour / shared edges). */
   function applyTo(el, id) {
-    if (!el) return get(id);
-    const theme = get(id);
+    if (!el) return withChrome(id);
+    const theme = withChrome(id);
     const step = typeStepOf(el);
     const base = kitFor(theme, 'card');
     const map = {
@@ -237,9 +176,5 @@
     return theme;
   }
 
-  return {
-    THEMES, ORDER, BOX_TYPES, LEGACY_IDS,
-    EDGE_RING_ALPHA, EDGE_DASH_ALPHA, BOX_RX, FILL_STROKE_DARKEN, FILL_STROKE_INK,
-    get, list, resolveId, kitFor, edgeTint, strokeFromFill, applyTo,
-  };
+  return { BOX_TYPES, EDGE_DASH_ALPHA, kitFor, applyTo };
 });

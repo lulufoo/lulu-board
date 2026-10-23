@@ -9,9 +9,18 @@ const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
 const webVendor = path.join(repo, '.cache/web/vendor');
 const srcDir = path.join(packages, 'board');
+const themeDir = path.join(packages, 'board-themes');
 const outFile = path.join(webVendor, 'board.min.js');
+const themeOutFile = path.join(webVendor, 'board-themes.min.js');
 const iconCatalogFile = path.join(repo, 'packages/drawer-app/skill-assets/icons.json');
 const iconPathsFile = path.join(srcDir, 'item/icon-paths.json');
+
+const THEME_SCRIPTS = [
+  'packs/default.js',
+  'packs/classic.js',
+  'packs/pastel.js',
+  'index.js',
+];
 
 const SCRIPTS = [
   'themes/type-scale.js',
@@ -81,7 +90,11 @@ for (const rel of SCRIPTS) {
 
 const require = createRequire(new URL('./package.json', import.meta.url));
 const esbuild = require('esbuild');
-const result = await esbuild.transform(parts.join('\n'), { loader: 'js', minify: true, target: 'es2018' });
+const themeParts = THEME_SCRIPTS.map((rel) => readFileSync(path.join(themeDir, rel), 'utf8'));
+const themeResult = await esbuild.transform(themeParts.join('\n'), { loader: 'js', minify: true, target: 'es2018' });
 mkdirSync(webVendor, { recursive: true });
+writeFileSync(themeOutFile, themeResult.code);
+console.log(`ok ${themeOutFile} ${themeResult.code.length} bytes`);
+const result = await esbuild.transform(parts.join('\n'), { loader: 'js', minify: true, target: 'es2018' });
 writeFileSync(outFile, result.code);
 console.log(`ok ${outFile} ${result.code.length} bytes`);
