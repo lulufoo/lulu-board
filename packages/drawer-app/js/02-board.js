@@ -1250,9 +1250,9 @@ function persistBoardStyle(patch) {
       ? DrawerStyleLine.bodyKind(body)
       : "boxes";
     var nextBody;
-    if (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.isMermaidKind
+    if (kind === "sketch" || (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.isMermaidKind
       ? DrawerStyleLine.isMermaidKind(kind)
-      : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported")) {
+      : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported"))) {
       if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {

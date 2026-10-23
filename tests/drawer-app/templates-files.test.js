@@ -26,13 +26,14 @@ const FILES = [
   'usecase-beta.mmd',
   'eventmodeling.mmd',
   'railroad-beta.mmd',
+  'sketch.skt',
 ];
 
-assert.strictEqual(FILES.length, 13, 'thirteen built-in templates');
+assert.strictEqual(FILES.length, 14, 'fourteen built-in templates');
 assert.deepStrictEqual(fs.readdirSync(dir).sort(), FILES.slice().sort(), 'templates dir is exactly the list');
 
 Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
-  const ext = it.kind === 'welcome' || it.kind === 'boxes' ? '.bmd' : '.mmd';
+  const ext = it.kind === 'welcome' || it.kind === 'boxes' ? '.bmd' : (it.kind === 'sketch' ? '.skt' : '.mmd');
   const name = it.kind + ext;
   assert.ok(FILES.includes(name), name + ' matches a ready kind');
   const text = fs.readFileSync(path.join(dir, name), 'utf8');

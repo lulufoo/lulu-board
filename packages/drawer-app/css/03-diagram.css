@@ -120,6 +120,7 @@ html[data-drawer-mode="diagram"] .board-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] .board-edit-tools,
 html[data-kind="mindmap"] .board-edit-tools,
 html[data-kind="mermaid-unsupported"] .board-edit-tools,
+html[data-kind="sketch"] .board-edit-tools,
 html[data-kind="unknown"] .board-edit-tools,
 html[data-pele="1"] .board-edit-tools { display: none !important; }
 .flowchart-edit-tools,
@@ -128,6 +129,7 @@ html[data-kind="flowchart"] .flowchart-edit-tools { display: inline-flex; }
 html[data-kind="mindmap"] .mindmap-edit-tools { display: inline-flex; }
 html[data-kind="flowchart"] #propsFields,
 html[data-kind="mindmap"] #propsFields,
+html[data-kind="sketch"] #propsFields,
 html[data-pele="1"] #propsFields { display: none !important; }
 html[data-kind="flowchart"] #preview,
 html[data-kind="mindmap"] #preview,

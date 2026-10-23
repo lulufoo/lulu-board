@@ -54,7 +54,7 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   const templatesSrc = path.join(repo, 'packages/drawer-app/templates');
   const templatesOut = path.join(webDir, 'templates');
   const names = readdirSync(templatesSrc).sort();
-  if (names.length !== 13) throw new Error('expected 13 templates, got ' + names.length);
+  if (names.length !== 14) throw new Error('expected 14 templates, got ' + names.length);
   for (const name of names) {
     const src = path.join(templatesOut, name);
     if (!existsSync(src)) throw new Error('missing .cache/web/templates/' + name);

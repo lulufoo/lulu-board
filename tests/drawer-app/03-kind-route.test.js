@@ -17,6 +17,7 @@ assert.match(boardJs, /This diagram type cannot be rendered/, 'refuse copy is lo
 assert.doesNotMatch(boardJs, /Only flowchart and mindmap can be rendered/, 'Design is no longer in the refuse copy');
 assert.match(boardJs, /kind === "flowchart"/, 'renderDiagram dispatches flowchart');
 assert.match(boardJs, /kind === "mindmap"/, 'renderDiagram dispatches mindmap');
+assert.match(boardJs, /kind === "sketch"/, 'renderDiagram dispatches sketch');
 assert.match(boardJs, /isDesignKind\(kind\)/, 'renderDiagram dispatches Design through Pele');
 assert.match(boardJs, /function renderDesignPele/, 'Design has a shared Pele path');
 assert.match(boardJs, /function paintPeleSvg/, 'flowchart and Design share Pele paint');
