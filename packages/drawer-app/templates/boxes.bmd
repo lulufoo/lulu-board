@@ -1,6 +1,6 @@
 # Built-in Demo. icon <n> and box-face <n> come from icons.json.
 
-board "Demo"
+boxes "Demo"
 
 box IN 501 "Inbox"
   item type text "from source"

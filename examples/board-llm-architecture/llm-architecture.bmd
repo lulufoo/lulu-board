@@ -1,4 +1,4 @@
-board "LLM Technical Architecture"
+boxes "LLM Technical Architecture"
 style eyJsaW5rX3JvdXRlIjoic3RhZ2dlciJ9
 box APP "Application Layer"
   item type text "User"

@@ -53,7 +53,7 @@
 
   function applyUntitledTitle(source) {
     var text = String(source == null ? "" : source);
-    if (/^\s*board\s+"/m.test(text)) return applyBoardTitle(text, "Untitled");
+    if (/^\s*(?:board|boxes)\s+"/m.test(text)) return applyBoardTitle(text, "Untitled");
     if (typeof updateMermaidTitle === "function") return updateMermaidTitle(text, "Untitled");
     return "%% title Untitled\n" + text.replace(/^\n+/, "");
   }
