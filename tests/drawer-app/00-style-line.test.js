@@ -64,6 +64,8 @@ function b64(obj) {
 {
   assert.strictEqual(Style.bodyKind('board "Demo"\n'), 'unknown');
   assert.strictEqual(Style.bodyKind('boxes "Demo"\n'), 'boxes');
+  assert.strictEqual(Style.bodyKind('sketch ""\n'), 'sketch');
+  assert.strictEqual(Style.bodyKind('style eyJ0aGVtZSI6ImRlZmF1bHQifQ==\nsketch ""\ncontent e30=\n'), 'sketch');
   assert.strictEqual(Style.bodyKind('flowchart TD\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('graph LR\nA-->B\n'), 'flowchart');
   assert.strictEqual(Style.bodyKind('%% title Demo\nflowchart TD\nA-->B\n'), 'flowchart');
@@ -115,6 +117,14 @@ function b64(obj) {
   assert.strictEqual(Style.bodyKindLabel('stateDiagram-v2\n'), 'State');
   assert.strictEqual(Style.bodyKindLabel('C4Container\n'), 'C4');
   assert.strictEqual(Style.bodyKindLabel('railroad-ebnf-beta\n'), 'Railroad');
+  {
+    const src = 'sketch ""\nstyle ' + b64({ viewport: { scale: 1, cx: 480, cy: 270 } }) + '\ncontent ' + Buffer.from('<style></style><div class="sketch-board"></div>', 'utf8').toString('base64') + '\n';
+    assert.strictEqual(Style.bodyKind(src), 'sketch');
+    assert.doesNotMatch(src, /(?:style|content)\s+\{/);
+    assert.strictEqual(Style.decodeStyleTokenJson(Style.splitRendererStyle(src).token).viewport.cx, 480);
+    assert.strictEqual(Style.decodeSketchContent(src), '<style></style><div class="sketch-board"></div>');
+    assert.strictEqual(Style.bodyKindLabel('sketch\n'), 'Sketch');
+  }
   assert.strictEqual(Style.bodyKindLabel(''), 'Source');
   assert.strictEqual(Style.bodyKindLabel('not a diagram\n'), 'Source');
 }

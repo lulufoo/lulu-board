@@ -34,8 +34,10 @@
     railroad: true,
   };
   var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
+  var CONTENT_RE = /^content\s+(\S+)\s*$/i;
   var TYPE_NAMES = {
     boxes: "Boxes",
+    sketch: "Sketch",
     flowchart: "Flowchart",
     block: "Block",
     mindmap: "Mindmap",
@@ -88,6 +90,10 @@
     return /^boxes\s+/i.test(firstRealLine(body));
   }
 
+  function bodyIsSketch(body) {
+    return /^sketch\b/i.test(firstKindLine(body));
+  }
+
   function isDesignKind(kind) {
     return !!DESIGN_KIND_KEYS[kind];
   }
@@ -96,11 +102,12 @@
     return kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported" || isDesignKind(kind);
   }
 
-  // boxes | flowchart | mindmap | design kinds | mermaid-unsupported | empty | unknown
+  // boxes | sketch | flowchart | mindmap | design kinds | mermaid-unsupported | empty | unknown
   function bodyKind(body) {
     var line = firstKindLine(body);
     if (!line) return "empty";
     if (/^boxes\s+/i.test(line)) return "boxes";
+    if (/^sketch\b/i.test(line)) return "sketch";
     if (FLOWCHART_RE.test(line)) return "flowchart";
     if (MINDMAP_RE.test(line)) return "mindmap";
     if (MERMAID_RE.test(line)) {
@@ -115,6 +122,7 @@
     var line = firstKindLine(body);
     if (!line) return "";
     if (/^boxes\s+/i.test(line)) return "boxes";
+    if (/^sketch\b/i.test(line)) return "sketch";
     var flow = FLOWCHART_RE.exec(line);
     if (flow) return flow[1];
     var mermaid = MERMAID_RE.exec(line);
@@ -125,6 +133,7 @@
     var key = String(keyword || "").toLowerCase();
     if (!key) return "";
     if (key === "boxes") return "boxes";
+    if (key === "sketch") return "sketch";
     if (key === "graph" || key === "flowchart" || key === "flowchart-elk") return "flowchart";
     if (/^c4/.test(key)) return "c4";
     key = key.replace(/-v2$/, "").replace(/-beta$/, "").replace(/-(?:ebnf|abnf|peg)$/, "").replace(/diagram$/, "");
@@ -138,6 +147,7 @@
     var name = TYPE_NAMES[normalizeTypeKey(bodyTypeKeyword(body))];
     if (name) return name;
     if (kind === "boxes") return "Boxes";
+    if (kind === "sketch") return "Sketch";
     if (kind === "flowchart") return "Flowchart";
     if (kind === "mindmap") return "Mindmap";
     return "Mermaid";
@@ -229,10 +239,34 @@
     var rest = String(body == null ? "" : body);
     var t = String(token || "").trim();
     if (!t) return rest;
-    var line = (bodyIsBoard(rest) ? "style " : "%% style ") + t;
+    var line = ((bodyIsBoard(rest) || bodyIsSketch(rest)) ? "style " : "%% style ") + t;
     if (!rest) return line + "\n";
     if (rest.charAt(0) === "\n") return line + rest;
     return line + "\n" + rest;
+  }
+
+  function decodeBase64Utf8(b64) {
+    try {
+      var raw = String(b64 || "").replace(/\s+/g, "");
+      if (!raw) return "";
+      if (typeof Buffer !== "undefined") return Buffer.from(raw, "base64").toString("utf8");
+      return decodeURIComponent(escape(atob(raw)));
+    } catch (_e) {
+      return "";
+    }
+  }
+
+  function sketchContentToken(body) {
+    var lines = String(body == null ? "" : body).split(/\r?\n/);
+    for (var i = 0; i < lines.length; i += 1) {
+      var hit = CONTENT_RE.exec(String(lines[i] || "").trim());
+      if (hit) return hit[1];
+    }
+    return "";
+  }
+
+  function decodeSketchContent(body) {
+    return decodeBase64Utf8(sketchContentToken(body));
   }
 
   function authoredViewport(raw) {
@@ -245,6 +279,9 @@
     isRendererStyleLine: isRendererStyleLine,
     firstKindLine: firstKindLine,
     bodyIsBoard: bodyIsBoard,
+    bodyIsSketch: bodyIsSketch,
+    sketchContentToken: sketchContentToken,
+    decodeSketchContent: decodeSketchContent,
     isDesignKind: isDesignKind,
     isMermaidKind: isMermaidKind,
     bodyKind: bodyKind,
