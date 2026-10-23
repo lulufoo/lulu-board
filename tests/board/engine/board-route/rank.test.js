@@ -1,7 +1,7 @@
 'use strict';
 
-const Rank = require('../../../../packages/board/engine/board-route/rank');
-const World = require('../../../../packages/board/engine/board-route/world');
+const Rank = require('../../../../packages/boxes/engine/board-route/rank');
+const World = require('../../../../packages/boxes/engine/board-route/world');
 
 function assert(cond, message) {
   if (!cond) throw new Error(message);

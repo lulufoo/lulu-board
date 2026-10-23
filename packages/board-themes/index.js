@@ -1,4 +1,4 @@
-/* Shared diagram palette. Public API: BoardThemes. Box chrome stays in packages/board. */
+/* Shared diagram palette. Public API: BoardThemes. Box chrome stays in packages/boxes. */
 (function (root, factory) {
   const packs = root.BoardPalettePacks || {};
   const loadPack = (name) => packs[name] || (typeof require === 'function' ? require('./packs/' + name) : null);

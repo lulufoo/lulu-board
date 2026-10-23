@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Themes = require('../../../packages/board/themes');
+const Themes = require('../../../packages/boxes/themes');
 
 // default pack: warm paper fills, first one is the card colour
 const pack = Themes.get('default');
@@ -41,7 +41,7 @@ assert.match(css, /board-item-note \.board-item-md h1\s*\{[^}]*font-size:\s*1\.1
 });
 
 // diamond corners are rounded (path with arcs, not a sharp polygon) and the halo follows them
-const dsrc = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/diamond.js'), 'utf8');
+const dsrc = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/diamond.js'), 'utf8');
 assert.match(dsrc, /function roundedRhombusPath/);
 assert.match(dsrc, /createElementNS\('http:\/\/www\.w3\.org\/2000\/svg', 'path'\)/);
 assert.doesNotMatch(dsrc, /stroke-linejoin', 'miter'/);
@@ -50,7 +50,7 @@ assert.doesNotMatch(dsrc, /stroke-linejoin', 'miter'/);
 {
   const fs = require('fs');
   const path = require('path');
-  const Themes = require('../../../packages/board/themes');
+  const Themes = require('../../../packages/boxes/themes');
   const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/04-board-form.css'), 'utf8');
   assert.match(css, /\.board-render \{\s*--bf-edge: rgba\(var\(--bf-rgb/, 'ring colour is derived from --bf-rgb on the board root');
   assert.doesNotMatch(css, /:root \{[^}]*--bf-edge/, 'no theme-blind ring colour left on :root');

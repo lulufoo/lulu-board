@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Token = require('../../packages/board/engine/style-token.js');
+const Token = require('../../packages/boxes/engine/style-token.js');
 const Style = require('../../packages/drawer-app/js/00-style-line.js');
 
 function b64(obj) {
@@ -122,7 +122,7 @@ function b64(obj) {
 {
   const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
   const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
-  assert.match(drawerBuild, /board\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
+  assert.match(drawerBuild, /boxes\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
   assert.match(boardBuild, /engine\/style-token\.js/, 'board bundle loads the shared token');
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');

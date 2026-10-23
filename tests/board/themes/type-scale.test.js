@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const Scale = require('../../../packages/board/themes/type-scale');
+const Scale = require('../../../packages/boxes/themes/type-scale');
 
 assert.strictEqual(Scale.clampStep(0), 0);
 assert.strictEqual(Scale.clampStep(1.4), 1);

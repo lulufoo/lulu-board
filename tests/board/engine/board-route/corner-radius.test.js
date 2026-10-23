@@ -1,6 +1,6 @@
 'use strict';
 const assert = require('assert');
-const World = require('../../../../packages/board/engine/board-route/world');
+const World = require('../../../../packages/boxes/engine/board-route/world');
 
 // a straight run is untouched
 assert.strictEqual(World.routePath([{ x: 0, y: 0 }, { x: 0, y: 50 }]), 'M 0 0 V 50');

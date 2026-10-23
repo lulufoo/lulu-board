@@ -13,7 +13,7 @@ function pinDiagramTitle() {
   }
   var title = "";
   try {
-    title = String((BoardRender.parse(diagramSourceEl.value) || {}).title || "").trim();
+    title = String((BoxesRender.parse(diagramSourceEl.value) || {}).title || "").trim();
   } catch (_) {}
   if (!title) {
     var heading = previewEl && previewEl.querySelector(".board-title-node h2, .board-html-header h2");
@@ -291,7 +291,7 @@ function renderDiagram(opts) {
   previewEl.classList.add('board-preview');
   const text = diagramSourceEl.value.trim(); updateDiagramChars();
   if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinDiagramTitle === "function") pinDiagramTitle(); showDiagramError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
-  BoardRender.render(text, previewEl).then((rendered) => {
+  BoxesRender.render(text, previewEl).then((rendered) => {
     try {
       var worldRoot = rendered && rendered.root && rendered.root.querySelector
         ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
@@ -299,8 +299,8 @@ function renderDiagram(opts) {
           : rendered.root.querySelector(".board-canvas"))
         : null;
       bindCanvasWorld(worldRoot, function () {
-        return typeof BoardRender !== "undefined" && typeof BoardRender.worldBounds === "function"
-          ? BoardRender.worldBounds(rendered.root)
+        return typeof BoxesRender !== "undefined" && typeof BoxesRender.worldBounds === "function"
+          ? BoxesRender.worldBounds(rendered.root)
           : null;
       });
       syncBoardLinkRouteButton(); wireBoardCanvas(rendered.root, rendered.board); wireBoardDrag(rendered.root, rendered.board); applyBoardSelection(rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === boardDomSelectionKey(diagramSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection", "canvas-selected");

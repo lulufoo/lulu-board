@@ -467,5 +467,5 @@ function updateDiagramChars() {
 }
 function showDiagramError(message) { diagramError.textContent = message || ''; diagramError.classList.toggle('show', !!message); }
 
-wrapEditorApi(typeof BoardRender !== "undefined" ? BoardRender : null);
+wrapEditorApi(typeof BoxesRender !== "undefined" ? BoxesRender : null);
 wrapEditorApi(typeof FlowchartEdit !== "undefined" ? FlowchartEdit : null);

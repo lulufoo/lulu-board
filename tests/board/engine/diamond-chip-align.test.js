@@ -3,9 +3,9 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const diamondJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/diamond.js'), 'utf8');
+const diamondJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/diamond.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
-const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
+const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
 
 assert.ok(!/alignSelf = rootItem \? 'auto' : 'stretch'/.test(diamondJs), 'fit must not stretch nested diamond');
 assert.ok(!/el\.style\.alignSelf = 'stretch'/.test(diamondJs), 'decorate must not force stretch');

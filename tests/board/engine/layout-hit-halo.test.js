@@ -3,7 +3,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const box = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/board-box.js'), 'utf8');
+const box = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/board-box.js'), 'utf8');
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 
 assert.ok(/board-layout-halo/.test(box), 'layout mount adds a halo node');

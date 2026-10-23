@@ -9,7 +9,7 @@ import { normalizeTheme, themePalette } from '../../packages/mermaid-ext/mindmap
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '../..');
 const require = createRequire(import.meta.url);
-globalThis.BoardThemes = require('../../packages/board/themes/index.js');
+globalThis.BoardThemes = require('../../packages/boxes/themes/index.js');
 
 const source = `mindmap
   Root

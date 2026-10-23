@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Themes = require('../../../packages/board/themes');
+const Themes = require('../../../packages/boxes/themes');
 
 // exactly three themes; an id that is no longer shipped resolves to default instead of throwing
 assert.deepStrictEqual(Themes.list().map((t) => t.id), ['default', 'classic', 'pastel']);

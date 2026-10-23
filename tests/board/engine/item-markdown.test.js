@@ -2,9 +2,9 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-require('../../../packages/board/item/board-item.js');
+require('../../../packages/boxes/item/board-item.js');
 
 assert.strictEqual(View.usesItemMarkdown('chip'), true);
 assert.strictEqual(View.usesItemMarkdown('text'), true);
@@ -39,14 +39,14 @@ assert.ok(!View.renderNoteMarkdown('`[x](https://example.com)`').includes('<a'),
 assert.ok(!View.renderNoteMarkdown('![x](https://example.com)').includes('<a'), 'image markdown stays text');
 assert.ok(View.renderNoteMarkdown('[x](https://example.com/"q)').includes('href="https://example.com/&quot;q"'));
 
-const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/item/board-item.js'), 'utf8');
+const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/board-item.js'), 'utf8');
 assert.ok(/usesItemMarkdown\(itemType\)/.test(itemJs), 'mount uses shared markdown gate');
 assert.ok(/board-item-md/.test(itemJs), 'markdown class on chip/text/note');
 assert.ok(/innerHTML = renderNoteMarkdown/.test(itemJs), 'chip/text/note render markdown');
 assert.ok(/isAllowedHref/.test(itemJs), 'href allow-list lives in the renderer');
 assert.ok(/noopener noreferrer/.test(itemJs), 'links open safely');
 
-const noteJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/item/note.js'), 'utf8');
+const noteJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/note.js'), 'utf8');
 assert.ok(!/function renderNoteMarkdown/.test(noteJs), 'note does not keep a second renderer');
 
 const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');

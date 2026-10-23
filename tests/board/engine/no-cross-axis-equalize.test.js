@@ -3,7 +3,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
+const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
 
 assert.ok(/function resetBoxKidSizes\(content\)/.test(renderJs), 'size reset exists');
 assert.ok(!/equalizeBoxKids|equalizeAllBoxKids/.test(renderJs), 'no sibling equalize');

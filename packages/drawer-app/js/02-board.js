@@ -1,8 +1,8 @@
 /* drawer-app/02-board.js — lines 700-1719 of former inline module */
 function boardNodeForSelection(board, selection) {
   if (!board || !selection) return null;
-  if (typeof BoardRender !== "undefined" && typeof BoardRender.findNode === "function") {
-    return BoardRender.findNode(board, selection);
+  if (typeof BoxesRender !== "undefined" && typeof BoxesRender.findNode === "function") {
+    return BoxesRender.findNode(board, selection);
   }
   var found = null;
   var visit = function(box) {
@@ -56,7 +56,7 @@ function boardLinkPickFromEvent(event, root, board) {
     return true;
   }
   try {
-    var result = BoardRender.addLink(diagramSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
+    var result = BoxesRender.addLink(diagramSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
     applyBoardEditResult(result);
     setBoardLinkMode(false);
     setStatus("Linked " + boardLinkRefKey(from) + " → " + boardLinkRefKey(to));
@@ -226,7 +226,7 @@ function previewBoardNodeFont(step) {
   }
 }
 function commitBoardNodeFont(persist, rerender) {
-  if (!selectedBoardNode || selectedBoardNode.kind === "title" || !boardNodeFontSlider || typeof BoardRender === "undefined" || typeof BoardRender.updateNodeTypeStep !== "function") return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || !boardNodeFontSlider || typeof BoxesRender === "undefined" || typeof BoxesRender.updateNodeTypeStep !== "function") return;
   var n = (window.BoardTypeScale && typeof BoardTypeScale.clampStep === "function")
     ? BoardTypeScale.clampStep(boardNodeFontSlider.value)
     : Math.min(3, Math.max(-3, Math.round(Number(boardNodeFontSlider.value) || 0)));
@@ -236,7 +236,7 @@ function commitBoardNodeFont(persist, rerender) {
   try {
     var raw = diagramSourceEl.value;
     var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(raw) : raw;
-    var nextBody = BoardRender.updateNodeTypeStep(body, selectedBoardNode, n);
+    var nextBody = BoxesRender.updateNodeTypeStep(body, selectedBoardNode, n);
     var next = nextBody;
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
@@ -244,14 +244,14 @@ function commitBoardNodeFont(persist, rerender) {
       if (rerender && typeof renderDiagram === "function") renderDiagram({ fit: false });
       scheduleDiagramSave();
     }
-    var board = BoardRender.parse(nextBody);
-    var node = typeof BoardRender.findNode === "function" ? BoardRender.findNode(board, selectedBoardNode) : null;
+    var board = BoxesRender.parse(nextBody);
+    var node = typeof BoxesRender.findNode === "function" ? BoxesRender.findNode(board, selectedBoardNode) : null;
     var id = node && node.id ? String(node.id) : selectedNodeStyleId();
     if (id) {
       selectedBoardNode = boardSelectionWithId(selectedBoardNode, id);
       setBoardIdField(true, id);
     }
-    setBoardNodeFontField(true, id ? BoardRender.authoredNodeTypeStep(board, id) : null, BoardRender.resolveStyle(board).type_step);
+    setBoardNodeFontField(true, id ? BoxesRender.authoredNodeTypeStep(board, id) : null, BoxesRender.resolveStyle(board).type_step);
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function setAuthoredTip(el, show, authored) {
@@ -410,8 +410,8 @@ function markBoardIdCopied(on) {
 function syncBoardIdDup() {
   var draft = boardIdEditor ? normalizeBoardIdInput(boardIdEditor.value) : "";
   var taken = false;
-  if (draft && selectedBoardNode && typeof BoardRender !== "undefined" && typeof BoardRender.isIdTaken === "function") {
-    try { taken = !!BoardRender.isIdTaken(diagramSourceEl.value, selectedBoardNode, draft); }
+  if (draft && selectedBoardNode && typeof BoxesRender !== "undefined" && typeof BoxesRender.isIdTaken === "function") {
+    try { taken = !!BoxesRender.isIdTaken(diagramSourceEl.value, selectedBoardNode, draft); }
     catch (_) { taken = false; }
   }
   if (boardIdEditor) boardIdEditor.classList.toggle("is-dup", taken);
@@ -454,7 +454,7 @@ function filterBoardIdEditor() {
 function commitBoardId() {
   if (!boardIdEditor || !selectedBoardNode) return;
   if (selectedBoardNode.kind !== "box" && selectedBoardNode.kind !== "item") return;
-  if (typeof BoardRender === "undefined" || typeof BoardRender.updateId !== "function") return;
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.updateId !== "function") return;
   var current = String(selectedBoardNode.id || "").trim();
   var raw = String(boardIdEditor.value || "").trim();
   if (raw === current) return;
@@ -463,7 +463,7 @@ function commitBoardId() {
   if (syncBoardIdDup()) return;
   var keepSelection = boardSelectionWithId(selectedBoardNode, next);
   try {
-    var source = BoardRender.updateId(diagramSourceEl.value, selectedBoardNode, next);
+    var source = BoxesRender.updateId(diagramSourceEl.value, selectedBoardNode, next);
     if (source !== diagramSourceEl.value) {
       diagramSourceEl.value = source;
       selectedBoardNode = keepSelection;
@@ -488,10 +488,10 @@ function setBoardIconField(show, icon) {
   markBoardIconPick(boardIconPick);
 }
 function commitBoardIcon(nextIcon) {
-  if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") || typeof BoardRender.updateIcon !== "function") return;
+  if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") || typeof BoxesRender.updateIcon !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateIcon(diagramSourceEl.value, selectedBoardNode, nextIcon);
+    var next = BoxesRender.updateIcon(diagramSourceEl.value, selectedBoardNode, nextIcon);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -635,7 +635,7 @@ function selectBoardEdge(root, index) {
   var type = "solid";
   var arrow = "forward";
   try {
-    var board = BoardRender.parse(diagramSourceEl.value);
+    var board = BoxesRender.parse(diagramSourceEl.value);
     var link = (board.links || [])[index];
     if (link && (link.title || link.label)) title = link.title || link.label;
     if (link && link.type) type = link.type;
@@ -646,7 +646,7 @@ function selectBoardEdge(root, index) {
 }
 function syncBoardEditControls() {
   var hasSelection = (!!selectedBoardNode && selectedBoardNode.kind !== "title") || !!selectedBoardEdge;
-  // Item can add into a selected box OR as a top-level item (BoardRender.addItem) — keep enabled.
+  // Item can add into a selected box OR as a top-level item (BoxesRender.addItem) — keep enabled.
   if (boardAddItemButton) boardAddItemButton.disabled = false;
   if (boardDeleteButton) boardDeleteButton.disabled = !hasSelection;
 }
@@ -780,11 +780,11 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     setBoardCapField(!!isMd, node && node.cap);
     var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
     var showFont = !isTitle;
-    var authoredFz = (showFont && typeof BoardRender !== "undefined" && typeof BoardRender.authoredNodeTypeStep === "function")
-      ? BoardRender.authoredNodeTypeStep(board, nodeId)
+    var authoredFz = (showFont && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeTypeStep === "function")
+      ? BoxesRender.authoredNodeTypeStep(board, nodeId)
       : null;
-    var globalStep = (typeof BoardRender !== "undefined" && typeof BoardRender.resolveStyle === "function")
-      ? BoardRender.resolveStyle(board || {}).type_step
+    var globalStep = (typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function")
+      ? BoxesRender.resolveStyle(board || {}).type_step
       : 0;
     setBoardNodeFontField(showFont, authoredFz, globalStep);
     setBoardIconField((isIcon || isBoxIcon) && !isLayoutBox, ((isIcon || isBoxIcon) && !isLayoutBox) ? (node && node.icon) : null);
@@ -813,8 +813,8 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
       setBoardAlignJustifyFields(false);
     }
     var orderInfo = null;
-    if (!isTitle && typeof BoardRender !== "undefined" && typeof BoardRender.reorderInfo === "function") {
-      try { orderInfo = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
+    if (!isTitle && typeof BoxesRender !== "undefined" && typeof BoxesRender.reorderInfo === "function") {
+      try { orderInfo = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
     }
     setBoardOrderField(!!orderInfo, orderInfo);
     if (propsHint) propsHint.textContent = isTitle
@@ -864,8 +864,8 @@ function boardBoxIsTopLevel(board, id) {
 /* Pointer -> world point. The canvas is a zero-size anchor at the world origin,
  * so the live scale comes from the engine probe, not from the canvas box. */
 function boardCanvasPoint(canvas, event) {
-  if (typeof BoardRender !== "undefined" && typeof BoardRender.worldPointFromClient === "function") {
-    var p = BoardRender.worldPointFromClient(canvas, event.clientX, event.clientY);
+  if (typeof BoxesRender !== "undefined" && typeof BoxesRender.worldPointFromClient === "function") {
+    var p = BoxesRender.worldPointFromClient(canvas, event.clientX, event.clientY);
     return { x: p.x, y: p.y };
   }
   var rect = canvas.getBoundingClientRect(), s = (typeof scale === "number" && scale > 0) ? scale : 1;
@@ -1141,10 +1141,10 @@ function wireBoardDrag(root, board) {
     if (done.mode === "reorder") {
       if (cancelled || !done.moved || done.insertBefore == null) return;
       var fromIndex = boardReorderKids(done.content).indexOf(done.hit);
-      var toIndex = BoardRender.reorderFinalIndex(fromIndex, done.insertBefore);
+      var toIndex = BoxesRender.reorderFinalIndex(fromIndex, done.insertBefore);
       if (fromIndex < 0 || toIndex === fromIndex) return;
       var reorderKeep = Object.assign({}, selectedBoardNode);
-      try { var reordered = BoardRender.reorderNode(diagramSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+      try { var reordered = BoxesRender.reorderNode(diagramSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
       event.preventDefault(); event.stopPropagation(); return;
     }
     if (cancelled || !done.moved) return;
@@ -1153,16 +1153,16 @@ function wireBoardDrag(root, board) {
     done.hit.style.left = x + "px"; done.hit.style.top = y + "px";
     var keep = Object.assign({}, selectedBoardNode);
     try {
-      diagramSourceEl.value = BoardRender.updatePosition(diagramSourceEl.value, keep, x, y);
+      diagramSourceEl.value = BoxesRender.updatePosition(diagramSourceEl.value, keep, x, y);
       selectedBoardNode = keep;
       diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
       updateDiagramChars();
       scheduleDiagramSave();
       // Avoid full remount flash: keep live DOM positions, only refresh edges.
       var liveRoot = previewEl.querySelector(".board-render");
-      if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-        BoardRender.refreshEdges(liveRoot, BoardRender.parse(diagramSourceEl.value));
-        applyBoardSelection(liveRoot, BoardRender.parse(diagramSourceEl.value));
+      if (liveRoot && typeof BoxesRender.refreshEdges === "function") {
+        BoxesRender.refreshEdges(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+        applyBoardSelection(liveRoot, BoxesRender.parse(diagramSourceEl.value));
         done.hit.classList.add("board-selection", "canvas-selected");
       }
       setStatus("Moved · saved layout");
@@ -1175,9 +1175,9 @@ function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(
       if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
 
 function commitBoardArrow() {
-  if (!boardArrowEditor || !selectedBoardEdge || typeof BoardRender.updateLinkArrow !== "function") return;
+  if (!boardArrowEditor || !selectedBoardEdge || typeof BoxesRender.updateLinkArrow !== "function") return;
   try {
-    var nextLink = BoardRender.updateLinkArrow(diagramSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
+    var nextLink = BoxesRender.updateLinkArrow(diagramSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
     if (nextLink !== diagramSourceEl.value) {
       diagramSourceEl.value = nextLink;
       updateDiagramChars();
@@ -1188,9 +1188,9 @@ function commitBoardArrow() {
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardReverse() {
-  if (!selectedBoardEdge || typeof BoardRender.reverseLink !== "function") return;
+  if (!selectedBoardEdge || typeof BoxesRender.reverseLink !== "function") return;
   try {
-    var nextLink = BoardRender.reverseLink(diagramSourceEl.value, selectedBoardEdge);
+    var nextLink = BoxesRender.reverseLink(diagramSourceEl.value, selectedBoardEdge);
     if (nextLink !== diagramSourceEl.value) {
       diagramSourceEl.value = nextLink;
       updateDiagramChars();
@@ -1203,10 +1203,10 @@ function commitBoardReverse() {
 function commitBoardShape(shape) {
   var nextShape = shape === "diamond" ? "diamond" : "rect";
   if (!selectedBoardNode || selectedBoardNode.kind !== "item") return;
-  if (typeof BoardRender.updateShape !== "function") return;
+  if (typeof BoxesRender.updateShape !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateShape(diagramSourceEl.value, selectedBoardNode, nextShape);
+    var next = BoxesRender.updateShape(diagramSourceEl.value, selectedBoardNode, nextShape);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -1256,8 +1256,8 @@ function persistBoardStyle(patch) {
       if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
-      if (typeof BoardRender === "undefined" || typeof BoardRender.updateStyle !== "function") return;
-      nextBody = BoardRender.updateStyle(body, patch || {});
+      if (typeof BoxesRender === "undefined" || typeof BoxesRender.updateStyle !== "function") return;
+      nextBody = BoxesRender.updateStyle(body, patch || {});
     }
     var next = nextBody;
     if (next !== diagramSourceEl.value) {
@@ -1268,12 +1268,12 @@ function persistBoardStyle(patch) {
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function syncBoardStyleChrome(board) {
-  if (typeof BoardRender === "undefined" || typeof BoardRender.resolveStyle !== "function") return;
-  var next = BoardRender.resolveStyle(board || {});
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.resolveStyle !== "function") return;
+  var next = BoxesRender.resolveStyle(board || {});
   if (typeof applyBoardItemCap === "function") applyBoardItemCap(next.item_cap, false, false);
   if (typeof applyBoardTypeStep === "function") applyBoardTypeStep(next.type_step, false, false);
   if (typeof syncBoardLinkRouteButton === "function") {
-    if (typeof BoardRender.setLinkRouteStyle === "function") BoardRender.setLinkRouteStyle(next.link_route);
+    if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
     syncBoardLinkRouteButton();
   }
   var themeSelect = document.getElementById("kindThemeSelect");
@@ -1281,11 +1281,11 @@ function syncBoardStyleChrome(board) {
 }
 function commitBoardCap() {
   if (!boardCapEditor || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
-  if (typeof BoardRender.updateCap !== "function") return;
+  if (typeof BoxesRender.updateCap !== "function") return;
   var nextCap = boardCapEditor.value === "off" ? "off" : "on";
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateCap(diagramSourceEl.value, selectedBoardNode, nextCap);
+    var next = BoxesRender.updateCap(diagramSourceEl.value, selectedBoardNode, nextCap);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -1299,9 +1299,9 @@ function commitBoardCap() {
 }
 function commitBoardType() {
   if (!boardTypeEditor) return;
-  if (selectedBoardEdge && typeof BoardRender.updateLinkType === "function") {
+  if (selectedBoardEdge && typeof BoxesRender.updateLinkType === "function") {
     try {
-      var nextLink = BoardRender.updateLinkType(diagramSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
+      var nextLink = BoxesRender.updateLinkType(diagramSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
       if (nextLink !== diagramSourceEl.value) {
         diagramSourceEl.value = nextLink;
         updateDiagramChars();
@@ -1312,10 +1312,10 @@ function commitBoardType() {
     } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
     return;
   }
-  if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoardRender.updateType !== "function") return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoxesRender.updateType !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateType(diagramSourceEl.value, selectedBoardNode, boardTypeEditor.value);
+    var next = BoxesRender.updateType(diagramSourceEl.value, selectedBoardNode, boardTypeEditor.value);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -1325,7 +1325,7 @@ function commitBoardType() {
       setStatus("Type · " + boardTypeEditor.value);
       // Refresh props so layout hides title/icon immediately
       try {
-        var b = typeof BoardRender !== "undefined" ? BoardRender.parse(diagramSourceEl.value) : null;
+        var b = typeof BoxesRender !== "undefined" ? BoxesRender.parse(diagramSourceEl.value) : null;
         var root = previewEl && previewEl.querySelector(".board-render");
         if (b && root) applyBoardSelection(root, b);
       } catch (_e) {}
@@ -1333,10 +1333,10 @@ function commitBoardType() {
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardDir() {
-  if (!selectedBoardNode || selectedBoardNode.kind === "item" || !boardDirEditor || typeof BoardRender.updateDir !== "function") return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "item" || !boardDirEditor || typeof BoxesRender.updateDir !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateDir(diagramSourceEl.value, selectedBoardNode, boardDirEditor.value);
+    var next = BoxesRender.updateDir(diagramSourceEl.value, selectedBoardNode, boardDirEditor.value);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -1363,16 +1363,16 @@ function commitBoardBoxFlex(kind, editor, updateFn) {
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardAlign() {
-  commitBoardBoxFlex("Align", boardAlignEditor, BoardRender.updateAlign);
+  commitBoardBoxFlex("Align", boardAlignEditor, BoxesRender.updateAlign);
 }
 function commitBoardJustify() {
-  commitBoardBoxFlex("Justify", boardJustifyEditor, BoardRender.updateJustify);
+  commitBoardBoxFlex("Justify", boardJustifyEditor, BoxesRender.updateJustify);
 }
 function commitBoardTitle() {
   if (!boardTitleEditor) return;
-  if (selectedBoardEdge && typeof BoardRender.updateLinkTitle === "function") {
+  if (selectedBoardEdge && typeof BoxesRender.updateLinkTitle === "function") {
     try {
-      var nextLink = BoardRender.updateLinkTitle(diagramSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
+      var nextLink = BoxesRender.updateLinkTitle(diagramSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
       if (nextLink !== diagramSourceEl.value) {
         diagramSourceEl.value = nextLink;
         updateDiagramChars();
@@ -1386,7 +1386,7 @@ function commitBoardTitle() {
   if (!selectedBoardNode) return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoardRender.updateTitle(diagramSourceEl.value, selectedBoardNode, boardTitleEditor.value);
+    var next = BoxesRender.updateTitle(diagramSourceEl.value, selectedBoardNode, boardTitleEditor.value);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       selectedBoardNode = keepSelection;
@@ -1411,8 +1411,8 @@ function boardEditAction(action) {
 }
 
 function syncBoardLinkRouteButton() {
-  if (typeof BoardRender.getLinkRouteStyle !== "function") return;
-  var style = BoardRender.getLinkRouteStyle();
+  if (typeof BoxesRender.getLinkRouteStyle !== "function") return;
+  var style = BoxesRender.getLinkRouteStyle();
   var trunkBtn = $("#btnRouteTrunk");
   var staggerBtn = $("#btnRouteStagger");
   var straightBtn = $("#btnRouteStraight");
@@ -1421,22 +1421,22 @@ function syncBoardLinkRouteButton() {
   if (straightBtn) straightBtn.setAttribute("aria-pressed", style === "straight" ? "true" : "false");
 }
 function applyBoardLinkRouteStyle(style, persist) {
-  if (typeof BoardRender === "undefined" || typeof BoardRender.setLinkRouteStyle !== "function") {
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.setLinkRouteStyle !== "function") {
     setStatus("Link route API missing — hard refresh (cache)");
     return;
   }
-  BoardRender.setLinkRouteStyle(style);
+  BoxesRender.setLinkRouteStyle(style);
   syncBoardLinkRouteButton();
   if (persist !== false) {
-    try { localStorage.setItem("drawer.boardLinkRoute", BoardRender.getLinkRouteStyle()); } catch (_) {}
-    persistBoardStyle({ link_route: BoardRender.getLinkRouteStyle() });
+    try { localStorage.setItem("drawer.boardLinkRoute", BoxesRender.getLinkRouteStyle()); } catch (_) {}
+    persistBoardStyle({ link_route: BoxesRender.getLinkRouteStyle() });
   }
   // Re-route without resetting zoom/pan.
   try {
     var root = previewEl && previewEl.querySelector(".board-render");
     if (root && diagramSourceEl && diagramSourceEl.value.trim()) {
-      BoardRender.refreshEdges(root, BoardRender.parse(diagramSourceEl.value));
-      setStatus("Link route · " + BoardRender.getLinkRouteStyle());
+      BoxesRender.refreshEdges(root, BoxesRender.parse(diagramSourceEl.value));
+      setStatus("Link route · " + BoxesRender.getLinkRouteStyle());
     }
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
@@ -1451,30 +1451,30 @@ function applyBoardLinkRouteStyle(style, persist) {
 (function initBoardLinkRoute() {
   var saved = "stagger";
   try { saved = localStorage.getItem("drawer.boardLinkRoute") || "stagger"; } catch (_) {}
-  if (typeof BoardRender !== "undefined" && BoardRender.setLinkRouteStyle) {
+  if (typeof BoxesRender !== "undefined" && BoxesRender.setLinkRouteStyle) {
     applyBoardLinkRouteStyle(saved, false);
   }
 })();
 
-if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoardRender.addBox(diagramSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
-if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoardRender.addItem(diagramSourceEl.value, selectedBoardNode); }); };
-if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(diagramSourceEl.value, selectedBoardNode); }); };
+if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoxesRender.addBox(diagramSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
+if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoxesRender.addItem(diagramSourceEl.value, selectedBoardNode); }); };
+if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoxesRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoxesRender.deleteNode(diagramSourceEl.value, selectedBoardNode); }); };
 if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!boardLinkMode); };
 document.addEventListener("keydown", function(event) {
   if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
   var target = event.target;
   if (target === diagramSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
-  boardEditAction(function() { return selectedBoardEdge ? BoardRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoardRender.deleteNode(diagramSourceEl.value, selectedBoardNode); });
+  boardEditAction(function() { return selectedBoardEdge ? BoxesRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoxesRender.deleteNode(diagramSourceEl.value, selectedBoardNode); });
 });
 function boardNudgeOrder(delta) {
-  if (!selectedBoardNode || typeof BoardRender.reorderInfo !== "function") return;
+  if (!selectedBoardNode || typeof BoxesRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var next = info.index + delta;
   if (next < 0 || next >= info.count) return;
-  boardEditAction(function() { return BoardRender.reorderNode(diagramSourceEl.value, selectedBoardNode, next); });
+  boardEditAction(function() { return BoxesRender.reorderNode(diagramSourceEl.value, selectedBoardNode, next); });
 }
 if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
 if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
@@ -1488,7 +1488,7 @@ function boardNudgeSelection(delta) {
   var from = kids.indexOf(el);
   var next = from + delta;
   if (from < 0 || next < 0 || next >= kids.length) return false;
-  selectBoardElement(kids[next], root, BoardRender.parse(diagramSourceEl.value));
+  selectBoardElement(kids[next], root, BoxesRender.parse(diagramSourceEl.value));
   return true;
 }
 var BOARD_NUDGE_STEPS = [1, 2, 4, 8, 16, 32];
@@ -1508,15 +1508,15 @@ function boardNudgeStepPx(key, isRepeat) {
 }
 function boardWriteLivePosition(el, x, y) {
   var keep = Object.assign({}, selectedBoardNode);
-  diagramSourceEl.value = BoardRender.updatePosition(diagramSourceEl.value, keep, x, y);
+  diagramSourceEl.value = BoxesRender.updatePosition(diagramSourceEl.value, keep, x, y);
   selectedBoardNode = keep;
   diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
   updateDiagramChars();
   scheduleDiagramSave();
   var liveRoot = previewEl.querySelector(".board-render");
-  if (liveRoot && typeof BoardRender.refreshEdges === "function") {
-    BoardRender.refreshEdges(liveRoot, BoardRender.parse(diagramSourceEl.value));
-    applyBoardSelection(liveRoot, BoardRender.parse(diagramSourceEl.value));
+  if (liveRoot && typeof BoxesRender.refreshEdges === "function") {
+    BoxesRender.refreshEdges(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+    applyBoardSelection(liveRoot, BoxesRender.parse(diagramSourceEl.value));
     el.classList.add("board-selection", "canvas-selected");
   }
 }
@@ -1578,9 +1578,9 @@ document.addEventListener("keydown", function(event) {
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
   var target = event.target;
   if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
-  if (typeof BoardRender.reorderInfo !== "function") return;
+  if (typeof BoxesRender.reorderInfo !== "function") return;
   var info;
-  try { info = BoardRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  try { info = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
   if (!info || info.count < 2) return;
   var row = info.direction === "row";
   var delta = 0;
@@ -1605,7 +1605,7 @@ previewEl.addEventListener("dblclick", function(event) {
   var root = canvas.closest(".board-render");
   var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
   if (!hit || !canvas.contains(hit)) return;
-  selectBoardElement(hit, root, BoardRender.parse(diagramSourceEl.value));
+  selectBoardElement(hit, root, BoxesRender.parse(diagramSourceEl.value));
   inspectBoardSelection();
   if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
 });

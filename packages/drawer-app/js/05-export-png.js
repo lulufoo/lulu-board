@@ -13,8 +13,8 @@ function getExportContentTarget() {
 /* Capture frame = world bounds of nodes + edges (negative coordinates included).
  * `shift` moves the clone so world (minX, minY) lands on the frame's corner. */
 function getExportContentSize(target) {
-  const bounds = typeof BoardRender !== 'undefined' && typeof BoardRender.worldBounds === 'function'
-    ? BoardRender.worldBounds(target)
+  const bounds = typeof BoxesRender !== 'undefined' && typeof BoxesRender.worldBounds === 'function'
+    ? BoxesRender.worldBounds(target)
     : null;
   if (!bounds || !(bounds.width > 0) || !(bounds.height > 0)) {
     throw new Error('Diagram has no exportable size');

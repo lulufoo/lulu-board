@@ -2,11 +2,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-const Layout = require('../../../packages/board/engine/board-layout.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 const skillRoot = path.join(__dirname, '../../..');
 
@@ -52,10 +52,10 @@ assert.ok(!/\| `img` \|/.test(vocab), 'vocab table has no img');
   assert.ok(!/\btype\s+image\b/.test(src), rel + ' has no type image');
 });
 
-assert.ok(!fs.existsSync(path.join(skillRoot, 'packages/board/item/image.js')), 'image.js removed');
-assert.ok(fs.existsSync(path.join(skillRoot, 'packages/board/item/icon.js')), 'icon.js present');
+assert.ok(!fs.existsSync(path.join(skillRoot, 'packages/boxes/item/image.js')), 'image.js removed');
+assert.ok(fs.existsSync(path.join(skillRoot, 'packages/boxes/item/icon.js')), 'icon.js present');
 
-const iconJs = read('packages/board/item/icon.js');
+const iconJs = read('packages/boxes/item/icon.js');
 assert.ok(/registerItem\('icon'/.test(iconJs), 'registers icon');
 assert.ok(!/registerItem\('img'/.test(iconJs), 'does not register img');
 assert.ok(!/registerItem\('image'/.test(iconJs), 'does not register image');

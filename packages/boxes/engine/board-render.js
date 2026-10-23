@@ -1,8 +1,8 @@
-/* Board protocol beta HTML/CSS renderer. Source for board.min.js. */
+/* Board protocol beta HTML/CSS renderer. Source for boxes.min.js. */
 (function (root, factory) {
   const api = factory(root);
   if (typeof module === 'object' && module.exports) module.exports = api;
-  root.BoardRender = api;
+  root.BoxesRender = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
   const Layout = root.BoardLayout || (typeof require === 'function' ? require('./board-layout') : null);
@@ -1777,7 +1777,7 @@
   }
 
   async function render(text, targetEl) {
-    if (!targetEl || !targetEl.ownerDocument) throw new Error('BoardRender.render requires a target element');
+    if (!targetEl || !targetEl.ownerDocument) throw new Error('BoxesRender.render requires a target element');
     if (!Layout) throw new Error('BoardLayout module is not loaded');
     if (!Route) throw new Error('BoardRoute module is not loaded');
     if (!View || !View.Types) throw new Error('Board type modules are not loaded');

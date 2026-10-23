@@ -2,11 +2,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 global.BoardView = View;
-const Layout = require('../../../packages/board/engine/board-layout.js');
+const Layout = require('../../../packages/boxes/engine/board-layout.js');
 global.BoardLayout = Layout;
-const Render = require('../../../packages/board/engine/board-render.js');
+const Render = require('../../../packages/boxes/engine/board-render.js');
 
 function src(text) {
   return String(text).replace(/^\n/, '');
@@ -80,8 +80,8 @@ item HERO type text "Welcome"
 {
   const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-  const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/item/board-item.js'), 'utf8');
-  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
+  const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/board-item.js'), 'utf8');
+  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
   assert.ok(/max-width:\s*var\(--board-item-cap/.test(css), 'items use --board-item-cap');
   assert.ok(/\[data-board-cap="off"\] \{\s*max-width:\s*none;\s*width:\s*max-content/.test(css), 'off stretches to content');
   assert.ok(/\[data-board-cap="off"\][\s\S]{0,180}white-space:\s*pre/.test(css), 'off does not wrap');

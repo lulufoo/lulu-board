@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const vm = require('vm');
 
-const root = path.resolve(__dirname, '../../../../packages/board');
+const root = path.resolve(__dirname, '../../../../packages/boxes');
 const sandbox = { console, module: { exports: {} }, exports: {}, require };
 sandbox.globalThis = sandbox;
 sandbox.window = sandbox;

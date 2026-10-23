@@ -1,6 +1,6 @@
 # drawer-app
 
-All-kinds diagram host. The opened document is a diagram; Board (Z) is one kind. The Z engine stays in `packages/board`.
+All-kinds diagram host. The opened document is a diagram; Board (Z) is one kind. The Z engine stays in `packages/boxes`.
 
 ```
 packages/drawer-app/

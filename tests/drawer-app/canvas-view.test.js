@@ -24,7 +24,7 @@ assert.ok(/function fitWorld/.test(canvas), 'fit lives on Canvas');
 assert.ok(/persistDocumentView/.test(canvas), 'writes viewport into document style');
 assert.ok(/forgetDocumentView/.test(canvas), 'Fit clears document viewport');
 assert.ok(!/querySelector\("\.board-canvas"\)/.test(canvas), 'Canvas does not query a kind root');
-assert.ok(!/function fitDiagramView|BoardRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
+assert.ok(!/function fitDiagramView|BoxesRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
 assert.ok(!/measureDiagramOnCanvas|panAfterScaleAroundPoint/.test(canvas), 'no diagram-rect pan math left');
 assert.ok(!/id="boardView/.test(html), 'Style panel does not expose viewport');
 assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into three style keys');

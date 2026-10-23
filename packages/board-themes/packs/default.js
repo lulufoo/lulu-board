@@ -1,4 +1,4 @@
-/* Shared palette pack: default. Box chrome lives in packages/board. */
+/* Shared palette pack: default. Box chrome lives in packages/boxes. */
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;

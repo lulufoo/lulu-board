@@ -7,15 +7,15 @@ const path = require('path');
 
 const repo = path.join(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(repo, rel), 'utf8');
-const render = read('packages/board/engine/board-render.js');
+const render = read('packages/boxes/engine/board-render.js');
 const css = read('packages/drawer-app/css/03-diagram.css');
 const board = read('packages/drawer-app/js/02-board.js');
 const exportPng = read('packages/drawer-app/js/05-export-png.js');
-const View = require(path.join(repo, 'packages/board/view/board-view.js'));
+const View = require(path.join(repo, 'packages/boxes/view/board-view.js'));
 global.BoardView = View;
-const Layout = require(path.join(repo, 'packages/board/engine/board-layout.js'));
+const Layout = require(path.join(repo, 'packages/boxes/engine/board-layout.js'));
 global.BoardLayout = Layout;
-const Render = require(path.join(repo, 'packages/board/engine/board-render.js'));
+const Render = require(path.join(repo, 'packages/boxes/engine/board-render.js'));
 
 // Canvas anchor and probe.
 assert.match(render, /canvas\.style\.width = '0px'; canvas\.style\.height = '0px'/, 'canvas is a zero-size anchor');
@@ -57,9 +57,9 @@ assert.strictEqual(Render.authoredViewport({ scale: 1, x: 0, y: 0 }), null);
 }
 
 // App: pointer mapping and export frame come from the world, not the canvas box.
-assert.match(board, /BoardRender\.worldPointFromClient\(canvas, event\.clientX, event\.clientY\)/, 'drag maps pointer through the probe');
+assert.match(board, /BoxesRender\.worldPointFromClient\(canvas, event\.clientX, event\.clientY\)/, 'drag maps pointer through the probe');
 assert.doesNotMatch(board, /canvas\.clientWidth \/ rect\.width/, 'drag no longer divides by the canvas box');
-assert.match(exportPng, /BoardRender\.worldBounds\(target\)/, 'export frames the world bounds');
+assert.match(exportPng, /BoxesRender\.worldBounds\(target\)/, 'export frames the world bounds');
 assert.match(exportPng, /shift:\s*\{/, 'export shifts negative world space into the frame');
 
 console.log('ok world-camera');

@@ -2,10 +2,10 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../../packages/board/view/board-view.js');
+const View = require('../../../packages/boxes/view/board-view.js');
 
-const render = fs.readFileSync(path.join(__dirname, '../../../packages/board/engine/board-render.js'), 'utf8');
-const boxJs = fs.readFileSync(path.join(__dirname, '../../../packages/board/box/board-box.js'), 'utf8');
+const render = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/board-render.js'), 'utf8');
+const boxJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/board-box.js'), 'utf8');
 
 assert.ok(typeof View.flexContentNeed === 'function', 'exports flexContentNeed');
 assert.ok(/fitNested\(el\)/.test(boxJs), 'nested boxes can grow to content');
