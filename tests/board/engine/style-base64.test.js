@@ -17,7 +17,7 @@ function b64(obj) {
 
 {
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
@@ -33,7 +33,7 @@ item HERO type text "Hi"
 {
   const payload = b64({ theme: 'pastel', item_cap: 24, link_route: 'stagger' });
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 style ${payload}
 item HERO type text "Hi"
 `));
@@ -45,7 +45,7 @@ item HERO type text "Hi"
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   const out = Render.serialize(board);
-  assert.ok(out.startsWith('board "Demo"\nstyle '), out);
+  assert.ok(out.startsWith('boxes "Demo"\nstyle '), out);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
     theme: 'pastel',
@@ -55,7 +55,7 @@ item HERO type text "Hi"
 
 {
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 style not-valid-base64!!!
 item HERO type text "Hi"
 `));
@@ -70,7 +70,7 @@ item HERO type text "Hi"
 
 {
   const payload = b64({ theme: 'pastel', extra: 'keep' });
-  const board = Render.parse(`board Demo\nstyle ${payload}\nitem HERO type text "Hi"\n`);
+  const board = Render.parse(`boxes Demo\nstyle ${payload}\nitem HERO type text "Hi"\n`);
   const out = Render.serialize(board);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
@@ -81,7 +81,7 @@ item HERO type text "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { theme: 'pastel', item_cap: 20, link_route: 'stagger' });
@@ -92,7 +92,7 @@ item HERO type text "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { link_route: 'straight' });
@@ -110,7 +110,7 @@ item HERO type text "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { type_step: 2 });
@@ -140,7 +140,7 @@ item HERO type text "Hi"
 {
   const payload = b64({ theme: 'pastel', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
   const board = Render.parse(src(`
-board Demo
+boxes Demo
 style ${payload}
 item HERO type text "Hi"
 `));
@@ -160,7 +160,7 @@ item HERO type text "Hi"
 
 {
   const legacy = b64({ view: { scale: 0.8, cx: 12, cy: 24 } });
-  const board = Render.parse(`board Demo\nstyle ${legacy}\nitem HERO type text "Hi"\n`);
+  const board = Render.parse(`boxes Demo\nstyle ${legacy}\nitem HERO type text "Hi"\n`);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
     viewport: { scale: 0.8, cx: 12, cy: 24 },
@@ -170,14 +170,14 @@ item HERO type text "Hi"
 {
   // Old pan-pixel viewports drop out of the style line: the app fits once instead.
   const stale = b64({ theme: 'pastel', viewport: { scale: 0.8, x: 12, y: 24 } });
-  const board = Render.parse(`board Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
+  const board = Render.parse(`boxes Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { theme: 'pastel' });
 }
 
 {
   const source = src(`
-board Demo
+boxes Demo
 item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { viewport: { scale: 0.9, cx: 10, cy: 20 } });
@@ -213,7 +213,7 @@ item HERO type text "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 box HERO "Hi"
   item LEAF "Leaf"
 `);
@@ -245,7 +245,7 @@ box HERO "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 box HERO "Hi"
   item NEST "Leaf"
 `);
@@ -261,7 +261,7 @@ box HERO "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 box HERO "Hi"
   item NEST "Leaf"
 `);
@@ -277,7 +277,7 @@ box HERO "Hi"
 
 {
   const source = src(`
-board Demo
+boxes Demo
 box HERO "Hi"
   item "Leaf"
 `);

@@ -12,7 +12,7 @@ function parse(text) {
 
 {
   const board = parse(`
-board Demo
+boxes Demo
 box A "A"
 box B "B"
 box ROW type layout
@@ -47,7 +47,7 @@ layout
 
 {
   const board = parse(`
-board Demo
+boxes Demo
 box A "A"
 box B "B"
 layout
@@ -68,7 +68,7 @@ layout
 
 {
   const board = parse(`
-board Demo
+boxes Demo
 box A "A"
 layout
   direction row gap 40 padding 28
@@ -81,7 +81,7 @@ layout
 
 {
   const board = parse(`
-board Demo
+boxes Demo
 box A "A"
 box B "B"
 layout

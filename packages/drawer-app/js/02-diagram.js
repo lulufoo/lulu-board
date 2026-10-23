@@ -7,7 +7,7 @@ function pinDiagramTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
   var kind = document.documentElement.dataset.kind || "";
-  if (kind && kind !== "board") {
+  if (kind && kind !== "boxes") {
     if (document.title !== "Lulu Board") document.title = "Lulu Board";
     return;
   }
@@ -281,7 +281,7 @@ function renderDiagram(opts) {
   var body = sourceBodyForKind(diagramSourceEl ? diagramSourceEl.value : "");
   var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
     ? DrawerStyleLine.bodyKind(body)
-    : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "board" : "unknown");
+    : ((typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body)) ? "boxes" : "unknown");
   applyDrawerKind(kind);
   if (kind === "flowchart") return renderFlowchart(opts);
   if (kind === "mindmap") return renderMindmap(opts);

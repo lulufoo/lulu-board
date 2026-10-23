@@ -8,8 +8,8 @@ const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/
 const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
 const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
-const board = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
-const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
+const board = fs.readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
+const viewer = fs.readFileSync(path.join(root, 'skill/boxes/references/viewer.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'packages/drawer-app/skill-assets/vocab.md'), 'utf8');
 const themes = fs.readFileSync(path.join(root, 'packages/board/themes/index.js'), 'utf8');
@@ -49,7 +49,7 @@ assert.ok(/function liveKindLabel/.test(shell) && /title.textContent !== label/.
 assert.ok(/function setCharsLabel/.test(shell), 'chars use a formatted count');
 assert.ok(/stripDocumentMeta/.test(shell), 'API wrap strips leftover meta');
 assert.ok(!/joinDocument/.test(shell), 'API wrap does not rejoin');
-const persist = fs.readFileSync(path.join(__dirname, '../../../skill/board/scripts/drawer_ctl/document.py'), 'utf8');
+const persist = fs.readFileSync(path.join(__dirname, '../../../skill/boxes/scripts/drawer_ctl/document.py'), 'utf8');
 assert.ok(!/document meta required/.test(persist), 'persist does not require envelope');
 assert.ok(!/join_document/.test(persist), 'persist does not join envelope');
 

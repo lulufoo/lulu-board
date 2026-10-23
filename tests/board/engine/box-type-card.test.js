@@ -7,7 +7,7 @@ global.BoardLayout = Layout;
 const Render = require('../../../packages/board/engine/board-render.js');
 
 {
-  const board = Render.parse('board Demo\nbox A "Input"\n');
+  const board = Render.parse('boxes Demo\nbox A "Input"\n');
   assert.strictEqual(board.boxes[0].type, 'card');
   assert.strictEqual(board.boxes[0].kind, 'card');
   const out = Render.serialize(board);
@@ -17,27 +17,27 @@ const Render = require('../../../packages/board/engine/board-render.js');
 }
 
 {
-  const board = Render.parse('board Demo\nbox A type card "Input"\n');
+  const board = Render.parse('boxes Demo\nbox A type card "Input"\n');
   assert.strictEqual(board.boxes[0].type, 'card');
   assert.ok(!Render.serialize(board).includes('type card'));
 }
 
 {
-  const board = Render.parse('board Demo\nbox A type container "Group"\n');
+  const board = Render.parse('boxes Demo\nbox A type container "Group"\n');
   assert.strictEqual(board.boxes[0].type, 'container');
   assert.ok(Render.serialize(board).includes('type container'));
 }
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nbox A type rect "Input"\n'); }
+  try { Render.parse('boxes Demo\nbox A type rect "Input"\n'); }
   catch (err) { threw = /unknown box type 'rect'/.test(String(err.message)); }
   assert.ok(threw, 'type rect rejected');
 }
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nbox A type document "Doc"\n'); }
+  try { Render.parse('boxes Demo\nbox A type document "Doc"\n'); }
   catch (err) { threw = /unknown box type 'document'/.test(String(err.message)); }
   assert.ok(threw, 'legacy document rejected');
 }

@@ -1,4 +1,4 @@
-board "Lulu Board"
+boxes "Lulu Board"
 style eyJ0eXBlX3N0ZXAiOjEsInZpZXdwb3J0Ijp7InNjYWxlIjowLjk3NTExNDg2OTU1MDgyMzIsImN4Ijo1MDIsImN5IjoyOTN9fQ==
 box HERO type layout
   item type icon 515

@@ -15,7 +15,7 @@ function read(rel) {
 }
 
 {
-  const board = Render.parse('board Demo\nbox A "A"\n  item Flag type icon 502 "rejected"\n');
+  const board = Render.parse('boxes Demo\nbox A "A"\n  item Flag type icon 502 "rejected"\n');
   const item = board.boxes[0].items[0];
   assert.strictEqual(item.type, 'icon');
   assert.strictEqual(item.icon, 502);
@@ -27,14 +27,14 @@ function read(rel) {
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nbox A "A"\n  item type img 502\n'); }
+  try { Render.parse('boxes Demo\nbox A "A"\n  item type img 502\n'); }
   catch (err) { threw = /unknown item type 'img'/.test(String(err.message)); }
   assert.ok(threw, 'type img rejected');
 }
 
 {
   let threw = false;
-  try { Render.parse('board Demo\nbox A "A"\n  item type image 502\n'); }
+  try { Render.parse('boxes Demo\nbox A "A"\n  item type image 502\n'); }
   catch (err) { threw = /unknown item type 'image'/.test(String(err.message)); }
   assert.ok(threw, 'type image rejected');
 }
@@ -45,7 +45,7 @@ assert.ok(/\| `icon` \|/.test(vocab), 'vocab table has icon');
 assert.ok(!/### img/.test(vocab), 'vocab has no img heading');
 assert.ok(!/\| `img` \|/.test(vocab), 'vocab table has no img');
 
-['packages/drawer-app/templates/welcome.bmd', 'skill/board/templates/demo.bmd'].forEach((rel) => {
+['packages/drawer-app/templates/welcome.bmd', 'skill/boxes/templates/demo.bmd'].forEach((rel) => {
   const src = read(rel);
   assert.ok(/\btype\s+icon\b/.test(src), rel + ' uses type icon');
   assert.ok(!/\btype\s+img\b/.test(src), rel + ' has no type img');

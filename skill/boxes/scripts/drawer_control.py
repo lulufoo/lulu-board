@@ -51,16 +51,16 @@ def parser():
     )
     prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
-    prev_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
+    prev_p.add_argument("--kind", choices=["boxes"], default="boxes", help="which live source to write")
     prev_p.add_argument("--id", dest="source_id", help="leftover; ignored")
     prev_p.add_argument("--no-open", action="store_true", help="do not open any browser")
     prev_p.add_argument("--open-system", action="store_true", help="open in the macOS/default browser instead")
     source_p = commands.add_parser("set-source", help="retired; use preview")
     source_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
-    source_p.add_argument("--kind", choices=["board"], default="board", help="which live source to write")
+    source_p.add_argument("--kind", choices=["boxes"], default="boxes", help="which live source to write")
     source_p.add_argument("--id", dest="source_id", help="leftover; ignored")
     get_p = commands.add_parser("get-source", help="retired; use preview")
-    get_p.add_argument("--kind", choices=["board"], default="board", help="which live source to print")
+    get_p.add_argument("--kind", choices=["boxes"], default="boxes", help="which live source to print")
     get_p.add_argument("--id", dest="source_id", help="leftover; ignored")
     return p
 
@@ -83,18 +83,18 @@ def main(argv=None) -> int:
                 args.file,
                 should_open=mode != "none",
                 open_mode=mode,
-                kind=getattr(args, "kind", "board"),
+                kind=getattr(args, "kind", "boxes"),
                 source_id=getattr(args, "source_id", None),
             )
         elif args.command == "set-source":
             set_source(
                 args.file,
-                kind=getattr(args, "kind", "board"),
+                kind=getattr(args, "kind", "boxes"),
                 source_id=getattr(args, "source_id", None),
             )
         elif args.command == "get-source":
             get_source(
-                kind=getattr(args, "kind", "board"),
+                kind=getattr(args, "kind", "boxes"),
                 source_id=getattr(args, "source_id", None),
             )
         return 0

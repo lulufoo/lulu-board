@@ -4,15 +4,15 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const skill = fs.readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
-const viewer = fs.readFileSync(path.join(root, 'skill/board/references/viewer.md'), 'utf8');
+const skill = fs.readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
+const viewer = fs.readFileSync(path.join(root, 'skill/boxes/references/viewer.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const cloud = fs.readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
 assert.match(readme, /https:\/\/mcp\.luluboard\.app\/mcp/, 'readme documents the hosted MCP');
 assert.match(skill, /## Hash flow/, 'hash flow remains');
-assert.match(skill, /\$DRAWER_CTL preview --kind board/, 'hash mode still uses preview');
+assert.match(skill, /\$DRAWER_CTL preview --kind boxes/, 'hash mode still uses preview');
 assert.match(skill, /Keep `url` first/, 'hash mode still prints url first');
 assert.match(skill, /Mint without style/, 'stash rule remains');
 assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');

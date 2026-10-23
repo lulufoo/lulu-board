@@ -35,7 +35,7 @@
   };
   var MERMAID_RE = /^(C4Context|C4Container|C4Component|C4Dynamic|C4Deployment|flowchart|graph|flowchart-elk|sequenceDiagram|classDiagram(?:-v2)?|stateDiagram(?:-v2)?|erDiagram|journey|gantt|gitGraph|pie|mindmap|timeline|quadrantChart|xychart(?:-beta)?|block(?:-beta)?|architecture(?:-beta)?|packet(?:-beta)?|kanban|sankey(?:-beta)?|requirement(?:Diagram)?|radar-beta|swimlane-beta|agentflow-beta|treeView-beta|usecase-beta|eventmodeling|railroad(?:-(?:ebnf|abnf|peg))?-beta|cynefin-beta|wardley-beta|venn-beta|ishikawa(?:-beta)?|treemap(?:-beta)?)\b/i;
   var TYPE_NAMES = {
-    board: "Board",
+    boxes: "Boxes",
     flowchart: "Flowchart",
     block: "Block",
     mindmap: "Mindmap",
@@ -85,7 +85,7 @@
   }
 
   function bodyIsBoard(body) {
-    return /^board\s+/i.test(firstRealLine(body));
+    return /^boxes\s+/i.test(firstRealLine(body));
   }
 
   function isDesignKind(kind) {
@@ -96,11 +96,11 @@
     return kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported" || isDesignKind(kind);
   }
 
-  // board | flowchart | mindmap | design kinds | mermaid-unsupported | empty | unknown
+  // boxes | flowchart | mindmap | design kinds | mermaid-unsupported | empty | unknown
   function bodyKind(body) {
     var line = firstKindLine(body);
     if (!line) return "empty";
-    if (/^board\s+/i.test(line)) return "board";
+    if (/^boxes\s+/i.test(line)) return "boxes";
     if (FLOWCHART_RE.test(line)) return "flowchart";
     if (MINDMAP_RE.test(line)) return "mindmap";
     if (MERMAID_RE.test(line)) {
@@ -114,7 +114,7 @@
   function bodyTypeKeyword(body) {
     var line = firstKindLine(body);
     if (!line) return "";
-    if (/^board\s+/i.test(line)) return "board";
+    if (/^boxes\s+/i.test(line)) return "boxes";
     var flow = FLOWCHART_RE.exec(line);
     if (flow) return flow[1];
     var mermaid = MERMAID_RE.exec(line);
@@ -124,7 +124,7 @@
   function normalizeTypeKey(keyword) {
     var key = String(keyword || "").toLowerCase();
     if (!key) return "";
-    if (key === "board") return "board";
+    if (key === "boxes") return "boxes";
     if (key === "graph" || key === "flowchart" || key === "flowchart-elk") return "flowchart";
     if (/^c4/.test(key)) return "c4";
     key = key.replace(/-v2$/, "").replace(/-beta$/, "").replace(/-(?:ebnf|abnf|peg)$/, "").replace(/diagram$/, "");
@@ -137,7 +137,7 @@
     if (kind === "empty" || kind === "unknown") return "Source";
     var name = TYPE_NAMES[normalizeTypeKey(bodyTypeKeyword(body))];
     if (name) return name;
-    if (kind === "board") return "Board";
+    if (kind === "boxes") return "Boxes";
     if (kind === "flowchart") return "Flowchart";
     if (kind === "mindmap") return "Mindmap";
     return "Mermaid";

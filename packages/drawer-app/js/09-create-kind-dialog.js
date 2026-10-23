@@ -10,7 +10,7 @@
 
   var CREATE_KIND_ITEMS = [
     { cls: "Welcome", name: "Welcome", note: "Onboarding board", ready: true, kind: "welcome" },
-    { cls: "Board", name: "Board", note: "Structured whiteboard", ready: true, kind: "board" },
+    { cls: "Boxes", name: "Boxes", note: "Structured whiteboard", ready: true, kind: "boxes" },
     { cls: "Mermaid", name: "Flowchart", note: "flow", ready: true, kind: "flowchart" },
     { cls: "Mermaid", name: "Block", note: "flow", ready: false, kind: "block-beta" },
     { cls: "Mermaid", name: "Mindmap", note: "flow", ready: true, kind: "mindmap" },

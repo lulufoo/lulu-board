@@ -43,7 +43,7 @@ assert.strictEqual(Render.authoredViewport({ scale: 1, x: 0, y: 0 }), null);
 // Pins stay world coordinates: a negative pin solves to a negative frame.
 {
   const parsed = Render.parse([
-    'board Demo',
+    'boxes Demo',
     'box A "A"',
     'box B "B"',
     'layout',

@@ -1,7 +1,7 @@
 ---
 name: lulu-board-skills
 description: >-
-  Lulu Board: Board and Mermaid on the public viewer.
+  Lulu Board: Boxes and Mermaid on the public viewer.
 ---
 
 # Lulu Board Skills
@@ -11,5 +11,5 @@ Done when the chosen child skill completes.
 
 | Skill | Role |
 |---|---|
-| `board/` | Structured whiteboard on the public viewer |
+| `boxes/` | Structured whiteboard on the public viewer |
 | `mermaid/` | List Mermaid types, or draw one open type on the public viewer |

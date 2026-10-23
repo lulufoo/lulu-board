@@ -8,7 +8,7 @@ const Render = require('../../../packages/board/engine/board-render.js');
 
 {
   const board = Render.parse(
-    'board Demo\nbox A "A"\nbox B "B"\nlayout\n  justify A, B center\n'
+    'boxes Demo\nbox A "A"\nbox B "B"\nlayout\n  justify A, B center\n'
   );
   assert.strictEqual(board.layout.boxes.A.justify, 'center');
   assert.strictEqual(board.layout.boxes.B.justify, 'center');
@@ -17,19 +17,19 @@ const Render = require('../../../packages/board/engine/board-render.js');
 }
 
 {
-  const board = Render.parse('board Demo\nbox A "A"\nlayout\n  A justify stretch\n');
+  const board = Render.parse('boxes Demo\nbox A "A"\nlayout\n  A justify stretch\n');
   assert.strictEqual(board.layout.boxes.A.justify, 'stretch');
   assert.ok(Render.serialize(board).includes('justify A stretch'));
 }
 
 {
-  const board = Render.parse('board Demo\nbox A "A"\nlayout\n  A justify between\n');
+  const board = Render.parse('boxes Demo\nbox A "A"\nlayout\n  A justify between\n');
   assert.strictEqual(board.layout.boxes.A.justify, 'between');
   assert.ok(Render.serialize(board).includes('justify A between'));
 }
 
 {
-  const board = Render.parse('board Demo\nbox A "A"\nlayout\n  A dir column\n  A align start\n');
+  const board = Render.parse('boxes Demo\nbox A "A"\nlayout\n  A dir column\n  A align start\n');
   const out = Render.serialize(board);
   assert.ok(!out.includes('justify'), out);
   assert.ok(out.includes('align A start'), out);

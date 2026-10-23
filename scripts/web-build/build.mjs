@@ -25,6 +25,7 @@ runBuild('scripts/drawer-app-build/build.mjs');
 
 mkdirSync(webVendor, { recursive: true });
 const vendorFiles = [
+  'board-themes.min.js',
   'board.min.js',
   'drawer-app.css',
   'drawer-app.js',

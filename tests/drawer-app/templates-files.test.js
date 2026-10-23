@@ -14,7 +14,7 @@ const dir = path.join(root, 'packages/drawer-app/templates');
 
 const FILES = [
   'welcome.bmd',
-  'board.bmd',
+  'boxes.bmd',
   'flowchart.mmd',
   'mindmap.mmd',
   'sequenceDiagram.mmd',
@@ -32,7 +32,7 @@ assert.strictEqual(FILES.length, 13, 'thirteen built-in templates');
 assert.deepStrictEqual(fs.readdirSync(dir).sort(), FILES.slice().sort(), 'templates dir is exactly the list');
 
 Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
-  const ext = it.kind === 'welcome' || it.kind === 'board' ? '.bmd' : '.mmd';
+  const ext = it.kind === 'welcome' || it.kind === 'boxes' ? '.bmd' : '.mmd';
   const name = it.kind + ext;
   assert.ok(FILES.includes(name), name + ' matches a ready kind');
   const text = fs.readFileSync(path.join(dir, name), 'utf8');
@@ -42,14 +42,14 @@ Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
 
 {
   const welcome = fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8');
-  assert.match(welcome, /board "Lulu Board"/);
+  assert.match(welcome, /boxes "Lulu Board"/);
   assert.ok(!fs.existsSync(path.join(root, 'packages/drawer-app/onboarding.bmd')), 'root onboarding.bmd is gone');
 }
 
 {
-  const board = fs.readFileSync(path.join(dir, 'board.bmd'), 'utf8');
-  const demo = fs.readFileSync(path.join(root, 'skill/board/templates/demo.bmd'), 'utf8');
-  assert.strictEqual(board, demo, 'board.bmd copies skill demo.bmd');
+  const board = fs.readFileSync(path.join(dir, 'boxes.bmd'), 'utf8');
+  const demo = fs.readFileSync(path.join(root, 'skill/boxes/templates/demo.bmd'), 'utf8');
+  assert.strictEqual(board, demo, 'boxes.bmd copies skill demo.bmd');
   assert.ok(!/^\s*meta\s+/.test(board), 'board template has no document meta');
   const parsed = Render.parse(board);
   assert.strictEqual(parsed.title, 'Demo');

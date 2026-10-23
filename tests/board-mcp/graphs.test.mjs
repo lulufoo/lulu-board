@@ -22,10 +22,11 @@ const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-docu
 const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
-const skill = readFileSync(path.join(root, 'skill/board/SKILL.md'), 'utf8');
+const skill = readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
 const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
 
-assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), 'Onboarding');
+assert.equal(boardTitleFromBody('boxes "Onboarding"\nbox A\n'), 'Onboarding');
+assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), '');
 assert.equal(boardTitleFromBody('item X\n'), '');
 assert.equal(boardTitleFromBody('%% title Demo\nflowchart TD\n  A-->B\n'), 'Demo');
 assert.equal(boardTitleFromBody('%% title: "Ship"\nflowchart TD\n  A-->B\n'), 'Ship');

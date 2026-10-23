@@ -364,7 +364,7 @@ function liveKindLabel() {
   if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.bodyKindLabel === "function") {
     return DrawerStyleLine.bodyKindLabel(text);
   }
-  return "Board";
+  return "Boxes";
 }
 function syncSourceDockLabel() {
   var tab = document.getElementById("sourceDockTabLabel");

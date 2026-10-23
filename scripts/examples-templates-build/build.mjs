@@ -7,12 +7,12 @@ console.log('skip examples-templates-build: welcome lives in packages/drawer-app
 process.exit(0);
 
 /**
- * Pack examples/ sources into skill/board/templates (no PNGs, flat files).
+ * Pack examples/ sources into skill/boxes/templates (no PNGs, flat files).
  *
- *   examples/board-.../*.bmd   -> skill/board/templates/board/<file>.bmd
+ *   examples/board-.../*.bmd   -> skill/boxes/templates/board/<file>.bmd
  *
  * Directory name prefix (board-) picks the destination.
- * AI-facing skill/board/templates/demo.bmd is unrelated and left alone.
+ * AI-facing skill/boxes/templates/demo.bmd is unrelated and left alone.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const examplesRoot = path.join(repo, 'examples');
-const templatesRoot = path.join(repo, 'skill/board/templates');
+const templatesRoot = path.join(repo, 'skill/boxes/templates');
 
 const KINDS = [
   { prefix: 'board-', ext: '.bmd', outRoot: path.join(templatesRoot, 'board') },
@@ -75,4 +75,4 @@ let total = 0;
 for (const spec of KINDS) {
   total += packOne(spec);
 }
-console.log(`packed ${total} sources into skill/board/templates/board`);
+console.log(`packed ${total} sources into skill/boxes/templates/board`);
