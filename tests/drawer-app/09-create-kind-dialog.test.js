@@ -108,8 +108,8 @@ function clickKind(t, kind, disabled) {
   assert.strictEqual(items.filter((it) => it.cls === 'Welcome').length, 1);
   assert.strictEqual(items.filter((it) => it.cls === 'Boxes').length, 1);
   assert.strictEqual(items.filter((it) => it.cls === 'Mermaid').length, 32);
-  assert.strictEqual(items.length, 34);
-  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'welcome,boxes,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling,railroad-beta');
+  assert.strictEqual(items.length, 35);
+  assert.strictEqual(items.filter((it) => it.ready).map((it) => it.kind).join(','), 'welcome,sketch,boxes,flowchart,mindmap,sequenceDiagram,classDiagram,stateDiagram,erDiagram,requirement,C4Context,usecase-beta,eventmodeling,railroad-beta');
   assert.strictEqual(items.filter((it) => it.name === 'Railroad').length, 1, 'Railroad is one create row');
   assert.strictEqual(items.filter((it) => it.name === 'C4').length, 1, 'C4 is one create row');
   const kinds = items.map((it) => it.kind);

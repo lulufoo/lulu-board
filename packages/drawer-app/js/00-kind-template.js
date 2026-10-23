@@ -12,6 +12,7 @@
   var FILES = {
     welcome: "welcome.bmd",
     boxes: "boxes.bmd",
+    sketch: "sketch.skt",
     flowchart: "flowchart.mmd",
     mindmap: "mindmap.mmd",
     sequence: "sequenceDiagram.mmd",
@@ -53,6 +54,7 @@
 
   function applyUntitledTitle(source) {
     var text = String(source == null ? "" : source);
+    if (/^\s*sketch\s+"/m.test(text)) return text;
     if (/^\s*boxes\s+"/m.test(text)) return applyBoardTitle(text, "Untitled");
     if (typeof updateMermaidTitle === "function") return updateMermaidTitle(text, "Untitled");
     return "%% title Untitled\n" + text.replace(/^\n+/, "");

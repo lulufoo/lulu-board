@@ -12,6 +12,8 @@ const dir = path.join(root, 'packages/drawer-app/templates');
 
 assert.strictEqual(Template.kindTemplateFileName('welcome'), 'welcome.bmd');
 assert.strictEqual(Template.kindTemplateFileName('boxes'), 'boxes.bmd');
+assert.strictEqual(Template.kindTemplateFileName('sketch'), 'sketch.skt');
+assert.strictEqual(Template.applyUntitledTitle('sketch ""\ncontent e30=\n'), 'sketch ""\ncontent e30=\n');
 assert.strictEqual(Template.kindTemplateFileName(''), 'boxes.bmd');
 assert.strictEqual(Template.kindTemplateFileName('sequence'), 'sequenceDiagram.mmd');
 assert.strictEqual(Template.kindTemplateFileName('sequenceDiagram'), 'sequenceDiagram.mmd');
