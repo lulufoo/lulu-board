@@ -43,7 +43,7 @@ Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
 
 {
   const welcome = fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8');
-  assert.match(welcome, /boxes "Lulu Board"/);
+  assert.match(welcome, /^sketch "What each one is for\."/);
   assert.ok(!fs.existsSync(path.join(root, 'packages/drawer-app/onboarding.bmd')), 'root onboarding.bmd is gone');
 }
 
