@@ -667,7 +667,7 @@ async function loadCloudDiagramByHash(raw) {
       await refreshCloudGroupMembers(diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true, swap: true });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     if (typeof shellRenderMine === "function") shellRenderMine();
@@ -690,7 +690,7 @@ async function loadCloudDiagramByHash(raw) {
       await refreshCloudGroupMembers(diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
+    if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true, swap: true });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     if (typeof shellRenderMine === "function") shellRenderMine();

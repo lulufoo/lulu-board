@@ -115,6 +115,26 @@
 html[data-drawer-boot="1"] #preview-stage {
   opacity: 0 !important;
 }
+/* Switch: hide the drawing only. Dots live on .canvas-shell and stay put.
+   hold is instant. arm turns the fade on while still hidden, then in shows it. */
+html[data-diagram-swap="hold"] #preview {
+  opacity: 0 !important;
+  transition: none !important;
+}
+html[data-diagram-swap="arm"] #preview {
+  opacity: 0 !important;
+  transition: opacity 150ms ease !important;
+}
+html[data-diagram-swap="in"] #preview {
+  opacity: 1;
+  transition: opacity 150ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-diagram-swap="arm"] #preview,
+  html[data-diagram-swap="in"] #preview {
+    transition: none !important;
+  }
+}
 .board-render > .board-html-header,
 .board-render > .board-title-node {
   display: none !important;

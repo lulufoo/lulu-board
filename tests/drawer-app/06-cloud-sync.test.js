@@ -347,6 +347,17 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(load, /if \(cached\)/, '#b: cache hit does not query boards');
   assert.doesNotMatch(load, /cloudRefreshGroups/, 'opening a board does not refresh the whole mine list');
   assert.match(load, /shellRenderMine\(\)/, 'opening a board repaints the mine highlight from loaded pages');
+  assert.equal((load.match(/swap: true/g) || []).length, 2, 'both open paths fade the drawing');
+  assert.match(load, /renderDiagram\(\{ fit: false, restoreView: true, swap: true \}\)/, 'a switched board hides the drawing before paint');
+  assert.match(boardJs, /function holdDiagramSwap/, 'switch can hide the drawing');
+  assert.match(boardJs, /!preview \|\| !preview\.childElementCount/, 'first paint does not hide an empty drawing');
+  assert.match(boardJs, /dataset\.diagramSwap = "hold"/, 'the hide is instant');
+  assert.match(boardJs, /dataset\.diagramSwap = "in"/, 'the drawing fades back in');
+  assert.match(boardJs, /function finishCanvasView[\s\S]*releaseDiagramSwap\(opts\)/, 'other kinds release the hide after the camera');
+  const css = read('packages/drawer-app/css/02-chrome.css');
+  assert.match(css, /html\[data-diagram-swap="hold"\] #preview \{[^}]*opacity:\s*0/, 'only the drawing is hidden');
+  assert.match(css, /html\[data-diagram-swap="in"\] #preview \{[^}]*transition:\s*opacity 150ms/, 'the drawing fades in');
+  assert.doesNotMatch(css, /data-diagram-swap="hold"\][^{]*\.canvas-shell|data-diagram-swap="hold"\][^{]*#preview-stage/, 'the dotted canvas stays visible');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
   assert.match(load, /from\("graphs"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
