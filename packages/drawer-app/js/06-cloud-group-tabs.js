@@ -75,6 +75,7 @@ function showChromeTip(btn, text, edge) {
   var tip = chromeTip();
   var wasOn = tip.classList.contains("is-on");
   clearTimeout(chromeTipHideTimer);
+  tip.classList.remove("is-nudge");
   tip.textContent = clipChromeTipText(text);
   var r = btn.getBoundingClientRect();
   var rail = edge ? edge.getBoundingClientRect() : r;
@@ -124,6 +125,7 @@ function nudgeChromeTip(btn, text) {
   if (!btn || btn.hidden || !text) return;
   showChromeTip(btn, text);
   var tip = chromeTip();
+  tip.classList.add("is-nudge");
   var token = String((Number(tip.dataset.nudgeToken) || 0) + 1);
   tip.dataset.nudgeToken = token;
   clearTimeout(chromeTipHideTimer);
@@ -132,7 +134,10 @@ function nudgeChromeTip(btn, text) {
     delete chromeTipEl.dataset.nudgeToken;
     var hovering = typeof btn.matches === "function" && (btn.matches(":hover") || btn.matches(":focus-visible"));
     var focused = typeof document !== "undefined" && document.activeElement === btn;
-    if (hovering || focused) return;
+    if (hovering || focused) {
+      chromeTipEl.classList.remove("is-nudge");
+      return;
+    }
     chromeTipEl.classList.remove("is-on");
   }, CHROME_TIP_NUDGE_MS);
 }

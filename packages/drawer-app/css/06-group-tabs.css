@@ -104,6 +104,9 @@ html[data-drawer-mode="diagram"] .chrome-tip {
   background: var(--paper);
   box-shadow: var(--press), 0 6px 18px rgba(120, 80, 40, .07);
 }
+html[data-drawer-mode="diagram"] .chrome-tip.is-nudge {
+  color: var(--accent, #db4c84);
+}
 @media (prefers-reduced-motion: reduce) {
   .chrome-tip,
   .chrome-tip.is-on { transition: none; transform: translate(0, -50%); }
