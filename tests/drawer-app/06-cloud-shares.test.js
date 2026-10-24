@@ -26,7 +26,18 @@ const { cloudShareSummaries } = new Function(
   '\nreturn { cloudShareSummaries };'
 )();
 
-const row = (id, share, updated) => ({ graph_id: id, title: 'T ' + id, share_id: share, updated_at: updated });
+const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+global.displayTitleFromBmd = function (bmd) {
+  return Meta.diagramTitleFromBody(Meta.stripDocumentMeta(bmd)) || '';
+};
+
+const row = (id, share, updated) => ({
+  graph_id: id,
+  title: 'STALE',
+  bmd: 'boxes "T ' + id + '"\n',
+  share_id: share,
+  updated_at: updated,
+});
 assert.deepStrictEqual(cloudShareSummaries([], {}, 'b_1'), []);
 {
   const out = cloudShareSummaries(
@@ -47,4 +58,17 @@ assert.deepStrictEqual(cloudShareSummaries([], {}, 'b_1'), []);
   assert.strictEqual(out[0].isPublic, true, 'public flag comes from own_share_state');
 }
 assert.strictEqual(cloudShareSummaries([row('b_1', 's_a', '')], {}, '')[0].isCurrent, false, 'no open board: nothing marked');
+{
+  const out = cloudShareSummaries([{
+    graph_id: 'b_9',
+    title: 'Untitled',
+    bmd: 'sketch "拖动找不到页签"\n',
+    share_id: 's_z',
+    updated_at: '2026-10-01T00:00:00Z',
+  }], {}, '');
+  assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
+}
+assert.match(shares, /select\("graph_id,bmd,share_id,created_at,updated_at"\)/, 'the share list reads bmd');
+assert.match(shares, /displayTitleFromBmd\(row\.bmd\)/, 'the visible name is parsed from bmd');
+assert.doesNotMatch(shares, /row\.title/, 'the visible name does not read graphs.title');
 console.log('ok 06-cloud-shares');
