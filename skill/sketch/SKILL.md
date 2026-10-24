@@ -7,7 +7,7 @@ argument-hint: "[picture intent]"
 # sketch
 
 Write one Sketch source and open it on the public viewer.
-Done when a tool `url` is shown.
+Done when `[title](url)` is shown.
 
 ## Script Macros
 
@@ -34,4 +34,4 @@ The fragment is the picture.
 ## Show
 
 1. Pipe the source to `$SKETCH_CTL preview --kind sketch`, or pass `--file`.
-2. Keep `url` first. Show the URL and stop.
+2. Show `[title](url)` and stop. `title` and `url` are the CLI fields.
