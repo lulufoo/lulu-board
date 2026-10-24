@@ -670,6 +670,7 @@ async function loadCloudDiagramByHash(raw) {
     if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
+    if (typeof shellRenderMine === "function") shellRenderMine();
     return true;
   }
   setStatus("Loading cloud diagram…");
@@ -692,6 +693,7 @@ async function loadCloudDiagramByHash(raw) {
     if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
+    if (typeof shellRenderMine === "function") shellRenderMine();
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return true;
