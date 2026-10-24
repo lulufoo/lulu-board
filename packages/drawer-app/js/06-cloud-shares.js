@@ -8,7 +8,7 @@ function cloudShareSummaries(diagramRows, roles, currentDiagramId, publics) {
     if (!row || !row.graph_id || !row.share_id) return;
     out.push({
       diagramId: row.graph_id,
-      title: row.title || "",
+      title: displayTitleFromBmd(row.bmd),
       shareId: row.share_id,
       role: roles && roles[row.share_id] === "edit" ? "edit" : "view",
       isPublic: !!(publics && publics[row.share_id]),
@@ -29,7 +29,7 @@ function cloudShareLinkFor(shareId) {
 async function cloudFetchOwnShares() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return [];
   var boards = await cloudClient.from("graphs")
-    .select("graph_id,title,share_id,created_at,updated_at")
+    .select("graph_id,bmd,share_id,created_at,updated_at")
     .not("share_id", "is", null);
   if (boards.error) throw boards.error;
   var rows = boards.data || [];
