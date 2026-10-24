@@ -513,7 +513,10 @@ function shellRenderShared(shares) {
     frag.appendChild(none);
   }
   list.replaceChildren(frag);
-  if (count) count.textContent = rows.length ? String(rows.length) : "";
+  if (count) {
+    var total = rows.length && rows[0].total != null ? rows[0].total : rows.length;
+    count.textContent = total ? String(total) : "";
+  }
 }
 
 // ---- search ----

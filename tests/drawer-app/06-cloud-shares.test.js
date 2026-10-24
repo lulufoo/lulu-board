@@ -13,8 +13,10 @@ const sync = read('packages/drawer-app/js/06-cloud-sync.js');
 const appBuild = read('scripts/drawer-app-build/build.mjs');
 
 assert.match(appBuild, /06-cloud-share\.js[\s\S]*06-cloud-shares\.js/, 'shares module is built after the share rpc helpers');
-assert.match(shares, /\.not\("share_id", "is", null\)/, 'the list is the boards that have a share link');
-assert.match(shares, /own_share_state/, 'each link role comes from own_share_state (grants has no client read policy)');
+assert.match(shares, /rpc\("list_outgoing_shares"\)/, 'the share list is one rpc');
+assert.doesNotMatch(shares, /select\("graph_id,bmd,share_id,created_at,updated_at"\)/, 'the share list does not read every body');
+assert.doesNotMatch(shares, /own_share_state/, 'the list does not call own_share_state per diagram');
+assert.match(shares, /title: row\.title \|\| ""/, 'the visible name is the stored title');
 for (const rpc of ['open_share', 'rotate_share', 'unshare', 'set_share_role']) {
   assert.match(shares + drawer + dialog, new RegExp(rpc), rpc + ' is reachable from the drawer or the Share dialog');
 }
@@ -68,7 +70,7 @@ assert.strictEqual(cloudShareSummaries([row('b_1', 's_a', '')], {}, '')[0].isCur
   }], {}, '');
   assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
 }
-assert.match(shares, /select\("graph_id,bmd,share_id,created_at,updated_at"\)/, 'the share list reads bmd');
-assert.match(shares, /displayTitleFromBmd\(row\.bmd\)/, 'the visible name is parsed from bmd');
-assert.doesNotMatch(shares, /row\.title/, 'the visible name does not read graphs.title');
+assert.match(shares, /rpc\("list_outgoing_shares"\)/, 'the share list reads shells');
+assert.doesNotMatch(shares.slice(shares.indexOf('async function cloudFetchOwnShares'), shares.indexOf('async function cloudShareMutate')), /displayTitleFromBmd\(row\.bmd\)/, 'the fetch does not parse diagram bodies');
+assert.match(shares, /title: row\.title \|\| ""/, 'the visible name reads the stored title');
 console.log('ok 06-cloud-shares');

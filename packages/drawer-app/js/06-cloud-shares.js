@@ -28,20 +28,21 @@ function cloudShareLinkFor(shareId) {
 // Throws on a cloud error. Signed out: [].
 async function cloudFetchOwnShares() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return [];
-  var boards = await cloudClient.from("graphs")
-    .select("graph_id,bmd,share_id,created_at,updated_at")
-    .not("share_id", "is", null);
-  if (boards.error) throw boards.error;
-  var rows = boards.data || [];
-  var roles = {};
-  var publics = {};
-  await Promise.all(rows.map(async function (row) {
-    var state = await runShareRpc("own_share_state", { p_graph_id: row.graph_id });
-    if (state && state.role) roles[row.share_id] = state.role;
-    if (state && state.is_public) publics[row.share_id] = true;
-  }));
+  var result = await cloudClient.rpc("list_outgoing_shares");
+  if (result.error) throw result.error;
   var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
-  return cloudShareSummaries(rows, roles, current, publics);
+  return (result.data || []).map(function (row) {
+    return {
+      diagramId: row.graph_id,
+      title: row.title || "",
+      shareId: row.share_id,
+      role: row.role === "edit" ? "edit" : "view",
+      isPublic: !!row.is_public,
+      updatedAt: String(row.updated_at || ""),
+      isCurrent: !!current && row.graph_id === current,
+      total: Number(row.total) || 0,
+    };
+  });
 }
 
 // One RPC on one board. Keeps the open board's own share state (status chrome) in step.
