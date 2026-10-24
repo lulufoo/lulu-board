@@ -3,6 +3,40 @@
 function clearDrawerBoot() {
   document.documentElement.removeAttribute('data-drawer-boot');
 }
+
+var diagramSwapSeq = 0;
+
+// Hide the drawing before a whole-diagram replace. The dotted canvas stays.
+// No drawing yet (first paint): leave it to the boot hide.
+function holdDiagramSwap(opts) {
+  if (!opts || !opts.swap || !document.documentElement) return;
+  var preview = typeof previewEl !== "undefined" ? previewEl : null;
+  if (!preview || !preview.childElementCount) return;
+  opts.swapToken = ++diagramSwapSeq;
+  document.documentElement.dataset.diagramSwap = "hold";
+}
+
+// Camera is applied on the second frame. Arm the fade then, and show on the next.
+function releaseDiagramSwap(opts) {
+  if (!opts || !opts.swapToken) return;
+  var token = opts.swapToken;
+  opts.swapToken = 0;
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      var html = document.documentElement;
+      if (!html || token !== diagramSwapSeq || html.dataset.diagramSwap !== "hold") return;
+      html.dataset.diagramSwap = "arm";
+      requestAnimationFrame(function () {
+        if (token !== diagramSwapSeq || html.dataset.diagramSwap !== "arm") return;
+        html.dataset.diagramSwap = "in";
+        setTimeout(function () {
+          if (token !== diagramSwapSeq) return;
+          if (html.dataset.diagramSwap === "in") delete html.dataset.diagramSwap;
+        }, 180);
+      });
+    });
+  });
+}
 function pinDiagramTitle() {
   var pin = boardTitlePinEl();
   if (pin) { pin.hidden = true; pin.innerHTML = ""; }
@@ -112,6 +146,7 @@ function finishCanvasView(opts) {
   requestAnimationFrame(function () {
     requestAnimationFrame(function () { clearDrawerBoot(); });
   });
+  releaseDiagramSwap(opts);
 }
 
 function syncMermaidStyleChrome(body) {
@@ -211,7 +246,7 @@ function renderDesignPele(opts) {
   if (typeof fillDesignProps === "function") fillDesignProps();
 }
 
-function refuseUnsupportedMermaid() {
+function refuseUnsupportedMermaid(opts) {
   syncBoardEditControls();
   previewEl.classList.remove("board-preview");
   previewEl.innerHTML = "";
@@ -219,7 +254,7 @@ function refuseUnsupportedMermaid() {
   updateDiagramChars();
   showDiagramError("This diagram type cannot be rendered.");
   setStatus("This diagram type cannot be rendered.", true);
-  finishCanvasView({});
+  finishCanvasView(opts || {});
 }
 
 function renderMindmap(opts) {
@@ -278,6 +313,7 @@ function renderMindmap(opts) {
 
 function renderDiagram(opts) {
   opts = opts || {};
+  holdDiagramSwap(opts);
   var body = sourceBodyForKind(diagramSourceEl ? diagramSourceEl.value : "");
   var kind = (typeof DrawerStyleLine !== "undefined" && DrawerStyleLine.bodyKind)
     ? DrawerStyleLine.bodyKind(body)
@@ -287,11 +323,11 @@ function renderDiagram(opts) {
   if (kind === "mindmap") return renderMindmap(opts);
   if (kind === "sketch") return renderSketch(opts);
   if (isDesignKind(kind)) return renderDesignPele(opts);
-  if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid();
+  if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid(opts);
   syncBoardEditControls();
   previewEl.classList.add('board-preview');
   const text = diagramSourceEl.value.trim(); updateDiagramChars();
-  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinDiagramTitle === "function") pinDiagramTitle(); showDiagramError(''); setStatus('No Board source'); clearDrawerBoot(); return; }
+  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); if (typeof pinDiagramTitle === "function") pinDiagramTitle(); showDiagramError(''); setStatus('No Board source'); clearDrawerBoot(); releaseDiagramSwap(opts); return; }
   BoxesRender.render(text, previewEl).then((rendered) => {
     try {
       var worldRoot = rendered && rendered.root && rendered.root.querySelector
@@ -323,10 +359,12 @@ function renderDiagram(opts) {
       requestAnimationFrame(function () {
         requestAnimationFrame(function () { clearDrawerBoot(); });
       });
+      releaseDiagramSwap(opts);
     }
   }).catch((err) => {
     pinDiagramTitle();
     clearDrawerBoot();
+    releaseDiagramSwap(opts);
     showDiagramError(err instanceof Error ? err.message : String(err)); setStatus('Invalid Board source', true);
   });
 }
