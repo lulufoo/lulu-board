@@ -12,11 +12,13 @@ const mount = fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-sketch.
 assert.strictEqual(Style.bodyKind(src), 'sketch');
 assert.doesNotMatch(src, /(?:style|content)\s+\{/);
 const fragment = Style.decodeSketchContent(src);
-assert.match(src, /^sketch "A quiet board"/);
-assert.match(fragment, /A quiet board/);
+assert.match(src, /sketch "A HTML board"/);
+assert.match(fragment, /A <span class="q">HTML<\/span> board/);
 assert.match(fragment, /Copy this link\. Use the \/sketch skill in an AI agent to edit this\./);
-assert.match(fragment, /Warm sand inside the board\./);
-assert.match(fragment, /rgba\(219,\s*76,\s*132,\s*\.4\)/);
+assert.match(fragment, /Content is written by AI/);
+assert.match(fragment, />Sketch</);
+assert.doesNotMatch(fragment, /A quiet board/);
+assert.doesNotMatch(fragment, /Warm sand inside the board\./);
 assert.doesNotMatch(fragment, /#d0d7de/);
 assert.doesNotMatch(fragment, /<script/i);
 assert.match(html, /style-src 'self' 'unsafe-inline'/);
