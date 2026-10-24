@@ -285,6 +285,30 @@ function cloudTakeRequestedGroupId() {
   return groupId;
 }
 
+function cloudCachedGroupShells(diagramId, groupId) {
+  var groups = (typeof shellGroups !== "undefined" && shellGroups) || [];
+  var found = null;
+  groups.forEach(function (group) {
+    if (group && groupId && group.groupId === groupId) found = group;
+  });
+  if (!found) {
+    groups.forEach(function (group) {
+      if (!found && group && group.diagramIds && group.diagramIds.indexOf(diagramId) >= 0) found = group;
+    });
+  }
+  if (!found || !found.members || !found.members.length) return null;
+  var shells = found.members.map(function (row) {
+    return {
+      graph_id: row.graph_id,
+      group_id: row.group_id || found.groupId,
+      title: row.title || "",
+      sort_order: row.sort_order,
+    };
+  }).filter(function (row) { return row.graph_id; });
+  if (!shells.some(function (row) { return row.graph_id === diagramId; })) return null;
+  return shells;
+}
+
 async function refreshCloudGroupMembers(diagramId, groupId) {
   var id = String(diagramId || "");
   cloudSiblingDiagramIds = [];
@@ -298,7 +322,10 @@ async function refreshCloudGroupMembers(diagramId, groupId) {
   }
   var shellArgs = { p_graph_id: id };
   if (groupId) shellArgs.p_group_id = String(groupId);
-  var members = await cloudClient.rpc("load_group_shells", shellArgs);
+  var cachedShells = cloudCachedGroupShells(id, groupId);
+  var members = cachedShells
+    ? { data: cachedShells, error: null }
+    : await cloudClient.rpc("load_group_shells", shellArgs);
   if (members.error) {
     renderCloudGroupTabs();
     return;

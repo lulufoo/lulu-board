@@ -17,7 +17,7 @@ assert.match(sync, /await cloudFetchGroupSummaries\(\)/, 'the old history list r
 const grab = (src, from, to) => src.slice(src.indexOf(from), src.indexOf(to));
 const { cloudGroupSummaries } = new Function(
   grab(sync, 'function groupDiagramRowsByGroup', 'function loadSiblingDiagramIds') +
-  grab(groups, 'function displayTitleFromBmd', '// Throws on a cloud error') +
+  grab(groups, 'function displayTitleFromBmd', 'function cloudMineCursor') +
   '\nreturn { cloudGroupSummaries };'
 )();
 
@@ -69,7 +69,24 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
   const out = cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], '');
   assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
 }
-assert.match(groups, /select\("graph_id,bmd,created_at,updated_at"\)/, 'the list reads bmd');
-assert.match(groups, /diagramTitleFromBody/, 'the visible name is parsed from bmd');
-assert.doesNotMatch(groups, /face\.title/, 'the visible name does not read graphs.title');
+assert.match(groups, /rpc\("list_mine_groups"/, 'mine pages come from the group page rpc');
+assert.doesNotMatch(groups, /select\("graph_id,bmd/, 'mine no longer reads every diagram body');
+assert.match(groups, /face_title/, 'the row title is the newest diagram title from the page');
+
+const { cloudMinePageFromRows } = new Function(
+  grab(groups, 'function cloudMinePageFromRows', 'async function cloudFetchGroupSummaries') +
+  '\nreturn { cloudMinePageFromRows };'
+)();
+{
+  const page = cloudMinePageFromRows([
+    { total: 3, group_id: 'g_b', group_updated_at: '2026-10-03T00:00:00Z', face_graph_id: 'b_3', face_title: 'Payments', graph_id: 'b_2', title: 'Retry', sort_order: 1 },
+    { total: 3, group_id: 'g_b', group_updated_at: '2026-10-03T00:00:00Z', face_graph_id: 'b_3', face_title: 'Payments', graph_id: 'b_3', title: 'Payments', sort_order: 2 },
+  ], 'b_3');
+  assert.strictEqual(page.total, 3, 'total is the whole list');
+  assert.strictEqual(page.groups.length, 1, 'shell rows fold into one group');
+  assert.strictEqual(page.groups[0].title, 'Payments');
+  assert.strictEqual(page.groups[0].faceDiagramId, 'b_3');
+  assert.deepStrictEqual(page.groups[0].diagramIds, ['b_2', 'b_3']);
+  assert.strictEqual(page.groups[0].isCurrent, true);
+}
 console.log('ok 06-cloud-groups');

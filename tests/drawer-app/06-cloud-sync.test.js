@@ -316,12 +316,12 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 
 {
   const groups = fs.readFileSync(path.join(root, 'packages/drawer-app/js/06-cloud-groups.js'), 'utf8');
-  assert.match(groups, /from\("graphs"\)\.select\("graph_id,group_id"\)/, 'groups load membership from boards');
+  assert.match(groups, /rpc\("list_mine_groups"/, 'groups load a page from the mine rpc');
   assert.doesNotMatch(groups, /group_members/, 'group_members is gone');
   assert.match(groups, /groupDiagramRowsByGroup/, 'groups are built by group');
   const refresh = cloud.slice(cloud.indexOf('async function cloudRefreshGroups'), cloud.indexOf('async function deleteCloudGroup'));
   assert.match(refresh, /cloudFetchGroupSummaries/, 'the refresh reads the shared group data');
-  assert.match(refresh, /shellRenderMine\(groups\)/, 'the drawer renders each row as a group');
+  assert.match(refresh, /shellRenderMine\(page\.groups\)/, 'the drawer renders the loaded page');
 }
 
 {
