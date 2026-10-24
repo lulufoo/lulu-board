@@ -1,7 +1,13 @@
 /* drawer-app/06-cloud-groups.js — the signed-in user's groups as plain data (no DOM). */
 
+function displayTitleFromBmd(bmd) {
+  var body = typeof stripDocumentMeta === "function" ? stripDocumentMeta(bmd) : String(bmd || "");
+  var title = typeof diagramTitleFromBody === "function" ? diagramTitleFromBody(body) : "";
+  return title || "";
+}
+
 // rows: boards newest-edited first; memberships: { graph_id, group_id }.
-// Each summary: groupId, title (of the most recently edited board), diagramCount,
+// Each summary: groupId, title (parsed from the face board's bmd), diagramCount,
 // updatedAt, diagramIds, isCurrent, members. Newest-edited group first.
 function cloudGroupSummaries(diagramRows, memberships, currentDiagramId) {
   var groups = groupDiagramRowsByGroup(diagramRows, memberships);
@@ -16,7 +22,7 @@ function cloudGroupSummaries(diagramRows, memberships, currentDiagramId) {
     });
     return {
       groupId: group.group_id,
-      title: face.title || "",
+      title: displayTitleFromBmd(face.bmd),
       diagramCount: diagramIds.length,
       updatedAt: newest,
       diagramIds: diagramIds,
@@ -33,7 +39,7 @@ function cloudGroupSummaries(diagramRows, memberships, currentDiagramId) {
 async function cloudFetchGroupSummaries() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return [];
   var boards = await cloudClient.from("graphs")
-    .select("graph_id,title,created_at,updated_at")
+    .select("graph_id,bmd,created_at,updated_at")
     .order("updated_at", { ascending: false });
   if (boards.error) throw boards.error;
   var members = await cloudClient.from("graphs").select("graph_id,group_id");
