@@ -346,6 +346,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(load, /cloudCachedDiagramRow/, '#b: uses an in-memory row when present');
   assert.match(load, /if \(cached\)/, '#b: cache hit does not query boards');
   assert.doesNotMatch(load, /cloudRefreshGroups/, 'opening a board does not refresh the whole mine list');
+  assert.match(load, /shellRenderMine\(\)/, 'opening a board repaints the mine highlight from loaded pages');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
   assert.match(load, /from\("graphs"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
