@@ -18,12 +18,22 @@ export function stripPersistedMeta(text) {
   return lines.slice(i).join("\n");
 }
 
+function sketchTitleFromLine(line) {
+  var hit = /^\s*sketch\s+"([^"]*)"/.exec(String(line || ""));
+  return hit ? hit[1] : "";
+}
+
 export function boardTitleFromBody(body) {
   var text = String(body || "");
   var board = /^\s*boxes\s+"([^"]*)"/.exec(text);
   if (board) return board[1];
   var lines = text.split(/\r?\n/);
-  for (var i = 0; i < lines.length; i += 1) {
+  var i;
+  for (i = 0; i < lines.length; i += 1) {
+    var sketch = sketchTitleFromLine(lines[i]);
+    if (sketch) return sketch;
+  }
+  for (i = 0; i < lines.length; i += 1) {
     var mermaid = /^%%\s*title\s*:?\s*(.+?)\s*$/i.exec(String(lines[i] || "").trim());
     if (!mermaid) continue;
     var title = mermaid[1].replace(/^["']|["']$/g, "").trim();

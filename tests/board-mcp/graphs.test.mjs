@@ -32,11 +32,13 @@ assert.equal(boardTitleFromBody('%% title Demo\nflowchart TD\n  A-->B\n'), 'Demo
 assert.equal(boardTitleFromBody('%% title: "Ship"\nflowchart TD\n  A-->B\n'), 'Ship');
 assert.equal(boardTitleFromBody('flowchart TD\n  A-->B\n'), '');
 assert.notEqual(boardTitleFromBody('flowchart TD\n  A-->B\n'), 'flowchart');
+assert.equal(boardTitleFromBody('style eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX0=\nsketch "拖动找不到页签"\ncontent e30=\n'), '拖动找不到页签');
+assert.equal(boardTitleFromBody('sketch ""\ncontent e30=\n'), '');
 assert.equal(
   stripPersistedMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
   'flowchart TD\n  A-->B\n'
 );
-assert.match(drawerTitle, /function velaTitleFromBody/, 'drawer still owns the title regex');
+assert.match(drawerTitle, /function diagramTitleFromBody/, 'drawer still owns the title regex');
 assert.match(drawerTitle, /%%\\s\*title/, 'drawer reads mermaid %% title');
 assert.equal(newGraphId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');
@@ -139,7 +141,7 @@ try {
   );
   assert.equal(calls.length, beforeEmpty, 'empty bmd writes no board, group, or membership');
 
-  const created = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd');
+  const created = await createGraph(env, 'tok', 'user-1', 'boxes "Fresh"\n', 'b_aabbccdd');
   assert.equal(created.graph_id, 'b_aabbccdd');
   assert.equal(created.version, 1);
   assert.equal(created.group_id, 'g_11223344');
@@ -147,19 +149,19 @@ try {
   const createBody = JSON.parse(calls[0].body);
   assert.equal(createBody.p_graph_id, 'b_aabbccdd');
   assert.equal(createBody.p_title, 'Fresh');
-  assert.equal(createBody.p_bmd, 'board "Fresh"\n');
+  assert.equal(createBody.p_bmd, 'boxes "Fresh"\n');
   assert.equal(createBody.p_group_id, null);
   assert.ok(!('owner_id' in createBody), 'RPC owner comes from the user JWT');
   assert.ok(!('share_id' in createBody), 'create does not move share_id');
   assert.ok(!calls.some(isGraphsInsert), 'create does not POST /rest/v1/graphs');
 
-  const joined = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n', 'b_aabbccdd', ownedGroupId);
+  const joined = await createGraph(env, 'tok', 'user-1', 'boxes "Fresh"\n', 'b_aabbccdd', ownedGroupId);
   assert.equal(joined.graph_id, 'b_aabbccdd');
   assert.equal(joined.group_id, ownedGroupId);
   const joinBody = JSON.parse(calls[1].body);
   assert.equal(joinBody.p_group_id, ownedGroupId);
 
-  const minted = await createGraph(env, 'tok', 'user-1', 'board "Fresh"\n');
+  const minted = await createGraph(env, 'tok', 'user-1', 'boxes "Fresh"\n');
   assert.match(minted.graph_id, /^b_[0-9a-f]{8}$/);
   assert.match(minted.group_id, /^g_[0-9a-f]{8}$/);
   const mintBody = JSON.parse(calls[2].body);
@@ -216,20 +218,20 @@ try {
   await assert.rejects(() => getGraph(env, 'tok', 'nope'), /invalid board id/);
   assert.equal(calls.length, beforeInvalidGet);
 
-  const saved = await saveGraph(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 4);
+  const saved = await saveGraph(env, 'tok', 'b_0fc10001', 'boxes "Mine"\n', 4);
   assert.equal(saved.conflict, false);
   assert.equal(saved.row.group_id, 'g_99aabbcc');
   assert.equal(saved.row.version, 5);
   const patch = calls.find((c) => c.method === 'PATCH' && c.url.includes('version=eq.4'));
   assert.ok(patch);
-  assert.deepEqual(JSON.parse(patch.body), { title: 'Mine', bmd: 'board "Mine"\n' });
+  assert.deepEqual(JSON.parse(patch.body), { title: 'Mine', bmd: 'boxes "Mine"\n' });
 
   const flowSaved = await saveGraph(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
   const flowPatch = calls.find((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').bmd === 'flowchart TD\n  A-->C\n');
   assert.ok(flowPatch, 'save_diagram stores flowchart in bmd');
 
-  const conflict = await saveGraph(env, 'tok', 'b_0fc10001', 'board "Mine"\n', 3);
+  const conflict = await saveGraph(env, 'tok', 'b_0fc10001', 'boxes "Mine"\n', 3);
   assert.equal(conflict.conflict, true);
   assert.equal(conflict.row.version, 4);
   assert.equal(conflict.row.bmd, 'board "Now"\n');
