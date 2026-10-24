@@ -35,15 +35,68 @@ function cloudGroupSummaries(diagramRows, memberships, currentDiagramId) {
   return out;
 }
 
-// Throws on a cloud error. Signed out: [].
-async function cloudFetchGroupSummaries() {
-  if (!cloudClient || !cloudSession || !cloudSession.user) return [];
-  var boards = await cloudClient.from("graphs")
-    .select("graph_id,bmd,created_at,updated_at")
-    .order("updated_at", { ascending: false });
-  if (boards.error) throw boards.error;
-  var members = await cloudClient.from("graphs").select("graph_id,group_id");
-  if (members.error) throw members.error;
+function cloudMineCursor(group) {
+  if (!group || !group.groupId || !group.updatedAt) return null;
+  return { updatedAt: group.updatedAt, groupId: group.groupId };
+}
+
+function cloudMinePageFromRows(rows, currentDiagramId) {
+  var current = String(currentDiagramId || "");
+  var groups = [];
+  var byId = {};
+  var total = 0;
+  (rows || []).forEach(function (row) {
+    if (!row || !row.group_id) return;
+    if (row.total != null) total = Number(row.total) || 0;
+    var group = byId[row.group_id];
+    if (!group) {
+      group = {
+        groupId: row.group_id,
+        title: row.face_title || "",
+        updatedAt: String(row.group_updated_at || ""),
+        faceDiagramId: row.face_graph_id || "",
+        diagramIds: [],
+        members: [],
+        diagramCount: 0,
+        isCurrent: false,
+      };
+      byId[row.group_id] = group;
+      groups.push(group);
+    }
+    if (!row.graph_id) return;
+    group.diagramIds.push(row.graph_id);
+    group.members.push({
+      graph_id: row.graph_id,
+      group_id: row.group_id,
+      title: row.title || "",
+      sort_order: row.sort_order,
+    });
+    group.diagramCount = group.diagramIds.length;
+    if (current && row.graph_id === current) group.isCurrent = true;
+  });
+  return { groups: groups, total: total };
+}
+
+// Throws on a cloud error. Signed out: empty page.
+async function cloudFetchGroupSummaries(cursor) {
+  if (!cloudClient || !cloudSession || !cloudSession.user) return { groups: [], total: 0 };
+  var args = {};
+  if (cursor && cursor.updatedAt && cursor.groupId) {
+    args.p_before = cursor.updatedAt;
+    args.p_before_group_id = cursor.groupId;
+  }
+  var result = await cloudClient.rpc("list_mine_groups", args);
+  if (result.error) throw result.error;
   var current = typeof cloudDiagramId === "function" ? cloudDiagramId() : "";
-  return cloudGroupSummaries(boards.data || [], members.data || [], current);
+  return cloudMinePageFromRows(result.data || [], current);
+}
+
+async function cloudLoadMoreMineGroups() {
+  if (!shellMineCursor) return;
+  var page = await cloudFetchGroupSummaries(shellMineCursor);
+  shellMineTotal = page.total;
+  var merged = (shellGroups || []).concat(page.groups || []);
+  var last = page.groups && page.groups[page.groups.length - 1];
+  shellMineCursor = last && merged.length < page.total ? cloudMineCursor(last) : null;
+  if (typeof shellRenderMine === "function") shellRenderMine(merged);
 }

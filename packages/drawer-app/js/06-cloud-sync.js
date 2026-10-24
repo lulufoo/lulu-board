@@ -711,8 +711,11 @@ async function cloudRefreshGroups() {
     return;
   }
   try {
-    var groups = await cloudFetchGroupSummaries();
-    if (typeof shellRenderMine === "function") shellRenderMine(groups);
+    var page = await cloudFetchGroupSummaries();
+    shellMineTotal = page.total;
+    var last = page.groups && page.groups[page.groups.length - 1];
+    shellMineCursor = last && page.groups.length < page.total ? cloudMineCursor(last) : null;
+    if (typeof shellRenderMine === "function") shellRenderMine(page.groups);
     if (typeof cloudRefreshShares === "function") void cloudRefreshShares();
   } catch (error) {
     setStatus(error && error.message ? error.message : "Could not load your diagrams", true);
