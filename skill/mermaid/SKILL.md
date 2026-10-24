@@ -66,29 +66,30 @@ What to write, after the open type file is loaded.
 
 ## Mode
 
-Pick hash or cloud.
+Pick short link or cloud.
 
 1. If the `whoami` MCP tool is listed, use **cloud mode**. Load [cloud](../references/cloud.md).
-2. If it is missing, use **hash mode**. Do not mention MCP.
+2. If it is missing, use **short-link mode**. Do not mention MCP.
 3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
-4. If the user pastes a viewer URL in hash mode, load [pointers](../references/pointers.md).
+4. If the user pastes a viewer URL in short-link mode, load [pointers](../references/pointers.md).
 
-## Hash flow
+## Short link flow
 
 Publish unsigned.
 
 1. Use the public viewer unless the user explicitly requests chat-only output.
-2. After any preview, Keep `url` first, then `open`. Show the URL and stop.
+2. After any preview, show only the CLI stdout `url` and stop. Do not build the host.
 3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind flowchart`,
    `$DRAWER_CTL preview --kind mindmap`, or `$DRAWER_CTL preview --kind sequence`
    with no `--file` and no stdin body.
-4. For an update, edit this session’s last Source text. If none yet, run
-   step 3 first.
+4. To change, edit this session’s last Source text and preview again. That
+   creates a new short url. If none yet, run step 3 first.
 5. For the public viewer, run `$DRAWER_CTL preview --kind flowchart`,
    `$DRAWER_CTL preview --kind mindmap`, or `$DRAWER_CTL preview --kind sequence`
    (and the other Design kinds) with stdin or `--file`. If it reports a DSL
    error, correct the Source and rerun.
 6. For chat-only output, return one mermaid-fenced block and stop.
+7. To keep, use cloud mode (`#b:`).
 
 ## Cloud flow
 
@@ -98,12 +99,7 @@ Follow [cloud](../references/cloud.md). Chat-only: one mermaid-fenced block.
 
 ## Open wording
 
-Say one line with the URL, from stdout `open` or MCP `url`:
-
-| `open` | Say |
-|---|---|
-| `created` | The new diagram is now current. |
-| `current` | This is the current diagram. |
+Show the CLI stdout `url` or MCP `url`. One line.
 
 ## Boundaries
 

@@ -17,10 +17,12 @@ const empty = fakeStorage({ 'drawer.ui': '{}' });
 const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY';
 const BOARD = '#b:b_29b9c39c';
 const SHARE = '#s:s_0123456789abcdef0123456789abcdef';
+const POINTER = '#p:p_' + 'a'.repeat(64);
 
 // legal hash = format only, agrees with the cloud route
 assert.strictEqual(Head.isLegalHash(BOARD), true);
 assert.strictEqual(Head.isLegalHash(SHARE), true);
+assert.strictEqual(Head.isLegalHash(POINTER), true);
 assert.strictEqual(Head.isLegalHash(BLANK), true);
 assert.strictEqual(Head.isLegalHash(''), false);
 assert.strictEqual(Head.isLegalHash('#'), false);
@@ -29,8 +31,10 @@ assert.strictEqual(Head.isLegalHash('#z:'), false);
 assert.strictEqual(Head.isLegalHash('#z:has space'), false);
 assert.strictEqual(Head.isLegalHash('#b:b_29B9c39c'), false);
 assert.strictEqual(Head.isLegalHash('#s:s_short'), false);
+assert.strictEqual(Head.isLegalHash('#p:p_short'), false);
 assert.strictEqual(Boolean(Route.cloudDiagramIdFromHash(BOARD)), Head.isLegalHash(BOARD));
 assert.strictEqual(Boolean(Route.cloudShareIdFromHash(SHARE)), Head.isLegalHash(SHARE));
+assert.strictEqual(Boolean(Route.cloudShortLinkIdFromHash(POINTER)), Head.isLegalHash(POINTER));
 
 // session marker
 assert.strictEqual(Head.hasStoredSession(session), true);
@@ -46,7 +50,7 @@ assert.strictEqual(route({}), true, 'empty address, signed out -> landing');
 assert.strictEqual(route({ storage: session }), false, 'empty address, signed in -> workspace');
 assert.strictEqual(route({ hash: '#foo' }), true, 'invalid hash behaves like empty, signed out');
 assert.strictEqual(route({ hash: '#foo', storage: session }), false, 'invalid hash behaves like empty, signed in');
-for (const hash of [BOARD, SHARE, BLANK]) {
+for (const hash of [BOARD, SHARE, POINTER, BLANK]) {
   assert.strictEqual(route({ hash }), false, 'legal link -> workspace: ' + hash);
   assert.strictEqual(route({ hash, storage: session }), false);
 }
@@ -94,6 +98,7 @@ assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: '', 
 assert.strictEqual(Head.shouldBlankStart({ search: '?ws=0', hash: '' }), false);
 assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: BOARD }), false, 'legal #b skips');
 assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: SHARE }), false, 'legal #s skips');
+assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: POINTER }), false, 'legal #p skips');
 assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1', hash: BLANK }), false, 'legal #z skips');
 assert.strictEqual(Head.shouldBlankStart({ search: '?ws=1&code=abc', hash: '' }), false, 'OAuth return skips blank-start');
 assert.strictEqual(Head.shouldBlankStart({ search: '?code=abc&ws=1', hash: '' }), false);
@@ -104,6 +109,7 @@ assert.strictEqual(Head.shouldBlankStart({ pathname: '/index.html', search: '', 
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: '#foo', storage: session }), true, 'signed-in illegal hash blank-starts');
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: BOARD, storage: session }), false, 'signed-in legal #b skips');
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: SHARE, storage: session }), false, 'signed-in legal #s skips');
+assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: POINTER, storage: session }), false, 'signed-in legal #p skips');
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash: BLANK, storage: session }), false, 'signed-in legal #z skips');
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '?code=abc', hash: '', storage: session }), false, 'OAuth return skips even when signed-in');
 assert.strictEqual(Head.shouldBlankStart({ pathname: '/landing/', search: '', hash: '', storage: session }), false, 'non-root skips');
@@ -171,8 +177,8 @@ for (const pathLanding of ['/landing', '/landing/']) {
   assert.strictEqual(Head.blankStartPlan({ pathname: pathLanding, search: '', hash: '', storage: session }), null);
 }
 
-// legal #z/#b/#s → workspace (no landing, no blank-start rewrite)
-for (const hash of [BOARD, SHARE, BLANK]) {
+// legal #z/#b/#s/#p → workspace (no landing, no blank-start rewrite)
+for (const hash of [BOARD, SHARE, POINTER, BLANK]) {
   assert.strictEqual(route({ hash, storage: empty }), false, 'LB-357: legal hash stays workspace ' + hash);
   assert.strictEqual(route({ hash, storage: session }), false);
   assert.strictEqual(Head.shouldBlankStart({ pathname: '/', search: '', hash, storage: empty }), false);

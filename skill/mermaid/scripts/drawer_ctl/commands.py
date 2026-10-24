@@ -1,7 +1,6 @@
 """User-facing commands: status / preview."""
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -78,17 +77,6 @@ def preview(path, should_open: bool = True, open_mode: str | None = None, kind: 
         fields = {"id": "", "title": titles.derive_title(text), "version": 1}
         open_kind = "created"
     web = hash_url.board_web_url(text, version=fields["version"]) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
-    payload = {
-        "ok": True,
-        "kind": kind,
-        "open": open_kind,
-        "url": web,
-        "web_url": web,
-        "id": fields["id"],
-        "title": fields["title"],
-        "version": fields["version"],
-        "rev": fields["version"],
-    }
     if open_mode != "none":
         open_viewer(web, "system")
-    print(json.dumps(payload, ensure_ascii=False))
+    print(web)

@@ -48,6 +48,7 @@
     var token = String(raw || "").replace(/^#/, "");
     return /^b:b_[0-9a-f]{8}$/.test(token)
       || /^s:s_[0-9a-f]{32}$/.test(token)
+      || /^p:p_[0-9a-f]{64}$/.test(token)
       || /^z:[A-Za-z0-9_-]+$/.test(token);
   }
 

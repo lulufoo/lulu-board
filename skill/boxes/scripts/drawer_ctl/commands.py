@@ -1,7 +1,6 @@
 """User-facing commands: status/preview/set/get."""
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from pathlib import Path
@@ -99,7 +98,7 @@ def _preview_board_text(body: str | None) -> tuple[str, dict, str]:
 
 
 def preview(path, should_open: bool = True, open_mode: str | None = None, kind: str = "boxes", source_id: str | None = None) -> None:
-    """Encode Board source to the public hash URL. Does not write history/."""
+    """Create a public short URL. Does not write history/."""
     if open_mode is None:
         open_mode = "ide" if should_open else "none"
     if kind and kind != "boxes":
@@ -107,20 +106,9 @@ def preview(path, should_open: bool = True, open_mode: str | None = None, kind: 
     body = resolve_board_preview_body(path)
     text, fields, open_kind = _preview_board_text(body)
     web = hash_url.board_web_url(text, version=fields["version"]) if str(text).strip() else f"{hash_url.PUBLIC_WEB_ORIGIN}/"
-    payload = {
-        "ok": True,
-        "kind": "boxes",
-        "open": open_kind,
-        "url": web,
-        "web_url": web,
-        "id": fields["id"],
-        "title": fields["title"],
-        "version": fields["version"],
-        "rev": fields["version"],
-    }
     if open_mode != "none":
         open_viewer(web, "system")
-    print(json.dumps(payload, ensure_ascii=False))
+    print(web)
 
 
 def set_source(path, kind: str = "boxes", source_id: str | None = None) -> None:

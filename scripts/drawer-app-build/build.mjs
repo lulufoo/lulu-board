@@ -90,6 +90,7 @@ const domain = [
   '06-cloud-group-order.js',
   '06-cloud-delete.js',
   '06-cloud-share.js',
+  '06-cloud-short-link.js',
   '06-cloud-shares.js',
   '06-cloud-search.js',
   '07-chrome-boot.js',

@@ -1,48 +1,26 @@
 #!/usr/bin/env python3
-"""Encode a Sketch source into a public viewer URL.
+"""Create a Sketch short viewer URL.
 
-preview stdout:
-{"ok": true, "kind": "sketch", "title": "<sketch quotes>", "url": "<viewer>"}
-title is the quoted string on the sketch line. Empty quotes yield "".
+preview stdout is the returned short url only.
 """
 from __future__ import annotations
 
 import argparse
-import base64
-import json
-import re
 import sys
-import zlib
 from pathlib import Path
 
-PUBLIC_WEB_ORIGIN = "https://luluboard.app"
-_SKETCH_TITLE = re.compile(r'^sketch\s+"(.*)"\s*$', re.IGNORECASE)
+_root = Path(__file__).resolve().parents[2]
+if str(_root) not in sys.path:
+    sys.path.insert(0, str(_root))
 
-
-def encode_hash(text: str, version: int = 1) -> str:
-    payload = json.dumps(
-        {"bmd": str(text or ""), "version": int(version) if int(version) > 0 else 1},
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
-    raw = zlib.compress(payload.encode("utf-8"), 9)
-    token = base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
-    return "z:" + token
+from short_link import PUBLIC_WEB_ORIGIN, create_short_url
 
 
 def web_url(text: str) -> str:
     body = str(text or "")
     if not body.strip():
         return f"{PUBLIC_WEB_ORIGIN}/"
-    return f"{PUBLIC_WEB_ORIGIN}/#{encode_hash(body)}"
-
-
-def derive_sketch_title(text: str) -> str:
-    for raw in str(text or "").splitlines():
-        hit = _SKETCH_TITLE.match(raw.strip())
-        if hit:
-            return hit.group(1)
-    return ""
+    return create_short_url(body)
 
 
 def read_source(path: str | None) -> str:
@@ -58,12 +36,7 @@ def read_source(path: str | None) -> str:
 def preview(path: str | None, kind: str) -> None:
     if kind != "sketch":
         raise RuntimeError("invalid --kind (expected sketch)")
-    text = read_source(path)
-    url = web_url(text)
-    print(json.dumps(
-        {"ok": True, "kind": "sketch", "title": derive_sketch_title(text), "url": url},
-        ensure_ascii=False,
-    ))
+    print(web_url(read_source(path)))
 
 
 def main(argv: list[str] | None = None) -> int:
