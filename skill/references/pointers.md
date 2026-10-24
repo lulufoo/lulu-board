@@ -5,11 +5,24 @@ must be read, or when pointer kind changes the next action.
 
 | Prefix | Meaning | Who assembles |
 |---|---|---|
-| `#z:` | Unsigned source envelope | CLI `preview` |
+| `#p:` | Anonymous short pointer | Public create RPC; CLI prints the returned `url` |
+| `#z:` | Unsigned source envelope | Browser after a `#p:` fetch |
 | `#b:` | Owned cloud row | MCP return `url` |
 | `#s:` | Share pointer | Browser share; MCP does not write it this round |
 
-`preview` encodes `{bmd, version}` into `#z:`. CLI preview never mints `#b:`.
+CLI `preview` calls the public create RPC and prints only the returned `url`.
+It does not encode `#z:`. It never mints `#b:`.
+
+## `#p:`
+
+Shape: `https://<host>/#p:<id>`.
+
+`<id>` is `p_` plus 64 lowercase hex. The create RPC returns the full `url`.
+Show that `url`. Do not build the host.
+
+Open: the page reads the hash, fetches the source, then replaces the address
+with `#z:`. The pointer is read-only. To change, call create again and show
+the new `url`. To keep, use `#b:`.
 
 ## `#b:`
 
@@ -21,8 +34,8 @@ From a pasted cloud link: take the token after `#b:`. Pass it as `diagram_id`.
 
 ## `#z:`
 
-CLI `preview` returns the full URL. Show that `url`. Do not `create_diagram` or
-`save_diagram`.
+Leftover envelope after a `#p:` jump. The page can still open it.
+Do not `create_diagram` or `save_diagram`.
 
 ## `#s:`
 

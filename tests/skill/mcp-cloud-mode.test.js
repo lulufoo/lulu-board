@@ -11,9 +11,9 @@ const cloud = fs.readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
 assert.match(readme, /https:\/\/mcp\.luluboard\.app\/mcp/, 'readme documents the hosted MCP');
-assert.match(skill, /## Hash flow/, 'hash flow remains');
-assert.match(skill, /\$DRAWER_CTL preview --kind boxes/, 'hash mode still uses preview');
-assert.match(skill, /Keep `url` first/, 'hash mode still prints url first');
+assert.match(skill, /## Short link flow/, 'short link flow remains');
+assert.match(skill, /\$DRAWER_CTL preview --kind boxes/, 'short-link mode still uses preview');
+assert.match(skill, /show only the CLI stdout `url`/, 'short-link mode prints only the returned url');
 assert.match(skill, /Mint without style/, 'stash rule remains');
 assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');
 assert.match(skill, /## Cloud flow/, 'cloud flow is named');
@@ -21,9 +21,14 @@ assert.match(cloud, /create_diagram/, 'cloud create uses MCP');
 assert.match(cloud, /get_diagram/, 'cloud update reads first');
 assert.match(cloud, /save_diagram/, 'cloud update writes through MCP');
 assert.match(pointers, /#b:<diagram_id>/, 'pointers document the #b: URL');
-assert.match(skill, /Do not mention MCP/, 'disconnected hash mode stays quiet');
-assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
-assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
+assert.match(skill, /Do not mention MCP/, 'disconnected short-link mode stays quiet');
+assert.match(pointers, /\| `#p:` \|/, 'pointers table has #p:');
+assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
+assert.match(pointers, /It never mints `#b:`/, 'preview stays unsigned');
+assert.match(skill, /creates a new short url/, 'change mints a new short url');
+assert.match(skill, /To keep, use cloud mode/, 'keep uses #b:');
+assert.doesNotMatch(pointers + skill, /edit token|edit_token/, 'no edit token');
+assert.doesNotMatch(pointers + skill, /preview` encodes/, 'no CLI encode of #z:');
 assert.match(viewer, /`--id` \| leftover; ignored/, 'viewer ignores leftover --id');
 
 console.log('ok mcp-cloud-mode skill');

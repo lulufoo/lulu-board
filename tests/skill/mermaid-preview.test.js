@@ -10,8 +10,9 @@ const viewer = fs.readFileSync(path.join(root, 'skill/mermaid/references/viewer.
 const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
 const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8');
 
-assert.match(pointers, /`preview` encodes `\{bmd, version\}`/, 'pointers encode the hash envelope');
-assert.match(pointers, /CLI preview never mints `#b:`/, 'preview stays unsigned');
+assert.match(pointers, /\| `#p:` \|/, 'pointers table has #p:');
+assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
+assert.match(pointers, /It never mints `#b:`/, 'preview stays unsigned');
 assert.match(viewer, /`--kind flowchart`, `--kind mindmap`, or a Design kind/, 'viewer pins open kinds');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');

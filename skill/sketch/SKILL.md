@@ -7,7 +7,7 @@ argument-hint: "[picture intent]"
 # sketch
 
 Write one Sketch source and open it on the public viewer.
-Done when `[title](url)` is shown.
+Done when the returned short `url` is shown.
 
 ## Script Macros
 
@@ -34,4 +34,6 @@ The fragment is the picture.
 ## Show
 
 1. Pipe the source to `$SKETCH_CTL preview --kind sketch`, or pass `--file`.
-2. Show `[title](url)` and stop. `title` and `url` are the CLI fields.
+2. Show only the CLI stdout `url` and stop. Do not build the host.
+3. To change, edit the source and preview again. That creates a new short url.
+4. To keep, use `#b:`.

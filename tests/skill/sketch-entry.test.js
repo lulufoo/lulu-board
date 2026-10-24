@@ -14,11 +14,13 @@ assert.match(pack, /`sketch\/`/, 'pack lists sketch/');
 assert.match(skill, /\$SKETCH_CTL preview --kind sketch/, 'preview kind is sketch');
 assert.match(skill, /does not run scripts/, 'skill states scripts are unsupported');
 assert.match(skill, /`content`/, 'source names the content line');
-assert.match(skill, /Done when `\[title\]\(url\)` is shown/, 'done is the markdown link');
-assert.match(skill, /Show `\[title\]\(url\)` and stop/, 'show uses CLI title and url');
+assert.match(skill, /Done when the returned short `url` is shown/, 'done is the returned url');
+assert.match(skill, /Show only the CLI stdout `url`/, 'show uses the returned url');
+assert.match(skill, /creates a new short url/, 'change mints a new short url');
+assert.match(skill, /To keep, use `#b:`/, 'keep uses #b:');
 assert.doesNotMatch(skill, /content \{/, 'content payload has no braces');
-assert.doesNotMatch(skill, /Show the URL/, 'skill does not show a bare url');
-assert.doesNotMatch(skill, /Keep `url` first/, 'skill does not lead with a bare url');
+assert.doesNotMatch(skill, /edit token|edit_token/, 'no edit token');
+assert.doesNotMatch(skill, /preview` encodes|preview 出/, 'no CLI encode of #z:');
 
 const out = execFileSync('python3', [script, 'preview', '--kind', 'sketch'], {
   input: 'sketch ""\ncontent e30=\n',

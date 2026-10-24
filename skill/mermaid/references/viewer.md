@@ -23,6 +23,6 @@ Mermaid CLI preview. Loaded from `/mermaid` for `status` or kind.
 |---|---|
 | Cache | `preview` does not write `history/` |
 | `--id` | leftover; ignored |
-| Mint | any file or stdin is a new encode |
+| Mint | any file or stdin is a new short url |
 
 Pointer grammar: [pointers](../../references/pointers.md).

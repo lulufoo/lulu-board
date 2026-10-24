@@ -24,6 +24,6 @@ Boxes CLI preview. Loaded from `/boxes` for `status` or kind.
 | Cache | `preview` does not write `history/` |
 | Leftover | Existing `history/*.bmd` files are not deleted |
 | `--id` | leftover; ignored |
-| Mint | any file or stdin is a new encode |
+| Mint | any file or stdin is a new short url |
 
 Pointer grammar: [pointers](../../references/pointers.md).
