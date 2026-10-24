@@ -77,6 +77,10 @@ assert.match(tabs, /appendGroupDropLine\(root, index === last \? "is-end" : ""\)
 assert.match(tabs, /btn\.draggable = true/, 'saved numbered tabs are draggable');
 const plusSlice = tabs.slice(tabs.indexOf('var draft = document.createElement'), tabs.indexOf('function cloudClearGroupTabs'));
 assert.doesNotMatch(plusSlice, /draggable/, 'the plus draft and + are not draggable');
-assert.match(order, /\.group-tab\[data-board-id\]/, 'only tabs with a board id take part');
+assert.match(order, /\.group-tab\[data-diagram-id\]/, 'only saved tabs take part in a drag');
+assert.doesNotMatch(order, /data-board-id/, 'drag no longer looks up the old attribute');
+assert.match(tabs, /btn\.dataset\.diagramId = row\.graph_id/, 'tabs write data-diagram-id');
+assert.match(tabCss, /\.group-tab:not\(\[data-diagram-id\]\) \+ \.group-tab-plus/, 'the plus gap still keys off a tab with no diagram id');
+assert.doesNotMatch(tabCss, /data-board-id/, 'tab chrome no longer names the old attribute');
 
 console.log('ok cloud-group-order');
