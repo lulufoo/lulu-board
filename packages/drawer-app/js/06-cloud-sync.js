@@ -641,6 +641,7 @@ async function loadCloudDiagramByHash(raw) {
   if (typeof setShareEdit === "function") setShareEdit(false);
   var diagramId = typeof cloudDiagramIdFromHash === "function" ? cloudDiagramIdFromHash(raw) : "";
   if (!diagramId) return false;
+  var requestedGroupId = typeof cloudTakeRequestedGroupId === "function" ? cloudTakeRequestedGroupId() : "";
   if (typeof cloudParkPlusDraft === "function" && cloudPlusDraftActive) cloudParkPlusDraft();
   if (!cloudConfigured() || !cloudClient) {
     setStatus("Cloud sync is not configured", true);
@@ -663,7 +664,7 @@ async function loadCloudDiagramByHash(raw) {
     if (known) {
       if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
     } else if (typeof refreshCloudGroupMembers === "function") {
-      await refreshCloudGroupMembers(diagramId);
+      await refreshCloudGroupMembers(diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
     if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
@@ -685,7 +686,7 @@ async function loadCloudDiagramByHash(raw) {
     if (known) {
       if (typeof renderCloudGroupTabs === "function") renderCloudGroupTabs();
     } else if (typeof refreshCloudGroupMembers === "function") {
-      await refreshCloudGroupMembers(diagramId);
+      await refreshCloudGroupMembers(diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
     if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });

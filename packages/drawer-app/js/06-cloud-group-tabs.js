@@ -277,7 +277,15 @@ async function cloudConfirmLeaveDiagram() {
   return true;
 }
 
-async function refreshCloudGroupMembers(diagramId) {
+var cloudRequestedGroupId = "";
+
+function cloudTakeRequestedGroupId() {
+  var groupId = cloudRequestedGroupId;
+  cloudRequestedGroupId = "";
+  return groupId;
+}
+
+async function refreshCloudGroupMembers(diagramId, groupId) {
   var id = String(diagramId || "");
   cloudSiblingDiagramIds = [];
   if (!cloudClient || !id) {
@@ -288,7 +296,9 @@ async function refreshCloudGroupMembers(diagramId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.rpc("load_group_shells", { p_graph_id: id });
+  var shellArgs = { p_graph_id: id };
+  if (groupId) shellArgs.p_group_id = String(groupId);
+  var members = await cloudClient.rpc("load_group_shells", shellArgs);
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -329,12 +339,17 @@ function cloudOpenDiagramById(diagramId) {
   void loadCloudDiagramByHash(hash);
 }
 
-async function cloudSwitchToDiagram(diagramId) {
+async function cloudSwitchToDiagram(diagramId, groupId) {
   var id = String(diagramId || "");
   if (!id) return;
+  var requested = groupId ? String(groupId) : "";
+  function openRequested() {
+    cloudRequestedGroupId = requested;
+    cloudOpenDiagramById(id);
+  }
   if (cloudPlusDraftActive) {
     cloudParkPlusDraft();
-    cloudOpenDiagramById(id);
+    openRequested();
     return;
   }
   if (id === cloudDiagramId()) return;
@@ -343,7 +358,7 @@ async function cloudSwitchToDiagram(diagramId) {
     cloudParkDirtyDiagram();
   }
   cloudClearDirtyLeave();
-  cloudOpenDiagramById(id);
+  openRequested();
 }
 
 async function cloudSwitchToPlusDraft() {
