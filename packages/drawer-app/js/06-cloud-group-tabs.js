@@ -34,9 +34,30 @@ function cloudLabelGroupTab(btn, row, number) {
 
 // Self-drawn chrome tip: shows at once left of a button (native title waits on
 // the OS delay). One fixed node on body so no container can clip it. Shared by
-// the group number tabs and the cloud save button.
+// the group number tabs and the cloud save button. Long titles wrap; cap 100.
 var chromeTipEl = null;
 var chromeTipHideTimer = null;
+var CHROME_TIP_MAX_CHARS = 100;
+var CHROME_TIP_VIEW_MARGIN = 8;
+
+function clipChromeTipText(text) {
+  var chars = Array.from(String(text == null ? "" : text));
+  return chars.length > CHROME_TIP_MAX_CHARS ? chars.slice(0, CHROME_TIP_MAX_CHARS).join("") : chars.join("");
+}
+
+// anchorCenter is the button midpoint. The tip is translated -50%, so this
+// value is the tip's vertical center. A wrapped tip stays on the button,
+// then shifts just enough to remain inside the viewport.
+function chromeTipCenter(anchorCenter, tipHeight, viewHeight) {
+  var half = tipHeight / 2;
+  var min = CHROME_TIP_VIEW_MARGIN + half;
+  var max = viewHeight - CHROME_TIP_VIEW_MARGIN - half;
+  if (!(tipHeight > 0) || !(viewHeight > 0)) return anchorCenter;
+  if (min > max) return viewHeight / 2;
+  if (anchorCenter < min) return min;
+  if (anchorCenter > max) return max;
+  return anchorCenter;
+}
 
 function chromeTip() {
   if (chromeTipEl && chromeTipEl.isConnected) return chromeTipEl;
@@ -53,11 +74,12 @@ function showChromeTip(btn, text, edge) {
   var tip = chromeTip();
   var wasOn = tip.classList.contains("is-on");
   clearTimeout(chromeTipHideTimer);
-  tip.textContent = text;
+  tip.textContent = clipChromeTipText(text);
   var r = btn.getBoundingClientRect();
-  tip.style.top = (r.top + r.height / 2) + "px";
   var rail = edge ? edge.getBoundingClientRect() : r;
   tip.style.right = (window.innerWidth - Math.min(r.left, rail.left) + 6) + "px";
+  var anchor = r.top + r.height / 2;
+  tip.style.top = chromeTipCenter(anchor, tip.offsetHeight, window.innerHeight) + "px";
   if (wasOn) return;
   tip.classList.remove("is-on");
   void tip.offsetWidth;
