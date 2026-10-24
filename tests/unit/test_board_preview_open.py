@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""preview --kind board reports open=created|current and does not write history/."""
+"""preview --kind boxes prints the short url and does not write history/."""
 from __future__ import annotations
 
 import io
-import json
 import shutil
 import sys
 import tempfile
@@ -12,14 +11,13 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import commands as _commands
-from drawer_ctl import hash_url
 from drawer_ctl import paths as _ctl_paths
+
+SHORT = "https://luluboard.app/#p:p_" + ("a" * 64)
 
 
 class _Tty:
@@ -62,15 +60,16 @@ class BoardPreviewOpenTest(unittest.TestCase):
         _ctl_paths.STATE_DIR = self.prev_state
         shutil.rmtree(self.tmp, ignore_errors=True)
 
-    def _preview(self, path=None, stdin=None, source_id=None) -> dict:
+    def _preview(self, path=None, stdin=None, source_id=None) -> str:
         buf = io.StringIO()
         with (
             patch.object(dc, "open_viewer", return_value="none"),
             patch.object(sys, "stdin", stdin or _Tty()),
+            patch("drawer_ctl.hash_url.create_short_url", return_value=SHORT),
             redirect_stdout(buf),
         ):
             dc.preview(path, should_open=False, open_mode="none", kind="boxes", source_id=source_id)
-        return json.loads(buf.getvalue())
+        return buf.getvalue().strip()
 
     def _history_names(self) -> list[str]:
         root = self.tmp / "history"
@@ -79,12 +78,8 @@ class BoardPreviewOpenTest(unittest.TestCase):
         return sorted(p.name for p in root.iterdir() if p.suffix in {".bmd", ".mmd"})
 
     def test_empty_preview_opens_site_without_write(self) -> None:
-        data = self._preview()
-        self.assertEqual(data["open"], "current")
-        self.assertEqual(data.get("url"), "https://luluboard.app/")
-        self.assertEqual(data.get("url"), data.get("web_url"))
-        self.assertEqual(data.get("id"), "")
-        self.assertNotIn("local_url", data)
+        url = self._preview()
+        self.assertEqual(url, "https://luluboard.app/")
         self.assertEqual(self._history_names(), [])
         self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 
@@ -92,42 +87,28 @@ class BoardPreviewOpenTest(unittest.TestCase):
         rec = dc.create_board_record('board "Mine"\n', rev=1, via="cli", label="mine")
         before = rec.read_text(encoding="utf-8")
         names = self._history_names()
-        data = self._preview(source_id=dc.ensure_board_history_entry_meta(rec)["id"])
-        self.assertEqual(data["open"], "current")
-        self.assertEqual(data.get("url"), "https://luluboard.app/")
-        self.assertEqual(data.get("id"), "")
+        url = self._preview(source_id=dc.ensure_board_history_entry_meta(rec)["id"])
+        self.assertEqual(url, "https://luluboard.app/")
         self.assertEqual(rec.read_text(encoding="utf-8"), before)
         self.assertEqual(self._history_names(), names)
 
     def test_source_does_not_write_history(self) -> None:
         src = self.tmp / "new.bmd"
         src.write_text('board "New"\n', encoding="utf-8")
-        data = self._preview(path=str(src))
-        self.assertEqual(data["open"], "created")
-        self.assertEqual(data.get("id"), "")
-        self.assertEqual(data.get("version"), 1)
-        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
-        decoded = hash_url.decode_board_hash(data["url"].split("#", 1)[1])
-        self.assertEqual(decoded["bmd"], 'board "New"\n')
-        self.assertEqual(decoded["version"], 1)
+        url = self._preview(path=str(src))
+        self.assertEqual(url, SHORT)
         self.assertEqual(self._history_names(), [])
         self.assertFalse((_ctl_paths.STATE_DIR / "board.meta.json").is_file())
 
-    def test_flowchart_preview_is_hash_without_history(self) -> None:
+    def test_flowchart_preview_is_short_url_without_history(self) -> None:
         src = self.tmp / "flow.mmd"
         src.write_text('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n', encoding="utf-8")
-        data = self._preview(path=str(src))
-        self.assertEqual(data["open"], "created")
-        self.assertTrue(str(data.get("url") or "").startswith("https://luluboard.app/#z:"))
-        decoded = hash_url.decode_board_hash(data["url"].split("#", 1)[1])
-        self.assertEqual(decoded["bmd"], "flowchart TD\n  A-->B\n")
-        self.assertEqual(data.get("title"), "Untitled")
-        self.assertNotIn("m_", decoded["bmd"])
-        self.assertNotIn("%% meta", decoded["bmd"])
+        url = self._preview(path=str(src))
+        self.assertEqual(url, SHORT)
         self.assertEqual(self._history_names(), [])
         self.assertEqual(list(self.tmp.rglob("history/*.mmd")), [])
 
-    def test_open_uses_public_hash_url(self) -> None:
+    def test_open_uses_public_short_url(self) -> None:
         src = self.tmp / "new.bmd"
         src.write_text('board "New"\n', encoding="utf-8")
         opened = []
@@ -140,12 +121,13 @@ class BoardPreviewOpenTest(unittest.TestCase):
         with (
             patch.object(_commands, "open_viewer", side_effect=_open),
             patch.object(sys, "stdin", _Tty()),
+            patch("drawer_ctl.hash_url.create_short_url", return_value=SHORT),
             redirect_stdout(buf),
         ):
             dc.preview(str(src), should_open=True, open_mode="ide", kind="boxes")
-        data = json.loads(buf.getvalue())
-        self.assertIn((data["url"], "system"), opened)
-        self.assertTrue(data["url"].startswith("https://luluboard.app/#z:"))
+        url = buf.getvalue().strip()
+        self.assertEqual(url, SHORT)
+        self.assertIn((url, "system"), opened)
         self.assertEqual(self._history_names(), [])
 
 

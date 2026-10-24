@@ -3,6 +3,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const STUB = 'https://luluboard.app/#p:p_' + 'd'.repeat(64);
 
 const root = path.join(__dirname, '../..');
 const pack = fs.readFileSync(path.join(root, 'skill/SKILL.md'), 'utf8');
@@ -22,17 +23,15 @@ assert.doesNotMatch(skill, /Keep `url` first/, 'skill does not lead with a bare 
 const out = execFileSync('python3', [script, 'preview', '--kind', 'sketch'], {
   input: 'sketch ""\ncontent e30=\n',
   encoding: 'utf8',
+  env: Object.assign({}, process.env, { LULU_BOARD_SHORT_LINK_STUB: STUB }),
 });
-const payload = JSON.parse(out);
-assert.strictEqual(payload.kind, 'sketch');
-assert.strictEqual(payload.title, '');
-assert.match(payload.url, /^https:\/\/luluboard\.app\/#z:/, 'url is a public hash');
-assert.ok(!Object.prototype.hasOwnProperty.call(payload, 'link'), 'preview has no link field');
+assert.strictEqual(out.trim(), STUB, 'stdout is the returned short url');
 
-const titled = JSON.parse(execFileSync('python3', [script, 'preview', '--kind', 'sketch'], {
+const titled = execFileSync('python3', [script, 'preview', '--kind', 'sketch'], {
   input: 'style e30=\nsketch "A quiet board"\ncontent e30=\n',
   encoding: 'utf8',
-}));
-assert.strictEqual(titled.title, 'A quiet board');
+  env: Object.assign({}, process.env, { LULU_BOARD_SHORT_LINK_STUB: STUB }),
+});
+assert.strictEqual(titled.trim(), STUB);
 
 console.log('ok sketch-entry skill');

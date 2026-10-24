@@ -49,7 +49,7 @@ def parser():
         description=_assets.__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    prev_p = commands.add_parser("preview", help="emit the public hash URL without writing history")
+    prev_p = commands.add_parser("preview", help="emit the public short URL without writing history")
     prev_p.add_argument("--file", help="read UTF-8 source from a file; otherwise read stdin")
     prev_p.add_argument("--kind", choices=["boxes"], default="boxes", help="which live source to write")
     prev_p.add_argument("--id", dest="source_id", help="leftover; ignored")

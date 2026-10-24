@@ -1,26 +1,18 @@
-"""Encode source into a public URL fragment. Fragment stays off the server."""
+"""Turn source into the public short URL returned by the create RPC."""
 from __future__ import annotations
 
-import base64
-import json
-import zlib
+import sys
+from pathlib import Path
 
-PUBLIC_WEB_ORIGIN = "https://luluboard.app"
+_root = Path(__file__).resolve().parents[3]
+if str(_root) not in sys.path:
+    sys.path.insert(0, str(_root))
 
-
-def encode_board_hash(text: str, version: int = 1) -> str:
-    payload = json.dumps(
-        {"bmd": str(text or ""), "version": int(version) if int(version) > 0 else 1},
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
-    raw = zlib.compress(payload.encode("utf-8"), 9)
-    token = base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
-    return "z:" + token
+from short_link import PUBLIC_WEB_ORIGIN, create_short_url
 
 
 def board_web_url(text: str, origin: str = PUBLIC_WEB_ORIGIN, version: int = 1) -> str:
     body = str(text or "")
     if not body.strip():
         return f"{origin.rstrip('/')}/"
-    return f"{origin.rstrip('/')}/#{encode_board_hash(body, version)}"
+    return create_short_url(body)

@@ -18,38 +18,28 @@ assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls 
 assert.match(skill, /\$DRAWER_CTL preview --kind mindmap/, 'skill still calls mindmap preview');
 assert.match(skill, /\$DRAWER_CTL preview --kind sequence/, 'skill calls a Design preview');
 
+const STUB = 'https://luluboard.app/#p:p_' + 'a'.repeat(64);
+
 function run(args, input) {
   return spawnSync('python3', [ctl, ...args], {
     input: input == null ? undefined : input,
     encoding: 'utf8',
     cwd: path.join(root, 'skill/mermaid'),
+    env: Object.assign({}, process.env, { LULU_BOARD_SHORT_LINK_STUB: STUB }),
   });
 }
 
 const empty = run(['preview', '--kind', 'flowchart', '--no-open'], '');
 assert.strictEqual(empty.status, 0, empty.stderr);
-const emptyJson = JSON.parse(empty.stdout);
-assert.strictEqual(emptyJson.ok, true);
-assert.strictEqual(emptyJson.kind, 'flowchart');
-assert.strictEqual(emptyJson.open, 'current');
-assert.strictEqual(emptyJson.url, 'https://luluboard.app/');
+assert.strictEqual(empty.stdout.trim(), 'https://luluboard.app/');
 
 const drawn = run(['preview', '--kind', 'flowchart', '--no-open'], 'flowchart LR\n  A --> B\n');
 assert.strictEqual(drawn.status, 0, drawn.stderr);
-const drawnJson = JSON.parse(drawn.stdout);
-assert.strictEqual(drawnJson.ok, true);
-assert.strictEqual(drawnJson.kind, 'flowchart');
-assert.strictEqual(drawnJson.open, 'created');
-assert.match(drawnJson.url, /^https:\/\/luluboard\.app\/#z:/);
-assert.strictEqual(drawnJson.version, 1);
+assert.strictEqual(drawn.stdout.trim(), STUB);
 
 const mindmapDrawn = run(['preview', '--kind', 'mindmap', '--no-open'], 'mindmap\n  Topic\n');
 assert.strictEqual(mindmapDrawn.status, 0, mindmapDrawn.stderr);
-const mindmapJson = JSON.parse(mindmapDrawn.stdout);
-assert.strictEqual(mindmapJson.ok, true);
-assert.strictEqual(mindmapJson.kind, 'mindmap');
-assert.strictEqual(mindmapJson.open, 'created');
-assert.match(mindmapJson.url, /^https:\/\/luluboard\.app\/#z:/);
+assert.strictEqual(mindmapDrawn.stdout.trim(), STUB);
 
 const designSeeds = {
   sequence: 'sequenceDiagram\n  actor User\n  participant UI\n  User->>UI: action\n',
@@ -65,11 +55,7 @@ const designSeeds = {
 Object.keys(designSeeds).forEach(function (kind) {
   const drawn = run(['preview', '--kind', kind, '--no-open'], designSeeds[kind]);
   assert.strictEqual(drawn.status, 0, kind + ' ' + drawn.stderr);
-  const json = JSON.parse(drawn.stdout);
-  assert.strictEqual(json.ok, true);
-  assert.strictEqual(json.kind, kind);
-  assert.strictEqual(json.open, 'created');
-  assert.match(json.url, /^https:\/\/luluboard\.app\/#z:/);
+  assert.strictEqual(drawn.stdout.trim(), STUB);
 });
 
 const titled = run(
@@ -77,7 +63,7 @@ const titled = run(
   '%% title Checkout\nflowchart LR\n  A --> B\n'
 );
 assert.strictEqual(titled.status, 0, titled.stderr);
-assert.strictEqual(JSON.parse(titled.stdout).title, 'Checkout');
+assert.strictEqual(titled.stdout.trim(), STUB);
 
 const badKind = run(['preview', '--kind', 'board', '--no-open'], 'flowchart LR\n  A --> B\n');
 assert.notStrictEqual(badKind.status, 0);
