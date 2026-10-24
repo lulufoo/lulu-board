@@ -19,6 +19,9 @@ assert.match(html, /id="shellAccountName"[\s\S]*id="btnShellSignOut"/, 'account 
 assert.doesNotMatch(html, /Payments retry flow<\/b><span>4 boards/, 'no mock Mine rows in the markup');
 assert.match(sync, /shellPaintAccount\(profile\)/, 'account row follows the session');
 assert.match(js, /cloudSwitchToDiagram\(group\.faceDiagramId, group\.groupId\)/, 'a mine row passes its group id');
+assert.match(js, /shellListTitle\(group\.faceDiagramId, group\.title\)/, 'Mine titles go through getDiagramTitle');
+assert.match(js, /shellListTitle\(item\.diagramId, item\.title\)/, 'Shared titles go through getDiagramTitle');
+assert.match(js, /if \(!diagramId \|\| typeof getDiagramTitle !== "function"\) return stored/, 'a row without an id keeps its stored title');
 
 const grab = (src, from, to) => src.slice(src.indexOf(from), src.indexOf(to));
 const { shellWhen } = new Function(grab(js, 'function shellWhen', '// Local preview has no cloud') + '\nreturn { shellWhen };')();

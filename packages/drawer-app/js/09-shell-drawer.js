@@ -224,6 +224,12 @@ function shellWatchMore(list, sentinel) {
   shellMineWatcher.observe(sentinel);
 }
 
+function shellListTitle(diagramId, storedTitle) {
+  var stored = storedTitle || "Untitled";
+  if (!diagramId || typeof getDiagramTitle !== "function") return stored;
+  return getDiagramTitle(diagramId, stored);
+}
+
 function shellRenderMine(groups) {
   var list = document.getElementById("shellMineList");
   var count = document.getElementById("shellMineCount");
@@ -248,7 +254,8 @@ function shellRenderMine(groups) {
     row.className = "shell-row" + (isCurrent ? " is-active" : "");
     if (isCurrent) row.setAttribute("aria-current", "true");
     var title = document.createElement("b");
-    title.textContent = group.title || "Untitled";
+    var shownTitle = shellListTitle(group.faceDiagramId, group.title);
+    title.textContent = shownTitle;
     var meta = document.createElement("span");
     var when = shellWhen(group.updatedAt);
     meta.textContent = group.diagramCount + " diagrams" + (when ? " · " + when : "");
@@ -262,7 +269,7 @@ function shellRenderMine(groups) {
     var del = document.createElement("button");
     del.type = "button";
     del.className = "shell-mine-del";
-    del.setAttribute("aria-label", "Delete group " + (group.title || "Untitled"));
+    del.setAttribute("aria-label", "Delete group " + shownTitle);
     del.title = "Delete group";
     del.textContent = "×";
     del.addEventListener("click", function (event) {
@@ -467,7 +474,7 @@ function shellRenderShared(shares) {
     var main = document.createElement("div");
     main.className = "shell-row-main";
     var title = document.createElement("b");
-    title.textContent = item.title || "Untitled";
+    title.textContent = shellListTitle(item.diagramId, item.title);
     var note = document.createElement("span");
     note.textContent = "anyone with the link · " + item.role;
     main.appendChild(title);
