@@ -277,7 +277,15 @@ async function cloudConfirmLeaveDiagram() {
   return true;
 }
 
-async function refreshCloudGroupMembers(diagramId) {
+var cloudRequestedGroupId = "";
+
+function cloudTakeRequestedGroupId() {
+  var groupId = cloudRequestedGroupId;
+  cloudRequestedGroupId = "";
+  return groupId;
+}
+
+async function refreshCloudGroupMembers(diagramId, groupId) {
   var id = String(diagramId || "");
   cloudSiblingDiagramIds = [];
   if (!cloudClient || !id) {
@@ -288,7 +296,9 @@ async function refreshCloudGroupMembers(diagramId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("graphs").select("graph_id,group_id,sort_order,bmd");
+  var shellArgs = { p_graph_id: id };
+  if (groupId) shellArgs.p_group_id = String(groupId);
+  var members = await cloudClient.rpc("load_group_shells", shellArgs);
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -312,9 +322,9 @@ async function refreshCloudGroupMembers(diagramId) {
   }
   cloudGroupId = groupId;
   var inGroup = rows.filter(function (row) {
-    return row && row.group_id === groupId && row.graph_id;
+    return row && row.graph_id;
   }).map(function (row) {
-    return { graph_id: row.graph_id, title: displayTitleFromBmd(row.bmd) };
+    return { graph_id: row.graph_id, title: row.title || "" };
   });
   cloudGroupMembers = sortDiagramRowsByGroupOrder(inGroup, rows);
   renderCloudGroupTabs();
@@ -329,12 +339,17 @@ function cloudOpenDiagramById(diagramId) {
   void loadCloudDiagramByHash(hash);
 }
 
-async function cloudSwitchToDiagram(diagramId) {
+async function cloudSwitchToDiagram(diagramId, groupId) {
   var id = String(diagramId || "");
   if (!id) return;
+  var requested = groupId ? String(groupId) : "";
+  function openRequested() {
+    cloudRequestedGroupId = requested;
+    cloudOpenDiagramById(id);
+  }
   if (cloudPlusDraftActive) {
     cloudParkPlusDraft();
-    cloudOpenDiagramById(id);
+    openRequested();
     return;
   }
   if (id === cloudDiagramId()) return;
@@ -343,7 +358,7 @@ async function cloudSwitchToDiagram(diagramId) {
     cloudParkDirtyDiagram();
   }
   cloudClearDirtyLeave();
-  cloudOpenDiagramById(id);
+  openRequested();
 }
 
 async function cloudSwitchToPlusDraft() {

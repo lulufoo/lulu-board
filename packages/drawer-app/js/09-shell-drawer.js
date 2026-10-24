@@ -242,7 +242,7 @@ function shellRenderMine(groups) {
     row.addEventListener("click", function () {
       if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
       if (preview || isCurrent || !group.faceDiagramId) return;
-      if (typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(group.faceDiagramId);
+      if (typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(group.faceDiagramId, group.groupId);
     });
     var del = document.createElement("button");
     del.type = "button";
