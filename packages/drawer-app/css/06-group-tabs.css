@@ -67,16 +67,16 @@
   right: 0;
   z-index: 60;
   box-sizing: border-box;
-  height: 32px;
+  /* One line stays 32px (7 + 18 + 7). Further lines grow the box. */
+  min-height: 32px;
   max-width: 240px;
-  padding: 0 10px;
+  padding: 7px 10px;
   border-radius: 8px;
-  /* block, not flex: ellipsis does not apply to a flex item's text */
   display: block;
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font: 500 13px/32px var(--sans);
+  overflow-wrap: break-word;
+  white-space: normal;
+  font: 500 13px/18px var(--sans);
   color: var(--text);
   background: var(--panel);
   backdrop-filter: blur(14px) saturate(1.15);
@@ -95,9 +95,11 @@
   transition: opacity 120ms ease-out, transform 120ms ease-out, visibility 0s;
 }
 html[data-drawer-mode="diagram"] .chrome-tip {
-  height: 36px;
+  /* One line stays 36px (8 + 20 + 8). */
+  min-height: 36px;
+  padding: 8px 10px;
   border-radius: 9px;
-  font: 500 14px/36px var(--font, var(--sans));
+  font: 500 14px/20px var(--font, var(--sans));
   color: var(--ink);
   background: var(--paper);
   box-shadow: var(--press), 0 6px 18px rgba(120, 80, 40, .07);
