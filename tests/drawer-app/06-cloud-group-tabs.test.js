@@ -96,6 +96,7 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
   assert.match(tabs, /shellArgs = \{ p_graph_id: id \}/, 'tabs load shells for the open board');
+  assert.match(tabs, /cloudCachedGroupShells\(id, groupId\)/, 'a loaded mine group skips the shell rpc');
   assert.match(tabs, /shellArgs\.p_group_id = String\(groupId\)/, 'a clicked group id is sent with the shell rpc');
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
