@@ -17,11 +17,21 @@ assert.match(sync, /await cloudFetchGroupSummaries\(\)/, 'the old history list r
 const grab = (src, from, to) => src.slice(src.indexOf(from), src.indexOf(to));
 const { cloudGroupSummaries } = new Function(
   grab(sync, 'function groupDiagramRowsByGroup', 'function loadSiblingDiagramIds') +
-  grab(groups, 'function cloudGroupSummaries', '// Throws on a cloud error') +
+  grab(groups, 'function displayTitleFromBmd', '// Throws on a cloud error') +
   '\nreturn { cloudGroupSummaries };'
 )();
 
-const b = (id, title, updated) => ({ graph_id: id, title, created_at: '2026-01-01T00:00:00Z', updated_at: updated });
+const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+global.diagramTitleFromBody = Meta.diagramTitleFromBody;
+global.stripDocumentMeta = Meta.stripDocumentMeta;
+
+const b = (id, title, updated) => ({
+  graph_id: id,
+  title: 'STALE',
+  bmd: 'boxes "' + title + '"\n',
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: updated,
+});
 
 assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no groups');
 
@@ -34,7 +44,7 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
   ];
   const out = cloudGroupSummaries(rows, members, 'b_2');
   assert.deepStrictEqual(out.map((g) => g.groupId), ['g_b', 'g_a'], 'newest-edited group first; a board without a group is not listed');
-  assert.strictEqual(out[0].title, 'Payments', 'title comes from the most recently edited board');
+  assert.strictEqual(out[0].title, 'Payments', 'title is parsed from the face board bmd, not graphs.title');
   assert.strictEqual(out[0].diagramCount, 2, 'counts the boards in the group');
   assert.deepStrictEqual(out[0].diagramIds, ['b_3', 'b_2']);
   assert.strictEqual(out[0].updatedAt, '2026-10-03T00:00:00Z');
@@ -48,4 +58,18 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
   assert.strictEqual(out[0].isCurrent, false, 'no current board: nothing marked');
   assert.strictEqual(cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], 'b_404')[0].isCurrent, false, 'current board outside every group: nothing marked');
 }
+{
+  const rows = [{
+    graph_id: 'b_1',
+    title: 'Untitled',
+    bmd: 'style eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX0=\nsketch "拖动找不到页签"\n',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-10-01T00:00:00Z',
+  }];
+  const out = cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], '');
+  assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
+}
+assert.match(groups, /select\("graph_id,bmd,created_at,updated_at"\)/, 'the list reads bmd');
+assert.match(groups, /diagramTitleFromBody/, 'the visible name is parsed from bmd');
+assert.doesNotMatch(groups, /face\.title/, 'the visible name does not read graphs.title');
 console.log('ok 06-cloud-groups');
