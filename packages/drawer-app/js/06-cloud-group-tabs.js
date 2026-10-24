@@ -39,6 +39,7 @@ var chromeTipEl = null;
 var chromeTipHideTimer = null;
 var CHROME_TIP_MAX_CHARS = 100;
 var CHROME_TIP_VIEW_MARGIN = 8;
+var CHROME_TIP_NUDGE_MS = 3000;
 
 function clipChromeTipText(text) {
   var chars = Array.from(String(text == null ? "" : text));
@@ -115,6 +116,35 @@ function bindChromeTip(btn, label, edge) {
 
 function bindGroupTabTip(btn, label) {
   bindChromeTip(btn, label, function () { return btn.parentElement; });
+}
+
+// New unsaved diagram: show Create on its own. mouseenter clears this timer
+// (hover then owns the tip); pointerdown still hides at once.
+function nudgeChromeTip(btn, text) {
+  if (!btn || btn.hidden || !text) return;
+  showChromeTip(btn, text);
+  var tip = chromeTip();
+  var token = String((Number(tip.dataset.nudgeToken) || 0) + 1);
+  tip.dataset.nudgeToken = token;
+  clearTimeout(chromeTipHideTimer);
+  chromeTipHideTimer = setTimeout(function () {
+    if (!chromeTipEl || chromeTipEl.dataset.nudgeToken !== token) return;
+    delete chromeTipEl.dataset.nudgeToken;
+    var hovering = typeof btn.matches === "function" && (btn.matches(":hover") || btn.matches(":focus-visible"));
+    var focused = typeof document !== "undefined" && document.activeElement === btn;
+    if (hovering || focused) return;
+    chromeTipEl.classList.remove("is-on");
+  }, CHROME_TIP_NUDGE_MS);
+}
+
+// Only the uncreated Create label. Measured on the next frame, after the button is shown.
+function nudgeUncreatedCreateTip() {
+  var save = document.getElementById("btnShellSaveCloud");
+  if (!save || typeof requestAnimationFrame !== "function") return;
+  requestAnimationFrame(function () {
+    if (!save.isConnected || save.hidden || save.getAttribute("aria-label") !== "Create") return;
+    nudgeChromeTip(save, "Create");
+  });
 }
 
 function cloudKnownGroupDiagram(diagramId) {
@@ -389,5 +419,6 @@ async function cloudCommitPlusDraft(kind) {
   if (typeof saveDiagramToHash === "function") await saveDiagramToHash({ bump: false });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
   renderCloudGroupTabs();
+  if (typeof nudgeUncreatedCreateTip === "function") nudgeUncreatedCreateTip();
   setStatus("New diagram in this group");
 }
