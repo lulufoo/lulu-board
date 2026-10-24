@@ -137,12 +137,22 @@
     return 0;
   }
 
+  function sketchTitleFromLine(line) {
+    var hit = /^\s*sketch\s+"([^"]*)"/.exec(String(line || ""));
+    return hit ? hit[1] : "";
+  }
+
   function diagramTitleFromBody(body) {
     var text = String(body || "");
     var board = /^\s*boxes\s+"([^"]*)"/.exec(text);
     if (board) return board[1];
     var lines = text.split(/\r?\n/);
-    for (var i = 0; i < lines.length; i += 1) {
+    var i;
+    for (i = 0; i < lines.length; i += 1) {
+      var sketch = sketchTitleFromLine(lines[i]);
+      if (sketch) return sketch;
+    }
+    for (i = 0; i < lines.length; i += 1) {
       var title = mermaidTitleFromMatch(matchMermaidTitleLine(lines[i]));
       if (title) return title;
     }

@@ -71,6 +71,13 @@ function token(id, version) {
   const titled = Meta.updateMermaidTitle(body, 'Catalog');
   assert.strictEqual(titled, '%% title Catalog\nclassDiagram\n  class Service\n');
   assert.strictEqual(Meta.diagramTitleFromBody(titled), 'Catalog');
+  assert.strictEqual(
+    Meta.diagramTitleFromBody('style eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX0=\nsketch "拖动找不到页签"\ncontent e30=\n'),
+    '拖动找不到页签',
+    'sketch title after a style line'
+  );
+  assert.strictEqual(Meta.diagramTitleFromBody('sketch ""\ncontent e30=\n'), '', 'empty sketch quotes stay empty');
+  assert.strictEqual(Meta.diagramTitleFromBody('boxes "盒子"\n'), '盒子', 'boxes title still wins');
   assert.strictEqual(Meta.updateMermaidTitle(titled, ''), body);
 }
 
