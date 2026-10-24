@@ -46,7 +46,7 @@ async function cloudReorderGroupTabs(fromId, toId, after) {
 }
 
 function cloudTabFromEvent(event) {
-  var tab = event.target && event.target.closest ? event.target.closest(".group-tab[data-board-id]") : null;
+  var tab = event.target && event.target.closest ? event.target.closest(".group-tab[data-diagram-id]") : null;
   return tab || null;
 }
 
@@ -64,7 +64,7 @@ function cloudClearTabDragMarks(root) {
 }
 
 function cloudTabDropTarget(root, clientY) {
-  var tabs = root.querySelectorAll(".group-tab[data-board-id]");
+  var tabs = root.querySelectorAll(".group-tab[data-diagram-id]");
   var i;
   var box;
   for (i = 0; i < tabs.length; i += 1) {
@@ -87,7 +87,7 @@ function cloudMarkTabDrop(root, event) {
   cloudTabDropId = "";
   cloudClearDropOn(root);
   if (!target || !cloudTabDragId) return;
-  var ids = Array.prototype.map.call(root.querySelectorAll(".group-tab[data-board-id]"), function (tab) {
+  var ids = Array.prototype.map.call(root.querySelectorAll(".group-tab[data-diagram-id]"), function (tab) {
     return tab.dataset.diagramId;
   });
   if (moveDiagramId(ids, cloudTabDragId, target.tab.dataset.diagramId, target.after).join(",") === ids.join(",")) return;
