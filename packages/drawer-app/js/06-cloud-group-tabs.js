@@ -288,7 +288,7 @@ async function refreshCloudGroupMembers(diagramId) {
     renderCloudGroupTabs();
     return;
   }
-  var members = await cloudClient.from("graphs").select("graph_id,group_id,sort_order,bmd");
+  var members = await cloudClient.rpc("load_group_shells", { p_graph_id: id });
   if (members.error) {
     renderCloudGroupTabs();
     return;
@@ -312,9 +312,9 @@ async function refreshCloudGroupMembers(diagramId) {
   }
   cloudGroupId = groupId;
   var inGroup = rows.filter(function (row) {
-    return row && row.group_id === groupId && row.graph_id;
+    return row && row.graph_id;
   }).map(function (row) {
-    return { graph_id: row.graph_id, title: displayTitleFromBmd(row.bmd) };
+    return { graph_id: row.graph_id, title: row.title || "" };
   });
   cloudGroupMembers = sortDiagramRowsByGroupOrder(inGroup, rows);
   renderCloudGroupTabs();

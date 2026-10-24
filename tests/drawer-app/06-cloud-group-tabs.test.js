@@ -63,7 +63,7 @@ assert.match(tabs, /loadCloudDiagramByHash/, 'tab switch does not wait for hashc
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
 assert.match(cloud, /cloudKnownGroupDiagram/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
-assert.match(cloud, /if \(!known\) void cloudRefreshGroups/, 'sibling switch does not refresh history');
+assert.doesNotMatch(cloud, /if \(!known\) void cloudRefreshGroups/, 'opening a board does not refresh the whole mine list');
 assert.match(cloud, /function cloudCachePut/, 'visited boards stay in a memory cache');
 assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
 assert.match(cloud, /cloudForgetDiagramCache/, 'sign out and group delete drop the memory cache');
@@ -95,12 +95,13 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
-  assert.match(tabs, /select\("graph_id,group_id,sort_order,bmd"\)/, 'tabs read the stored order and bmd');
+  assert.match(tabs, /rpc\("load_group_shells", \{ p_graph_id: id \}\)/, 'tabs load shells for the open board');
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
-assert.match(tabs, /from\("graphs"\)\.select\("graph_id,group_id,sort_order,bmd"\)/, 'tabs read group, order and bmd from boards');
-assert.strictEqual((tabs.match(/cloudClient\.from\("graphs"\)/g) || []).length, 1, 'one boards query feeds the tabs');
+assert.match(tabs, /rpc\("load_group_shells"/, 'tabs read the group from the shell rpc');
+assert.doesNotMatch(tabs, /from\("graphs"\)/, 'tabs do not read every board row');
+assert.doesNotMatch(tabs, /\bbmd\b/, 'tabs do not read diagram bodies');
 assert.doesNotMatch(tabs, /\.title = /, 'number tabs drop the slow native title');
 assert.match(tabs, /bindGroupTabTip\(btn, relabel\)/, 'number tabs show the self-drawn tip');
 assert.match(tabs, /function bindGroupTabTip\(btn, label\) \{\n  bindChromeTip\(btn, label, function \(\) \{ return btn\.parentElement; \}\);/, 'tab tip is the shared chrome tip, 6px off the strip');
@@ -143,8 +144,8 @@ assert.match(tabCss, /prefers-reduced-motion/, 'tip honors reduced motion');
   assert.strictEqual(center(100, 900, 800), 400, 'a tip taller than the viewport centers in it');
 }
 assert.match(tabs, /"Board " \+ number \+ ": " \+ t\)/, 'aria-label is Board N: <title>');
-assert.match(tabs, /title: displayTitleFromBmd\(row\.bmd\)/, 'tab titles are parsed from bmd');
-assert.doesNotMatch(tabs, /title: row\.title/, 'tab titles do not copy graphs.title');
+assert.match(tabs, /title: row\.title \|\| ""/, 'tab shells use the stored title');
+assert.doesNotMatch(tabs, /displayTitleFromBmd\(row\.bmd\)/, 'tab shells do not parse diagram bodies');
 assert.match(tabs, /addEventListener\("mouseenter", show\)/, 'title is re-read on hover');
 assert.match(tabs, /addEventListener\("focus", show\)/, 'title is re-read on focus');
 assert.match(tabs, /bindGroupTabTip\(draft, function \(\) \{ return "Untitled"; \}\)/, 'unsaved draft tab hovers Untitled');
