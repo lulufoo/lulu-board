@@ -324,6 +324,7 @@ async function shellCommitBlankDiagram(kind) {
   if (typeof saveDiagramToHash === "function") await saveDiagramToHash({ bump: false });
   if (typeof renderDiagram === "function") renderDiagram({ fit: false, restoreView: true });
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
+  if (typeof nudgeUncreatedCreateTip === "function") nudgeUncreatedCreateTip();
   shellRenderMine();
 }
 

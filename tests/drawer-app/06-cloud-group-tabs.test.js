@@ -176,4 +176,137 @@ assert.match(tabs, /"Add diagram"/, 'plus keeps Add diagram');
   assert.strictEqual(local(''), 'Local real', 'local server mode (no id) keeps the real md title, not Untitled');
 }
 assert.doesNotMatch(tabs, /group_members/, 'tabs no longer read group_members');
+
+{
+  const plusStart = tabs.indexOf('async function cloudCommitPlusDraft');
+  const plus = tabs.slice(plusStart);
+  assert.match(plus, /renderCloudGroupTabs\(\);\n  if \(typeof nudgeUncreatedCreateTip === "function"\) nudgeUncreatedCreateTip\(\);/, 'plus draft shows Create after the new diagram is on screen');
+  const backStart = tabs.indexOf('async function cloudSwitchToPlusDraft');
+  const backEnd = tabs.indexOf('async function cloudStartPlusDraft');
+  assert.doesNotMatch(tabs.slice(backStart, backEnd), /nudgeUncreatedCreateTip/, 'returning to a parked draft does not show Create again');
+
+  const tipStart = tabs.indexOf('var chromeTipEl = null');
+  const tipEnd = tabs.indexOf('function cloudKnownGroupDiagram');
+  assert.ok(tipStart >= 0 && tipEnd > tipStart, 'Create nudge lives with the chrome tip');
+  const tipSrc = tabs.slice(tipStart, tipEnd);
+
+  function boot() {
+    let now = 0;
+    let seq = 0;
+    const timers = [];
+    const frames = [];
+    function setTimeout(fn, ms) {
+      const id = ++seq;
+      timers.push({ id, fn, at: now + ms });
+      return id;
+    }
+    function clearTimeout(id) {
+      const i = timers.findIndex((t) => t.id === id);
+      if (i >= 0) timers.splice(i, 1);
+    }
+    function flush(ms) {
+      now += ms;
+      for (let guard = 0; guard < 8; guard += 1) {
+        const due = timers.filter((t) => t.at <= now).sort((a, b) => a.at - b.at || a.id - b.id);
+        if (!due.length) return;
+        const next = due[0];
+        timers.splice(timers.indexOf(next), 1);
+        next.fn();
+      }
+    }
+    function requestAnimationFrame(fn) {
+      frames.push(fn);
+      return frames.length;
+    }
+    function flushFrame() {
+      const fn = frames.shift();
+      if (fn) fn();
+    }
+    function makeEl() {
+      const classes = new Set();
+      const attrs = {};
+      const node = {
+        hidden: false,
+        isConnected: true,
+        textContent: '',
+        dataset: {},
+        style: {},
+        offsetWidth: 40,
+        offsetHeight: 36,
+        hover: false,
+        focusVisible: false,
+        classList: {
+          contains: (c) => classes.has(c),
+          add: (c) => classes.add(c),
+          remove: (c) => classes.delete(c),
+        },
+        setAttribute: (k, v) => { attrs[k] = String(v); },
+        getAttribute: (k) => (k in attrs ? attrs[k] : null),
+        getBoundingClientRect: () => ({ left: 400, top: 16, width: 32, height: 32 }),
+        matches: (sel) => (sel === ':hover' ? node.hover : sel === ':focus-visible' ? node.focusVisible : false),
+      };
+      return node;
+    }
+    const save = makeEl();
+    const document = {
+      body: { appendChild: (child) => child },
+      activeElement: null,
+      createElement: () => makeEl(),
+      getElementById: (id) => (id === 'btnShellSaveCloud' ? save : null),
+    };
+    const window = { innerWidth: 800, innerHeight: 600 };
+    const api = new Function('document', 'window', 'setTimeout', 'clearTimeout', 'requestAnimationFrame',
+      tipSrc + '\nreturn { nudgeChromeTip, nudgeUncreatedCreateTip, showChromeTip, hideChromeTip, chromeTip };'
+    )(document, window, setTimeout, clearTimeout, requestAnimationFrame);
+    return { api, save, document, flush, flushFrame };
+  }
+
+  {
+    const { api, save, flush, flushFrame } = boot();
+    save.setAttribute('aria-label', 'Create');
+    api.nudgeUncreatedCreateTip();
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'Create waits until the button has a box');
+    flushFrame();
+    assert.strictEqual(api.chromeTip().textContent, 'Create', 'the proactive tip says Create');
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), true, 'Create is showing');
+    flush(2999);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), true, 'Create stays up through 2.999s');
+    flush(1);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'Create hides at 3s');
+  }
+  {
+    const { api, save, flush, flushFrame } = boot();
+    save.hidden = true;
+    save.setAttribute('aria-label', 'Create');
+    api.nudgeUncreatedCreateTip();
+    flushFrame();
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'a hidden button does not show Create');
+    save.hidden = false;
+    save.setAttribute('aria-label', 'Save');
+    api.nudgeUncreatedCreateTip();
+    flushFrame();
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'Save stays hover-only');
+  }
+  {
+    const { api, save, flush } = boot();
+    save.hover = true;
+    api.nudgeChromeTip(save, 'Create');
+    flush(3000);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), true, 'hovering at 3s keeps the tip');
+    save.hover = false;
+    api.hideChromeTip();
+    flush(60);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'leaving the button hides it');
+  }
+  {
+    const { api, save, flush } = boot();
+    api.nudgeChromeTip(save, 'Create');
+    api.showChromeTip(save, 'Create');
+    flush(3000);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), true, 'moving onto the button cancels the 3s hide');
+    api.hideChromeTip();
+    flush(60);
+    assert.strictEqual(api.chromeTip().classList.contains('is-on'), false, 'pointerdown or leave still hides at once');
+  }
+}
 console.log('ok cloud-group-tabs');

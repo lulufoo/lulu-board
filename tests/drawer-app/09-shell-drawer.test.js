@@ -167,5 +167,6 @@ console.log('ok 09-shell-drawer');
   assert.doesNotMatch(commit, /blankHashSourceForKind/, 'kind pick does not use the JS seed');
   assert.match(commit, /saveDiagramToHash\(\{ bump: false \}\)/, 'writes #z after pick');
   assert.match(commit, /shellCloseAfterKindPick/, 'picking a type closes the left drawer');
+  assert.match(commit, /syncCloudSaveChrome\(\);\n  if \(typeof nudgeUncreatedCreateTip === "function"\) nudgeUncreatedCreateTip\(\);/, 'new board shows the Create tip once the button is up');
 }
 
