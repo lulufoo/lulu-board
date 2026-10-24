@@ -489,6 +489,12 @@ async function bootstrapDiagramFromHash() {
       return;
     }
   }
+  if (typeof cloudShortLinkIdFromHash === "function" && cloudShortLinkIdFromHash(raw)) {
+    if (typeof loadShortLinkByHash === "function") {
+      await loadShortLinkByHash(raw);
+      return;
+    }
+  }
   if (!raw) {
     if (typeof setShareView === "function") setShareView(false);
     if (typeof setShareEdit === "function") setShareEdit(false);
