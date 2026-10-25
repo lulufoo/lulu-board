@@ -1695,43 +1695,6 @@
     return grown;
   }
 
-  function collectNodes(board) {
-    const map = new Map();
-    const visit = (box) => { map.set(box.id, box); box.items.forEach((item) => item.id && map.set(item.id, item)); box.boxes.forEach(visit); };
-    board.boxes.forEach(visit); return map;
-  }
-  function orderFor(ids, placements) {
-    const rank = new Map(ids.map((value, index) => [value, index]));
-    placements.forEach((place) => {
-      if (!rank.has(place.source)) return;
-      place.targets.forEach((target) => {
-        if (!rank.has(target)) return;
-        const sourceRank = rank.get(place.source), targetRank = rank.get(target);
-        if (place.relation === 'after' || place.relation === 'right-of' || place.relation === 'below') rank.set(place.source, Math.max(sourceRank, targetRank + 1));
-        if (place.relation === 'before' || place.relation === 'left-of' || place.relation === 'above') rank.set(place.source, Math.min(sourceRank, Math.max(0, targetRank - 1)));
-      });
-    });
-    return rank;
-  }
-
-
-  function stableUnits(units, places) {
-    const unitFor = new Map();
-    units.forEach((unit, index) => unit.ids.forEach((idValue) => unitFor.set(idValue, index)));
-    const edges = units.map(() => new Set()), indegree = units.map(() => 0);
-    const add = (from, to) => { if (from === to || edges[from].has(to)) return; edges[from].add(to); indegree[to] += 1; };
-    places.forEach((place) => {
-      const source = unitFor.get(place.source); if (source == null) return;
-      place.targets.forEach((targetId) => { const target = unitFor.get(targetId); if (target == null || target === source) return;
-        if (place.relation === 'after' || place.relation === 'right-of') add(target, source);
-        if (place.relation === 'before' || place.relation === 'left-of') add(source, target);
-      });
-    });
-    const ready = units.map((_, index) => index).filter((index) => indegree[index] === 0), ordered = [];
-    while (ready.length) { ready.sort((a, b) => a - b); const next = ready.shift(); ordered.push(units[next]); edges[next].forEach((target) => { indegree[target] -= 1; if (!indegree[target]) ready.push(target); }); }
-    return ordered.length === units.length ? ordered : units;
-  }
-
   function evidenceParts(text) { const raw = String(text || "").trim(); const dash = raw.split(/\s+—\s+/, 2); if (dash.length > 1) return { title: dash[0], subtitle: dash[1] }; const paren = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(raw); return paren ? { title: paren[1].trim(), subtitle: paren[2].trim() } : { title: raw, subtitle: "" }; }
   function iconKindForBox(box) { const key = (box.kind + " " + box.id + " " + box.title).toLowerCase(); if (box.kind === "diamond" || key.includes("executor interface")) return "diamond"; if (box.kind === "document" || /yaml|definition/.test(key)) return "document"; if (box.kind === "kit") return "shield"; if (box.kind === "env-local" || /local machine|host/.test(key)) return "laptop"; if (box.kind === "env-sbx" || /docker|sbx|container/.test(key)) return "whale"; if (box.kind === "artifact" || /artifact|record/.test(key)) return "artifact"; if (box.kind === "suite" || /suite|compare|track/.test(key)) return "chart"; if (box.kind === "evidence" || /evidence|runtime/.test(key)) return "evidence"; if (box.kind === "kit" || /kit|validator|runner/.test(key)) return "shield"; return "document"; }
   function iconKindForItem(item, parent) { const key = String(item.text || "").toLowerCase(); if (parent && parent.kind === "artifact") return "check"; if (/validator|verify|check/.test(key)) return "shield"; if (/runner|executor|run/.test(key)) return "play"; if (/command|invocation|output|stdout|stderr/.test(key)) return "terminal"; if (/exit code|result/.test(key)) return "check"; if (/duration|wall clock|time/.test(key)) return "clock"; if (/compare|track|group|suite/.test(key)) return "chart"; if (/parameter|metadata|provenance|artifact|record|evidence/.test(key)) return "artifact"; if (parent && parent.kind === "env-local") return "laptop"; if (parent && parent.kind === "env-sbx") return "whale"; return "dot"; }
@@ -2199,10 +2162,6 @@
     // Keep edges above absolute boxes (short-gap labels must not sit under fill).
     if (svg && svg.parentNode) svg.parentNode.appendChild(svg);
     return items;
-  }
-
-  function topLevelBoxIds(board) {
-    return (board.boxes || []).map(function(box) { return box.id; });
   }
 
   // World layer helpers. The canvas is a zero-size anchor at the world origin;
