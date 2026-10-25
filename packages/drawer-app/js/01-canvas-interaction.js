@@ -25,15 +25,10 @@
   ].join(", ");
 
   var kinds = Object.create(null);
-  var onBlank = null;
   var boundStage = null;
   var panning = false;
   var panOrigin = null;
   var panMoved = false;
-
-  function setOnBlank(fn) {
-    onBlank = typeof fn === "function" ? fn : null;
-  }
 
   function registerKind(id, rec) {
     var key = String(id || "").trim();
@@ -85,7 +80,6 @@
     hideBlankProps();
     var rec = kinds[activeKindId()];
     if (rec && rec.clear) rec.clear();
-    else if (typeof onBlank === "function") onBlank();
   }
 
   function openBlankProps() {
@@ -187,7 +181,6 @@
 
   return {
     CHROME_SEL: CHROME_SEL,
-    setOnBlank: setOnBlank,
     registerKind: registerKind,
     activeKindId: activeKindId,
     isBlockedTarget: isBlockedTarget,
