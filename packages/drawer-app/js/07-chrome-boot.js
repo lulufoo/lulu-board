@@ -240,10 +240,6 @@ function placeMenuPanel(wrap) {
   });
 }
 
-function closeKindThemeMenu() {
-  /* Theme lives in Style dock — no popup. */
-}
-
 try { syncStyleLayoutSections(); } catch (_e) {}
 
 const kindThemeSelect = $('#kindThemeSelect');
