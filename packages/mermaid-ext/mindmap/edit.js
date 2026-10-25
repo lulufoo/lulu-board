@@ -75,15 +75,6 @@ export function updateTopicLabel(source, topicId, label) {
   return result(root, node, source);
 }
 
-/** Shape UI removed — always default pill. Kept as no-op for callers. */
-export function updateTopicShape(source, topicId, _shape) {
-  const root = parseOrThrow(source);
-  const node = findNodeByRef(root, topicId);
-  if (!node) throw new Error("Topic not found");
-  node.shape = "default";
-  return result(root, node, source);
-}
-
 export function getTopic(source, topicId) {
   const root = parseOrThrow(source);
   const node = findNodeByRef(root, topicId);
