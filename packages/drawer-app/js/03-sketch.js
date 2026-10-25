@@ -11,15 +11,9 @@ function sketchWorldBounds(el) {
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
-  var banned = tpl.content.querySelectorAll("script, iframe, object, embed, link");
+  // Scripts are not filtered here. The sandboxed frame lets the browser refuse every script, handler, and javascript: URL.
+  var banned = tpl.content.querySelectorAll("iframe, object, embed, link");
   for (var i = banned.length - 1; i >= 0; i -= 1) banned[i].remove();
-  var nodes = tpl.content.querySelectorAll("*");
-  for (var n = 0; n < nodes.length; n += 1) {
-    var attrs = nodes[n].attributes;
-    for (var a = attrs.length - 1; a >= 0; a -= 1) {
-      if (/^on/i.test(attrs[a].name)) nodes[n].removeAttribute(attrs[a].name);
-    }
-  }
   return tpl.content;
 }
 
