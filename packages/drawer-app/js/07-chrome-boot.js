@@ -347,9 +347,6 @@ function setSheetCollapsed(collapsed, persist) {
   requestAnimationFrame(syncSheetCssVar);
   if (persist !== false) saveDrawerUi({ sheetCollapsed: !!collapsed });
 }
-function toggleSheetCollapsed() {
-  setSheetCollapsed(true);
-}
 function toggleSourceEntry() {
   toggleDock('source');
 }
