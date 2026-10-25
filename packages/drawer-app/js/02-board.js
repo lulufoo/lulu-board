@@ -856,27 +856,8 @@ function boardPinnedTitleNode() {
     || (previewEl && previewEl.querySelector(".board-title-node, .board-html-header"))
     || null;
 }
-function boardTitleBottomLimit(canvas) {
-  // Boxes must stay below the (pinned) board title with a stable margin.
-  var margin = 20;
-  if (!canvas) return margin;
-  var title = typeof boardPinnedTitleNode === "function" ? boardPinnedTitleNode() : null;
-  if (!title) {
-    var root = canvas.closest(".board-render") || canvas.parentElement;
-    title = root && root.querySelector(".board-title-node, .board-html-header");
-  }
-  if (!title) return margin;
-  var cr = canvas.getBoundingClientRect();
-  var tr = title.getBoundingClientRect();
-  var sy = canvas.clientHeight && cr.height ? canvas.clientHeight / cr.height : 1;
-  // Map the fixed title's bottom into canvas local coordinates (accounts for pan/zoom).
-  var bottomInCanvas = (tr.bottom - cr.top) * sy;
-  if (!Number.isFinite(bottomInCanvas)) return margin;
-  return Math.max(margin, Math.ceil(bottomInCanvas + margin));
-}
 function clampBoardDragPosition(canvas, x, y) {
   // Unbounded like blank-canvas pan / grid — no title or origin floor.
-  // (boardTitleBottomLimit kept for optional callers; drag must not fight the stage.)
   return { x: x, y: y };
 }
 
