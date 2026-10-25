@@ -25,10 +25,12 @@ assert.match(html, /style-src 'self' 'unsafe-inline'/);
 assert.match(html, /script-src 'self'/);
 assert.doesNotMatch(html, /script-src 'self' 'unsafe-inline'/);
 assert.match(mount, /script, iframe, object, embed, link/);
-assert.match(mount, /frame\.className = "sketch-frame"/, 'Board owns an outer sketch frame');
-assert.match(mount, /host\.attachShadow\(\{ mode: "open" \}\)/, 'Sketch mounts in a shadow root');
-assert.match(mount, /shadowRoot\.appendChild\(sketchFragmentRoot\(fragment\)\)/, 'Fragment styles stay inside the shadow root');
-assert.match(mount, /shadowRoot\.querySelector\("\.sketch-board"\)/, 'Canvas measures the shadow-tree board');
-assert.doesNotMatch(mount, /host\.appendChild\(sketchFragmentRoot\(fragment\)\)/, 'Fragment does not mount in the Board document');
+assert.match(mount, /createElement\("iframe"\)/, 'Sketch mounts in its own document');
+assert.match(mount, /setAttribute\("sandbox", "allow-same-origin"\)/, 'Sketch iframe is sandboxed');
+assert.doesNotMatch(mount, /allow-scripts/, 'Sketch iframe never allows scripts');
+assert.match(mount, /frame\.srcdoc = /, 'Fragment is delivered through srcdoc');
+assert.match(mount, /pointer-events:none/, 'Canvas keeps pan and zoom over the sketch');
+assert.doesNotMatch(mount, /attachShadow/, 'Sketch does not share the Board document');
+assert.doesNotMatch(mount, /previewEl\.appendChild\(sketchFragmentRoot/, 'Fragment does not mount in the Board document');
 
 console.log('ok sketch template');
