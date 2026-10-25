@@ -1695,42 +1695,6 @@
     return grown;
   }
 
-  function evidenceParts(text) { const raw = String(text || "").trim(); const dash = raw.split(/\s+—\s+/, 2); if (dash.length > 1) return { title: dash[0], subtitle: dash[1] }; const paren = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(raw); return paren ? { title: paren[1].trim(), subtitle: paren[2].trim() } : { title: raw, subtitle: "" }; }
-  function iconKindForBox(box) { const key = (box.kind + " " + box.id + " " + box.title).toLowerCase(); if (box.kind === "diamond" || key.includes("executor interface")) return "diamond"; if (box.kind === "document" || /yaml|definition/.test(key)) return "document"; if (box.kind === "kit") return "shield"; if (box.kind === "env-local" || /local machine|host/.test(key)) return "laptop"; if (box.kind === "env-sbx" || /docker|sbx|container/.test(key)) return "whale"; if (box.kind === "artifact" || /artifact|record/.test(key)) return "artifact"; if (box.kind === "suite" || /suite|compare|track/.test(key)) return "chart"; if (box.kind === "evidence" || /evidence|runtime/.test(key)) return "evidence"; if (box.kind === "kit" || /kit|validator|runner/.test(key)) return "shield"; return "document"; }
-  function iconKindForItem(item, parent) { const key = String(item.text || "").toLowerCase(); if (parent && parent.kind === "artifact") return "check"; if (/validator|verify|check/.test(key)) return "shield"; if (/runner|executor|run/.test(key)) return "play"; if (/command|invocation|output|stdout|stderr/.test(key)) return "terminal"; if (/exit code|result/.test(key)) return "check"; if (/duration|wall clock|time/.test(key)) return "clock"; if (/compare|track|group|suite/.test(key)) return "chart"; if (/parameter|metadata|provenance|artifact|record|evidence/.test(key)) return "artifact"; if (parent && parent.kind === "env-local") return "laptop"; if (parent && parent.kind === "env-sbx") return "whale"; return "dot"; }
-  function iconElement(doc, kind) {
-    const el = doc.createElement("span");
-    el.className = "board-icon board-icon-" + kind;
-    el.setAttribute("aria-hidden", "true");
-    const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 20 20");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("fill", "none");
-    svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "1.55");
-    svg.setAttribute("stroke-linecap", "round");
-    svg.setAttribute("stroke-linejoin", "round");
-    svg.setAttribute("shape-rendering", "geometricPrecision");
-    svg.setAttribute("vector-effect", "non-scaling-stroke");
-    const marks = {
-      document: `<path d="M4.5 2.75h7l4 4v10a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-13a1 1 0 0 1 1-1Z"/><path d="M11.5 2.75v4h4M7 10h6M7 13.25h6M7 16.5h3.5"/>`,
-      shield: `<path d="m10 2.5 6.25 2.65v4.4c0 3.75-2.15 6.55-6.25 8.1-4.1-1.55-6.25-4.35-6.25-8.1v-4.4L10 2.5Z"/><path d="m6.8 10 2.05 2.05 4.35-4.35"/>`,
-      play: `<circle cx="10" cy="10" r="7.25"/><path d="m8.4 6.8 5.1 3.2-5.1 3.2V6.8Z" fill="currentColor" stroke="none"/>`,
-      laptop: `<rect x="3.25" y="3.25" width="13.5" height="9.5" rx="1"/><path d="M1.75 16.25h16.5M7.25 16.25l.75-3.5h4l.75 3.5"/>`,
-      whale: `<path d="M2.75 12.8c1-2.05 2.65-3.05 4.95-3.05h5.85V7.7h2.5c.75 0 1.25.55 1.25 1.3v.95c1.1.3 2 .9 2.7 1.8-.85 3.15-3.4 4.8-7.7 4.8H7.5c-2.2 0-3.7-1.25-4.75-3.75Z" fill="currentColor" stroke="none"/><path d="M6.2 9.75V7.8M8.4 9.75V6.8M10.6 9.75V7.8M17.5 10.15c.8-.25 1.55-.2 2.25.05" stroke="white" stroke-width="1.15"/><circle cx="16.65" cy="12.55" r=".55" fill="white" stroke="none"/>`,
-      artifact: `<path d="M7.35 3.4H5.8A1.8 1.8 0 0 0 4 5.2v1.7c0 1.35-.8 2.15-2.05 2.65C3.2 10.05 4 10.9 4 12.2v2.6a1.8 1.8 0 0 0 1.8 1.8h1.55M12.65 3.4h1.55a1.8 1.8 0 0 1 1.8 1.8v1.7c0 1.35.8 2.15 2.05 2.65-1.25.5-2.05 1.35-2.05 2.65v2.6a1.8 1.8 0 0 1-1.8 1.8h-1.55"/>`,
-      chart: `<path d="M3.25 16.75V4.25M3.25 16.75h14.5"/><path d="M6.25 14.75v-3.5h2.2v3.5M10.1 14.75V8.75h2.2v6M13.95 14.75V6h2.2v8.75" fill="currentColor" stroke="none"/>`,
-      evidence: `<rect x="3.25" y="3.25" width="13.5" height="13.5" rx="1.35"/><path d="M6.25 7.3h7.5M6.25 10h7.5M6.25 12.7h4.25" stroke-width="1.35"/>`,
-      terminal: `<path d="m4.25 6.5 3.5 3.5-3.5 3.5M10.5 13.5h5.25"/>`,
-      check: `<circle cx="10" cy="10" r="7.25"/><path d="m6.55 10 2.25 2.25 4.65-4.65"/>`,
-      clock: `<circle cx="10" cy="10" r="7.25"/><path d="M10 5.75v4.6l3.05 1.85"/>`,
-      dot: `<circle cx="10" cy="10" r="2.5" fill="currentColor" stroke="none"/>`,
-    };
-    svg.innerHTML = marks[kind] || marks.dot;
-    el.appendChild(svg);
-    return el;
-  }
-
   async function render(text, targetEl) {
     if (!targetEl || !targetEl.ownerDocument) throw new Error('BoxesRender.render requires a target element');
     if (!Layout) throw new Error('BoardLayout module is not loaded');
