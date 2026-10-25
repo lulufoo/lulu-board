@@ -17,15 +17,6 @@
   var PELE_FONT = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
   var EDGE_RGB_FALLBACK = "74, 53, 36";
 
-  function edgeTintOf(theme, alpha) {
-    var Themes = typeof BoardThemes !== "undefined" ? BoardThemes : null;
-    if (Themes && typeof Themes.edgeTint === "function") return Themes.edgeTint(theme, alpha);
-    var rgb = (theme && theme.edgeRgb) || EDGE_RGB_FALLBACK;
-    var a = alpha == null ? 0.14 : alpha;
-    var token = String(a).replace(/^0\./, ".");
-    return "rgba(" + rgb + ", " + token + ")";
-  }
-
   function mapPack(themeOrId) {
     var theme = themeOf(themeOrId);
     if (!theme) {

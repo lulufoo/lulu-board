@@ -413,11 +413,6 @@
     return { left, right, top, bottom };
   }
 
-  function sideAlongCoord(side, port) {
-    if (!port || !port.point) return NaN;
-    return side === 'left' || side === 'right' ? port.point.y : port.point.x;
-  }
-
   function runHits(horizontal, span0, span1, coord, obstacles) {
     const from = horizontal ? point(span0, coord) : point(coord, span0);
     const to = horizontal ? point(span1, coord) : point(coord, span1);

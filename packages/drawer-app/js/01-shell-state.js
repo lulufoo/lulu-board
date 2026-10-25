@@ -8,17 +8,6 @@ function headerByteString(value) {
   }
   return s;
 }
-function decodeHeaderByteString(value) {
-  var s = String(value == null ? "" : value);
-  if (s.indexOf("utf8''") === 0) {
-    try { return decodeURIComponent(s.slice(5)); } catch (_e) { return s.slice(5); }
-  }
-  // also accept bare percent-encoding
-  if (/%[0-9A-Fa-f]{2}/.test(s)) {
-    try { return decodeURIComponent(s); } catch (_e) { return s; }
-  }
-  return s;
-}
 
 function formatVersionLabel(version) {
   var v = Number(version);
@@ -133,10 +122,6 @@ function openPropsPanel() { openDock("props"); }
 function closePropsPanel() {
   openDock("");
 }
-function closePropsPanelCollapsedOnly() {
-  closePropsPanel();
-}
-function togglePropsPanel() { toggleDock("props"); }
 function toggleDock(tab) {
   if (currentDockTab() === tab) openDock("");
   else openDock(tab);
@@ -308,11 +293,6 @@ function setStatus(msg, isError = false) {
   el.textContent = msg;
   el.classList.toggle('err', !!isError);
 }
-function archiveBase(path) {
-  if (!path) return '—';
-  const parts = String(path).split(/[/\\]/);
-  return parts[parts.length - 1] || '—';
-}
 
 function applyDiagramLiveMeta(meta = {}) {
   if (meta && meta.id) liveDiagramId = String(meta.id);
@@ -458,9 +438,6 @@ function fitDiagramView() {
     var retained = key && Array.from(previewEl.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === key; });
     if (retained) retained.classList.add("board-selection", "canvas-selected");
   });
-}
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (ch) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
 }
 function updateDiagramChars() {
   setCharsLabel($('#diagramCharsPill'), [...diagramSourceEl.value].length);

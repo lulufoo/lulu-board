@@ -240,10 +240,6 @@ function placeMenuPanel(wrap) {
   });
 }
 
-function closeKindThemeMenu() {
-  /* Theme lives in Style dock — no popup. */
-}
-
 try { syncStyleLayoutSections(); } catch (_e) {}
 
 const kindThemeSelect = $('#kindThemeSelect');
@@ -350,9 +346,6 @@ function setSheetCollapsed(collapsed, persist) {
   app.classList.toggle('sheet-collapsed', !!collapsed);
   requestAnimationFrame(syncSheetCssVar);
   if (persist !== false) saveDrawerUi({ sheetCollapsed: !!collapsed });
-}
-function toggleSheetCollapsed() {
-  setSheetCollapsed(true);
 }
 function toggleSourceEntry() {
   toggleDock('source');
