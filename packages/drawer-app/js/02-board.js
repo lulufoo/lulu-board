@@ -504,31 +504,6 @@ function commitBoardIcon(nextIcon) {
 }
 
 
-function parseCssColor(raw) {
-  var s = String(raw || "").trim();
-  if (!s || s === "none" || s === "transparent") return null;
-  var m = s.match(/^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)(?:\s*,\s*([0-9.]+))?\s*\)$/i);
-  if (m) return { r: +m[1], g: +m[2], b: +m[3], a: m[4] != null ? +m[4] : 1 };
-  m = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  if (m) {
-    var h = m[1];
-    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
-    return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 };
-  }
-  return null;
-}
-function formatCssColor(c) {
-  if (!c) return "";
-  if (c.a != null && c.a < 1) return "rgba(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ", " + c.a + ")";
-  return "rgb(" + Math.round(c.r) + ", " + Math.round(c.g) + ", " + Math.round(c.b) + ")";
-}
-/** Darken toward black; hue stays from live theme stroke. */
-function darkenCssColor(raw, amount) {
-  var c = parseCssColor(raw);
-  if (!c) return raw;
-  var f = 1 - (amount == null ? 0.4 : amount);
-  return formatCssColor({ r: c.r * f, g: c.g * f, b: c.b * f, a: c.a });
-}
 function readBoardEdgePaint(el, attr) {
   if (!el) return "";
   var direct = (el.getAttribute && el.getAttribute(attr)) || "";
