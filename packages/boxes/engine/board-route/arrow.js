@@ -98,10 +98,6 @@
     return stretched;
   }
 
-  function ensureArrowRun(points) {
-    return paintArrowRun(points, null);
-  }
-
   function realizeArrowRun(points, obstacles, minRun, opts) {
     if (!points || points.length < 2 || !isOrthogonal(points)) return null;
     const enforce = enforceMinFrom(opts);
@@ -138,7 +134,6 @@
   }
 
   return {
-    ensureArrowRun,
     paintArrowRun,
     realizeArrowRun,
     drawableBatch,
