@@ -50,12 +50,6 @@ function applySharedDiagramRow(row) {
   if (typeof syncSourceDockLabel === "function") syncSourceDockLabel();
   if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
 }
-function applyShareVersion(row) {
-  if (!row || row.version == null) return;
-  diagramServerRev = Number(row.version) || diagramServerRev;
-  diagramLocalRev = diagramServerRev;
-  if (typeof syncCloudSaveChrome === "function") syncCloudSaveChrome();
-}
 async function loadSharedDiagramByHash(raw) {
   var shareId = typeof cloudShareIdFromHash === "function" ? cloudShareIdFromHash(raw) : "";
   if (!shareId) return false;
