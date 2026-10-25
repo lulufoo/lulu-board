@@ -39,7 +39,11 @@ function shellSyncTabs(sharedShown) {
   if (!bar || !body) return;
   bar.addEventListener("click", function (event) {
     var tab = event.target.closest ? event.target.closest(".shell-tab") : null;
-    if (tab) shellSelectTab(tab.getAttribute("data-shell-tab"));
+    if (tab) {
+      var name = tab.getAttribute("data-shell-tab");
+      if (typeof sentryCount === "function") sentryCount(name === "shared" ? "home.tab_shared" : "home.tab_mine");
+      shellSelectTab(name);
+    }
   });
   bar.addEventListener("keydown", function (event) {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;

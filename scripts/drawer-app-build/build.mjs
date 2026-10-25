@@ -60,6 +60,7 @@ for (const name of ['snapdom.mjs', 'pele.global.js', 'flowchart.min.js', 'mindma
 
 // Main module: concat domain files in order (still one ES module when loaded)
 const domain = [
+  '00-sentry-count.js',
   '00-style-line.js',
   '00-flowchart-type-scale.js',
   '00-pele-theme.js',
@@ -140,6 +141,35 @@ const supabaseBundle = await esbuild.build({
 });
 writeFileSync(path.join(vendorOut, 'supabase-client.js'), supabaseBundle.outputFiles[0].text);
 console.log(`ok supabase-client.js (${supabaseBundle.outputFiles[0].text.length} bytes)`);
+
+const sentry = {
+  dsn: String(process.env.LULU_BOARD_SENTRY_DSN || '').trim(),
+};
+writeFileSync(
+  path.join(vendorOut, 'sentry-config.js'),
+  'window.LuluBoardSentryConfig = Object.freeze(' + JSON.stringify(sentry) + ');\n'
+);
+const sentryBundle = await esbuild.build({
+  stdin: {
+    contents: [
+      'import * as Sentry from "@sentry/browser";',
+      'var dsn = window.LuluBoardSentryConfig && window.LuluBoardSentryConfig.dsn;',
+      'if (dsn) Sentry.init({ dsn: dsn, defaultIntegrations: false });',
+      'window.Sentry = Sentry;',
+    ].join('\n'),
+    resolveDir: boardBuildDir,
+    sourcefile: 'lulu-board-sentry-client.js',
+    loader: 'js',
+  },
+  bundle: true,
+  format: 'iife',
+  platform: 'browser',
+  target: 'es2020',
+  minify: true,
+  write: false,
+});
+writeFileSync(path.join(vendorOut, 'sentry-client.js'), sentryBundle.outputFiles[0].text);
+console.log(`ok sentry-client.js (${sentryBundle.outputFiles[0].text.length} bytes)`);
 
 for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   const src = path.join(srcDir, 'brand', name);

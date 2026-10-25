@@ -104,7 +104,10 @@ if (typeof module === "object" && module.exports) {
   window.shortcutsClose = close;
 
   var btn = document.getElementById("btnDiagramHelp");
-  if (btn) btn.addEventListener("click", open);
+  if (btn) btn.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("canvas.shortcuts");
+    open();
+  });
   var x = document.getElementById("btnShortcutsClose");
   if (x) x.addEventListener("click", close);
   var backdrop = document.getElementById("shortcutsBackdrop");

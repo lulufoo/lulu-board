@@ -763,6 +763,7 @@ async function deleteCloudGroup(groupId, diagramIds) {
   if (signIn && menu) {
     signIn.addEventListener("click", function () {
       if (signIn.disabled) return;
+      if (typeof sentryCount === "function") sentryCount("canvas.account");
       var open = !!menu.hidden;
       cloudCloseAccountMenus();
       menu.hidden = !open;
@@ -771,6 +772,7 @@ async function deleteCloudGroup(groupId, diagramIds) {
   }
   if (chip && sessionMenu) {
     chip.addEventListener("click", function () {
+      if (typeof sentryCount === "function") sentryCount("canvas.account");
       var open = !!sessionMenu.hidden;
       cloudCloseAccountMenus();
       sessionMenu.hidden = !open;
@@ -779,6 +781,12 @@ async function deleteCloudGroup(groupId, diagramIds) {
   }
   document.querySelectorAll("[data-shell-oauth]").forEach(function (button) {
     button.addEventListener("click", function () {
+      var provider = button.getAttribute("data-shell-oauth");
+      var onCanvas = !!(button.closest && button.closest("#shellCanvasAuthMenu"));
+      if (typeof sentryCount === "function") {
+        if (provider === "google") sentryCount(onCanvas ? "canvas.auth_google" : "home.auth_google");
+        else if (provider === "github") sentryCount(onCanvas ? "canvas.auth_github" : "home.auth_github");
+      }
       cloudCloseAccountMenus();
       void cloudSignIn(button.dataset.boardOauth);
     });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co; worker-src 'self' blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.googleusercontent.com https://avatars.githubusercontent.com; font-src 'self' data:; connect-src 'self' https://*.supabase.co https://*.ingest.sentry.io https://*.ingest.us.sentry.io; worker-src 'self' blob:">
 <title>Lulu Board</title>
 <link rel="icon" href="./favicon.ico?v=2" sizes="32x32">
 <link rel="icon" href="./favicon-32.png?v=2" type="image/png" sizes="32x32">
@@ -437,6 +437,8 @@
 <script src="./vendor/boxes.min.js"></script>
 <script src="./vendor/supabase-config.js"></script>
 <script src="./vendor/supabase-client.js"></script>
+<script src="./vendor/sentry-config.js"></script>
+<script src="./vendor/sentry-client.js"></script>
 <script type="module" src="./vendor/drawer-app.js"></script>
 
 <div class="copy-tip" id="copyTip" hidden>Copied successfully</div>

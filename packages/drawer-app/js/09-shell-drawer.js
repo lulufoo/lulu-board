@@ -25,9 +25,11 @@ var shellShares = shellShares || [];
     }
   }
   function setSearch(on) {
+    var wasOpen = !pop.hidden;
     pop.hidden = !on;
     scrim.hidden = !(on || !drawer.hidden);
     if (on) { setDrawer(false); scrim.hidden = false; if (input) { input.focus(); input.select(); } shellRenderSearch(); }
+    else if (wasOpen && typeof sentryCount === "function") sentryCount("canvas.search_close");
   }
   function closeAll(restoreFocus) {
     if (typeof window.shellCloseAuthMenu === "function") window.shellCloseAuthMenu();
@@ -38,11 +40,18 @@ var shellShares = shellShares || [];
   }
   window.shellCloseDrawer = function () { closeAll(false); };
 
-  toggle.addEventListener("click", function () { setSearch(false); setDrawer(drawer.hidden); });
+  toggle.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("canvas.drawer_toggle");
+    setSearch(false);
+    setDrawer(drawer.hidden);
+  });
   toggle.addEventListener("keydown", function (event) {
     if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggle.click(); }
   });
-  open.addEventListener("click", function () { setSearch(true); });
+  open.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("canvas.search");
+    setSearch(true);
+  });
   window.shellCloseSearch = function () { setSearch(false); };
   if (input) {
     input.addEventListener("input", function () { shellRenderSearch(); });
@@ -78,6 +87,7 @@ var shellShares = shellShares || [];
 
   var signOut = document.getElementById("btnShellSignOut");
   if (signOut) signOut.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("home.sign_out");
     closeAll(false);
     if (typeof cloudSignOut === "function") void cloudSignOut();
   });
@@ -93,6 +103,9 @@ var shellShares = shellShares || [];
   }
   window.shellCloseAuthMenu = function () { setAuthMenu(false); };
   if (account) account.addEventListener("click", function (event) {
+    if (typeof sentryCount === "function") {
+      sentryCount(account.classList.contains("is-signin") ? "home.sign_in" : "home.account");
+    }
     if (!account.classList.contains("is-signin")) return;
     event.stopPropagation();
     setAuthMenu(!!authMenu && authMenu.hidden);
@@ -107,7 +120,14 @@ var shellShares = shellShares || [];
     }, true);
   }
   var newBoard = document.getElementById("shellNewDiagram");
-  if (newBoard) newBoard.addEventListener("click", function () { void shellNewBlankDiagram(); });
+  if (newBoard) newBoard.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("home.new_diagram");
+    void shellNewBlankDiagram();
+  });
+  var intro = document.getElementById("linkBoardIntro");
+  if (intro) intro.addEventListener("click", function () {
+    if (typeof sentryCount === "function") sentryCount("home.product_intro");
+  });
   var shareBtn = document.getElementById("shellShareDiagram");
   if (shareBtn) shareBtn.addEventListener("click", function () {
     if (typeof shareDialogOpenCurrent === "function") shareDialogOpenCurrent(false);
@@ -262,6 +282,7 @@ function shellRenderMine(groups) {
     row.appendChild(title);
     row.appendChild(meta);
     row.addEventListener("click", function () {
+      if (typeof sentryCount === "function") sentryCount("home.list_open");
       if (typeof window.shellCloseDrawer === "function") window.shellCloseDrawer();
       if (preview || isCurrent || !group.faceDiagramId) return;
       if (typeof cloudSwitchToDiagram === "function") void cloudSwitchToDiagram(group.faceDiagramId, group.groupId);
@@ -274,6 +295,7 @@ function shellRenderMine(groups) {
     del.textContent = "×";
     del.addEventListener("click", function (event) {
       event.stopPropagation();
+      if (typeof sentryCount === "function") sentryCount("home.delete_group");
       if (preview || typeof deleteCloudGroup !== "function") return;
       void deleteCloudGroup(group.groupId, group.diagramIds);
     });
