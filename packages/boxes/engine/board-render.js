@@ -869,57 +869,6 @@
     if (View) View.adopt(board);
     return editResult(board, nodeSelectionIn(moving.parent, moving.node));
   }
-  function reparentNode(source, selection, targetId) {
-    if (!selection) fail("select a Board node before reparenting");
-    var board = parse(source), target = targetId == null || targetId === "" ? null : findBoxWithParent(board, targetId);
-    if (targetId != null && targetId !== "" && !target) fail("drop target Board box was not found");
-    if (selection.kind === "box") {
-      var moving = findBoxWithParent(board, selection.id);
-      if (!moving) fail("selected Board box was not found");
-      if (target && (target.node.id === moving.node.id || containsBox(moving.node, target.node.id))) fail("cannot reparent a box into itself or its descendant");
-      if (target && moving.parent === target.node) return unchangedEdit(source, selection);
-      if (!target && !moving.parent) return unchangedEdit(source, selection);
-      if (moving.parent) removeKid(moving.parent, moving.node);
-      else moving.list.splice(moving.list.indexOf(moving.node), 1);
-      if (target) appendKid(target.node, moving.node);
-      else if (View) View.pushTop(board, moving.node);
-      else board.boxes.push(moving.node);
-      if (View) View.adopt(board);
-      board.layout.constraints = (board.layout.constraints || []).filter(function(constraint) { return constraint.source !== moving.node.id; });
-      return editResult(board, selection);
-    }
-    if (selection.kind === "item") {
-      var item = findNode(board, selection);
-      if (!item || (View && !View.isItem(item))) fail("selected Board item was not found");
-      if (!item.id) item.id = nextItemId(board);
-      if (View) View.mark(item, "item");
-      if (!target) {
-        if (!selection.boxId) return unchangedEdit(source, selection);
-        var sourceBox = findBoxWithParent(board, selection.boxId);
-        var itemIndex = Number(selection.index);
-        if (!sourceBox || !Number.isInteger(itemIndex)) fail("selected Board item parent was not found");
-        removeKid(sourceBox.node, item);
-        if (View) View.pushTop(board, item); else (board.boxes || (board.boxes = [])).push(item);
-        if (View) View.adopt(board);
-        var constraints = board.layout.constraints || (board.layout.constraints = []);
-        constraints.push({ source: item.id, sourceEdge: "start", target: "parent", targetEdge: "start", gap: 32 });
-        constraints.push({ source: item.id, sourceEdge: "top", target: "parent", targetEdge: "top", gap: 32 });
-        return editResult(board, { kind: "item", key: "item:" + item.id, id: item.id, boxId: null, index: -1 });
-      }
-      if (selection.boxId) {
-        var fromBox = findBoxWithParent(board, selection.boxId), fromIndex = Number(selection.index);
-        if (!fromBox) fail("selected Board item parent was not found");
-        if (fromBox.node.id === target.node.id) return unchangedEdit(source, selection);
-        removeKid(fromBox.node, item);
-      } else if (View) View.removeTop(board, item);
-      appendKid(target.node, item);
-      board.layout.constraints = (board.layout.constraints || []).filter(function(constraint) { return constraint.source !== item.id; });
-      if (View) View.adopt(board);
-      var nextIndex = target.node.items.length - 1;
-      return editResult(board, { kind: "item", key: "item:" + target.node.id + ":" + nextIndex, boxId: target.node.id, index: nextIndex });
-    }
-    fail("unsupported Board node selection");
-  }
   function updateTitle(source, selection, title) {
     var board = parse(source);
     var next = String(title == null ? "" : title);
@@ -2203,5 +2152,5 @@
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, reparentNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
+  return { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updateLinkLabel: updateLinkTitle, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoardParseError };
 });
