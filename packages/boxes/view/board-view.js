@@ -98,7 +98,6 @@
       this.data = data || {};
     }
     get id() { return this.data.id || null; }
-    roleName() { return 'view'; }
     typeName() { return ''; }
     mount() { throw new Error('Board view is abstract'); }
     applyFrame(el, frame) {

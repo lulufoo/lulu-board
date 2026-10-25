@@ -13,7 +13,6 @@
   }
 
   class Box extends View.Node {
-    roleName() { return 'box'; }
     typeName() { return 'card'; }
 
     decorate() {}

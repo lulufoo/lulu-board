@@ -90,7 +90,6 @@
   }
 
   class Item extends View.Node {
-    roleName() { return 'item'; }
     typeName() { return 'chip'; }
     framed() { return true; }
 
