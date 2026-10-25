@@ -8,6 +8,10 @@ function sketchWorldBounds(el) {
   return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
 }
 
+function sketchShadowCss(css) {
+  return String(css || "").replace(/:root\b/gi, ":host");
+}
+
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
@@ -19,6 +23,10 @@ function sketchFragmentRoot(html) {
     for (var a = attrs.length - 1; a >= 0; a -= 1) {
       if (/^on/i.test(attrs[a].name)) nodes[n].removeAttribute(attrs[a].name);
     }
+  }
+  var styles = tpl.content.querySelectorAll("style");
+  for (var s = 0; s < styles.length; s += 1) {
+    styles[s].textContent = sketchShadowCss(styles[s].textContent);
   }
   return tpl.content;
 }
@@ -52,3 +60,5 @@ function renderSketch(opts) {
   setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
   finishCanvasView(opts);
 }
+
+if (typeof module === "object" && module.exports) module.exports = { sketchShadowCss: sketchShadowCss };
