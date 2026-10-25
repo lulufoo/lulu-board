@@ -23,9 +23,6 @@
   const FACTOR = 1.125;
   const MIN_PX = 8;
 
-  function get() {
-    return SCALE;
-  }
   function clampStep(raw) {
     const n = Math.round(Number(raw));
     if (!Number.isFinite(n)) return 0;
@@ -84,7 +81,7 @@
 
   return {
     SCALE, FONT_FAMILY, TITLE_WEIGHT, STEP_MIN, STEP_MAX, FACTOR, MIN_PX,
-    get, clampStep, factor, px, sizeForTitle, sizeForCard, sizeForLabel, sizes,
+    clampStep, factor, px, sizeForTitle, sizeForCard, sizeForLabel, sizes,
     stepFromStyle, applyBoxTitleStep, applyItemStep,
   };
 });
