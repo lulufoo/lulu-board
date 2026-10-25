@@ -272,13 +272,21 @@
     mermaidOpen = false;
     noteRailPinned = "";
     noteRailLock = 0;
-    if (els.filter) els.filter.value = "";
+    if (els.filter) {
+      els.filter.value = "";
+      els.filter._sentryFilterCounted = false;
+    }
     var done = false;
     function finish(action, kind) {
       if (done) return;
       done = true;
       createKindWait = null;
       createKindCleanup();
+      if (action === "pick" && typeof sentryCount === "function") {
+        if (kind === "welcome") sentryCount("create.welcome");
+        else if (kind === "sketch") sentryCount("create.sketch");
+        else if (kind === "boxes") sentryCount("create.boxes");
+      }
       if (action === "pick" && typeof opts.onPick === "function") opts.onPick(kind);
       if (action === "cancel" && typeof opts.onCancel === "function") opts.onCancel();
     }
@@ -305,6 +313,7 @@
       var t = event && event.target;
       if (!t || !t.getAttribute || t.getAttribute("data-create-kind-group") !== "Mermaid") return;
       mermaidOpen = !!t.open;
+      if (typeof sentryCount === "function") sentryCount("create.mermaid_group");
       if (t.open) {
         var first = els.list.querySelector(".create-kind-note-block");
         pinCreateKindNote((first && first.getAttribute("data-create-kind-note")) || "", els.list);
@@ -317,7 +326,13 @@
       hoverCreateKindRow(els.list, createKindRowFromNode(event.target, els.list));
     };
     els.list._createKindPointerLeave = function () { clearCreateKindHover(els.list); };
-    els.filter._createKindFilter = function () { paintCreateKindList(); };
+    els.filter._createKindFilter = function () {
+      if (els.filter && els.filter.value.trim() && !els.filter._sentryFilterCounted && typeof sentryCount === "function") {
+        els.filter._sentryFilterCounted = true;
+        sentryCount("create.filter");
+      }
+      paintCreateKindList();
+    };
     els.backdrop._createKindCancel = function () { finish("cancel"); };
     els.list.addEventListener("click", els.list._createKindPick);
     els.list.addEventListener("toggle", els.list._createKindToggle, true);

@@ -88,7 +88,12 @@ if (boardIconSec) boardIconSec.addEventListener("change", function() {
 (function(){
   if (diagramDock) {
     diagramDock.querySelectorAll("[data-dock]").forEach(function(btn) {
-      btn.addEventListener("click", function() { toggleDock(btn.getAttribute("data-dock")); });
+      btn.addEventListener("click", function() {
+        var dock = btn.getAttribute("data-dock");
+        var names = { props: "canvas.dock_props", style: "canvas.dock_style", export: "canvas.dock_export" };
+        if (names[dock] && typeof sentryCount === "function") sentryCount(names[dock]);
+        toggleDock(dock);
+      });
     });
   }
   try { openDock(""); } catch (_) {}

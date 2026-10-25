@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@sentry/browser": "^11.9.0",
     "@supabase/supabase-js": "^2.116.0",
     "esbuild": "^0.25.0"
   }

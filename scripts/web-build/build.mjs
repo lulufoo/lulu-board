@@ -33,6 +33,8 @@ const vendorFiles = [
   'drawer-app-early-hydrate.js',
   'supabase-config.js',
   'supabase-client.js',
+  'sentry-config.js',
+  'sentry-client.js',
   'snapdom.mjs',
   'pele.global.js',
   'flowchart.min.js',

@@ -49,11 +49,24 @@
     }, function () {});
   }
 
+  function sentryCount(name) {
+    var S = window.Sentry;
+    if (!S || !S.metrics || typeof S.metrics.count !== "function") return;
+    if (!name) return;
+    S.metrics.count(name, 1);
+  }
+
+  sentryCount("landing.view");
   showAuthState(readStoredSession());
   Array.prototype.forEach.call(document.querySelectorAll("[data-copy]"), function (button) {
     button.addEventListener("click", copyText);
   });
   Array.prototype.forEach.call(document.querySelectorAll("[data-open-sign-in]"), function (link) {
     link.addEventListener("click", markSignInIntent);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-sentry-count]"), function (node) {
+    node.addEventListener("click", function () {
+      sentryCount(node.getAttribute("data-sentry-count"));
+    });
   });
 })();
