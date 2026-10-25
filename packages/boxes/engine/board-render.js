@@ -441,7 +441,6 @@
     return props;
   }
   function merge(target, source) { Object.keys(source || {}).forEach((key) => { target[key] = source[key]; }); return target; }
-  function stripComma(value) { return String(value || '').replace(/,$/, ''); }
 
   function parse(text) {
     const source = String(text == null ? '' : text).replace(/\r\n?/g, '\n');
@@ -1469,13 +1468,6 @@
     return editResult(board, null);
   }
 
-  function esc(value) {
-    return String(value == null ? '' : value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  }
-  function cssEscape(value) {
-    if (typeof CSS !== 'undefined' && CSS.escape) return CSS.escape(value);
-    return String(value).replace(/[^a-zA-Z0-9_-]/g, (ch) => `\\${ch.charCodeAt(0).toString(16)} `);
-  }
   function findBoxById(nodes, id) {
     for (const n of nodes || []) {
       if (n.id === id) return n;
