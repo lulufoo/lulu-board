@@ -38,11 +38,15 @@ function renderSketch(opts) {
     finishCanvasView(opts);
     return;
   }
+  var frame = document.createElement("div");
+  frame.className = "sketch-frame";
   var host = document.createElement("div");
   host.className = "sketch-host";
-  host.appendChild(sketchFragmentRoot(fragment));
-  previewEl.appendChild(host);
-  var board = host.querySelector(".sketch-board") || host;
+  var shadowRoot = host.attachShadow({ mode: "open" });
+  shadowRoot.appendChild(sketchFragmentRoot(fragment));
+  frame.appendChild(host);
+  previewEl.appendChild(frame);
+  var board = shadowRoot.querySelector(".sketch-board") || host;
   bindCanvasWorld(board, function () { return sketchWorldBounds(board); });
   showDiagramError("");
   setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
