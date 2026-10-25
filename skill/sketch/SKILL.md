@@ -27,9 +27,19 @@ Three lines. Payloads have no braces.
 
 The fragment is the picture.
 
-1. Contains `<style>` and markup. No network.
+1. Contains `<style>` and markup.
 2. Excludes `<!doctype>`, `<html>`, `<head>`, and `<body>`.
-3. Sketch does not run scripts. Do not put a script in the fragment.
+
+## Render Environment
+
+The viewer mounts the fragment in its own document. Write for this environment.
+
+1. The fragment renders in a sandboxed `iframe`. Board's CSS, variables, and fonts do not reach it. Its CSS does not reach Board.
+2. Board supplies `html` and `body` with zero margin and a transparent background. `:root`, `html`, and `body` selectors act on that document.
+3. Sketch does not run scripts. `on*` attributes and `javascript:` URLs do nothing. The picture is static.
+4. The frame takes no pointer input. The canvas pans and zooms over it. Buttons, inputs, and links draw as pictures with no hover or click.
+5. No network. Put every style, shape, and glyph in the fragment.
+6. The frame width follows the canvas. A root wider than the canvas widens the frame. The frame height fits the content. Give the root element an explicit width for a stable picture.
 
 ## Show
 
