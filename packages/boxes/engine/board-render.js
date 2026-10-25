@@ -46,9 +46,6 @@
   function decodeStylePayload(b64) {
     return StyleToken.decodeStylePayload(b64);
   }
-  function clampItemCap(value) {
-    return StyleToken.clampItemCap(value);
-  }
   function clampTypeStep(value) {
     return StyleToken.clampTypeStep(value);
   }
