@@ -11,15 +11,9 @@ function sketchWorldBounds(el) {
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
-  var banned = tpl.content.querySelectorAll("script, iframe, object, embed, link");
+  // Scripts are not filtered here. The sandboxed frame lets the browser refuse every script, handler, and javascript: URL.
+  var banned = tpl.content.querySelectorAll("iframe, object, embed, link");
   for (var i = banned.length - 1; i >= 0; i -= 1) banned[i].remove();
-  var nodes = tpl.content.querySelectorAll("*");
-  for (var n = 0; n < nodes.length; n += 1) {
-    var attrs = nodes[n].attributes;
-    for (var a = attrs.length - 1; a >= 0; a -= 1) {
-      if (/^on/i.test(attrs[a].name)) nodes[n].removeAttribute(attrs[a].name);
-    }
-  }
   return tpl.content;
 }
 
@@ -38,17 +32,34 @@ function renderSketch(opts) {
     finishCanvasView(opts);
     return;
   }
-  var frame = document.createElement("div");
+  var holder = document.createElement("div");
+  holder.appendChild(sketchFragmentRoot(fragment));
+  var frame = document.createElement("iframe");
   frame.className = "sketch-frame";
-  var host = document.createElement("div");
-  host.className = "sketch-host";
-  var shadowRoot = host.attachShadow({ mode: "open" });
-  shadowRoot.appendChild(sketchFragmentRoot(fragment));
-  frame.appendChild(host);
+  // The sandbox grants no script permission: the browser refuses every script, handler, and javascript: URL.
+  // same-origin only lets Board read the size; nothing in the frame can run.
+  frame.setAttribute("sandbox", "allow-same-origin");
+  frame.setAttribute("scrolling", "no");
+  // Width follows #preview exactly like the fragment did as a block, so layout and saved cameras match.
+  frame.style.cssText = "display:block;border:0;width:100%;height:800px;background:transparent;pointer-events:none;";
+  frame.srcdoc = "<!doctype html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body>" + holder.innerHTML + "</body></html>";
+  function fitHeight() {
+    var doc = frame.contentDocument;
+    if (!frame.isConnected || !doc || !doc.body) return;
+    // A root wider than the canvas widens the frame, so nothing is clipped.
+    var w = Math.ceil(doc.documentElement.scrollWidth);
+    if (w > frame.clientWidth) frame.style.minWidth = w + "px";
+    var h = Math.ceil(Math.max(doc.body.getBoundingClientRect().height, doc.body.scrollHeight));
+    if (h > 0 && h !== frame.offsetHeight) frame.style.height = h + "px";
+  }
+  frame.addEventListener("load", function () {
+    if (!frame.isConnected) return;
+    fitHeight();
+    if (typeof ResizeObserver === "function") new ResizeObserver(fitHeight).observe(frame);
+    bindCanvasWorld(frame, function () { return sketchWorldBounds(frame); });
+    showDiagramError("");
+    setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
+    finishCanvasView(opts);
+  });
   previewEl.appendChild(frame);
-  var board = shadowRoot.querySelector(".sketch-board") || host;
-  bindCanvasWorld(board, function () { return sketchWorldBounds(board); });
-  showDiagramError("");
-  setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
-  finishCanvasView(opts);
 }
