@@ -54,12 +54,18 @@ var diagramSwapSeq = 0;
 
 // Hide the drawing before a whole-diagram replace. The dotted canvas stays.
 // No drawing yet (first paint): leave it to the boot hide.
+// Every paint bumps the seq so a replaced iframe cannot leave hold stuck.
 function holdDiagramSwap(opts) {
-  if (!opts || !opts.swap || !document.documentElement) return;
+  opts = opts || {};
+  var html = document.documentElement;
   var preview = typeof previewEl !== "undefined" ? previewEl : null;
-  if (!preview || !preview.childElementCount) return;
-  opts.swapToken = ++diagramSwapSeq;
-  document.documentElement.dataset.diagramSwap = "hold";
+  diagramSwapSeq += 1;
+  if (!opts.swap || !html || !preview || !preview.childElementCount) {
+    if (html && html.dataset.diagramSwap) delete html.dataset.diagramSwap;
+    return;
+  }
+  opts.swapToken = diagramSwapSeq;
+  html.dataset.diagramSwap = "hold";
 }
 
 // Camera is applied on the second frame. Arm the fade then, and show on the next.
@@ -172,20 +178,27 @@ function canvasSvgBounds(svg) {
   return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
 }
 
+function previewHasPaint(root) {
+  return !!(root && root.querySelector(".board-render, iframe.sketch-frame, svg"));
+}
+
 function finishCanvasView(opts) {
   opts = opts || {};
-  if (opts.fit) {
-    fitDiagramView();
-  } else if (opts.restoreView) {
-    applyRestoredDiagramView();
-  } else {
-    applyTransform();
+  try {
+    if (opts.fit) {
+      fitDiagramView();
+    } else if (opts.restoreView) {
+      applyRestoredDiagramView();
+    } else {
+      applyTransform();
+    }
+    pinDiagramTitle();
+  } finally {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { clearDrawerBoot(); });
+    });
+    releaseDiagramSwap(opts);
   }
-  pinDiagramTitle();
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { clearDrawerBoot(); });
-  });
-  releaseDiagramSwap(opts);
 }
 
 function syncMermaidStyleChrome(body) {
@@ -612,10 +625,10 @@ async function bootstrapDiagram() {
       var finish = function () { if (done) return; done = true; resolve(); };
       try {
         renderDiagram({ fit: false, restoreView: true });
-        // renderDiagram is async via promise; wait for board-render or timeout
+        // Boxes, sketch, and Pele/mindmap each paint a different root.
         var turns = 0;
         (function wait() {
-          if (previewEl && previewEl.querySelector(".board-render")) return finish();
+          if (previewHasPaint(previewEl)) return finish();
           if (++turns > 120) return finish();
           requestAnimationFrame(wait);
         })();
@@ -636,6 +649,7 @@ export {
   clearDrawerBoot,
   holdDiagramSwap,
   releaseDiagramSwap,
+  previewHasPaint,
   pinDiagramTitle,
   sourceBodyForKind,
   applyDrawerKind,

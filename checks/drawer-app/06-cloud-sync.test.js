@@ -358,9 +358,13 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(load, /emit\("renderDiagram", \{ fit: false, restoreView: true, swap: true \}\)/, 'a switched board hides the drawing before paint');
   assert.match(boardJs, /function holdDiagramSwap/, 'switch can hide the drawing');
   assert.match(boardJs, /!preview \|\| !preview\.childElementCount/, 'first paint does not hide an empty drawing');
+  assert.match(boardJs, /diagramSwapSeq \+= 1/, 'a later paint invalidates an in-flight hide');
+  assert.match(boardJs, /if \(html && html\.dataset\.diagramSwap\) delete html\.dataset\.diagramSwap/, 'a paint without swap drops a leftover hide');
   assert.match(boardJs, /dataset\.diagramSwap = "hold"/, 'the hide is instant');
   assert.match(boardJs, /dataset\.diagramSwap = "in"/, 'the drawing fades back in');
   assert.match(boardJs, /function finishCanvasView[\s\S]*releaseDiagramSwap\(opts\)/, 'other kinds release the hide after the camera');
+  assert.match(boardJs, /function previewHasPaint/, 'boot wait is not boxes-only');
+  assert.match(boardJs, /\.board-render, iframe\.sketch-frame, svg/, 'sketch and svg count as painted');
   const css = read('packages/drawer-app/css/02-chrome.css');
   assert.match(css, /html\[data-diagram-swap="hold"\] #preview \{[^}]*opacity:\s*0/, 'only the drawing is hidden');
   assert.match(css, /html\[data-diagram-swap="in"\] #preview \{[^}]*transition:\s*opacity 150ms/, 'the drawing fades in');

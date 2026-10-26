@@ -36,6 +36,7 @@ import {
   bootstrapDiagram,
   loadDiagramPolled,
   clearDrawerBoot,
+  previewHasPaint,
 } from '../kinds/diagram.js';
 import { copyText, showCopyTip } from '../export/render-io.js';
 import { exportDiagramFile, exportPng } from '../export/export-png.js';
@@ -468,8 +469,7 @@ function setMode(mode, opts) {
   try { setKindUI(diagramSourceEl && diagramSourceEl.value); } catch (_e) {}
   closeExportMenu();
   if (opts.restore) setDrawerUiRestoreLock(true);
-  var hasBoard = !!(previewEl && previewEl.querySelector(".board-render"));
-  var skipBoard = !!(opts.restore && hasBoard);
+  var skipBoard = !!(opts.restore && previewHasPaint(previewEl));
   if (!skipBoard) {
     renderDiagram({ fit: false, restoreView: true });
     if (typeof cloudRefreshGroups === "function") void cloudRefreshGroups();
