@@ -68,16 +68,23 @@ export function renderSketch(opts) {
     var h = Math.ceil(Math.max(doc.body.getBoundingClientRect().height, doc.body.scrollHeight));
     if (h > 0 && h !== frame.offsetHeight) frame.style.height = h + "px";
   }
-  frame.addEventListener("load", function () {
-    if (!frame.isConnected) return;
+  var finished = false;
+  function onReady() {
+    if (finished || !frame.isConnected) return;
+    finished = true;
     fitHeight();
     if (typeof ResizeObserver === "function") new ResizeObserver(fitHeight).observe(frame);
     bindWorld(frame, function () { return sketchWorldBounds(frame); });
     showDiagramError("");
     setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
     emit("finishCanvasView", opts);
-  });
+  }
+  frame.addEventListener("load", onReady);
   previewEl.appendChild(frame);
+  try {
+    var readyDoc = frame.contentDocument;
+    if (readyDoc && readyDoc.readyState === "complete" && readyDoc.body) onReady();
+  } catch (_e) {}
 }
 
 const Sketch = {

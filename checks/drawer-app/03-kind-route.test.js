@@ -20,6 +20,13 @@ assert.doesNotMatch(boardJs, /Only flowchart and mindmap can be rendered/, 'Desi
 assert.match(boardJs, /kind === "flowchart"/, 'renderDiagram dispatches flowchart');
 assert.match(boardJs, /kind === "mindmap"/, 'renderDiagram dispatches mindmap');
 assert.match(boardJs, /kind === "sketch"/, 'renderDiagram dispatches sketch');
+{
+  const sketch = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/sketch.js'), 'utf8');
+  const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
+  assert.match(sketch, /readyState === "complete"/, 'srcdoc that is already loaded still finishes the camera');
+  assert.match(sketch, /var finished = false/, 'iframe load and readyState do not finish twice');
+  assert.match(boot, /previewHasPaint\(previewEl\)/, 'restore skip accepts sketch paint');
+}
 assert.match(boardJs, /isDesignKind\(kind\)/, 'renderDiagram dispatches Design through Pele');
 assert.match(boardJs, /function renderDesignPele/, 'Design has a shared Pele path');
 assert.match(boardJs, /function paintPeleSvg/, 'flowchart and Design share Pele paint');
