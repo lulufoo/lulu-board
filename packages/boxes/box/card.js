@@ -1,8 +1,6 @@
 /* Concrete box type=card. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Box) throw new Error('BoardBox must load before box-card.js');
+/* Concrete box type=card. */
+import View from '../view/view.js';
 
   class BoxCard extends View.Box {
     typeName() { return 'card'; }
@@ -15,4 +13,4 @@
   }
 
   View.Types.registerBox('card', BoxCard);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { BoxCard };

@@ -1,8 +1,6 @@
 /* Concrete box type=container. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Box) throw new Error('BoardBox must load before box-container.js');
+/* Concrete box type=container. */
+import View from '../view/view.js';
 
   class BoxContainer extends View.Box {
     typeName() { return 'container'; }
@@ -13,4 +11,4 @@
   }
 
   View.Types.registerBox('container', BoxContainer);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { BoxContainer };

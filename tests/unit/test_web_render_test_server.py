@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 REPO = Path(__file__).resolve().parents[2]
-SCRIPT = REPO / "scripts" / "web-render-test.mjs"
+SCRIPT = REPO / "scripts" / "dev" / "web-render-test.mjs"
 NODE = shutil.which("node")
 
 

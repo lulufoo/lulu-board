@@ -1,0 +1,16 @@
+{
+  "name": "lulu-board",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-web/build.mjs",
+    "test": "node scripts/run-tests.mjs",
+    "check": "node scripts/run-checks.mjs"
+  },
+  "devDependencies": {
+    "@sentry/browser": "^11.9.0",
+    "@supabase/supabase-js": "^2.116.0",
+    "dependency-cruiser": "^17.4.3",
+    "esbuild": "^0.25.0"
+  }
+}

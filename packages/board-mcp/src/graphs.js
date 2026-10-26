@@ -1,56 +1,16 @@
 /* board-mcp/graphs.js — PostgREST graph reads and writes with CAS */
 
-const GRAPH_ID_RE = /^b_[0-9a-f]{8}$/;
+import {
+  assertGraphId,
+  boardTitleFromBody,
+  newGraphId,
+  stripPersistedMeta,
+} from "../../board-core/document-format.js";
+
+export { assertGraphId, boardTitleFromBody, newGraphId, stripPersistedMeta };
+
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
 const GRAPH_PUBLIC_SELECT = "graph_id,title,bmd,version,updated_at,group_id";
-const META_LINE = /^(?:%%\s*)?meta\s+(\S+|{.*})\s*$/;
-
-export function stripPersistedMeta(text) {
-  var raw = String(text == null ? "" : text).replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  var lines = raw.split("\n");
-  var i = 0;
-  while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
-  while (i < lines.length) {
-    if (!META_LINE.test(String(lines[i]).trim())) break;
-    i += 1;
-    while (i < lines.length && !String(lines[i] || "").trim()) i += 1;
-  }
-  return lines.slice(i).join("\n");
-}
-
-function sketchTitleFromLine(line) {
-  var hit = /^\s*sketch\s+"([^"]*)"/.exec(String(line || ""));
-  return hit ? hit[1] : "";
-}
-
-export function boardTitleFromBody(body) {
-  var text = String(body || "");
-  var board = /^\s*boxes\s+"([^"]*)"/.exec(text);
-  if (board) return board[1];
-  var lines = text.split(/\r?\n/);
-  var i;
-  for (i = 0; i < lines.length; i += 1) {
-    var sketch = sketchTitleFromLine(lines[i]);
-    if (sketch) return sketch;
-  }
-  for (i = 0; i < lines.length; i += 1) {
-    var mermaid = /^%%\s*title\s*:?\s*(.+?)\s*$/i.exec(String(lines[i] || "").trim());
-    if (!mermaid) continue;
-    var title = mermaid[1].replace(/^["']|["']$/g, "").trim();
-    if (title) return title;
-  }
-  return "";
-}
-
-export function newGraphId(bytes) {
-  var raw = bytes || new Uint8Array(4);
-  if (!bytes && globalThis.crypto && globalThis.crypto.getRandomValues) {
-    globalThis.crypto.getRandomValues(raw);
-  }
-  var hex = "";
-  for (var i = 0; i < raw.length; i += 1) hex += ("0" + raw[i].toString(16)).slice(-2);
-  return "b_" + hex;
-}
 
 export function newGroupId(bytes) {
   var raw = bytes || new Uint8Array(4);
@@ -60,12 +20,6 @@ export function newGroupId(bytes) {
   var hex = "";
   for (var i = 0; i < raw.length; i += 1) hex += ("0" + raw[i].toString(16)).slice(-2);
   return "g_" + hex;
-}
-
-export function assertGraphId(graphId) {
-  var id = String(graphId || "").trim();
-  if (!GRAPH_ID_RE.test(id)) throw new Error("invalid board id");
-  return id;
 }
 
 export function assertGroupId(groupId) {

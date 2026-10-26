@@ -1,0 +1,10 @@
+{
+  "name": "board-core",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./style-token.js": "./style-token.js",
+    "./document-format.js": "./document-format.js"
+  }
+}

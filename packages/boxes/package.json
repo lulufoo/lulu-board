@@ -1,0 +1,9 @@
+{
+  "name": "boxes",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./engine/render.js": "./engine/render.js"
+  }
+}

@@ -1,7 +1,10 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
-const Head = require('../../packages/drawer-app/js/00-early-head.js');
-const Route = require('../../packages/drawer-app/js/00-cloud-route.js');
+const Head = require('../../packages/drawer-app/src/core/early-head.js').default;
+const Route = require('../../packages/drawer-app/src/core/cloud-route.js').default;
 
 function fakeStorage(entries) {
   const keys = Object.keys(entries);
@@ -202,12 +205,13 @@ assert.strictEqual(Head.blankStartPlan({ pathname: '/start/', search: '', hash: 
 {
   const fs = require('fs');
   const path = require('path');
-  const early = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/00-early-head.js'), 'utf8');
-  assert.doesNotMatch(early, /function isStartPath|function rewriteStartToRoot/, 'LB-357: early-head source has no /start helpers');
-  assert.doesNotMatch(early, /location\.replace\(\s*\/\s*\+|pathname\s*===\s*["']\/start/, 'LB-357: early-head does not redirect /start');
+  const early = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/core/early-head.js'), 'utf8');
+  const boot = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/core/early-head-boot.js'), 'utf8');
+  assert.doesNotMatch(early + boot, /function isStartPath|function rewriteStartToRoot/, 'LB-357: early-head source has no /start helpers');
+  assert.doesNotMatch(early + boot, /location\.replace\(\s*\/\s*\+|pathname\s*===\s*["']\/start/, 'LB-357: early-head does not redirect /start');
   assert.match(early, /pickKind: true/, 'blank-start asks for a kind instead of writing #z');
-  assert.match(early, /if \(plan\.hash\)/, 'early-head only writes a hash when the plan has one');
-  assert.match(early, /dataset\.blankStartKind = "1"/, 'blank-start flags the kind dialog');
+  assert.match(boot, /if \(plan\.hash\)/, 'early-head only writes a hash when the plan has one');
+  assert.match(boot, /dataset\.blankStartKind = "1"/, 'blank-start flags the kind dialog');
 }
 
 console.log('ok landing-route');

@@ -1,0 +1,245 @@
+/* Internal box base. Concrete types live in box-*.js. */
+import View from '../view/view.js';
+import * as Scale from '../themes/type-scale.js';
+import * as Rotation from '../themes/rotation.js';
+import Icons from '../item/icons.js';
+
+  function evidenceParts(text) {
+    const raw = String(text || '').trim();
+    const dash = raw.split(/\s+—\s+/, 2);
+    if (dash.length > 1) return { title: dash[0], subtitle: dash[1] };
+    const paren = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(raw);
+    return paren ? { title: paren[1].trim(), subtitle: paren[2].trim() } : { title: raw, subtitle: '' };
+  }
+
+  class Box extends View.Node {
+    typeName() { return 'card'; }
+
+    decorate() {}
+
+    contentHost(el) { return el; }
+
+    /**
+     * Kid span plus content inset. Layout pad is 0 on purpose — still report
+     * the row/column span so a linked slot cannot push the last kid past the
+     * box. Container pad is included so the frame keeps its inset.
+     */
+    contentInsetNeed(el) {
+      if (!el || !el.querySelector) return null;
+      const content = el.querySelector(':scope > .box-content');
+      if (!content || content.style.display === 'none') return null;
+      const cs = getComputedStyle(content);
+      const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+      const kids = Array.from(content.children || []).filter((c) => (
+        c.classList.contains('box')
+        || c.classList.contains('board-zone')
+        || c.classList.contains('board-item')
+        || c.classList.contains('board-slot')
+      ));
+      if (!kids.length) return null;
+      const row = String(cs.flexDirection || '').indexOf('row') === 0;
+      const measured = kids.map((k) => ({
+        offsetLeft: k.offsetLeft || 0,
+        offsetTop: k.offsetTop || 0,
+        offsetWidth: k.offsetWidth || 0,
+        offsetHeight: k.offsetHeight || 0,
+        isSlot: k.classList.contains('board-slot'),
+      }));
+      const title = el.querySelector(':scope > .box-title, :scope > .board-zone-title');
+      let titleH = 0;
+      if (title && getComputedStyle(title).display !== 'none') titleH = title.offsetHeight || 0;
+      return View.flexContentNeed(measured, { row, padX, padY, titleH });
+    }
+
+    fitNested(el) {
+      if (!el || el.dataset.boardNested !== '1') return;
+      const need = this.contentInsetNeed(el);
+      if (!need) return;
+      // Equalization clears inline sizes to measure natural siblings. Retain the
+      // measured content floors so a linked slot cannot be squeezed back out.
+      el.dataset.boardContentMinWidth = String(Math.ceil(need.w));
+      el.dataset.boardContentMinHeight = String(Math.ceil(need.h));
+      if (need.w > (el.offsetWidth || 0) + 0.5) {
+        el.style.minWidth = need.w + 'px';
+        el.style.width = need.w + 'px';
+      }
+      if (need.h > (el.offsetHeight || 0) + 0.5) {
+        el.style.minHeight = need.h + 'px';
+      }
+    }
+
+    applyFrame(el, frame, ctx) {
+      if (!el || !frame || el.dataset.boardNested === '1') {
+        super.applyFrame(el, frame);
+        return;
+      }
+      let next = frame;
+      const need = this.contentInsetNeed(el);
+      if (need && (need.w > frame.w + 0.5 || need.h > frame.h + 0.5)) {
+        next = Object.assign({}, frame, {
+          w: Math.max(frame.w, need.w),
+          h: Math.max(frame.h, need.h),
+        });
+      }
+      super.applyFrame(el, next);
+      // Layout/container grow with nested kids (slots/boxes); fixed height clips
+      // selection outline below the visual content (seen on REVIEW).
+      const grow = !!(el.querySelector && (
+        el.querySelector('.board-item, .board-card')
+        || el.classList.contains('board-type-layout')
+        || el.classList.contains('board-type-container')
+        || el.querySelector(':scope > .box-content > .board-zone, :scope > .box-content > .box')
+      ));
+      if (grow) {
+        el.style.minHeight = `${next.h}px`;
+        el.style.height = 'auto';
+      } else {
+        el.style.minHeight = '';
+        el.style.height = `${next.h}px`;
+      }
+      if (ctx && typeof ctx.afterBoxFrame === 'function') ctx.afterBoxFrame(el, next, this);
+    }
+
+    measureLive(el, base) {
+      const sized = super.measureLive(el, base);
+      const need = this.contentInsetNeed(el);
+      if (!need) return sized;
+      return {
+        w: Math.max(sized.w || 0, need.w),
+        h: Math.max(sized.h || 0, need.h),
+        exact: sized.exact,
+      };
+    }
+
+    intrinsicMinWidth() {
+      return View.intrinsicBoxMinWidth(this.data);
+    }
+
+    mount(ctx) {
+      const box = this.data;
+      const doc = ctx.doc;
+      const nested = !!ctx.nested;
+      const bType = this.typeName();
+      const titleOnly = !(box.items && box.items.length) && !(box.boxes && box.boxes.length);
+      const el = doc.createElement('article');
+      el.className = `box board-zone board-type-${bType}${nested ? ' board-nested' : ''}${titleOnly ? ' board-title-only' : ''}`;
+      {
+        const fz = Scale && typeof Scale.stepFromStyle === 'function'
+          ? Scale.stepFromStyle(ctx.board && ctx.board.style, box.id)
+          : null;
+        if (fz != null && Scale && typeof Scale.applyBoxTitleStep === 'function') {
+          Scale.applyBoxTitleStep(el, bType, fz);
+        }
+        if (ctx.fills) Rotation.paint(el, ctx.fills.get(box), false);
+      }
+      if (nested) {
+        el.style.position = 'relative';
+        el.style.left = '';
+        el.style.top = '';
+        el.style.flex = '0 0 auto';
+      } else {
+        el.style.position = 'absolute';
+        el.style.zIndex = '1';
+      }
+      el.style.minWidth = nested ? 'min-content' : '0';
+      el.style.maxWidth = 'none';
+      el.style.width = 'max-content';
+      el.style.boxSizing = 'border-box';
+      el.dataset.boardId = box.id;
+      el.dataset.boardKey = 'box:' + box.id;
+      el.dataset.boardType = bType;
+      el.dataset.boardKind = bType;
+      el.dataset.boardNested = nested ? '1' : '0';
+      ctx.elements.set(box.id, el);
+      if (box.id === 'LOCAL') el.classList.add('board-branch-local');
+      if (box.id === 'SBX') el.classList.add('board-branch-docker');
+      if (box.id === 'KIT') el.classList.add('board-kit');
+      this.decorate(el, ctx);
+      const shell = this.contentHost(el);
+      const titleParts = evidenceParts(box.title);
+      const isLayout = bType === 'layout';
+      const hasIcon = !isLayout && box.icon != null && box.icon !== '' && Number.isInteger(Number(box.icon));
+      const boxIcon = hasIcon ? Number(box.icon) : NaN;
+      const hasTitleChrome = !isLayout && (hasIcon || String(titleParts.title || '').trim() || titleParts.subtitle);
+      el.classList.toggle('board-no-title', !hasTitleChrome);
+      if (isLayout) {
+        const halo = doc.createElement('span');
+        halo.className = 'board-layout-halo';
+        halo.setAttribute('aria-hidden', 'true');
+        shell.appendChild(halo);
+      }
+      if (hasTitleChrome) {
+        const title = doc.createElement('div');
+        title.className = 'box-title board-zone-title';
+        if (hasIcon) {
+          const svg = Icons && Icons.glyph ? Icons.glyph(boxIcon) : null;
+          if (svg) {
+            const glyph = doc.createElement('span');
+            glyph.className = 'board-zone-glyph';
+            glyph.setAttribute('aria-hidden', 'true');
+            glyph.innerHTML = svg;
+            title.appendChild(glyph);
+          }
+        }
+        const titleCopy = doc.createElement('span');
+        titleCopy.className = 'board-title-copy';
+        const titleName = doc.createElement('strong');
+        titleName.className = 'board-title-name';
+        titleName.textContent = titleParts.title;
+        titleCopy.appendChild(titleName);
+        if (titleParts.subtitle) {
+          const subtitle = doc.createElement('small');
+          subtitle.className = 'board-title-subtitle';
+          subtitle.textContent = titleParts.subtitle;
+          titleCopy.appendChild(subtitle);
+        }
+        title.appendChild(titleCopy);
+        shell.appendChild(title);
+      }
+      const content = doc.createElement('div');
+      content.className = 'box-content';
+      const boxProps = ctx.propsFor(ctx.board, box.id);
+      ctx.applyFlex(content, boxProps);
+      if (titleOnly) content.style.display = 'none';
+      shell.appendChild(content);
+      const kids = [];
+      const sourceKids = Array.isArray(box.kids) && box.kids.length
+        ? box.kids
+        : (box.items || []).concat(box.boxes || []);
+      let itemIndex = 0;
+      sourceKids.forEach((child) => {
+        if (child && (child.role === 'item' || child.kind === 'item')) {
+          kids.push({
+            id: child.id || '',
+            el: View.Types.item(child.type || 'chip', child).mount(Object.assign({}, ctx, {
+              nested: true,
+              parentBox: box,
+              itemIndex,
+            })),
+          });
+          itemIndex += 1;
+        } else {
+          kids.push({
+            id: child.id || '',
+            el: View.Types.wrap(child).mount(Object.assign({}, ctx, { nested: true })),
+          });
+        }
+      });
+      const useSlots = typeof ctx.makeBoardSlot === 'function';
+      const dir = boxProps.direction === 'row' ? 'row' : 'column';
+      kids.forEach((kid, index) => {
+        if (useSlots && index > 0) {
+          const slot = ctx.makeBoardSlot(dir, kids[index - 1].id, kid.id);
+          if (slot) content.appendChild(slot);
+        }
+        content.appendChild(kid.el);
+      });
+      ctx.applyFlex(content, boxProps);
+      return el;
+    }
+  }
+
+View.Box = Box;
+View.evidenceParts = evidenceParts;
+export { Box, evidenceParts };

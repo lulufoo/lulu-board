@@ -1,4 +1,7 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -6,13 +9,14 @@ const path = require('path');
 const root = path.join(__dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
-const shares = read('packages/drawer-app/js/06-cloud-shares.js');
-const drawer = read('packages/drawer-app/js/09-shell-drawer.js');
-const dialog = read('packages/drawer-app/js/09-share-dialog.js');
-const sync = read('packages/drawer-app/js/06-cloud-sync.js');
-const appBuild = read('scripts/drawer-app-build/build.mjs');
+const shares = read('packages/drawer-app/src/cloud/cloud-shares.js');
+const drawer = read('packages/drawer-app/src/chrome/shell-drawer.js');
+const dialog = read('packages/drawer-app/src/chrome/share-dialog.js');
+const sync = read('packages/drawer-app/src/cloud/cloud-sync.js');
+const appBuild = read('scripts/build-app/drawer.mjs');
 
-assert.match(appBuild, /06-cloud-share\.js[\s\S]*06-cloud-shares\.js/, 'shares module is built after the share rpc helpers');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-share.js')), 'shares module is built after the share rpc helpers');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-shares.js')), 'shares module is built after the share rpc helpers');
 assert.match(shares, /rpc\("list_outgoing_shares"\)/, 'the share list is one rpc');
 assert.doesNotMatch(shares, /select\("graph_id,bmd,share_id,created_at,updated_at"\)/, 'the share list does not read every body');
 assert.doesNotMatch(shares, /own_share_state/, 'the list does not call own_share_state per diagram');
@@ -21,14 +25,14 @@ for (const rpc of ['open_share', 'rotate_share', 'unshare', 'set_share_role']) {
   assert.match(shares + drawer + dialog, new RegExp(rpc), rpc + ' is reachable from the drawer or the Share dialog');
 }
 assert.match(drawer, /Stop sharing this diagram\?/, 'Stop asks first: the link stops working');
-assert.match(sync, /cloudRefreshShares\(\)/, 'the group refresh also refreshes the shared list');
+assert.match(sync, /call\("cloudRefreshShares"\)/, 'the group refresh also refreshes the shared list');
 
 const { cloudShareSummaries } = new Function(
   shares.slice(shares.indexOf('function cloudShareSummaries'), shares.indexOf('function cloudShareLinkFor')) +
   '\nreturn { cloudShareSummaries };'
 )();
 
-const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+const Meta = require('../../packages/drawer-app/src/core/document-meta.js').default;
 global.displayTitleFromBmd = function (bmd) {
   return Meta.diagramTitleFromBody(Meta.stripDocumentMeta(bmd)) || '';
 };

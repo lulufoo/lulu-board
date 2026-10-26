@@ -1,15 +1,13 @@
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { get } from '../../packages/board-themes/index.js';
 import { render, normalizeLayout } from '../../packages/mermaid-ext/mindmap/render.js';
 import { normalizeTheme, themePalette } from '../../packages/mermaid-ext/mindmap/themes.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '../..');
-const require = createRequire(import.meta.url);
-globalThis.BoardThemes = require('../../packages/boxes/themes/index.js');
 
 const source = `mindmap
   Root
@@ -22,6 +20,8 @@ assert.equal(normalizeLayout('logic'), 'logic');
 assert.equal(normalizeLayout('map'), 'radial');
 assert.equal(normalizeTheme('classic'), 'classic');
 assert.equal(normalizeTheme('minimal'), 'classic');
+assert.equal(normalizeTheme('slate'), 'pastel');
+assert.equal(normalizeTheme('kami'), 'default');
 
 const radial = render(source, { layout: 'radial', theme: 'default', id: 'mm-r' });
 const logic = render(source, { layout: 'logic', theme: 'default', id: 'mm-l' });
@@ -49,7 +49,7 @@ assert.notEqual(themePalette('default').root.stroke, themePalette('default').sec
 const classic = themePalette('classic');
 const pastel = themePalette('pastel');
 assert.notEqual(classic.root.fill, pastel.root.fill);
-assert.equal(classic.root.fill, BoardThemes.get('classic').colors[0]);
+assert.equal(classic.root.fill, get('classic').colors[0]);
 assert.doesNotMatch(radial.svg, /2563eb/);
 
 assert.ok(!fs.existsSync(path.join(root, 'packages/mermaid-themes')));

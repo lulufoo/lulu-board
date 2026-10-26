@@ -121,14 +121,17 @@ def mint_envelope(text: str, kind: str, doc_id: str) -> tuple[str, dict]:
     return join_document(meta, text, kind), meta
 
 
+_META_LOOSE = re.compile(r"^(?:%%\s*)?meta\s+")
+
+
 def strip_leading_meta_lines(text: str) -> str:
-    """Drop leading envelope lines, including invalid legacy JSON."""
+    """Drop leading envelope lines (P4 loose: any `meta ` / `%% meta ` prefix)."""
     raw = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
     lines = raw.split("\n")
     idx = 0
     while idx < len(lines) and not lines[idx].strip():
         idx += 1
-    while idx < len(lines) and META_LINE.match(lines[idx].strip()):
+    while idx < len(lines) and _META_LOOSE.match(lines[idx].strip()):
         idx += 1
         while idx < len(lines) and not lines[idx].strip():
             idx += 1

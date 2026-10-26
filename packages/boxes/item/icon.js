@@ -1,9 +1,7 @@
 /* Concrete item type=icon. Catalog glyph + optional text. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Item) throw new Error('BoardItem must load before item/icon.js');
-  const Icons = root.BoardIcons;
+/* Concrete item type=icon. Catalog glyph + optional text. */
+import View from '../view/view.js';
+import Icons from './icons.js';
 
   class ItemIcon extends View.Item {
     typeName() { return 'icon'; }
@@ -33,4 +31,4 @@
   }
 
   View.Types.registerItem('icon', ItemIcon);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { ItemIcon };

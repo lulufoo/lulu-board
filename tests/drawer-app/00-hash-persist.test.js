@@ -1,7 +1,10 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const zlib = require('zlib');
-const Hash = require('../../packages/drawer-app/js/00-hash-persist.js');
+const Hash = require('../../packages/drawer-app/src/core/hash-persist.js').default;
 
 {
   const mode = Hash.diagramPersistMode();

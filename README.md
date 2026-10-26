@@ -126,9 +126,7 @@ tests/
 From the repo root:
 
 ```bash
-node scripts/web-build/build.mjs
-# or pack examples alone:
-node scripts/examples-templates-build/build.mjs
+npm run build
 ```
 
 ## License

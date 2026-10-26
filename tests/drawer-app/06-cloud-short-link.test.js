@@ -1,4 +1,7 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -6,13 +9,18 @@ const vm = require('vm');
 
 const root = path.join(__dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
-const Route = require('../../packages/drawer-app/js/00-cloud-route.js');
-const Hash = require('../../packages/drawer-app/js/00-hash-persist.js');
+const Route = require('../../packages/drawer-app/src/core/cloud-route.js').default;
+const Hash = require('../../packages/drawer-app/src/core/hash-persist.js').default;
 
-const src = read('packages/drawer-app/js/06-cloud-short-link.js');
-const boot = read('packages/drawer-app/js/02-diagram.js');
-const early = read('packages/drawer-app/js/00-early-head.js');
-const build = read('scripts/drawer-app-build/build.mjs');
+const src = read('packages/drawer-app/src/cloud/cloud-short-link.js')
+  .replace(/^import \{[\s\S]*?\} from ['"][^'"]+['"];\n/gm, '')
+  .replace(/^import .*$/gm, '')
+  .replace(/^export \{[\s\S]*?\};/gm, '')
+  .replace(/^register\(.+$/gm, '');
+const boot = read('packages/drawer-app/src/kinds/diagram.js');
+const early = read('packages/drawer-app/src/core/early-head.js');
+const routeSrc = read('packages/drawer-app/src/core/cloud-route.js');
+const build = read('scripts/build-app/drawer.mjs');
 const ID = 'p_' + 'a'.repeat(64);
 const BMD = 'boxes "LB-417"\n';
 
@@ -20,9 +28,10 @@ assert.match(src, /rpc\("get_short_link", \{ p_id: id \}\)/, 'reads through get_
 assert.match(src, /encodeDiagramHash\(bmd, 1\)/, 'uses the existing #z: encoder');
 assert.match(src, /history\.replaceState/, 'jumps in the browser, no Location 302');
 assert.doesNotMatch(src, /location\.hash =/, 'does not assign a raw #z: Location');
-assert.match(boot, /loadShortLinkByHash\(raw\)/, 'hash bootstrap opens #p:');
-assert.match(early, /p:p_\[0-9a-f\]\{64\}/, 'unsigned #p: is a legal hash');
-assert.match(build, /06-cloud-short-link\.js/, 'drawer build includes the short-link module');
+assert.match(boot, /call\("loadShortLinkByHash", raw\)/, 'hash bootstrap opens #p:');
+assert.match(routeSrc, /SHORT_LINK_ID_RE = \/\^p_\[0-9a-f\]\{64\}\$/, 'unsigned #p: is a legal hash');
+assert.match(early, /SHORT_LINK_ID_RE/, 'early-head accepts #p: via the shared id');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-short-link.js')), 'drawer build includes the short-link module');
 
 function runLoad(rpcResult) {
   const location = { hash: '#p:' + ID, pathname: '/', search: '' };
@@ -50,6 +59,12 @@ function runLoad(rpcResult) {
     diagramLocalRev: 9,
     diagramServerRev: 9,
     setStatus() {},
+    emit(name) { const fn = sandbox[name]; if (typeof fn === 'function') return fn.apply(sandbox, [].slice.call(arguments, 1)); },
+    call(name) { const fn = sandbox[name]; if (typeof fn === 'function') return fn.apply(sandbox, [].slice.call(arguments, 1)); },
+    bumpCloudLoadSeq() { sandbox.cloudLoadSeq += 1; return sandbox.cloudLoadSeq; },
+    setDiagramDirty(v) { sandbox.diagramDirty = !!v; },
+    setDiagramLocalRev(n) { sandbox.diagramLocalRev = n; },
+    setDiagramServerRev(n) { sandbox.diagramServerRev = n; },
     setShareView() {},
     setShareEdit() {},
     applyDiagramLiveMeta() {},

@@ -1,8 +1,11 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Shapes = require('../../packages/drawer-app/js/03-flowchart-shapes.js');
+const Shapes = require('../../packages/drawer-app/src/kinds/flowchart-shapes.js').default;
 
 function el(tag, attrs, kids) {
   const node = {
@@ -59,7 +62,7 @@ assert.ok(!hits[0].getAttribute('style'), 'hit does not copy painted stroke');
 assert.strictEqual(edge.kids[0], hits[0], 'hit sits under the painted path');
 assert.strictEqual(edge.kids[1], painted);
 
-const js = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/03-flowchart.js'), 'utf8');
+const js = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds/flowchart.js'), 'utf8');
 assert.match(js, /function clearFlowchartInteraction/);
 assert.match(js, /function applyFlowchartSelectionVisual/);
 assert.doesNotMatch(js, /path\.style\.stroke\s*=/);

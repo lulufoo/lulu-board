@@ -1,0 +1,66 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '../..');
+const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
+const tokens = read('packages/drawer-app/css/04-board-form.css');
+const css = read('packages/drawer-app/css/03-diagram.css');
+const board = read('packages/drawer-app/src/kinds/board.js');
+const flow = read('packages/drawer-app/src/kinds/flowchart.js');
+const halo = read('packages/drawer-app/src/kinds/mermaid-halo.js');
+const build = read('scripts/build-app/drawer.mjs');
+
+assert.match(tokens, /--canvas-ring:\s*var\(--bf-ring\)/, 'selected ring aliases Board pink');
+assert.match(tokens, /--canvas-ring-soft:\s*var\(--bf-ring-soft\)/, 'hover ring aliases Board soft pink');
+assert.match(tokens, /--canvas-ring-width:\s*2px/, 'selected ring is 2px');
+assert.match(tokens, /--canvas-ring-offset:\s*2px/, 'selected ring offset is shared');
+
+assert.match(css, /\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\) \{[\s\S]*outline:\s*var\(--canvas-ring-width/, 'HTML selected ring is one class');
+assert.match(css, /\.canvas-hover:not\(\.canvas-selected\)[\s\S]*outline:\s*1px dashed var\(--canvas-ring-soft/, 'hover is 1px dashed, not the selected solid');
+assert.doesNotMatch(css, /\.canvas-hover[\s\S]{0,120}outline:\s*2px solid/, 'hover is not a 2px solid twin of selected');
+assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'flowchart selected halo reads the same token');
+assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'flowchart hover halo reads the soft token');
+assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-dasharray/, 'flowchart hover halo is dashed');
+assert.match(css, /g\.pele-cluster > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'group stroke leaves the hover halo alone');
+assert.match(css, /g\.pele-node > rect:not\(\.canvas-hover-halo\):not\(\.flowchart-selection-halo\)/, 'node stroke leaves the hover halo alone');
+assert.match(css, /g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart hover does not also paint the HTML outline');
+assert.match(css, /g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-kind="flowchart"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'flowchart selection does not also paint the HTML outline');
+assert.doesNotMatch(css, /\.flowchart-selection-halo \{[\s\S]*stroke:\s*var\(--accent/, 'flowchart halo no longer uses --accent');
+assert.doesNotMatch(css, /\.board-selection \{[^}]*outline:\s*2px solid var\(--bf-ring/, 'Board selected outline left the old class');
+
+assert.match(board, /classList\.add\("board-selection", "canvas-selected"\)/, 'Board hangs the public selected class');
+assert.match(flow, /classList\.add\("flowchart-selection", "canvas-selected"\)/, 'Flowchart hangs the public selected class');
+assert.match(flow, /function applyFlowchartHover/, 'Flowchart has hover');
+assert.match(flow, /classList\.add\("canvas-hover"\)/, 'Flowchart hangs the public hover class');
+assert.match(flow, /paintFlowchartHalo\(g, "canvas-hover-halo"\)/, 'SVG hover uses a token halo, not outline');
+assert.match(flow, /FLOWCHART_HOVER_HALO_GAP = MERMAID_HOVER_HALO_GAP/, 'flowchart hover gap is the shared ring gap');
+assert.match(flow, /FLOWCHART_SEL_HALO_GAP = MERMAID_SEL_HALO_GAP/, 'flowchart selection gap is the shared ring gap');
+assert.match(halo, /function mermaidPaintHalo/, 'halo painter lives at mermaid level');
+assert.match(halo, /function mermaidPaintBBoxHalo/, 'text-only nodes can ring from getBBox');
+assert.match(halo, /from '\.\.\/\.\.\/\.\.\/board-themes\/index\.js'/, 'shared halo gap reads ring (P3)');
+assert.match(halo, /MERMAID_HOVER_HALO_GAP/, 'shared hover gap is named');
+assert.match(halo, /MERMAID_SEL_HALO_GAP/, 'shared selection gap is named');
+assert.match(flow, /mermaidPaintHalo\(g, ringClass/, 'flowchart calls the shared painter');
+assert.doesNotMatch(flow, /function mermaidPaintHalo/, 'flowchart no longer owns the halo painter');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/kinds/mermaid-halo.js')), 'shared halo is in the drawer bundle');
+assert.match(css, /\.flowchart-selection-halo \{[\s\S]*stroke-dasharray:\s*none/, 'flowchart selection ring is solid');
+assert.match(css, /\.canvas-hover-halo \{[\s\S]*stroke-width:\s*1px/, 'flowchart hover ring is 1px, same as Board');
+assert.match(flow, /if \(g\.classList\.contains\("canvas-selected"\) \|\| g\.classList\.contains\("flowchart-selection"\)\) return/, 'selected nodes do not also hover');
+const mind = read('packages/drawer-app/src/kinds/mindmap-select.js');
+assert.match(mind, /registerKind\("mindmap"/, 'mindmap registers hit / clear');
+assert.match(mind, /mermaidPaintHalo/, 'mindmap uses the shared SVG halo');
+assert.match(mind, /classList\.add\("canvas-selected"\)/, 'mindmap hangs the public selected class');
+assert.match(mind, /classList\.add\("canvas-hover"\)/, 'mindmap hangs the public hover class');
+assert.match(css, /\.mindmap-selection-halo \{[\s\S]*stroke:\s*var\(--canvas-ring/, 'mindmap selected halo reads the same token');
+assert.match(css, /html\[data-kind="mindmap"\] g\.canvas-selected:not\(\.board-item-diamond\):not\(\.board-diamond\),\s*html\[data-kind="mindmap"\] g\.canvas-hover \{\s*outline:\s*none !important/, 'mindmap selection does not also paint the HTML outline');
+assert.match(css, /html\[data-kind="mindmap"\] \.canvas-hover-halo \{[\s\S]*stroke:\s*var\(--canvas-ring-soft/, 'mindmap hover halo reads the soft token');
+const exportPng = read('packages/drawer-app/src/export/export-png.js');
+assert.match(exportPng, /mindmap-selection-halo/, 'PNG export strips mindmap halo');
+assert.match(exportPng, /mindmap-add/, 'PNG export strips hover plus');
+
+console.log('ok canvas-ring');

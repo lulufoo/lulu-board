@@ -1,6 +1,9 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
-const Route = require('../../packages/drawer-app/js/00-cloud-route.js');
+const Route = require('../../packages/drawer-app/src/core/cloud-route.js').default;
 
 assert.strictEqual(Route.cloudDiagramIdFromHash('#b:b_29b9c39c'), 'b_29b9c39c');
 assert.strictEqual(Route.cloudDiagramIdFromHash('b:b_29b9c39c'), 'b_29b9c39c');

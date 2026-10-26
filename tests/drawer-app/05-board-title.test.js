@@ -1,6 +1,9 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
-const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+const Meta = require('../../packages/drawer-app/src/core/document-meta.js').default;
 
 assert.strictEqual(Meta.diagramTitleFromBody('boxes "Onboarding"\nbox A\n'), 'Onboarding');
 assert.strictEqual(Meta.diagramTitleFromBody('board "Onboarding"\nbox A\n'), '');

@@ -54,6 +54,3 @@ const FlowchartEdit = {
 
 export { FlowchartEdit };
 export default FlowchartEdit;
-
-const root = typeof window !== 'undefined' ? window : globalThis;
-root.FlowchartEdit = FlowchartEdit;
