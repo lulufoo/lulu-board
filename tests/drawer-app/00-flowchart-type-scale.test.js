@@ -1,6 +1,9 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
-const Scale = require('../../packages/drawer-app/js/00-flowchart-type-scale.js');
+const Scale = require('../../packages/drawer-app/src/core/flowchart-type-scale.js').default;
 
 assert.strictEqual(Scale.clampStep(0), 0);
 assert.strictEqual(Scale.clampStep(1.4), 1);

@@ -1,4 +1,4 @@
-/* board-mcp/brand.js — same mark as drawer-app/brand, served from the MCP origin */
+/* board-mcp/brand.js — same mark as packages/brand, served from the MCP origin */
 
 export const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <rect x="2" y="2" width="28" height="28" rx="8" fill="#db4c84"/>

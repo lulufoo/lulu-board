@@ -1,9 +1,12 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Token = require('../../packages/boxes/engine/style-token.js');
-const Style = require('../../packages/drawer-app/js/00-style-line.js');
+const Token = require('../../packages/board-core/style-token.js');
+const Style = require('../../packages/drawer-app/src/core/style-line.js').default;
 
 function b64(obj) {
   return Buffer.from(JSON.stringify(obj), 'utf8').toString('base64');
@@ -104,7 +107,7 @@ function b64(obj) {
 }
 
 {
-  const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
+  const Create = require('../../packages/drawer-app/src/chrome/create-kind-dialog.js');
   Create.CREATE_KIND_ITEMS.filter((item) => item.kind !== 'welcome').forEach((item) => {
     const src = item.kind === 'boxes' ? 'boxes "X"\n' : item.kind + '\n';
     assert.strictEqual(Style.bodyKindLabel(src), item.name, item.kind);
@@ -130,16 +133,16 @@ function b64(obj) {
 }
 
 {
-  const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/drawer-app-build/build.mjs'), 'utf8');
-  const boardBuild = fs.readFileSync(path.join(__dirname, '../../scripts/board-build/build.mjs'), 'utf8');
-  assert.match(drawerBuild, /boxes\/engine\/style-token\.js/, 'drawer bundle loads the shared token');
-  assert.match(boardBuild, /engine\/style-token\.js/, 'board bundle loads the shared token');
+  const drawerBuild = fs.readFileSync(path.join(__dirname, '../../scripts/build-app/drawer.mjs'), 'utf8');
+  const tokenBuild = fs.readFileSync(path.join(__dirname, '../../scripts/build-app/style-token.mjs'), 'utf8');
+  assert.match(drawerBuild, /bundleStyleToken/, 'drawer bundle loads the shared token');
+  assert.match(tokenBuild, /board-core\/style-token\.js/, 'drawer build reads board-core');
   const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
-  const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/07-chrome-boot.js'), 'utf8');
-  const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
+  const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
+  const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
-  const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
+  const boardJs = ['board.js', 'board-style.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyKindTheme can skip render');

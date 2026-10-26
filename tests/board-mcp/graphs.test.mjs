@@ -18,8 +18,6 @@ import { decodePayload } from '../../packages/board-mcp/src/jwt.js';
 import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serverInfo } from '../../packages/board-mcp/src/brand.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const drawerTitle = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
-const drawerId = readFileSync(path.join(root, 'packages/drawer-app/js/00-document-meta.js'), 'utf8');
 const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
 const skill = readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
@@ -38,8 +36,6 @@ assert.equal(
   stripPersistedMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
   'flowchart TD\n  A-->B\n'
 );
-assert.match(drawerTitle, /function diagramTitleFromBody/, 'drawer still owns the title regex');
-assert.match(drawerTitle, /%%\\s\*title/, 'drawer reads mermaid %% title');
 assert.equal(newGraphId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'b_0fc10001');
 assert.equal(newGroupId(Uint8Array.from([0x0f, 0xc1, 0x00, 0x01])), 'g_0fc10001');
 assert.equal(assertGraphId('b_0fc10001'), 'b_0fc10001');
@@ -47,8 +43,7 @@ assert.equal(assertGroupId('g_0fc10001'), 'g_0fc10001');
 assert.throws(() => assertGraphId('s_deadbeef'), /invalid board id/);
 assert.throws(() => assertGroupId('b_0fc10001'), /invalid group id/);
 assert.throws(() => assertGroupId(''), /invalid group id/);
-assert.match(drawerId, /return "b_" \+ hex/, 'drawer mints b_ + 8 hex');
-assert.match(graphsSrc, /return "b_" \+ hex/, 'MCP still mints b_ + 8 hex');
+assert.match(graphsSrc, /board-core\/document-format/, 'MCP imports document-format');
 assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'create does not POST graphs rows');
 
 const env = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'pub' };
@@ -266,7 +261,7 @@ assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_diagram"/, 'get_diagram is registered');
 assert.match(worker, /registerTool\("create_diagram"/, 'create_diagram is registered');
 assert.match(worker, /registerTool\("save_diagram"/, 'save_diagram is registered');
-assert.match(worker, /const DIAGRAM_ID = z\.string\(\)\.regex\(\/\^b_\[0-9a-f\]\{8\}\$\/\)/, 'diagram_id is b_ + 8 hex');
+assert.match(worker, /const DIAGRAM_ID = z\.string\(\)\.regex\(GRAPH_ID_RE\)/, 'diagram_id uses board-core GRAPH_ID_RE');
 assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
 assert.match(worker, /createGraph\(env, token, identity\.user_id, bmd, diagram_id, group_id\)/);
@@ -297,7 +292,7 @@ assert.match(cloud, /group this `diagram_id` belongs to/, 'cloud says group_id i
 assert.match(cloud, /current account/, 'cloud joins on the current account');
 assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
 
-const brandDir = path.join(root, 'packages/drawer-app/brand');
+const brandDir = path.join(root, 'packages/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
 assert.equal(
   FAVICON_PNG_BASE64,

@@ -2,13 +2,28 @@
 """Document envelope: hard-cut meta {id, version} as base64."""
 from __future__ import annotations
 
+import importlib.util
+import json
 import sys
 from pathlib import Path
 
 import unittest
 
+ROOT = Path(__file__).resolve().parents[2]
+VECTORS = json.loads((ROOT / "packages" / "board-core" / "document-format.vectors.json").read_text())
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
+sys.path.insert(0, str(ROOT / "skill" / "boxes" / "scripts"))
+
+def _load(name: str, rel: str):
+    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+MERMAID_TITLES = _load(
+    "mermaid_drawer_titles",
+    "skill/mermaid/scripts/drawer_ctl/titles.py",
+)
 
 from document_meta import (
     DocumentMetaError,
@@ -119,6 +134,19 @@ class DocumentMetaTest(unittest.TestCase):
             leftover_envelope(join_document({"id": "b_0fc10001", "version": 3}, 'board "A"\n'), "board"),
             {"id": "b_0fc10001", "version": 3},
         )
+
+
+class SharedVectorsTest(unittest.TestCase):
+    def test_strip_matches_board_core(self) -> None:
+        from drawer_ctl.titles import derive_board_title
+
+        for row in VECTORS["strip"]:
+            self.assertEqual(strip_leading_meta_lines(row["in"]), row["out"], row["name"])
+            self.assertEqual(MERMAID_TITLES.strip_leading_meta_lines(row["in"]), row["out"], "mermaid " + row["name"])
+        for row in VECTORS["derive_board_title"]:
+            self.assertEqual(derive_board_title(row["in"]), row["out"], row["name"])
+        for row in VECTORS["derive_title"]:
+            self.assertEqual(MERMAID_TITLES.derive_title(row["in"]), row["out"], row["name"])
 
 
 class BoardTitleTest(unittest.TestCase):

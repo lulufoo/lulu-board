@@ -1,10 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Style = require('../../packages/drawer-app/js/00-style-line.js');
+const Style = require('../../packages/drawer-app/src/core/style-line.js').default;
 global.DrawerStyleLine = Style;
-const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+const Meta = require('../../packages/drawer-app/src/core/document-meta.js').default;
 
 function token(id, version) {
   return Buffer.from(JSON.stringify({ id: id, version: version }), 'utf8').toString('base64');
@@ -48,7 +51,7 @@ function token(id, version) {
 }
 
 {
-  const Template = require('../../packages/drawer-app/js/00-kind-template.js');
+  const Template = require('../../packages/drawer-app/src/core/kind-template.js').default;
   const titled = (name) => Template.applyUntitledTitle(
     fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/templates', name), 'utf8')
   );
@@ -88,16 +91,16 @@ function token(id, version) {
 
 {
   const board = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
-  const vocab = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/skill-assets/vocab.md'), 'utf8');
+  const vocab = fs.readFileSync(path.join(__dirname, '../../packages/boxes/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');
   assert.ok(/style <base64>/.test(vocab), 'vocab names style as stash');
   assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
   assert.ok(/never writes it back/.test(vocab), 'vocab says leftover meta is not rewritten');
   assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
-  const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/01-shell-state.js'), 'utf8');
-  const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-board.js'), 'utf8');
-  const diagram = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/js/02-diagram.js'), 'utf8');
+  const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
+  const boardJs = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds/board.js'), 'utf8');
+  const diagram = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds/diagram.js'), 'utf8');
   assert.ok(!/joinDocument/.test(shell + boardJs + diagram), 'drawer production does not join envelope');
 }
 

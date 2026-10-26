@@ -1,13 +1,16 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Style = require('../../packages/drawer-app/js/00-style-line.js');
+const Style = require('../../packages/drawer-app/src/core/style-line.js').default;
 
 const root = path.join(__dirname, '../..');
 const src = fs.readFileSync(path.join(root, 'packages/drawer-app/templates/sketch.skt'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
-const mount = fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-sketch.js'), 'utf8');
+const mount = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/sketch.js'), 'utf8');
 
 assert.strictEqual(Style.bodyKind(src), 'sketch');
 assert.doesNotMatch(src, /(?:style|content)\s+\{/);

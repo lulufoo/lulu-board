@@ -1,8 +1,6 @@
 /* Concrete item type=note. Dog-ear chrome; markdown is shared on Item. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Item) throw new Error('BoardItem must load before item-note.js');
+/* Concrete item type=note. Dog-ear chrome; markdown is shared on Item. */
+import View from '../view/view.js';
 
   class ItemNote extends View.Item {
     typeName() { return 'note'; }
@@ -26,4 +24,4 @@
   }
 
   View.Types.registerItem('note', ItemNote);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { ItemNote };

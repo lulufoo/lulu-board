@@ -21,6 +21,3 @@ const MindmapEdit = {
 
 export { MindmapEdit };
 export default MindmapEdit;
-
-const root = typeof window !== "undefined" ? window : globalThis;
-root.MindmapEdit = MindmapEdit;

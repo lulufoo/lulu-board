@@ -1,10 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Persist = require('../../packages/drawer-app/js/00-hash-persist.js');
+const Persist = require('../../packages/drawer-app/src/core/hash-persist.js').default;
 
-const landingDir = path.join(__dirname, '../../packages/drawer-app/landing');
+const landingDir = path.join(__dirname, '../../packages/site/landing');
 const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY';
 const WS = '/?ws=1';
 
@@ -16,7 +19,7 @@ assert.ok(fs.existsSync(path.join(landingDir, 'agent-chat.webp')), 'agent-chat.w
 const wsLinks = html.match(/href="\/\?ws=1"/g) || [];
 assert.strictEqual(wsLinks.length, 3, 'three workspace CTAs point to /?ws=1');
 assert.doesNotMatch(html, /href=["']\/start\/?["'#?]/, 'LB-357: landing has no /start product links');
-assert.match(html, /href="\/\?ws=1"><span class="only-out">Start free</);
+assert.match(html, /href="\/\?ws=1"[^>]*><span class="only-out">Start free</);
 assert.match(html, /href="\/\?ws=1"><span class="only-out">Get Started</);
 assert.match(html, /href="\/\?ws=1">Open a blank diagram</);
 

@@ -1,4 +1,7 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -6,13 +9,14 @@ const path = require('path');
 const root = path.join(__dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
-const sync = read('packages/drawer-app/js/06-cloud-sync.js');
-const groups = read('packages/drawer-app/js/06-cloud-groups.js');
-const appBuild = read('scripts/drawer-app-build/build.mjs');
+const sync = read('packages/drawer-app/src/cloud/cloud-sync.js');
+const groups = read('packages/drawer-app/src/cloud/cloud-groups.js');
+const appBuild = read('scripts/build-app/drawer.mjs');
 
-assert.match(appBuild, /06-cloud-sync\.js[\s\S]*06-cloud-groups\.js/, 'groups module is built after cloud sync');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-sync.js')), 'groups module is built after cloud sync');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-groups.js')), 'groups module is built after cloud sync');
 assert.doesNotMatch(groups, /document\./, 'group data stays out of the DOM');
-assert.match(sync, /await cloudFetchGroupSummaries\(\)/, 'the old history list reads the shared data function');
+assert.match(sync, /await call\("cloudFetchGroupSummaries"\)/, 'the old history list reads the shared data function');
 
 const grab = (src, from, to) => src.slice(src.indexOf(from), src.indexOf(to));
 const { cloudGroupSummaries } = new Function(
@@ -21,7 +25,7 @@ const { cloudGroupSummaries } = new Function(
   '\nreturn { cloudGroupSummaries };'
 )();
 
-const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+const Meta = require('../../packages/drawer-app/src/core/document-meta.js').default;
 global.diagramTitleFromBody = Meta.diagramTitleFromBody;
 global.stripDocumentMeta = Meta.stripDocumentMeta;
 

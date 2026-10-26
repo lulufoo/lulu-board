@@ -1,8 +1,6 @@
 /* Concrete box type=layout — pure arrangement (no chrome, no title/icon). */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Box) throw new Error('BoardBox must load before box-layout.js');
+/* Concrete box type=layout — pure arrangement (no chrome, no title/icon). */
+import View from '../view/view.js';
 
   class BoxLayout extends View.Box {
     typeName() { return 'layout'; }
@@ -13,4 +11,4 @@
   }
 
   View.Types.registerBox('layout', BoxLayout);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { BoxLayout };

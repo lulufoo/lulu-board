@@ -1,15 +1,18 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Meta = require('../../packages/drawer-app/js/00-document-meta.js');
+const Meta = require('../../packages/drawer-app/src/core/document-meta.js').default;
 
 const root = path.join(__dirname, '../..');
 const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
-const js = fs.readFileSync(path.join(root, 'packages/drawer-app/js/03-design.js'), 'utf8');
-const diagram = fs.readFileSync(path.join(root, 'packages/drawer-app/js/02-diagram.js'), 'utf8');
-const build = fs.readFileSync(path.join(root, 'scripts/drawer-app-build/build.mjs'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/design.js'), 'utf8');
+const diagram = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/diagram.js'), 'utf8');
+const build = fs.readFileSync(path.join(root, 'scripts/build-app/drawer.mjs'), 'utf8');
 const shellCss = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
 
 assert.match(html, /id="designDocTitleEditor"/);
@@ -28,7 +31,7 @@ assert.match(js, /designDocTitleField\.hidden = false/);
 assert.match(js, /propsKindLabel\.textContent = document\.documentElement\.dataset\.kind/);
 assert.match(diagram, /designDocTitleField/, 'kind switch hides Design Title');
 assert.match(diagram, /fillDesignProps/, 'Design render fills Title');
-assert.match(build, /03-design\.js/);
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/kinds/design.js')), 'src module exists');
 assert.match(css, /#designDocTitleField\[hidden\]/);
 assert.match(css, /html\[data-pele="1"\] \.board-edit-tools/, 'Design hides Board tools');
 assert.match(shellCss, /#designDocTitleEditor/);

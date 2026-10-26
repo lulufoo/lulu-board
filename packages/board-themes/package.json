@@ -1,0 +1,8 @@
+{
+  "name": "board-themes",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  }
+}

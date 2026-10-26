@@ -1,0 +1,32 @@
+{
+  "strip": [
+    { "name": "loose-multi-word", "in": "meta foo bar\nboxes \"A\"\n", "out": "boxes \"A\"\n" },
+    { "name": "invalid-token", "in": "meta not-valid-base64!!!\nboxes \"A\"\n", "out": "boxes \"A\"\n" },
+    { "name": "json-meta", "in": "meta {\"id\":\"b_0fc10001\",\"version\":3}\nboard \"A\"\n", "out": "board \"A\"\n" },
+    { "name": "mermaid-meta", "in": "%% meta {\"id\":\"m_51c67540\",\"version\":1}\nflowchart TD\n  A-->B\n", "out": "flowchart TD\n  A-->B\n" }
+  ],
+  "diagramTitleFromBody": [
+    { "name": "boxes", "in": "boxes \"Onboarding\"\nbox A\n", "out": "Onboarding" },
+    { "name": "board-legacy", "in": "board \"Onboarding\"\nbox A\n", "out": "" },
+    { "name": "mermaid", "in": "%% title Demo\nflowchart TD\n  A-->B\n", "out": "Demo" },
+    { "name": "mermaid-colon", "in": "%% title: \"Ship\"\nflowchart TD\n  A-->B\n", "out": "Ship" },
+    { "name": "flowchart-bare", "in": "flowchart TD\n  A-->B\n", "out": "" },
+    { "name": "sketch-after-style", "in": "style eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX0=\nsketch \"拖动找不到页签\"\ncontent e30=\n", "out": "拖动找不到页签" },
+    { "name": "sketch-empty", "in": "sketch \"\"\ncontent e30=\n", "out": "" },
+    { "name": "boxes-cjk", "in": "boxes \"盒子\"\n", "out": "盒子" }
+  ],
+  "derive_board_title": [
+    { "name": "boxes", "in": "boxes \"Onboarding\"\n", "out": "Onboarding" },
+    { "name": "board-legacy", "in": "board \"Onboarding\"\n", "out": "Untitled" },
+    { "name": "mermaid", "in": "%% title Demo\nflowchart TD\n  A-->B\n", "out": "Demo" },
+    { "name": "flowchart-bare", "in": "flowchart TD\n  A-->B\n", "out": "Untitled" }
+  ],
+  "derive_title": [
+    { "name": "mermaid", "in": "%% title Demo\nflowchart TD\n  A-->B\n", "out": "Demo" },
+    { "name": "flowchart-bare", "in": "flowchart TD\n  A-->B\n", "out": "Untitled" },
+    { "name": "skip-meta", "in": "%% meta {\"id\":\"m_51c67540\",\"version\":1}\n%% title Demo\nflowchart TD\n", "out": "Demo" }
+  ],
+  "newGraphId": [
+    { "name": "fixed-bytes", "bytes": [15, 193, 0, 1], "out": "b_0fc10001" }
+  ]
+}

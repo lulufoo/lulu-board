@@ -10,7 +10,7 @@ def derive_board_title(text: str, fallback: str | None = None) -> str:
     """Human title for a Board source: board "…", else fallback."""
     for raw in str(text or "").splitlines():
         line = raw.strip()
-        if not line or line.startswith("#") or line.startswith("meta "):
+        if not line or line.startswith("#") or re.match(r"^(?:%%\s*)?meta\s+", line):
             continue
         mermaid = re.match(r"^%%\s*title\s*:?\s*(.+?)\s*$", line, flags=re.IGNORECASE)
         if mermaid:

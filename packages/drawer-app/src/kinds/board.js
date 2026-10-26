@@ -1,0 +1,1540 @@
+/* Boxes kind: properties chrome, selection paint, drag, persist. */
+import BoxesRender, { Icons } from '../../../boxes/index.js';
+import { TypeScale } from '../../../boxes/themes/index.js';
+import { register, emit } from '../core/hooks.js';
+import { CanvasInteraction } from '../state/canvas-interaction.js';
+import { stripDocumentMeta } from '../core/document-meta.js';
+import { persistBoardStyle } from './board-style.js';
+import {
+  boardNodeForSelection,
+  boardLinkTargetForElement,
+  boardLinkRefKey,
+  boardLinkSourceEl,
+  normalizeBoardIdInput,
+  boardDomSelectionKey,
+  boardWantsTreeSelect,
+  boardTreeTargetEl,
+  boardSelectionFromBoxEl,
+  boardSelectionWithId,
+  boardItemSelectionFromKey,
+  boardItemSelectionFromEl,
+  selectionKeyFromEl,
+  boardBoxIsTopLevel,
+  boardCanvasPoint,
+  boardParentContent,
+  boardReorderKids,
+  boardPointInRect,
+  boardContentScale,
+  boardReorderInsertBefore,
+  boardEventIsItemMdLink,
+  isBoardCanvasKind,
+  boardCanvasHit,
+  BOARD_EDGE_SELECTED_COLOR,
+} from './board-logic.js';
+import {
+  $,
+  diagramSourceEl,
+  previewEl,
+  propsEmpty,
+  propsFields,
+  propsKindLabel,
+  propsHint,
+  boardTitleEditor,
+  boardTypeEditor,
+  boardShapeField,
+  boardTitleLabel,
+  boardTypeLabel,
+  boardShapeLabel,
+  boardCapField,
+  boardCapEditor,
+  boardCapLabel,
+  boardCapTip,
+  boardNodeFontField,
+  boardNodeFontSlider,
+  boardNodeFontLabel,
+  boardNodeFontTip,
+  boardIdLabel,
+  boardIdField,
+  boardIdEditor,
+  boardIdCopy,
+  boardIdDup,
+  boardIdCopiedTimer,
+  boardDirEditor,
+  boardDirLabel,
+  boardDirTip,
+  boardAlignEditor,
+  boardAlignLabel,
+  boardAlignTip,
+  boardJustifyEditor,
+  boardJustifyLabel,
+  boardJustifyTip,
+  boardOrderField,
+  boardOrderLabel,
+  boardOrderPrev,
+  boardOrderNext,
+  boardArrowEditor,
+  boardArrowLabel,
+  boardArrowField,
+  boardArrowReverse,
+  boardIconField,
+  boardIconLabel,
+  boardIconList,
+  boardIconSec,
+  boardIconPick,
+  boardIconSecId,
+  boardInspector,
+  boardAddBoxButton,
+  boardAddItemButton,
+  boardDeleteButton,
+  boardLinkButton,
+  selectedBoardNode,
+  selectedBoardEdge,
+  boardInspectGesture,
+  boardLinkMode,
+  boardLinkStart,
+  openPropsPanel,
+  setStatus,
+  showDiagramError,
+  updateDiagramChars,
+  setSelectedBoardNode,
+  setSelectedBoardEdge,
+  setBoardInspectGesture,
+  setBoardLinkModeFlag,
+  setBoardLinkStart,
+  setBoardIconPick,
+  setBoardIconSecId,
+  setBoardIdCopiedTimer,
+} from '../state/shell-state.js';
+
+function boardLinkPickFromEvent(event, root, board) {
+  if (!boardLinkMode) return false;
+  var hit = event.target && event.target.closest ? event.target.closest(".board-item, .board-zone") : null;
+  var endpoint = boardLinkTargetForElement(hit || event.target);
+  if (!endpoint) {
+    setBoardLinkMode(false);
+    return true;
+  }
+  if (!boardLinkStart) {
+    setBoardLinkStart(endpoint);
+    document.querySelectorAll(".board-link-source").forEach(function(el) { el.classList.remove("board-link-source"); });
+    var srcEl = boardLinkSourceEl(root, endpoint);
+    if (srcEl) srcEl.classList.add("board-link-source");
+    setStatus("Source " + boardLinkRefKey(endpoint) + " · click target");
+    return true;
+  }
+  var from = boardLinkStart, to = endpoint;
+  if (boardLinkRefKey(from) === boardLinkRefKey(to)) {
+    setStatus("Target cannot match source", true);
+    return true;
+  }
+  try {
+    var result = BoxesRender.addLink(diagramSourceEl.value, from, to, boardLinkTitleValue(), boardLinkTypeValue(), boardLinkArrowValue());
+    applyBoardEditResult(result);
+    setBoardLinkMode(false);
+    setStatus("Linked " + boardLinkRefKey(from) + " → " + boardLinkRefKey(to));
+  } catch (err) {
+    showDiagramError(err instanceof Error ? err.message : String(err));
+  }
+  return true;
+}
+function setBoardLinkMode(active) {
+  setBoardLinkModeFlag(!!active); setBoardLinkStart(null);
+  if (boardLinkButton) boardLinkButton.classList.toggle("is-active", boardLinkMode);
+  document.documentElement.classList.toggle("board-link-mode", boardLinkMode);
+  document.querySelectorAll(".board-link-source").forEach(function(el) { el.classList.remove("board-link-source"); });
+  if (boardLinkMode) {
+    setSelectedBoardEdge(null);
+    delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+    clearBoardSelection();
+    showPropsForLinkMode();
+    setStatus("Link mode · type and title, then click source / target box or item");
+  } else {
+    hidePropsLinkOnlyChrome();
+    clearBoardSelection();
+    if (document.documentElement.dataset.drawerMode === "diagram") setStatus("Board mode");
+  }
+}
+function boardLinkTitleValue() {
+  var value = boardTitleEditor ? String(boardTitleEditor.value || "").trim() : "";
+  return value ? value.slice(0, 48) : "";
+}
+function boardLinkTypeValue() {
+  return boardTypeEditor && String(boardTypeEditor.value || "").toLowerCase() === "dashed" ? "dashed" : "solid";
+}
+function boardLinkArrowValue() {
+  return boardArrowEditor && String(boardArrowEditor.value || "").toLowerCase() === "both" ? "both" : "forward";
+}
+function setBoardArrowField(show, cur) {
+  if (boardArrowField) boardArrowField.hidden = !show;
+  if (boardArrowEditor) boardArrowEditor.hidden = !show;
+  if (boardArrowLabel) boardArrowLabel.hidden = !show;
+  if (boardArrowReverse) boardArrowReverse.hidden = !show;
+  if (show) fillLinkArrowEditor(cur);
+}
+function fillLinkArrowEditor(cur) {
+  if (!boardArrowEditor) return;
+  var arrow = String(cur || "forward").toLowerCase();
+  if (arrow !== "both") arrow = "forward";
+  boardArrowEditor.innerHTML = "<option value=\"forward\">-&gt;</option><option value=\"both\">&lt;-&gt;</option>";
+  boardArrowEditor.value = arrow;
+  boardArrowEditor.hidden = false;
+  boardArrowEditor.disabled = false;
+  if (boardArrowLabel) { boardArrowLabel.hidden = false; boardArrowLabel.textContent = "Arrow"; }
+  if (boardArrowField) boardArrowField.hidden = false;
+  if (boardArrowReverse) {
+    boardArrowReverse.hidden = false;
+    boardArrowReverse.disabled = false;
+  }
+}
+function fillLinkTypeEditor(cur) {
+  if (!boardTypeEditor) return;
+  var opts = ["solid", "dashed"];
+  var type = String(cur || "solid");
+  if (opts.indexOf(type) < 0) type = "solid";
+  boardTypeEditor.innerHTML = opts.map(function(v){ return "<option value=\"" + v + "\">" + v + "</option>"; }).join("");
+  boardTypeEditor.value = type;
+  boardTypeEditor.hidden = false;
+  boardTypeEditor.disabled = false;
+  if (boardTypeLabel) { boardTypeLabel.hidden = false; boardTypeLabel.textContent = "Type"; }
+}
+function showPropsForLinkMode() {
+  if (propsEmpty) propsEmpty.hidden = true;
+  if (propsFields) propsFields.hidden = false;
+  if (propsKindLabel) propsKindLabel.textContent = "link";
+  fillLinkTypeEditor("solid");
+  setBoardArrowField(true, "forward");
+  if (boardTitleEditor) { boardTitleEditor.hidden = false; boardTitleEditor.value = ""; }
+  if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Title"; }
+  if (boardDirEditor) boardDirEditor.hidden = true;
+  if (boardDirLabel) boardDirLabel.hidden = true;
+  setBoardDirTip(false);
+  setBoardAlignJustifyFields(false);
+  setBoardIconField(false);
+  setBoardIdField(false);
+  setBoardShapeField(false);
+  setBoardCapField(false);
+  setBoardNodeFontField(false);
+  if (propsHint) propsHint.textContent = "Type, arrow, and optional title; then click source / target";
+}
+function showPropsForLinkEdge(title, type, arrow) {
+  if (propsEmpty) propsEmpty.hidden = true;
+  if (propsFields) propsFields.hidden = false;
+  if (propsKindLabel) propsKindLabel.textContent = "link";
+  fillLinkTypeEditor(type);
+  setBoardArrowField(true, arrow);
+  if (boardTitleEditor) { boardTitleEditor.hidden = false; boardTitleEditor.value = String(title || ""); }
+  if (boardTitleLabel) { boardTitleLabel.hidden = false; boardTitleLabel.textContent = "Title"; }
+  if (boardDirEditor) boardDirEditor.hidden = true;
+  if (boardDirLabel) boardDirLabel.hidden = true;
+  setBoardDirTip(false);
+  setBoardAlignJustifyFields(false);
+  setBoardIconField(false);
+  setBoardIdField(false);
+  if (propsHint) propsHint.textContent = "Type, arrow, and title write back to DSL";
+  setBoardShapeField(false);
+  setBoardCapField(false);
+  setBoardNodeFontField(false);
+}
+function setBoardShapeField(show, shape) {
+  var cur = shape === "diamond" ? "diamond" : "rect";
+  if (boardShapeField) {
+    boardShapeField.hidden = !show;
+    Array.from(boardShapeField.querySelectorAll("[data-shape]")).forEach(function(btn) {
+      btn.disabled = !show;
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-shape") === cur ? "true" : "false");
+    });
+  }
+  if (boardShapeLabel) boardShapeLabel.hidden = !show;
+}
+function setBoardCapField(show, cap) {
+  var authored = cap === "off";
+  var cur = authored ? "off" : "on";
+  if (boardCapField) boardCapField.hidden = !show;
+  if (boardCapEditor) {
+    boardCapEditor.hidden = !show;
+    if (show) boardCapEditor.value = cur;
+  }
+  if (boardCapLabel) boardCapLabel.hidden = !show;
+  setAuthoredTip(boardCapTip, show, authored);
+}
+function selectedNodeStyleId() {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return "";
+  return String(selectedBoardNode.id || "").trim();
+}
+function selectedNodeFontEl() {
+  var root = document.querySelector(".board-render");
+  if (!root || !selectedBoardNode) return null;
+  var id = selectedNodeStyleId();
+  var el = id ? root.querySelector('[data-board-id="' + id + '"]') : null;
+  if (el) return el;
+  return selectedBoardNode.key ? root.querySelector('[data-board-key="' + selectedBoardNode.key + '"]') : null;
+}
+function setBoardNodeFontField(show, authoredStep, globalStep) {
+  var effective = authoredStep == null ? globalStep : authoredStep;
+  if (boardNodeFontField) boardNodeFontField.hidden = !show;
+  if (boardNodeFontLabel) boardNodeFontLabel.hidden = !show;
+  if (boardNodeFontSlider) {
+    boardNodeFontSlider.hidden = !show;
+    if (show) {
+      boardNodeFontSlider.value = String(effective);
+      emit("paintStyleRange", boardNodeFontSlider);
+    }
+  }
+  if (boardNodeFontTip) {
+    var inherit = !!show && authoredStep == null;
+    boardNodeFontTip.hidden = !inherit;
+    boardNodeFontTip.textContent = inherit ? "same as global" : "";
+  }
+}
+function previewBoardNodeFont(step) {
+  if (!TypeScale) return;
+  var n = TypeScale.clampStep(step);
+  var el = selectedNodeFontEl();
+  if (!el) return;
+  if (selectedBoardNode && selectedBoardNode.kind === "box" && typeof TypeScale.applyBoxTitleStep === "function") {
+    TypeScale.applyBoxTitleStep(el, el.dataset.boardType || "card", n);
+  } else if (typeof TypeScale.applyItemStep === "function") {
+    TypeScale.applyItemStep(el, n);
+  }
+}
+function commitBoardNodeFont(persist, rerender) {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || !boardNodeFontSlider || typeof BoxesRender === "undefined" || typeof BoxesRender.updateNodeTypeStep !== "function") return;
+  var n = (TypeScale && typeof TypeScale.clampStep === "function")
+    ? TypeScale.clampStep(boardNodeFontSlider.value)
+    : Math.min(3, Math.max(-3, Math.round(Number(boardNodeFontSlider.value) || 0)));
+  emit("paintStyleRange", boardNodeFontSlider);
+  previewBoardNodeFont(n);
+  if (!persist) return;
+  try {
+    var raw = diagramSourceEl.value;
+    var body = stripDocumentMeta(raw);
+    var nextBody = BoxesRender.updateNodeTypeStep(body, selectedBoardNode, n);
+    var next = nextBody;
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      updateDiagramChars();
+      if (rerender) emit("renderDiagram", { fit: false });
+      emit("scheduleDiagramSave");
+    }
+    var board = BoxesRender.parse(nextBody);
+    var node = typeof BoxesRender.findNode === "function" ? BoxesRender.findNode(board, selectedBoardNode) : null;
+    var id = node && node.id ? String(node.id) : selectedNodeStyleId();
+    if (id) {
+      setSelectedBoardNode(boardSelectionWithId(selectedBoardNode, id));
+      setBoardIdField(true, id);
+    }
+    setBoardNodeFontField(true, id ? BoxesRender.authoredNodeTypeStep(board, id) : null, BoxesRender.resolveStyle(board).type_step);
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function setAuthoredTip(el, show, authored) {
+  if (!el) return;
+  var unset = !!show && !authored;
+  el.hidden = !unset;
+  el.textContent = unset ? "default · not in source" : "";
+}
+function setBoardDirTip(show, authored) {
+  setAuthoredTip(boardDirTip, show, authored);
+}
+function setBoardAlignJustifyFields(show, align, justify) {
+  var authoredA = align === "start" || align === "center" || align === "stretch";
+  var authoredJ = justify === "start" || justify === "center" || justify === "between" || justify === "stretch";
+  var a = authoredA ? align : "stretch";
+  var j = authoredJ ? justify : "start";
+  if (boardAlignEditor) {
+    boardAlignEditor.hidden = !show;
+    if (show) boardAlignEditor.value = a;
+  }
+  if (boardAlignLabel) boardAlignLabel.hidden = !show;
+  setAuthoredTip(boardAlignTip, show, authoredA);
+  if (boardJustifyEditor) {
+    boardJustifyEditor.hidden = !show;
+    if (show) boardJustifyEditor.value = j;
+  }
+  if (boardJustifyLabel) boardJustifyLabel.hidden = !show;
+  setAuthoredTip(boardJustifyTip, show, authoredJ);
+}
+function setBoardOrderField(show, info) {
+  if (boardOrderField) boardOrderField.hidden = !show;
+  if (boardOrderLabel) boardOrderLabel.hidden = !show;
+  var row = !!(show && info && info.direction === "row");
+  var atStart = !info || info.index <= 0;
+  var atEnd = !info || info.index >= info.count - 1 || info.count < 2;
+  if (boardOrderPrev) {
+    boardOrderPrev.hidden = !show;
+    boardOrderPrev.disabled = !show || atStart;
+    boardOrderPrev.textContent = row ? "Left" : "Up";
+    boardOrderPrev.title = row ? "Option+Left" : "Option+Up";
+    boardOrderPrev.setAttribute("aria-label", row ? "Move left" : "Move up");
+  }
+  if (boardOrderNext) {
+    boardOrderNext.hidden = !show;
+    boardOrderNext.disabled = !show || atEnd;
+    boardOrderNext.textContent = row ? "Right" : "Down";
+    boardOrderNext.title = row ? "Option+Right" : "Option+Down";
+    boardOrderNext.setAttribute("aria-label", row ? "Move right" : "Move down");
+  }
+}
+function hidePropsLinkOnlyChrome() {
+  if (boardTypeEditor) { boardTypeEditor.hidden = false; boardTypeEditor.disabled = false; }
+  if (boardTypeLabel) boardTypeLabel.hidden = false;
+  if (boardTitleEditor) boardTitleEditor.hidden = false;
+  if (boardTitleLabel) boardTitleLabel.hidden = false;
+  if (boardDirEditor) boardDirEditor.hidden = false;
+  if (boardDirLabel) boardDirLabel.hidden = false;
+  setBoardAlignJustifyFields(false);
+  setBoardOrderField(false);
+  setBoardArrowField(false);
+  setBoardShapeField(false);
+  setBoardCapField(false);
+  setBoardNodeFontField(false);
+}
+function fillBoardIconSec() {
+  if (!boardIconSec || !Icons || !Icons.sections) return;
+  // One category at a time, picked from a dropdown.
+  boardIconSec.innerHTML = Icons.sections.map(function(sec) {
+    return "<option value=\"" + sec.id + "\"" + (sec.id === boardIconSecId ? " selected" : "") + ">" + sec.label + "</option>";
+  }).join("");
+  if (boardIconSecId) boardIconSec.value = boardIconSecId;
+}
+function fillBoardIconList() {
+  if (!boardIconList || !Icons || !Icons.glyph || !Icons.sections) return;
+  var spec = boardIconSecId ? Icons.sections.filter(function(sec) { return sec.id === boardIconSecId; })[0] : null;
+  if (!spec) {
+    var first = Icons.sections[0];
+    if (first && first.id) {
+      setBoardIconSecId(first.id);
+      spec = first;
+    } else {
+      setBoardIconSecId("");
+      boardIconList.innerHTML = "";
+      fillBoardIconSec();
+      return;
+    }
+  }
+  var html = "";
+  (spec.icons || []).forEach(function(n) {
+    var num = String(n).padStart(3, "0");
+    var gloss = (Icons.gloss && Icons.gloss[n]) || "";
+    html += "<button type=\"button\" class=\"props-icon-btn\" role=\"option\" data-icon=\"" + n + "\" title=\"" + num + (gloss ? " " + gloss : "") + "\">" +
+      "<span class=\"props-icon-glyph\" aria-hidden=\"true\">" + (Icons.glyph(n) || "") + "</span>" +
+      "<span class=\"props-icon-num\">" + num + "</span>" +
+      (gloss ? "<span class=\"props-icon-gloss\">" + gloss + "</span>" : "") + "</button>";
+  });
+  boardIconList.innerHTML = html;
+  fillBoardIconSec();
+}
+function markBoardIconPick(icon) {
+  if (!boardIconList) return;
+  Array.from(boardIconList.querySelectorAll(".props-icon-btn")).forEach(function(btn) {
+    var on = Number(btn.dataset.icon) === Number(icon);
+    btn.classList.toggle("is-selected", on);
+    btn.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  var selected = boardIconList.querySelector(".props-icon-btn.is-selected");
+  if (selected && selected.scrollIntoView) selected.scrollIntoView({ block: "nearest" });
+}
+
+
+function markBoardIdCopied(on) {
+  if (!boardIdCopy) return;
+  boardIdCopy.classList.toggle("is-copied", !!on);
+  if (boardIdCopiedTimer) clearTimeout(boardIdCopiedTimer);
+  setBoardIdCopiedTimer(0);
+  if (on) setBoardIdCopiedTimer(setTimeout(function() { markBoardIdCopied(false); }, 1200));
+}
+function syncBoardIdDup() {
+  var draft = boardIdEditor ? normalizeBoardIdInput(boardIdEditor.value) : "";
+  var taken = false;
+  if (draft && selectedBoardNode && typeof BoxesRender !== "undefined" && typeof BoxesRender.isIdTaken === "function") {
+    try { taken = !!BoxesRender.isIdTaken(diagramSourceEl.value, selectedBoardNode, draft); }
+    catch (_) { taken = false; }
+  }
+  if (boardIdEditor) boardIdEditor.classList.toggle("is-dup", taken);
+  if (boardIdDup) boardIdDup.hidden = !taken;
+  return taken;
+}
+function setBoardIdField(show, id) {
+  var value = show ? String(id == null ? "" : id).trim() : "";
+  if (boardIdLabel) boardIdLabel.hidden = !show;
+  if (boardIdField) boardIdField.hidden = !show;
+  if (boardIdEditor) {
+    boardIdEditor.value = value;
+    boardIdEditor.classList.remove("is-dup");
+  }
+  if (boardIdDup) boardIdDup.hidden = true;
+  if (boardIdCopy) {
+    boardIdCopy.disabled = !value;
+    boardIdCopy.setAttribute("aria-label", value ? "Copy node ID " + value : "Copy node ID");
+  }
+  markBoardIdCopied(false);
+}
+function filterBoardIdEditor() {
+  if (!boardIdEditor) return "";
+  var start = boardIdEditor.selectionStart;
+  var raw = String(boardIdEditor.value || "");
+  var next = normalizeBoardIdInput(raw);
+  if (next !== raw) {
+    var caret = normalizeBoardIdInput(raw.slice(0, start)).length;
+    boardIdEditor.value = next;
+    if (typeof boardIdEditor.setSelectionRange === "function") boardIdEditor.setSelectionRange(caret, caret);
+  }
+  if (boardIdCopy) {
+    boardIdCopy.disabled = !next;
+    boardIdCopy.setAttribute("aria-label", next ? "Copy node ID " + next : "Copy node ID");
+  }
+  markBoardIdCopied(false);
+  syncBoardIdDup();
+  return next;
+}
+function commitBoardId() {
+  if (!boardIdEditor || !selectedBoardNode) return;
+  if (selectedBoardNode.kind !== "box" && selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.updateId !== "function") return;
+  var current = String(selectedBoardNode.id || "").trim();
+  var raw = String(boardIdEditor.value || "").trim();
+  if (raw === current) return;
+  var next = filterBoardIdEditor();
+  if (next === current) return;
+  if (syncBoardIdDup()) return;
+  var keepSelection = boardSelectionWithId(selectedBoardNode, next);
+  try {
+    var source = BoxesRender.updateId(diagramSourceEl.value, selectedBoardNode, next);
+    if (source !== diagramSourceEl.value) {
+      diagramSourceEl.value = source;
+      setSelectedBoardNode(keepSelection);
+      diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+    }
+  } catch (err) {
+    showDiagramError(err instanceof Error ? err.message : String(err));
+  }
+}
+function setBoardIconField(show, icon) {
+  if (boardIconField) boardIconField.hidden = !show;
+  if (!show || !boardIconList) return;
+  var n = Number(icon);
+  var ok = Number.isInteger(n) && n > 0 && Icons && Icons.glyph && Icons.glyph(n);
+  setBoardIconPick(ok ? n : null);
+  setBoardIconSecId(ok && Icons.sectionOf ? Icons.sectionOf(n) : "");
+  fillBoardIconList();
+  markBoardIconPick(boardIconPick);
+}
+function commitBoardIcon(nextIcon) {
+  if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") || typeof BoxesRender.updateIcon !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateIcon(diagramSourceEl.value, selectedBoardNode, nextIcon);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus(nextIcon == null ? "Icon cleared" : "Icon · " + nextIcon);
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+
+
+function readBoardEdgePaint(el, attr) {
+  if (!el) return "";
+  var direct = (el.getAttribute && el.getAttribute(attr)) || "";
+  if (direct && direct !== "none" && direct !== "currentColor" && direct !== "context-stroke") return direct;
+  try {
+    var cs = window.getComputedStyle(el);
+    if (attr === "stroke" && cs && cs.stroke && cs.stroke !== "none") return cs.stroke;
+    if (attr === "fill" && cs && cs.fill && cs.fill !== "none") return cs.fill;
+  } catch (_e) {}
+  return direct || "";
+}
+function restoreBoardEdgePaint(el) {
+  if (!el) return;
+  if (el.hasAttribute("data-board-sel-stroke")) {
+    var prevStroke = el.getAttribute("data-board-sel-stroke");
+    var prevWidth = el.getAttribute("data-board-sel-width");
+    var prevStyleStroke = el.getAttribute("data-board-sel-style-stroke");
+    var prevStyleWidth = el.getAttribute("data-board-sel-style-width");
+    if (prevStroke === "") el.removeAttribute("stroke");
+    else el.setAttribute("stroke", prevStroke);
+    if (prevWidth === "") el.removeAttribute("stroke-width");
+    else el.setAttribute("stroke-width", prevWidth);
+    if (el.style) {
+      if (prevStyleStroke === "") el.style.removeProperty("stroke");
+      else el.style.stroke = prevStyleStroke;
+      if (prevStyleWidth === "") el.style.removeProperty("stroke-width");
+      else el.style.strokeWidth = prevStyleWidth;
+    }
+    el.removeAttribute("data-board-sel-stroke");
+    el.removeAttribute("data-board-sel-width");
+    el.removeAttribute("data-board-sel-style-stroke");
+    el.removeAttribute("data-board-sel-style-width");
+  }
+  if (el.hasAttribute("data-board-sel-fill")) {
+    var prevFill = el.getAttribute("data-board-sel-fill");
+    var prevStyleFill = el.getAttribute("data-board-sel-style-fill");
+    if (prevFill === "") el.removeAttribute("fill");
+    else el.setAttribute("fill", prevFill);
+    if (el.style) {
+      if (prevStyleFill === "") el.style.removeProperty("fill");
+      else el.style.fill = prevStyleFill;
+    }
+    el.removeAttribute("data-board-sel-fill");
+    el.removeAttribute("data-board-sel-style-fill");
+  }
+  if (el.dataset.boardMarker) {
+    el.setAttribute("marker-end", el.dataset.boardMarker);
+    delete el.dataset.boardMarker;
+  }
+}
+function restoreBoardEdgeMarker(el) {
+  restoreBoardEdgePaint(el);
+}
+
+function applyBoardEdgeSelection(root) {
+  document.querySelectorAll(".board-edge-selected").forEach(function(el) {
+    el.classList.remove("board-edge-selected");
+    restoreBoardEdgePaint(el);
+  });
+  if (!selectedBoardEdge && diagramSourceEl.dataset.boardEdgeSelectionKey) {
+    var index = Number(String(diagramSourceEl.dataset.boardEdgeSelectionKey).split(":")[1]);
+    if (Number.isInteger(index)) setSelectedBoardEdge({ kind: "link", key: "link:" + index, index: index });
+  }
+  if (!selectedBoardEdge || !root) return;
+  Array.from(root.querySelectorAll("[data-board-edge-key]")).forEach(function(el) {
+    if (el.dataset.boardEdgeKey !== selectedBoardEdge.key) return;
+    if (el.classList.contains("board-slot")) return;
+    el.classList.add("board-edge-selected");
+    if (el.classList.contains("board-edge-visible")) {
+      // Keep theme marker; context-stroke follows darkened path stroke (no black arrow swap).
+      if (!el.hasAttribute("data-board-sel-stroke")) {
+        el.setAttribute("data-board-sel-stroke", el.getAttribute("stroke") || "");
+        el.setAttribute("data-board-sel-width", el.getAttribute("stroke-width") || "");
+        el.setAttribute("data-board-sel-style-stroke", (el.style && el.style.stroke) || "");
+        el.setAttribute("data-board-sel-style-width", (el.style && el.style.strokeWidth) || "");
+      }
+      var base = readBoardEdgePaint(el, "stroke") || "#2563eb";
+      var accent = BOARD_EDGE_SELECTED_COLOR;
+      el.setAttribute("stroke", accent);
+      el.setAttribute("stroke-width", "2");
+      if (el.style) {
+        el.style.stroke = accent;
+        el.style.strokeWidth = "2px";
+      }
+    }
+    if (el.classList.contains("board-edge-label")) {
+      if (!el.hasAttribute("data-board-sel-fill")) {
+        el.setAttribute("data-board-sel-fill", el.getAttribute("fill") || "");
+        el.setAttribute("data-board-sel-style-fill", (el.style && el.style.fill) || "");
+      }
+      var labelBase = readBoardEdgePaint(el, "fill") || readBoardEdgePaint(el, "stroke") || "#2563eb";
+      var labelAccent = BOARD_EDGE_SELECTED_COLOR;
+      el.setAttribute("fill", labelAccent);
+      if (el.style) el.style.fill = labelAccent;
+    }
+    if (el.parentNode) el.parentNode.appendChild(el);
+  });
+}
+function selectBoardEdge(root, index) {
+  var nextKey = "link:" + index;
+  setSelectedBoardNode(null); setSelectedBoardEdge({ kind: "link", key: nextKey, index: index });
+  delete diagramSourceEl.dataset.boardSelectionKey; diagramSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key;
+  var title = "control";
+  var type = "solid";
+  var arrow = "forward";
+  try {
+    var board = BoxesRender.parse(diagramSourceEl.value);
+    var link = (board.links || [])[index];
+    if (link && (link.title || link.label)) title = link.title || link.label;
+    if (link && link.type) type = link.type;
+    if (link && link.arrow === "both") arrow = "both";
+  } catch (_) {}
+  showPropsForLinkEdge(title, type, arrow);
+  applyBoardEdgeSelection(root); syncBoardEditControls();
+}
+function syncBoardEditControls() {
+  var hasSelection = (!!selectedBoardNode && selectedBoardNode.kind !== "title") || !!selectedBoardEdge;
+  // Item can add into a selected box OR as a top-level item (BoxesRender.addItem) — keep enabled.
+  if (boardAddItemButton) boardAddItemButton.disabled = false;
+  if (boardDeleteButton) boardDeleteButton.disabled = !hasSelection;
+}
+function currentBoardSelectionKey() {
+  if (selectedBoardEdge) return selectedBoardEdge.key;
+  if (selectedBoardNode) return selectedBoardNode.key;
+  return diagramSourceEl.dataset.boardSelectionKey || diagramSourceEl.dataset.boardEdgeSelectionKey || "";
+}
+
+function beginInspectGesture(key) {
+  setBoardInspectGesture({ key: key || "", already: !!(key && key === currentBoardSelectionKey()), moved: false });
+}
+function markInspectGestureMoved() {
+  if (boardInspectGesture) boardInspectGesture.moved = true;
+}
+function consumeInspectClick(key) {
+  var gesture = boardInspectGesture;
+  setBoardInspectGesture(null);
+  return !!(gesture && !gesture.moved && gesture.already && gesture.key && gesture.key === key);
+}
+function inspectBoardSelection() {
+  if (boardLinkMode) return;
+  openPropsPanel();
+}
+function clearBoardSelection() {
+  setBoardInspectGesture(null);
+  setSelectedBoardNode(null);
+  setSelectedBoardEdge(null);
+  delete diagramSourceEl.dataset.boardSelectionKey;
+  delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+  document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); });
+  document.querySelectorAll(".board-edge-selected").forEach(function(el) {
+    el.classList.remove("board-edge-selected");
+    restoreBoardEdgeMarker(el);
+  });
+  if (!boardLinkMode) {
+    hidePropsLinkOnlyChrome();
+    if (boardInspector) boardInspector.hidden = true;
+  }
+  syncBoardEditControls();
+}
+
+
+function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSelection(root); if (selectedBoardEdge) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } document.querySelectorAll(".board-selection, .board-selection-tree, .canvas-selected").forEach(function(el) { el.classList.remove("board-selection", "board-selection-tree", "canvas-selected"); }); if (restoreFromDataset && !selectedBoardNode && diagramSourceEl.dataset.boardSelectionKey) { var parts = diagramSourceEl.dataset.boardSelectionKey.split(":"); setSelectedBoardNode(parts[0] === "title" ? { kind: "title", key: "title:board" } : parts[0] === "tree" ? { kind: "box", key: diagramSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "tree" } : parts[0] === "box" ? { kind: "box", key: diagramSourceEl.dataset.boardSelectionKey, id: parts.slice(1).join(":"), scope: "shell" } : boardItemSelectionFromKey(diagramSourceEl.dataset.boardSelectionKey)); } if (!selectedBoardNode || !root) { if (boardInspector) boardInspector.hidden = true; syncBoardEditControls(); return; } var matchKey = selectedBoardNode.kind === "box" ? "box:" + selectedBoardNode.id : selectedBoardNode.key; var match = Array.from(root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === matchKey; });
+  if (!match && selectedBoardNode.kind === "title") {
+    match = (typeof boardPinnedTitleNode === "function" && boardPinnedTitleNode())
+      || document.querySelector("#boardTitlePin [data-board-key=\"title:board\"]")
+      || document.querySelector("#boardTitlePin .board-title-node, #boardTitlePin .board-html-header");
+  }
+  if (!match) { clearBoardSelection(); return; }
+  match.classList.add("board-selection", "canvas-selected");
+  if (selectedBoardNode.kind === "box" && selectedBoardNode.scope === "tree") {
+    match.classList.add("board-selection-tree");
+    match.querySelectorAll(".board-zone, .board-item").forEach(function(el) { el.classList.add("board-selection", "canvas-selected"); });
+  }
+  if (boardTitleEditor && selectedBoardNode) {
+    var isTitle = selectedBoardNode.kind === "title";
+    var isItem = selectedBoardNode.kind === "item";
+    var node = isTitle ? { title: (board && board.title) || "", type: "boxes" } : boardNodeForSelection(board, selectedBoardNode);
+    if (!node && !isTitle) { clearBoardSelection(); return; }
+    boardInspector.hidden = false;
+    hidePropsLinkOnlyChrome();
+    if (propsEmpty) propsEmpty.hidden = true;
+    if (propsFields) propsFields.hidden = false;
+    if (propsKindLabel) propsKindLabel.textContent = isTitle ? "boxes" : (isItem ? "item" : (selectedBoardNode.scope === "tree" ? "box tree" : "box"));
+    var itemType = isItem ? String((node && node.type) || "chip") : "";
+    var isNote = itemType === "note";
+    var isChipItem = itemType === "chip";
+    var isTextItem = itemType === "text";
+    var isMd = isNote || isChipItem || isTextItem;
+    var isIcon = itemType === "icon";
+    var isBoxIcon = !isTitle && !isItem;
+    if (boardTitleLabel) boardTitleLabel.textContent = (isTitle || isItem) ? "Text" : "Title";
+    boardTitleEditor.value = isItem ? (node.text || "") : (node.title || "");
+    boardTitleEditor.rows = isMd ? 6 : 1;
+    boardTitleEditor.classList.toggle("is-multiline", !!isMd);
+    if (boardTypeEditor) {
+      var opts = isTitle ? ["boxes"] : (isItem ? ["chip", "text", "note", "icon"] : ["card", "container", "layout"]);
+      var cur = isTitle ? "boxes" : (isItem ? (node.type || "chip") : (node.type || node.kind || "card"));
+      boardTypeEditor.innerHTML = opts.map(function(v){ return "<option value=\"" + v + "\">" + v + "</option>"; }).join("");
+      boardTypeEditor.value = opts.indexOf(cur) >= 0 ? cur : opts[0];
+      boardTypeEditor.disabled = !!isTitle;
+      boardTypeEditor.hidden = false;
+      if (boardTypeLabel) { boardTypeLabel.hidden = false; boardTypeLabel.textContent = "Type"; }
+    }
+    var protoId = "";
+    if (!isTitle) protoId = (node && node.id) || (match && match.dataset && match.dataset.boardId) || selectedBoardNode.id || "";
+    if (isTitle) setBoardIdField(false);
+    else setBoardIdField(true, protoId);
+    var boxType = (!isTitle && !isItem) ? String((node && (node.type || node.kind)) || "card").toLowerCase() : "";
+    var isLayoutBox = boxType === "layout";
+    if (isLayoutBox) {
+      boardTitleEditor.value = "";
+      boardTitleEditor.disabled = true;
+      if (boardTitleLabel) boardTitleLabel.hidden = true;
+      boardTitleEditor.hidden = true;
+    } else {
+      boardTitleEditor.disabled = false;
+      boardTitleEditor.hidden = false;
+      if (boardTitleLabel) boardTitleLabel.hidden = false;
+    }
+    setBoardShapeField(!!isChipItem, node && node.shape);
+    setBoardCapField(!!isMd, node && node.cap);
+    var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
+    var showFont = !isTitle;
+    var authoredFz = (showFont && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeTypeStep === "function")
+      ? BoxesRender.authoredNodeTypeStep(board, nodeId)
+      : null;
+    var globalStep = (typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function")
+      ? BoxesRender.resolveStyle(board || {}).type_step
+      : 0;
+    setBoardNodeFontField(showFont, authoredFz, globalStep);
+    setBoardIconField((isIcon || isBoxIcon) && !isLayoutBox, ((isIcon || isBoxIcon) && !isLayoutBox) ? (node && node.icon) : null);
+    if (boardDirEditor) {
+      var showDir = !isItem;
+      boardDirEditor.hidden = !showDir;
+      if (boardDirLabel) boardDirLabel.hidden = !showDir;
+      if (showDir) {
+        var layout = (board && board.layout) || {};
+        var authored = isTitle
+          ? (layout.board && layout.board.direction)
+          : (((layout.boxes || {})[selectedBoardNode.id] || {}).direction);
+        var curDir = (authored === "row" || authored === "column")
+          ? authored
+          : (isTitle ? "row" : "column");
+        boardDirEditor.value = curDir;
+        setBoardDirTip(true, authored === "row" || authored === "column");
+      } else {
+        setBoardDirTip(false);
+      }
+    }
+    if (!isTitle && !isItem) {
+      var boxProps = (((board && board.layout && board.layout.boxes) || {})[selectedBoardNode.id] || {});
+      setBoardAlignJustifyFields(true, boxProps.align, boxProps.justify);
+    } else {
+      setBoardAlignJustifyFields(false);
+    }
+    var orderInfo = null;
+    if (!isTitle && typeof BoxesRender !== "undefined" && typeof BoxesRender.reorderInfo === "function") {
+      try { orderInfo = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
+    }
+    setBoardOrderField(!!orderInfo, orderInfo);
+    if (propsHint) propsHint.textContent = isTitle
+      ? "Board document · edit text; Direction = top-level box flow (default row)"
+      : (isItem
+        ? (isIcon
+          ? "Icon · pick a category, then an icon number; Text is optional"
+          : (isMd
+          ? "Markdown · headings / lists / bold / italic / code; Enter = new line, ⌘/Ctrl+Enter saves"
+          : (selectedBoardNode.boxId ? "Leaf inside a box · arrows select siblings · drag to reorder" : "Top-level item · Shape on chip; drag to place")))
+        : (isLayoutBox
+          ? "Layout · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected"
+          : (boxType === "container"
+            ? "Container · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected"
+            : "Box · ⌘/Ctrl-click selects the tree; Delete removes the shell, or the tree when the tree is selected")));
+  } syncBoardEditControls(); }
+function selectBoardElement(el, root, board, event) {
+  if (!el) return clearBoardSelection();
+  var isTitle = el.classList.contains("board-title-node") || el.classList.contains("board-html-header") || el.dataset.boardKind === "title" || (el.dataset.boardKey || "") === "title:board";
+  var isItem = !isTitle && (el.classList.contains("board-item") || el.dataset.boardKind === "item" || (el.dataset.boardKey || "").indexOf("item:") === 0);
+  var next;
+  if (isTitle) next = { kind: "title", key: "title:board" };
+  else if (boardWantsTreeSelect(event)) {
+    var treeEl = boardTreeTargetEl(el);
+    next = (treeEl && treeEl.dataset.boardId) ? boardSelectionFromBoxEl(treeEl, "tree") : (isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell"));
+  } else {
+    next = isItem ? boardItemSelectionFromEl(el) : boardSelectionFromBoxEl(el, "shell");
+  }
+  setSelectedBoardEdge(null);
+  setSelectedBoardNode(next);
+  delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+  diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  applyBoardSelection(root, board);
+}
+function pickBoardElement(el, root, board, event) {
+  beginInspectGesture(selectionKeyFromEl(el));
+  selectBoardElement(el, root, board, event);
+}
+
+function boardTitlePinEl() {
+  return document.getElementById("boardTitlePin");
+}
+function boardPinnedTitleNode() {
+  var pin = boardTitlePinEl();
+  return (pin && pin.querySelector(".board-title-node, .board-html-header"))
+    || (previewEl && previewEl.querySelector(".board-title-node, .board-html-header"))
+    || null;
+}
+function clampBoardDragPosition(canvas, x, y) {
+  // Unbounded like blank-canvas pan / grid — no title or origin floor.
+  return { x: x, y: y };
+}
+
+
+function clearBoardReorderCaret(content) {
+  if (!content) return;
+  var caret = content.querySelector(":scope > .board-reorder-caret");
+  if (caret) caret.remove();
+}
+function boardReorderGapRect(prevEl, nextEl, row, prev, next) {
+  var node = prevEl && prevEl.nextElementSibling;
+  while (node && node !== nextEl) {
+    if (node.classList && node.classList.contains("board-slot")) return node.getBoundingClientRect();
+    node = node.nextElementSibling;
+  }
+  if (row) {
+    return {
+      left: prev.right,
+      right: next.left,
+      top: Math.min(prev.top, next.top),
+      bottom: Math.max(prev.bottom, next.bottom),
+      width: next.left - prev.right,
+      height: Math.max(prev.bottom, next.bottom) - Math.min(prev.top, next.top)
+    };
+  }
+  return {
+    left: Math.min(prev.left, next.left),
+    right: Math.max(prev.right, next.right),
+    top: prev.bottom,
+    bottom: next.top,
+    width: Math.max(prev.right, next.right) - Math.min(prev.left, next.left),
+    height: next.top - prev.bottom
+  };
+}
+function placeBoardReorderCaret(content, insertBefore) {
+  var kids = boardReorderKids(content);
+  if (!content || !kids.length) return;
+  var caret = content.querySelector(":scope > .board-reorder-caret");
+  if (!caret) {
+    caret = document.createElement("span");
+    caret.className = "board-reorder-caret";
+    caret.setAttribute("aria-hidden", "true");
+    content.appendChild(caret);
+  }
+  var row = content.classList.contains("board-dir-row");
+  var origin = content.getBoundingClientRect();
+  var scale = boardContentScale(content);
+  var cs = getComputedStyle(content);
+  var innerLeft = origin.left + (content.clientLeft + (parseFloat(cs.paddingLeft) || 0)) / scale.x;
+  var innerTop = origin.top + (content.clientTop + (parseFloat(cs.paddingTop) || 0)) / scale.y;
+  var innerRight = origin.right - ((parseFloat(cs.borderRightWidth) || 0) + (parseFloat(cs.paddingRight) || 0)) / scale.x;
+  var innerBottom = origin.bottom - ((parseFloat(cs.borderBottomWidth) || 0) + (parseFloat(cs.paddingBottom) || 0)) / scale.y;
+  var seam;
+  var crossStart;
+  var crossSize;
+  if (insertBefore > 0 && insertBefore < kids.length) {
+    var prevEl = kids[insertBefore - 1];
+    var nextEl = kids[insertBefore];
+    var prev = prevEl.getBoundingClientRect();
+    var next = nextEl.getBoundingClientRect();
+    var gap = boardReorderGapRect(prevEl, nextEl, row, prev, next);
+    seam = row ? (gap.left + gap.right) / 2 : (gap.top + gap.bottom) / 2;
+    crossStart = row ? gap.top : gap.left;
+    crossSize = row ? gap.height : gap.width;
+  } else if (insertBefore <= 0) {
+    var first = kids[0].getBoundingClientRect();
+    seam = row ? (innerLeft + first.left) / 2 : (innerTop + first.top) / 2;
+    crossStart = row ? first.top : first.left;
+    crossSize = row ? first.height : first.width;
+  } else {
+    var last = kids[kids.length - 1].getBoundingClientRect();
+    seam = row ? (last.right + innerRight) / 2 : (last.bottom + innerBottom) / 2;
+    crossStart = row ? last.top : last.left;
+    crossSize = row ? last.height : last.width;
+  }
+  var bar = row ? Math.max(2, 2 * scale.x) : Math.max(2, 2 * scale.y);
+  if (row) {
+    caret.style.left = ((seam - origin.left) * scale.x - bar / 2) + "px";
+    caret.style.top = ((crossStart - origin.top) * scale.y) + "px";
+    caret.style.width = bar + "px";
+    caret.style.height = Math.max(crossSize * scale.y, 16) + "px";
+  } else {
+    caret.style.left = ((crossStart - origin.left) * scale.x) + "px";
+    caret.style.top = ((seam - origin.top) * scale.y - bar / 2) + "px";
+    caret.style.width = Math.max(crossSize * scale.x, 16) + "px";
+    caret.style.height = bar + "px";
+  }
+}
+function startBoardReorderDrag(dragEl, event) {
+  var content = boardParentContent(dragEl);
+  if (!content) return null;
+  return {
+    hit: dragEl,
+    content: content,
+    parentZone: content.closest(".board-zone"),
+    pointerId: event.pointerId,
+    moved: false,
+    mode: "reorder",
+    insertBefore: null,
+    startClientX: event.clientX,
+    startClientY: event.clientY
+  };
+}
+function wireBoardDrag(root, board) {
+  var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardDragWired === "1") return; canvas.dataset.boardDragWired = "1"; var drag = null;
+  canvas.addEventListener("pointerdown", function(event) {
+    if (event.button !== 0) return;
+    if (boardLinkMode) {
+      boardLinkPickFromEvent(event, root, board);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    if (boardEventIsItemMdLink(event)) return;
+    var edgeHit = event.target.closest ? event.target.closest(".board-edge-hit, .board-edge-label, .board-slot.is-link") : null;
+    if (edgeHit && canvas.contains(edgeHit)) {
+      var edgeIndex = Number(edgeHit.dataset.boardEdgeIndex);
+      if (Number.isInteger(edgeIndex)) {
+        var edgeKey = edgeHit.dataset.boardEdgeKey || ("link:" + edgeIndex);
+        beginInspectGesture(edgeKey);
+        selectBoardEdge(root, edgeIndex);
+        if (boardInspectGesture && boardInspectGesture.already) inspectBoardSelection();
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    var itemHit = event.target.closest ? event.target.closest(".board-item") : null;
+    var zoneHit = event.target.closest ? event.target.closest(".board-zone") : null;
+    if (itemHit && !canvas.contains(itemHit)) itemHit = null;
+    if (zoneHit && !canvas.contains(zoneHit)) zoneHit = null;
+    var titleHit = event.target.closest ? event.target.closest(".board-title-node") : null;
+    if (titleHit && canvas.contains(titleHit)) {
+      pickBoardElement(titleHit, root, board, event);
+      event.stopPropagation();
+      return;
+    }
+    if (boardWantsTreeSelect(event)) {
+      var treeHit = itemHit || zoneHit;
+      if (treeHit) {
+        pickBoardElement(treeHit, root, board, event);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+    }
+    var nestedItem = itemHit && !itemHit.classList.contains("board-root-item");
+    var nestedBox = zoneHit && !boardBoxIsTopLevel(board, zoneHit.dataset.boardId);
+    if (nestedItem || (nestedBox && !itemHit)) {
+      var reorderEl = nestedItem ? itemHit : zoneHit;
+      pickBoardElement(reorderEl, root, board, event);
+      drag = startBoardReorderDrag(reorderEl, event);
+      if (!drag) { event.stopPropagation(); return; }
+      reorderEl.setPointerCapture(event.pointerId);
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    var hit = (itemHit && itemHit.classList.contains("board-root-item")) ? itemHit : zoneHit;
+    if (!hit) return;
+    var zone = hit.classList.contains("board-zone") ? hit : hit.closest(".board-zone");
+    var rootItem = hit.classList.contains("board-root-item");
+    if (!rootItem && (!zone || !boardBoxIsTopLevel(board, zone.dataset.boardId))) {
+      pickBoardElement(hit, root, board, event);
+      event.stopPropagation();
+      return;
+    }
+    pickBoardElement(hit, root, board, event);
+    var dragEl = rootItem ? hit : zone;
+    var point = boardCanvasPoint(canvas, event), x = Number.parseFloat(dragEl.style.left), y = Number.parseFloat(dragEl.style.top);
+    drag = { hit: dragEl, pointerId: event.pointerId, start: point, x: Number.isFinite(x) ? x : 0, y: Number.isFinite(y) ? y : 0, moved: false, mode: "position", dropTarget: null, startClientX: event.clientX, startClientY: event.clientY };
+    dragEl.setPointerCapture(event.pointerId); event.preventDefault(); event.stopPropagation();
+  });
+  canvas.addEventListener("pointermove", function(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (drag.mode === "reorder") {
+      drag.moved = drag.moved || Math.abs(event.clientX - drag.startClientX) > 3 || Math.abs(event.clientY - drag.startClientY) > 3;
+      if (drag.moved) markInspectGestureMoved();
+      if (!drag.moved) { event.preventDefault(); return; }
+      drag.hit.classList.add("board-reorder-dragging");
+      if (drag.parentZone && boardPointInRect(drag.parentZone, event)) {
+        drag.insertBefore = boardReorderInsertBefore(drag.content, event);
+        placeBoardReorderCaret(drag.content, drag.insertBefore);
+      } else {
+        drag.insertBefore = null;
+        clearBoardReorderCaret(drag.content);
+      }
+      event.preventDefault();
+      return;
+    }
+    var point = boardCanvasPoint(canvas, event), rawX = Math.round(drag.x + point.x - drag.start.x), rawY = Math.round(drag.y + point.y - drag.start.y);
+    var clamped = clampBoardDragPosition(canvas, rawX, rawY), x = clamped.x, y = clamped.y;
+    drag.moved = drag.moved || Math.abs(x - drag.x) > 1 || Math.abs(y - drag.y) > 1;
+    if (drag.moved) markInspectGestureMoved();
+    drag.hit.style.left = x + "px"; drag.hit.style.top = y + "px"; event.preventDefault();
+  });
+  var finish = function(event, cancelled) {
+    if (!drag || event.pointerId !== drag.pointerId) return; var done = drag; drag = null; try { done.hit.releasePointerCapture(event.pointerId); } catch (_) {}
+    done.hit.classList.remove("board-reorder-dragging");
+    if (done.content) clearBoardReorderCaret(done.content);
+    if (cancelled || !done.moved) {
+      if (!cancelled && boardInspectGesture && boardInspectGesture.already && !boardInspectGesture.moved) inspectBoardSelection();
+      setBoardInspectGesture(null);
+    }
+    if (done.mode === "reorder") {
+      if (cancelled || !done.moved || done.insertBefore == null) return;
+      var fromIndex = boardReorderKids(done.content).indexOf(done.hit);
+      var toIndex = BoxesRender.reorderFinalIndex(fromIndex, done.insertBefore);
+      if (fromIndex < 0 || toIndex === fromIndex) return;
+      var reorderKeep = Object.assign({}, selectedBoardNode);
+      try { var reordered = BoxesRender.reorderNode(diagramSourceEl.value, reorderKeep, toIndex); applyBoardEditResult(reordered); setStatus("Reordered · saved"); } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+      event.preventDefault(); event.stopPropagation(); return;
+    }
+    if (cancelled || !done.moved) return;
+    var x = Number.parseFloat(done.hit.style.left), y = Number.parseFloat(done.hit.style.top);
+    var clampedEnd = clampBoardDragPosition(canvas, x, y); x = clampedEnd.x; y = clampedEnd.y;
+    done.hit.style.left = x + "px"; done.hit.style.top = y + "px";
+    var keep = Object.assign({}, selectedBoardNode);
+    try {
+      diagramSourceEl.value = BoxesRender.updatePosition(diagramSourceEl.value, keep, x, y);
+      setSelectedBoardNode(keep);
+      diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
+      updateDiagramChars();
+      emit("scheduleDiagramSave");
+      // Avoid full remount flash: keep live DOM positions, only refresh edges.
+      var liveRoot = previewEl.querySelector(".board-render");
+      if (liveRoot && typeof BoxesRender.refreshEdges === "function") {
+        BoxesRender.refreshEdges(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+        applyBoardSelection(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+        done.hit.classList.add("board-selection", "canvas-selected");
+      }
+      setStatus("Moved · saved layout");
+    } catch (err) { done.hit.style.left = done.x + "px"; done.hit.style.top = done.y + "px"; showDiagramError(err instanceof Error ? err.message : String(err)); }
+    event.preventDefault(); event.stopPropagation();
+  };
+  canvas.addEventListener("pointerup", function(event) { finish(event, false); }); canvas.addEventListener("pointercancel", function(event) { finish(event, true); });
+}
+function wireBoardCanvas(root, board) { var canvas = root && root.querySelector(".board-canvas"); if (!canvas || canvas.dataset.boardClickWired === "1") return; canvas.dataset.boardClickWired = "1"; canvas.addEventListener("click", function(event) { var edge = event.target.closest ? event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link") : null; var hit = event.target.closest ? event.target.closest(".board-title-node, .board-item, .board-zone") : null; if (boardLinkMode) { event.preventDefault(); event.stopPropagation(); return; } if (boardEventIsItemMdLink(event)) return; /* pick happens on pointerdown */
+      if (edge) { var edgeKey = edge.dataset.boardEdgeKey || (edge.dataset.boardEdgeIndex != null ? "link:" + edge.dataset.boardEdgeIndex : ""); if (consumeInspectClick(edgeKey)) inspectBoardSelection(); event.preventDefault(); event.stopPropagation(); if (event.stopImmediatePropagation) event.stopImmediatePropagation(); return; } }, true); canvas.addEventListener("click", function(event) { if (boardLinkMode) return; if (boardEventIsItemMdLink(event)) return; if (event.target.closest && event.target.closest(".board-edge, .board-edge-label, .board-slot.is-link")) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; var key = selectionKeyFromEl(hit); selectBoardElement(hit, root, board, event); if (consumeInspectClick(key)) inspectBoardSelection(); }); canvas.addEventListener("dblclick", function(event) { if (boardEventIsItemMdLink(event)) return; var hit = event.target.closest(".board-title-node, .board-item, .board-zone"); if (!hit || !canvas.contains(hit)) return; selectBoardElement(hit, root, board, event); inspectBoardSelection(); if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); } }); }
+
+function commitBoardArrow() {
+  if (!boardArrowEditor || !selectedBoardEdge || typeof BoxesRender.updateLinkArrow !== "function") return;
+  try {
+    var nextLink = BoxesRender.updateLinkArrow(diagramSourceEl.value, selectedBoardEdge, boardArrowEditor.value);
+    if (nextLink !== diagramSourceEl.value) {
+      diagramSourceEl.value = nextLink;
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Link arrow · " + (boardArrowEditor.value === "both" ? "<->" : "->"));
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardReverse() {
+  if (!selectedBoardEdge || typeof BoxesRender.reverseLink !== "function") return;
+  try {
+    var nextLink = BoxesRender.reverseLink(diagramSourceEl.value, selectedBoardEdge);
+    if (nextLink !== diagramSourceEl.value) {
+      diagramSourceEl.value = nextLink;
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Link reversed");
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardShape(shape) {
+  var nextShape = shape === "diamond" ? "diamond" : "rect";
+  if (!selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateShape !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateShape(diagramSourceEl.value, selectedBoardNode, nextShape);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Shape · " + nextShape);
+    }
+    setBoardShapeField(true, nextShape);
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+
+function syncBoardStyleChrome(board) {
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.resolveStyle !== "function") return;
+  var next = BoxesRender.resolveStyle(board || {});
+  emit("applyBoardItemCap", next.item_cap, false, false);
+  emit("applyBoardTypeStep", next.type_step, false, false);
+  if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
+  syncBoardLinkRouteButton();
+  var themeSelect = document.getElementById("kindThemeSelect");
+  if (themeSelect && next.theme) themeSelect.value = next.theme;
+}
+function commitBoardCap() {
+  if (!boardCapEditor || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateCap !== "function") return;
+  var nextCap = boardCapEditor.value === "off" ? "off" : "on";
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateCap(diagramSourceEl.value, selectedBoardNode, nextCap);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Width Cap · " + nextCap);
+    }
+    setBoardCapField(true, nextCap);
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardType() {
+  if (!boardTypeEditor) return;
+  if (selectedBoardEdge && typeof BoxesRender.updateLinkType === "function") {
+    try {
+      var nextLink = BoxesRender.updateLinkType(diagramSourceEl.value, selectedBoardEdge, boardTypeEditor.value);
+      if (nextLink !== diagramSourceEl.value) {
+        diagramSourceEl.value = nextLink;
+        updateDiagramChars();
+        emit("renderDiagram");
+        emit("scheduleDiagramSave");
+        setStatus("Link type · " + boardTypeEditor.value);
+      }
+    } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+    return;
+  }
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || typeof BoxesRender.updateType !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateType(diagramSourceEl.value, selectedBoardNode, boardTypeEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Type · " + boardTypeEditor.value);
+      // Refresh props so layout hides title/icon immediately
+      try {
+        var b = typeof BoxesRender !== "undefined" ? BoxesRender.parse(diagramSourceEl.value) : null;
+        var root = previewEl && previewEl.querySelector(".board-render");
+        if (b && root) applyBoardSelection(root, b);
+      } catch (_e) {}
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardDir() {
+  if (!selectedBoardNode || selectedBoardNode.kind === "item" || !boardDirEditor || typeof BoxesRender.updateDir !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateDir(diagramSourceEl.value, selectedBoardNode, boardDirEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Direction · " + boardDirEditor.value);
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardBoxFlex(kind, editor, updateFn) {
+  if (!selectedBoardNode || selectedBoardNode.kind !== "box" || !editor || typeof updateFn !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = updateFn(diagramSourceEl.value, selectedBoardNode, editor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus(kind + " · " + editor.value);
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function commitBoardAlign() {
+  commitBoardBoxFlex("Align", boardAlignEditor, BoxesRender.updateAlign);
+}
+function commitBoardJustify() {
+  commitBoardBoxFlex("Justify", boardJustifyEditor, BoxesRender.updateJustify);
+}
+function commitBoardTitle() {
+  if (!boardTitleEditor) return;
+  if (selectedBoardEdge && typeof BoxesRender.updateLinkTitle === "function") {
+    try {
+      var nextLink = BoxesRender.updateLinkTitle(diagramSourceEl.value, selectedBoardEdge, boardLinkTitleValue());
+      if (nextLink !== diagramSourceEl.value) {
+        diagramSourceEl.value = nextLink;
+        updateDiagramChars();
+        emit("renderDiagram");
+        emit("scheduleDiagramSave");
+        setStatus("Link title · saved");
+      }
+    } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+    return;
+  }
+  if (!selectedBoardNode) return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateTitle(diagramSourceEl.value, selectedBoardNode, boardTitleEditor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function applyBoardEditResult(result) {
+  diagramSourceEl.value = result.source;
+  setSelectedBoardNode(result.selection && result.selection.kind !== "link" ? result.selection : null); setSelectedBoardEdge(result.selection && result.selection.kind === "link" ? result.selection : null);
+  if (selectedBoardNode) diagramSourceEl.dataset.boardSelectionKey = selectedBoardNode.key;
+  else delete diagramSourceEl.dataset.boardSelectionKey; if (selectedBoardEdge) diagramSourceEl.dataset.boardEdgeSelectionKey = selectedBoardEdge.key; else delete diagramSourceEl.dataset.boardEdgeSelectionKey;
+  updateDiagramChars();
+  emit("renderDiagram");
+  emit("scheduleDiagramSave");
+}
+function boardEditAction(action) {
+  try { applyBoardEditResult(action()); }
+  catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+
+function syncBoardLinkRouteButton() {
+  if (typeof BoxesRender.getLinkRouteStyle !== "function") return;
+  var style = BoxesRender.getLinkRouteStyle();
+  var trunkBtn = $("#btnRouteTrunk");
+  var staggerBtn = $("#btnRouteStagger");
+  var straightBtn = $("#btnRouteStraight");
+  if (trunkBtn) trunkBtn.setAttribute("aria-pressed", style === "trunk" ? "true" : "false");
+  if (staggerBtn) staggerBtn.setAttribute("aria-pressed", style === "stagger" ? "true" : "false");
+  if (straightBtn) straightBtn.setAttribute("aria-pressed", style === "straight" ? "true" : "false");
+}
+function applyBoardLinkRouteStyle(style, persist) {
+  if (typeof BoxesRender === "undefined" || typeof BoxesRender.setLinkRouteStyle !== "function") {
+    setStatus("Link route API missing — hard refresh (cache)");
+    return;
+  }
+  BoxesRender.setLinkRouteStyle(style);
+  syncBoardLinkRouteButton();
+  if (persist !== false) {
+    try { localStorage.setItem("drawer.boardLinkRoute", BoxesRender.getLinkRouteStyle()); } catch (_) {}
+    persistBoardStyle({ link_route: BoxesRender.getLinkRouteStyle() });
+  }
+  // Re-route without resetting zoom/pan.
+  try {
+    var root = previewEl && previewEl.querySelector(".board-render");
+    if (root && diagramSourceEl && diagramSourceEl.value.trim()) {
+      BoxesRender.refreshEdges(root, BoxesRender.parse(diagramSourceEl.value));
+      setStatus("Link route · " + BoxesRender.getLinkRouteStyle());
+    }
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+(function wireBoardLinkRouteSeg() {
+  var trunkBtn = $("#btnRouteTrunk");
+  var staggerBtn = $("#btnRouteStagger");
+  var straightBtn = $("#btnRouteStraight");
+  if (trunkBtn) trunkBtn.onclick = function() { applyBoardLinkRouteStyle("trunk"); };
+  if (staggerBtn) staggerBtn.onclick = function() { applyBoardLinkRouteStyle("stagger"); };
+  if (straightBtn) straightBtn.onclick = function() { applyBoardLinkRouteStyle("straight"); };
+})();
+(function initBoardLinkRoute() {
+  var saved = "stagger";
+  try { saved = localStorage.getItem("drawer.boardLinkRoute") || "stagger"; } catch (_) {}
+  if (typeof BoxesRender !== "undefined" && BoxesRender.setLinkRouteStyle) {
+    applyBoardLinkRouteStyle(saved, false);
+  }
+})();
+
+if (boardAddBoxButton) boardAddBoxButton.onclick = function() { boardEditAction(function() { return BoxesRender.addBox(diagramSourceEl.value, selectedBoardNode && selectedBoardNode.kind === "box" ? selectedBoardNode : null); }); };
+if (boardAddItemButton) boardAddItemButton.onclick = function() { boardEditAction(function() { return BoxesRender.addItem(diagramSourceEl.value, selectedBoardNode); }); };
+if (boardDeleteButton) boardDeleteButton.onclick = function() { boardEditAction(function() { return selectedBoardEdge ? BoxesRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoxesRender.deleteNode(diagramSourceEl.value, selectedBoardNode); }); };
+if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!boardLinkMode); };
+if (typeof document !== "undefined") document.addEventListener("keydown", function(event) {
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
+  var target = event.target;
+  if (target === diagramSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  event.preventDefault();
+  boardEditAction(function() { return selectedBoardEdge ? BoxesRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoxesRender.deleteNode(diagramSourceEl.value, selectedBoardNode); });
+});
+function boardNudgeOrder(delta) {
+  if (!selectedBoardNode || typeof BoxesRender.reorderInfo !== "function") return;
+  var info;
+  try { info = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  if (!info || info.count < 2) return;
+  var next = info.index + delta;
+  if (next < 0 || next >= info.count) return;
+  boardEditAction(function() { return BoxesRender.reorderNode(diagramSourceEl.value, selectedBoardNode, next); });
+}
+if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
+if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
+function boardNudgeSelection(delta) {
+  var root = previewEl && previewEl.querySelector(".board-render");
+  if (!root || !selectedBoardNode || selectedBoardNode.kind === "title") return false;
+  var el = root.querySelector("[data-board-key=\"" + selectedBoardNode.key + "\"]");
+  var content = boardParentContent(el);
+  if (!content) return false;
+  var kids = boardReorderKids(content);
+  var from = kids.indexOf(el);
+  var next = from + delta;
+  if (from < 0 || next < 0 || next >= kids.length) return false;
+  selectBoardElement(kids[next], root, BoxesRender.parse(diagramSourceEl.value));
+  return true;
+}
+var BOARD_NUDGE_STEPS = [1, 2, 4, 8, 16, 32];
+var BOARD_NUDGE_HOLD = 2;
+var boardNudgeSlide = { key: "", n: 0 };
+function boardNudgeResetSlide() {
+  boardNudgeSlide = { key: "", n: 0 };
+}
+function boardNudgeStepPx(key, isRepeat) {
+  if (!isRepeat || boardNudgeSlide.key !== key) {
+    boardNudgeSlide = { key: key, n: 0 };
+    return BOARD_NUDGE_STEPS[0];
+  }
+  boardNudgeSlide.n += 1;
+  var tier = Math.min(BOARD_NUDGE_STEPS.length - 1, Math.floor(boardNudgeSlide.n / BOARD_NUDGE_HOLD));
+  return BOARD_NUDGE_STEPS[tier];
+}
+function boardWriteLivePosition(el, x, y) {
+  var keep = Object.assign({}, selectedBoardNode);
+  diagramSourceEl.value = BoxesRender.updatePosition(diagramSourceEl.value, keep, x, y);
+  setSelectedBoardNode(keep);
+  diagramSourceEl.dataset.boardSelectionKey = keep.key || diagramSourceEl.dataset.boardSelectionKey || "";
+  updateDiagramChars();
+  emit("scheduleDiagramSave");
+  var liveRoot = previewEl.querySelector(".board-render");
+  if (liveRoot && typeof BoxesRender.refreshEdges === "function") {
+    BoxesRender.refreshEdges(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+    applyBoardSelection(liveRoot, BoxesRender.parse(diagramSourceEl.value));
+    el.classList.add("board-selection", "canvas-selected");
+  }
+}
+function boardNudgeTopLevel(dx, dy) {
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return false;
+  if (selectedBoardNode.kind === "item" && selectedBoardNode.boxId) return false;
+  var root = previewEl && previewEl.querySelector(".board-render");
+  if (!root) return false;
+  var el = root.querySelector("[data-board-key=\"" + selectedBoardNode.key + "\"]");
+  if (!el || boardParentContent(el)) return false;
+  var canvas = previewEl.querySelector(".board-canvas");
+  var x = Number.parseFloat(el.style.left);
+  var y = Number.parseFloat(el.style.top);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+  var next = clampBoardDragPosition(canvas, Math.round(x + dx), Math.round(y + dy));
+  var prevX = x, prevY = y;
+  el.style.left = next.x + "px";
+  el.style.top = next.y + "px";
+  try {
+    boardWriteLivePosition(el, next.x, next.y);
+    setStatus("Moved · saved layout");
+  } catch (err) {
+    el.style.left = prevX + "px";
+    el.style.top = prevY + "px";
+    showDiagramError(err instanceof Error ? err.message : String(err));
+  }
+  return true;
+}
+if (typeof document !== "undefined") document.addEventListener("keydown", function(event) {
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title" || selectedBoardEdge) return;
+  var delta = 0;
+  if (event.key === "ArrowUp" || event.key === "ArrowLeft") delta = -1;
+  else if (event.key === "ArrowDown" || event.key === "ArrowRight") delta = 1;
+  if (!delta) return;
+  var target = event.target;
+  if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target && target.closest && target.closest("#boardIconField")) return;
+  if (boardNudgeSelection(delta)) {
+    event.preventDefault();
+    return;
+  }
+  var step = boardNudgeStepPx(event.key, event.repeat);
+  var dx = 0, dy = 0;
+  if (event.key === "ArrowLeft") dx = -step;
+  else if (event.key === "ArrowRight") dx = step;
+  else if (event.key === "ArrowUp") dy = -step;
+  else dy = step;
+  if (!boardNudgeTopLevel(dx, dy)) return;
+  event.preventDefault();
+});
+if (typeof document !== "undefined") document.addEventListener("keyup", function(event) {
+  if (event.key !== "ArrowUp" && event.key !== "ArrowDown" && event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  boardNudgeResetSlide();
+});
+if (typeof window !== "undefined") window.addEventListener("blur", boardNudgeResetSlide);
+if (typeof document !== "undefined") document.addEventListener("keydown", function(event) {
+  if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || !event.altKey || event.metaKey || event.ctrlKey) return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "title") return;
+  var target = event.target;
+  if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (typeof BoxesRender.reorderInfo !== "function") return;
+  var info;
+  try { info = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { return; }
+  if (!info || info.count < 2) return;
+  var row = info.direction === "row";
+  var delta = 0;
+  if (row) {
+    if (event.key === "ArrowLeft") delta = -1;
+    else if (event.key === "ArrowRight") delta = 1;
+  } else if (event.key === "ArrowUp") delta = -1;
+  else if (event.key === "ArrowDown") delta = 1;
+  if (!delta) return;
+  event.preventDefault();
+  boardNudgeOrder(delta);
+});
+
+
+if (previewEl) previewEl.addEventListener("dblclick", function(event) {
+  if (!isBoardCanvasKind()) return;
+  if (boardEventIsItemMdLink(event)) return;
+  var canvas = event.target.closest(".board-canvas"); if (!canvas) return;
+  var root = canvas.closest(".board-render");
+  var hit = event.target.closest(".board-title-node, .board-item, .board-zone");
+  if (!hit || !canvas.contains(hit)) return;
+  selectBoardElement(hit, root, BoxesRender.parse(diagramSourceEl.value));
+  inspectBoardSelection();
+  if (boardTitleEditor) { boardTitleEditor.focus(); boardTitleEditor.select(); }
+});
+
+function boardCanvasClear() {
+  if (boardLinkMode) setBoardLinkMode(false);
+  else clearBoardSelection();
+}
+
+CanvasInteraction.registerKind("board", { isHit: boardCanvasHit, clear: boardCanvasClear });
+
+register("syncBoardEditControls", syncBoardEditControls);
+register("boardTitlePinEl", boardTitlePinEl);
+register("wireBoardCanvas", wireBoardCanvas);
+register("wireBoardDrag", wireBoardDrag);
+register("applyBoardSelection", applyBoardSelection);
+register("boardDomSelectionKey", boardDomSelectionKey);
+register("syncBoardLinkRouteButton", syncBoardLinkRouteButton);
+register("syncBoardStyleChrome", syncBoardStyleChrome);
+register("setBoardIdField", setBoardIdField);
+register("persistBoardStyle", persistBoardStyle);
+register("pickBoardElement", pickBoardElement);
+register("inspectBoardSelection", inspectBoardSelection);
+register("consumeInspectClick", consumeInspectClick);
+register("commitBoardTitle", commitBoardTitle);
+
+export {
+  setBoardLinkMode,
+  boardLinkTitleValue,
+  boardLinkTypeValue,
+  boardLinkArrowValue,
+  syncBoardEditControls,
+  inspectBoardSelection,
+  clearBoardSelection,
+  applyBoardSelection,
+  selectBoardElement,
+  pickBoardElement,
+  boardTitlePinEl,
+  wireBoardDrag,
+  wireBoardCanvas,
+  persistBoardStyle,
+  syncBoardStyleChrome,
+  commitBoardTitle,
+  applyBoardEditResult,
+  boardEditAction,
+  syncBoardLinkRouteButton,
+  boardNudgeSelection,
+  boardNudgeTopLevel,
+  boardCanvasClear,
+  consumeInspectClick,
+  filterBoardIdEditor,
+  commitBoardId,
+  markBoardIdCopied,
+  commitBoardType,
+  commitBoardCap,
+  commitBoardShape,
+  commitBoardArrow,
+  commitBoardReverse,
+  commitBoardDir,
+  commitBoardAlign,
+  commitBoardJustify,
+  commitBoardIcon,
+  fillBoardIconList,
+  markBoardIconPick,
+  commitBoardNodeFont,
+  setBoardIdField,
+  boardDomSelectionKey,
+  boardWantsTreeSelect,
+  isBoardCanvasKind,
+  boardCanvasHit,
+  boardEventIsItemMdLink,
+  BOARD_EDGE_SELECTED_COLOR,
+};

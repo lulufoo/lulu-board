@@ -1,8 +1,6 @@
 /* Concrete item type=chip. Optional shape=diamond cuts the frame. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View || !View.Item) throw new Error('BoardItem must load before item-chip.js');
+/* Concrete item type=chip. Optional shape=diamond cuts the frame. */
+import View from '../view/view.js';
 
   class ItemChip extends View.Item {
     typeName() { return 'chip'; }
@@ -27,4 +25,4 @@
   }
 
   View.Types.registerItem('chip', ItemChip);
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { ItemChip };

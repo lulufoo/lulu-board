@@ -6,8 +6,9 @@ import { getGraph, createGraph, saveGraph } from "./graphs.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
+import { GRAPH_ID_RE } from "../../board-core/index.js";
 
-const DIAGRAM_ID = z.string().regex(/^b_[0-9a-f]{8}$/).describe("Cloud row id: b_ + 8 lowercase hex");
+const DIAGRAM_ID = z.string().regex(GRAPH_ID_RE).describe("Cloud row id: b_ + 8 lowercase hex");
 
 function toolText(data) {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };

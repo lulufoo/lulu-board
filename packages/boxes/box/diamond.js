@@ -2,10 +2,8 @@
  * The chip host is a transparent flex frame. Keep it. The rhombus is
  * an overlay inside that frame and stays content-sized and centered.
  * Do not drop the host or paint the rhombus as the stretched box. */
-(function (root) {
-  'use strict';
-  const View = root.BoardView;
-  if (!View) throw new Error('BoardView must load before box-diamond.js');
+import View from '../view/view.js';
+import { get, ring } from '../../board-themes/index.js';
 
   const DIAMOND_ASPECT = 1.4;
   const DIAMOND_MIN_W = 96;
@@ -21,7 +19,7 @@
   // Rounded rhombus in pixel space. The rounded tips still touch the W x H box
   // (the vertices are pushed out by the arc setback), so link ends stay flush.
   const DIAMOND_RADIUS = 6;
-  const HALO_GAP = 3;
+  const HALO_GAP = ring.gap;
 
   function roundedRhombusPath(cx, cy, a, b, r) {
     const pts = [[cx, cy - b], [cx + a, cy], [cx, cy + b], [cx - a, cy]];
@@ -124,7 +122,7 @@
     const polygon = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     polygon.classList.add('board-item-diamond-face');
     const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'default';
-    const theme = root.BoardThemes && root.BoardThemes.get ? root.BoardThemes.get(themeId) : null;
+    const theme = get(themeId);
     polygon.setAttribute('fill', (theme && theme.colors && theme.colors[0]) || '#fff');
     polygon.setAttribute('stroke', (theme && theme.edgeStroke) || '#9370db');
     polygon.setAttribute('stroke-width', '1.5');
@@ -396,4 +394,4 @@
   View.decorateChipDiamond = decorateChipDiamond;
   View.measureChipDiamond = measureChipDiamond;
   View.fitChipDiamonds = fitChipDiamonds;
-})(typeof globalThis !== 'undefined' ? globalThis : this);
+export { isDiamondEl, decorateChipDiamond, measureChipDiamond, fitChipDiamonds, HALO_GAP };

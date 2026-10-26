@@ -1,13 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const View = require('../../packages/boxes/view/board-view.js');
-global.BoardView = View;
-const Layout = require('../../packages/boxes/engine/board-layout.js');
-global.BoardLayout = Layout;
-const Render = require('../../packages/boxes/engine/board-render.js');
-const Create = require('../../packages/drawer-app/js/09-create-kind-dialog.js');
+const Layout = require('../../packages/boxes/engine/layout').default;
+const Render = require('../../packages/boxes/engine/render.js').default;
+const Create = require('../../packages/drawer-app/src/chrome/create-kind-dialog.js');
 
 const root = path.join(__dirname, '../..');
 const dir = path.join(root, 'packages/drawer-app/templates');

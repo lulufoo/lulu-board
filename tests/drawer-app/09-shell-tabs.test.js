@@ -1,4 +1,7 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -6,11 +9,11 @@ const path = require('path');
 const root = path.join(__dirname, '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const html = read('packages/drawer-app/index.html');
-const js = read('packages/drawer-app/js/09-shell-tabs.js');
-const drawer = read('packages/drawer-app/js/09-shell-drawer.js');
+const js = read('packages/drawer-app/src/chrome/shell-tabs.js');
+const drawer = read('packages/drawer-app/src/chrome/shell-drawer.js');
 const css = read('packages/drawer-app/css/09-shell-tabs.css');
 const shellCss = read('packages/drawer-app/css/08-workspace-shell.css');
-const build = read('scripts/drawer-app-build/build.mjs');
+const build = read('scripts/build-app/drawer.mjs');
 
 // markup: a tablist with Mine and Shared; Shared stays hidden until it is wired; no fold button
 assert.match(html, /id="shellTabs" role="tablist"/);
@@ -32,14 +35,15 @@ assert.match(css, /\.shell-share-row \{ flex: none; display: flex; justify-conte
 assert.match(css, /#shellSharedList \{ flex: 1; min-height: 0; overflow-y: auto; \}/, 'the list takes the height, the button stays at the bottom');
 
 // built, and styled after the drawer sheet it overrides
-assert.match(build, /'09-shell-drawer\.js'[\s\S]*'09-shell-tabs\.js'/);
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/chrome/shell-drawer.js')), 'src module exists');
+assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/chrome/shell-tabs.js')), 'src module exists');
 assert.ok('09-shell-tabs.css' > '08-workspace-shell.css', 'the tabs sheet sorts after the shell sheet');
 assert.match(css, /data-shell-tab="mine"\] #shellShared,[\s\S]*data-shell-tab="shared"\] #shellMine \{ display: none; \}/, 'one list at a time');
 assert.match(css, /:not\(\[data-shell-tab="shared"\]\):has\(#shellSharedList \.is-current\) #shellTabShared span::after/, 'dot on Shared when the open board is shared');
 
 // counts are numbers now (the tab already says what they count)
-assert.match(drawer, /count\.textContent = rows\.length \? String\(rows\.length\) : ""/);
-assert.match(drawer, /shellSyncTabs\(!section\.hidden\)/, 'Shared tab follows the Shared section');
+assert.match(drawer, /count\.textContent = shownCount \? String\(shownCount\) : ""/);
+assert.match(drawer, /emit\("shellSyncTabs", !section\.hidden\)/, 'Shared tab follows the Shared section');
 
 // behaviour, on a tiny fake DOM
 function fakeDom(search, sharedShownAtLoad) {
@@ -55,7 +59,16 @@ function fakeDom(search, sharedShownAtLoad) {
     querySelector: (sel) => (sel === '.shell-drawer-body' ? body : null),
     querySelectorAll: (sel) => (sel === '.shell-tab' ? [mine, shared] : []),
   };
-  const api = new Function('document', 'location', js + '\nreturn { shellSelectTab, shellSyncTabs, shellTabAvailable };')(doc, { search: search || '' });
+  const stripped = js
+    .replace(/^import .*$/gm, '')
+    .replace(/^export \{[\s\S]*?\};/m, '')
+    .replace(/^export .*$/gm, '');
+  const api = new Function(
+    'document',
+    'location',
+    'register',
+    stripped + '\nreturn { shellSelectTab, shellSyncTabs, shellTabAvailable };'
+  )(doc, { search: search || '' }, function () {});
   return Object.assign({ body, mine, shared, bar }, api);
 }
 {

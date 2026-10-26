@@ -1,0 +1,6 @@
+{
+  "name": "boxes-engine-layout",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./index.js" }
+}
