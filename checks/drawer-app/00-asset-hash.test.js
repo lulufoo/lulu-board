@@ -58,6 +58,6 @@ const drawerName = names.find((n) => n.startsWith('drawer-app-') && n.endsWith('
 const snapName = names.find((n) => n.startsWith('snapdom-'));
 const drawer = fs.readFileSync(path.join(vendor, drawerName), 'utf8');
 assert.match(drawer, new RegExp(snapName.replace(/\./g, '\\.')), 'drawer import points at hashed snapdom');
-assert.doesNotMatch(drawer, /from\s+["']\.\/snapdom\.mjs["']/, 'drawer no longer imports unhashed snapdom');
+assert.doesNotMatch(drawer, /from\s*["']\.\/snapdom\.mjs["']/, 'drawer no longer imports unhashed snapdom');
 
 console.log('ok asset-hash');

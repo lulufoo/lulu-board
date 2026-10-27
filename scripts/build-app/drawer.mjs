@@ -69,6 +69,8 @@ const srcBuilt = await esbuild.build({
   format: 'esm',
   platform: 'browser',
   target: 'es2022',
+  minify: true,
+  keepNames: true,
   write: false,
   external: ['./snapdom.mjs'],
 });
