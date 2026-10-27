@@ -429,15 +429,12 @@ function cloudInit() {
         flowType: "pkce",
       },
     }));
+    // Session state only. Auth fires again on tab refocus and token refresh, so
+    // it must not reopen a board; opening is the open path's job.
     cloudClient.auth.onAuthStateChange(function (_event, session) {
       setCloudSession(session || null);
       cloudSetAccountUi();
-      if (cloudShareIdFromHash(location.hash)) {
-        void call("loadSharedDiagramByHash", location.hash);
-      } else if (cloudSession) {
-        void cloudRefreshGroups();
-        if (cloudDiagramId()) void loadCloudDiagramByHash(location.hash);
-      }
+      if (cloudSession && !cloudShareIdFromHash(location.hash)) void cloudRefreshGroups();
     });
     setCloudSessionReady(cloudClient.auth.getSession().then(function (result) {
       setCloudSession(result && result.data ? result.data.session : null);
@@ -665,6 +662,8 @@ async function loadCloudDiagramByHash(raw) {
   emit("setShareEdit", false);
   var diagramId = cloudDiagramIdFromHash(raw);
   if (!diagramId) return false;
+  // Fade only when a different board opens. Judge now: applying the row sets liveDiagramId.
+  var switching = diagramId !== liveDiagramId;
   var requestedGroupId = call("cloudTakeRequestedGroupId") != null ? call("cloudTakeRequestedGroupId") : "";
   if (cloudPlusDraftActive) emit("cloudParkPlusDraft");
   if (!cloudConfigured() || !cloudClient) {
@@ -691,7 +690,7 @@ async function loadCloudDiagramByHash(raw) {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    emit("renderDiagram", { fit: false, restoreView: true, swap: true });
+    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     emit("shellRenderMine");
@@ -714,7 +713,7 @@ async function loadCloudDiagramByHash(raw) {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    emit("renderDiagram", { fit: false, restoreView: true, swap: true });
+    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     emit("shellRenderMine");
