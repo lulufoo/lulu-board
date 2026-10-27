@@ -11,6 +11,8 @@
     "@sentry/browser": "^11.9.0",
     "@supabase/supabase-js": "^2.116.0",
     "dependency-cruiser": "^17.4.3",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.5",
+    "globals": "^17.13.0"
   }
 }
