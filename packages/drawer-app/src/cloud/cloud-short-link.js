@@ -1,71 +1,16 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
-import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
-import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
-import { loadKindTemplateSource } from '../core/kind-template.js';
-import {
-  cloudDiagramIdFromHash,
-  cloudDiagramHash,
-  cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
-} from '../core/cloud-route.js';
+import { register, emit } from '../core/hooks.js';
+
+import { stripDocumentMeta } from '../core/document-meta.js';
+
+import { cloudShortLinkIdFromHash } from '../core/cloud-route.js';
 import {
   cloudClient,
-  cloudSession,
-  cloudSessionReady,
   cloudLoadSeq,
-  cloudSaveSeq,
-  cloudSiblingDiagramIds,
-  cloudGroupId,
-  cloudGroupMembers,
-  cloudPlusDraft,
-  cloudPlusDraftActive,
-  cloudPlusDraftSource,
-  cloudPlusDraftRev,
-  cloudDiagramCache,
-  ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
-  chromeTipEl,
-  chromeTipHideTimer,
-  cloudRequestedGroupId,
-  cloudTabDragId,
-  cloudTabDropAfter,
-  cloudTabDropId,
-  setCloudClient,
-  setCloudSession,
-  setCloudSessionReady,
   bumpCloudLoadSeq,
-  bumpCloudSaveSeq,
-  setCloudSiblingDiagramIds,
-  setCloudGroupId,
-  setCloudGroupMembers,
-  setCloudPlusDraft,
-  setCloudPlusDraftActive,
-  setCloudPlusDraftSource,
-  setCloudPlusDraftRev,
-  setCloudDiagramCache,
-  setOwnerShareId,
-  setOwnerShareRole,
-  setOwnerIsPublic,
-  setChromeTipEl,
-  setChromeTipHideTimer,
-  setCloudRequestedGroupId,
-  setCloudTabDragId,
-  setCloudTabDropAfter,
-  setCloudTabDropId,
-  cloudDiagramId,
 } from './cloud-state.js';
 import {
-  $,
   diagramSourceEl,
-  diagramLocalRev,
-  diagramServerRev,
-  diagramDirty,
-  diagramSaveTimer,
-  liveDiagramId,
-  shellGroups,
   setStatus,
   showDiagramError,
   updateDiagramChars,
@@ -74,7 +19,6 @@ import {
   setDiagramDirty,
   setDiagramLocalRev,
   setDiagramServerRev,
-  setDiagramSaveTimer,
 } from '../state/shell-state.js';
 import { encodeDiagramHash } from '../core/hash-persist.js';
 import { cloudConfigured } from './cloud-sync.js';
@@ -132,10 +76,5 @@ async function loadShortLinkByHash(raw) {
   }
 }
 
-
-
 register("loadShortLinkByHash", loadShortLinkByHash);
 
-export {
-  loadShortLinkByHash
-};

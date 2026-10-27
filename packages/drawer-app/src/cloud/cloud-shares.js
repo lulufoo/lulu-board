@@ -1,81 +1,15 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
-import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
-import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
-import { loadKindTemplateSource } from '../core/kind-template.js';
-import {
-  cloudDiagramIdFromHash,
-  cloudDiagramHash,
-  cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
-} from '../core/cloud-route.js';
+import { register, emit } from '../core/hooks.js';
+
+import { cloudShareHash } from '../core/cloud-route.js';
 import {
   cloudClient,
   cloudSession,
-  cloudSessionReady,
-  cloudLoadSeq,
-  cloudSaveSeq,
-  cloudSiblingDiagramIds,
-  cloudGroupId,
-  cloudGroupMembers,
-  cloudPlusDraft,
-  cloudPlusDraftActive,
-  cloudPlusDraftSource,
-  cloudPlusDraftRev,
-  cloudDiagramCache,
-  ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
-  chromeTipEl,
-  chromeTipHideTimer,
-  cloudRequestedGroupId,
-  cloudTabDragId,
-  cloudTabDropAfter,
-  cloudTabDropId,
-  setCloudClient,
-  setCloudSession,
-  setCloudSessionReady,
-  bumpCloudLoadSeq,
-  bumpCloudSaveSeq,
-  setCloudSiblingDiagramIds,
-  setCloudGroupId,
-  setCloudGroupMembers,
-  setCloudPlusDraft,
-  setCloudPlusDraftActive,
-  setCloudPlusDraftSource,
-  setCloudPlusDraftRev,
-  setCloudDiagramCache,
-  setOwnerShareId,
   setOwnerShareRole,
   setOwnerIsPublic,
-  setChromeTipEl,
-  setChromeTipHideTimer,
-  setCloudRequestedGroupId,
-  setCloudTabDragId,
-  setCloudTabDropAfter,
-  setCloudTabDropId,
   cloudDiagramId,
 } from './cloud-state.js';
-import {
-  $,
-  diagramSourceEl,
-  diagramLocalRev,
-  diagramServerRev,
-  diagramDirty,
-  diagramSaveTimer,
-  liveDiagramId,
-  shellGroups,
-  setStatus,
-  showDiagramError,
-  updateDiagramChars,
-  applyDiagramLiveMeta,
-  syncSourceDockLabel,
-  setDiagramDirty,
-  setDiagramLocalRev,
-  setDiagramServerRev,
-  setDiagramSaveTimer,
-} from '../state/shell-state.js';
+import { setStatus } from '../state/shell-state.js';
 
 import { rememberOwnerShareId } from './cloud-share.js';
 
@@ -139,7 +73,7 @@ async function cloudShareMutate(diagramId, name, args, okStatus) {
       }
     }
     if (okStatus) setStatus(okStatus);
-    await call("cloudRefreshShares");
+    await cloudRefreshShares();
     return row;
   } catch (error) {
     setStatus(shareRpcError(error, "Share failed"), true);
@@ -170,19 +104,12 @@ async function cloudRefreshShares() {
   emit("shellRenderShared", shares);
 }
 
-
-register("cloudShareSummaries", cloudShareSummaries);
-register("cloudShareLinkFor", cloudShareLinkFor);
-register("cloudFetchOwnShares", cloudFetchOwnShares);
-register("cloudShareMutate", cloudShareMutate);
-register("cloudShareCopyLink", cloudShareCopyLink);
+// 层内反转：cloud-sync.js 是 cloud 内部的底层（其余 cloud 文件都 import 它），
+// 不能 import 回这里，否则成环；所以用 hooks 登记，由 sync 调用。
 register("cloudRefreshShares", cloudRefreshShares);
 
 export {
-  cloudShareSummaries,
   cloudShareLinkFor,
-  cloudFetchOwnShares,
   cloudShareMutate,
   cloudShareCopyLink,
-  cloudRefreshShares
 };

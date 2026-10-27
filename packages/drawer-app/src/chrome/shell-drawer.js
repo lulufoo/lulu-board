@@ -29,15 +29,10 @@ import {
 } from '../cloud/cloud-sync.js';
 import { cloudLoadMoreMineGroups } from '../cloud/cloud-groups.js';
 import { isShareGuest, setShareView, setShareEdit } from '../cloud/cloud-share.js';
-import {
-  cloudShareMutate,
-  cloudShareCopyLink,
-  cloudShareLinkFor,
-} from '../cloud/cloud-shares.js';
+import { cloudShareMutate } from '../cloud/cloud-shares.js';
 import { cloudSearchDiagrams, cloudSearchSignedIn } from '../cloud/cloud-search.js';
 import {
   cloudSwitchToDiagram,
-  cloudStartPlusDraft,
   cloudConfirmLeaveDiagram,
   cloudClearDirtyLeave,
   cloudClearGroupTabs,
@@ -743,8 +738,6 @@ function shellPickSearch() {
   diagramSourceEl.focus();
   diagramSourceEl.setSelectionRange(start, start + lines[hit.item.line].length);
 }
-
-
 
 register("shellCloseDrawer", function () { closeDrawer(); });
 

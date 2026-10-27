@@ -2,13 +2,11 @@
 import { register, emit, call } from '../core/hooks.js';
 import { sentryCount } from '../core/sentry-count.js';
 import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
-import { loadKindTemplateSource } from '../core/kind-template.js';
+
 import {
   cloudDiagramIdFromHash,
   cloudDiagramHash,
   cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
 } from '../core/cloud-route.js';
 import {
   cloudClient,
@@ -16,68 +14,36 @@ import {
   cloudSessionReady,
   cloudLoadSeq,
   cloudSaveSeq,
-  cloudSiblingDiagramIds,
   cloudGroupId,
-  cloudGroupMembers,
-  cloudPlusDraft,
   cloudPlusDraftActive,
-  cloudPlusDraftSource,
-  cloudPlusDraftRev,
   cloudDiagramCache,
-  ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
-  chromeTipEl,
-  chromeTipHideTimer,
-  cloudRequestedGroupId,
-  cloudTabDragId,
-  cloudTabDropAfter,
-  cloudTabDropId,
   setCloudClient,
   setCloudSession,
   setCloudSessionReady,
   bumpCloudLoadSeq,
   bumpCloudSaveSeq,
-  setCloudSiblingDiagramIds,
-  setCloudGroupId,
-  setCloudGroupMembers,
   setCloudPlusDraft,
   setCloudPlusDraftActive,
   setCloudPlusDraftSource,
   setCloudPlusDraftRev,
   setCloudDiagramCache,
-  setOwnerShareId,
-  setOwnerShareRole,
-  setOwnerIsPublic,
-  setChromeTipEl,
-  setChromeTipHideTimer,
-  setCloudRequestedGroupId,
-  setCloudTabDragId,
-  setCloudTabDropAfter,
-  setCloudTabDropId,
   cloudDiagramId,
 } from './cloud-state.js';
 import {
-  $,
   diagramSourceEl,
   diagramLocalRev,
   diagramServerRev,
   diagramDirty,
-  diagramSaveTimer,
   liveDiagramId,
-  shellGroups,
   setStatus,
-  showDiagramError,
   updateDiagramChars,
   applyDiagramLiveMeta,
   syncSourceDockLabel,
   setDiagramDirty,
   setDiagramLocalRev,
   setDiagramServerRev,
-  setDiagramSaveTimer,
   setShellMineTotal,
   setShellMineCursor,
-  setLiveDiagramId,
 } from '../state/shell-state.js';
 import { setDiagramSyncUI } from '../kinds/diagram.js';
 
@@ -119,7 +85,7 @@ function cloudParkDirtyDiagram() {
   var source = diagramSourceEl.value;
   cloudRememberDiagramRow({
     graph_id: id,
-    title: (call("cloudDiagramTitle", source) != null ? call("cloudDiagramTitle", source) : "") || prev.title,
+    title: (cloudDiagramTitle(source) != null ? cloudDiagramTitle(source) : "") || prev.title,
     bmd: source,
     version: Number(prev.version || diagramServerRev) || 1,
     share_id: prev.share_id,
@@ -892,83 +858,22 @@ register("cloudPlusDraftSet", function (source, rev) {
   setCloudPlusDraftRev(rev);
 });
 
-register("cloudCachePut", cloudCachePut);
-register("cloudCacheGet", cloudCacheGet);
-register("cloudRememberDiagramRow", cloudRememberDiagramRow);
-register("cloudCachedDiagramRow", cloudCachedDiagramRow);
-register("cloudParkDirtyDiagram", cloudParkDirtyDiagram);
-register("cloudForgetDiagramCache", cloudForgetDiagramCache);
-register("cloudConfig", cloudConfig);
-register("cloudConfigured", cloudConfigured);
-register("isLocalDrawerPreview", isLocalDrawerPreview);
-register("applyLocalSignedInPreview", applyLocalSignedInPreview);
-register("cloudSafeAvatarUrl", cloudSafeAvatarUrl);
-register("cloudAccountProfile", cloudAccountProfile);
-register("cloudSignInDialog", cloudSignInDialog);
-register("cloudShowSignInDialog", cloudShowSignInDialog);
-register("cloudHideSignInDialog", cloudHideSignInDialog);
-register("cloudSignInDialogOpen", cloudSignInDialogOpen);
-register("cloudDeclineCloudDiagram", cloudDeclineCloudDiagram);
-register("cloudCloseAccountMenus", cloudCloseAccountMenus);
-register("cloudVersionsAligned", cloudVersionsAligned);
-register("cloudSaveButtonCopy", cloudSaveButtonCopy);
-register("cloudSaveUncreated", cloudSaveUncreated);
-register("cloudSetActionLabel", cloudSetActionLabel);
-register("cloudSetSaveSignedOut", cloudSetSaveSignedOut);
 register("syncCloudSaveChrome", syncCloudSaveChrome);
-register("cloudSetAccountUi", cloudSetAccountUi);
-register("cloudDiagramTitle", cloudDiagramTitle);
 register("cloudOpenDiagramId", cloudOpenDiagramId);
 register("getDiagramTitle", getDiagramTitle);
-register("cloudSetDiagramHash", cloudSetDiagramHash);
-register("cloudClearOpenDiagram", cloudClearOpenDiagram);
-register("cloudOpenSignInFromLanding", cloudOpenSignInFromLanding);
-register("cloudInit", cloudInit);
-register("cloudSignIn", cloudSignIn);
-register("cloudSignOut", cloudSignOut);
-register("cloudRowSource", cloudRowSource);
-register("applyCloudDiagramRow", applyCloudDiagramRow);
-register("groupDiagramRowsByGroup", groupDiagramRowsByGroup);
-register("loadSiblingDiagramIds", loadSiblingDiagramIds);
 register("saveDiagramToCloud", saveDiagramToCloud);
 register("loadCloudDiagramByHash", loadCloudDiagramByHash);
-register("cloudRefreshGroups", cloudRefreshGroups);
-register("deleteCloudGroup", deleteCloudGroup);
 
 export {
-  cloudCachePut,
-  cloudCacheGet,
-  cloudRememberDiagramRow,
-  cloudCachedDiagramRow,
   cloudParkDirtyDiagram,
   cloudForgetDiagramCache,
-  cloudConfig,
   cloudConfigured,
   isLocalDrawerPreview,
-  applyLocalSignedInPreview,
-  cloudSafeAvatarUrl,
-  cloudAccountProfile,
-  cloudSignInDialog,
-  cloudShowSignInDialog,
-  cloudHideSignInDialog,
-  cloudSignInDialogOpen,
-  cloudDeclineCloudDiagram,
   cloudCloseAccountMenus,
-  cloudVersionsAligned,
-  cloudSaveButtonCopy,
-  cloudSaveUncreated,
-  cloudSetActionLabel,
-  cloudSetSaveSignedOut,
   syncCloudSaveChrome,
-  cloudSetAccountUi,
-  cloudDiagramTitle,
   cloudOpenDiagramId,
   getDiagramTitle,
   cloudSetDiagramHash,
-  cloudClearOpenDiagram,
-  cloudOpenSignInFromLanding,
-  cloudInit,
-  cloudSignIn,
   cloudSignOut,
   cloudRowSource,
   applyCloudDiagramRow,
@@ -977,5 +882,5 @@ export {
   saveDiagramToCloud,
   loadCloudDiagramByHash,
   cloudRefreshGroups,
-  deleteCloudGroup
+  deleteCloudGroup,
 };

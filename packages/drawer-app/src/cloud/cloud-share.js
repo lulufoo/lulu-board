@@ -1,71 +1,27 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
 import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
-import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
-import { loadKindTemplateSource } from '../core/kind-template.js';
-import {
-  cloudDiagramIdFromHash,
-  cloudDiagramHash,
-  cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
-} from '../core/cloud-route.js';
+
+import { stripDocumentMeta } from '../core/document-meta.js';
+
+import { cloudShareIdFromHash } from '../core/cloud-route.js';
 import {
   cloudClient,
   cloudSession,
   cloudSessionReady,
   cloudLoadSeq,
   cloudSaveSeq,
-  cloudSiblingDiagramIds,
-  cloudGroupId,
-  cloudGroupMembers,
-  cloudPlusDraft,
-  cloudPlusDraftActive,
-  cloudPlusDraftSource,
-  cloudPlusDraftRev,
-  cloudDiagramCache,
   ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
-  chromeTipEl,
-  chromeTipHideTimer,
-  cloudRequestedGroupId,
-  cloudTabDragId,
-  cloudTabDropAfter,
-  cloudTabDropId,
-  setCloudClient,
-  setCloudSession,
-  setCloudSessionReady,
   bumpCloudLoadSeq,
   bumpCloudSaveSeq,
-  setCloudSiblingDiagramIds,
-  setCloudGroupId,
-  setCloudGroupMembers,
-  setCloudPlusDraft,
-  setCloudPlusDraftActive,
-  setCloudPlusDraftSource,
-  setCloudPlusDraftRev,
-  setCloudDiagramCache,
   setOwnerShareId,
   setOwnerShareRole,
   setOwnerIsPublic,
-  setChromeTipEl,
-  setChromeTipHideTimer,
-  setCloudRequestedGroupId,
-  setCloudTabDragId,
-  setCloudTabDropAfter,
-  setCloudTabDropId,
   cloudDiagramId,
 } from './cloud-state.js';
 import {
-  $,
   diagramSourceEl,
   diagramLocalRev,
   diagramServerRev,
-  diagramDirty,
-  diagramSaveTimer,
-  liveDiagramId,
-  shellGroups,
   setStatus,
   showDiagramError,
   updateDiagramChars,
@@ -74,16 +30,12 @@ import {
   setDiagramDirty,
   setDiagramLocalRev,
   setDiagramServerRev,
-  setDiagramSaveTimer,
-  setShellMineTotal,
-  setShellMineCursor,
   setLiveDiagramId,
 } from '../state/shell-state.js';
 
 import {
   cloudSetDiagramHash,
   loadCloudDiagramByHash,
-  syncCloudSaveChrome,
   getDiagramTitle,
   cloudOpenDiagramId,
   cloudConfigured,
@@ -91,6 +43,7 @@ import {
   saveDiagramToCloud,
 } from './cloud-sync.js';
 import { setDiagramSyncUI } from '../kinds/diagram.js';
+import { cloudClearGroupTabs } from './cloud-group-tabs.js';
 
 /* drawer-app/06-cloud-share.js — share rpc helpers and guest-share chrome (the share list lives in the left drawer) */
 
@@ -166,7 +119,7 @@ async function loadSharedDiagramByHash(raw) {
     setShareView(!canEdit);
     setShareEdit(canEdit);
     applySharedDiagramRow(result.data);
-    emit("cloudClearGroupTabs");
+    cloudClearGroupTabs();
     showDiagramError("");
     emit("renderDiagram", { fit: false, restoreView: true });
     setDiagramSyncUI("ok");
@@ -293,40 +246,22 @@ onShareClick("btnShellSaveCopy", function () { void forkSharedDiagram(); });
 onShareClick("btnShareSync", function () { void syncSharedOriginal(); });
 syncShareChrome();
 
-
-
-register("isShareView", isShareView);
-register("isShareEdit", isShareEdit);
 register("isShareGuest", isShareGuest);
 register("setShareEdit", setShareEdit);
 register("setShareView", setShareView);
-register("rememberOwnerShareId", rememberOwnerShareId);
-register("shareRpcError", shareRpcError);
-register("applySharedDiagramRow", applySharedDiagramRow);
+// 跨层：kinds/diagram.js 要调它，kinds 不能 import cloud，所以必须登记；
+// cloud-sync.js 也是经由它来调用。
 register("loadSharedDiagramByHash", loadSharedDiagramByHash);
-register("runShareRpc", runShareRpc);
+// 层内反转：cloud-sync.js 是 cloud 内部的底层（其余 cloud 文件都 import 它），
+// 不能 import 回这里，否则成环；所以用 hooks 登记，由 sync 调用。
+register("rememberOwnerShareId", rememberOwnerShareId);
 register("refreshOwnShareState", refreshOwnShareState);
-register("saveSharedDiagram", saveSharedDiagram);
 register("forkSharedDiagram", forkSharedDiagram);
-register("syncSharedOriginal", syncSharedOriginal);
 register("syncShareChrome", syncShareChrome);
-register("onShareClick", onShareClick);
 
 export {
-  isShareView,
-  isShareEdit,
   isShareGuest,
   setShareEdit,
   setShareView,
   rememberOwnerShareId,
-  shareRpcError,
-  applySharedDiagramRow,
-  loadSharedDiagramByHash,
-  runShareRpc,
-  refreshOwnShareState,
-  saveSharedDiagram,
-  forkSharedDiagram,
-  syncSharedOriginal,
-  syncShareChrome,
-  onShareClick
 };

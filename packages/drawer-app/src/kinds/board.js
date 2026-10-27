@@ -77,7 +77,6 @@ import {
   boardArrowField,
   boardArrowReverse,
   boardIconField,
-  boardIconLabel,
   boardIconList,
   boardIconSec,
   boardIconPick,

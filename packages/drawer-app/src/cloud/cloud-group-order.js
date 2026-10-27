@@ -1,81 +1,17 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
-import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
-import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
-import { loadKindTemplateSource } from '../core/kind-template.js';
-import {
-  cloudDiagramIdFromHash,
-  cloudDiagramHash,
-  cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
-} from '../core/cloud-route.js';
 import {
   cloudClient,
-  cloudSession,
-  cloudSessionReady,
-  cloudLoadSeq,
-  cloudSaveSeq,
-  cloudSiblingDiagramIds,
   cloudGroupId,
   cloudGroupMembers,
-  cloudPlusDraft,
-  cloudPlusDraftActive,
-  cloudPlusDraftSource,
-  cloudPlusDraftRev,
-  cloudDiagramCache,
-  ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
-  chromeTipEl,
-  chromeTipHideTimer,
-  cloudRequestedGroupId,
   cloudTabDragId,
   cloudTabDropAfter,
   cloudTabDropId,
-  setCloudClient,
-  setCloudSession,
-  setCloudSessionReady,
-  bumpCloudLoadSeq,
-  bumpCloudSaveSeq,
-  setCloudSiblingDiagramIds,
-  setCloudGroupId,
   setCloudGroupMembers,
-  setCloudPlusDraft,
-  setCloudPlusDraftActive,
-  setCloudPlusDraftSource,
-  setCloudPlusDraftRev,
-  setCloudDiagramCache,
-  setOwnerShareId,
-  setOwnerShareRole,
-  setOwnerIsPublic,
-  setChromeTipEl,
-  setChromeTipHideTimer,
-  setCloudRequestedGroupId,
   setCloudTabDragId,
   setCloudTabDropAfter,
   setCloudTabDropId,
-  cloudDiagramId,
 } from './cloud-state.js';
-import {
-  $,
-  diagramSourceEl,
-  diagramLocalRev,
-  diagramServerRev,
-  diagramDirty,
-  diagramSaveTimer,
-  liveDiagramId,
-  shellGroups,
-  setStatus,
-  showDiagramError,
-  updateDiagramChars,
-  applyDiagramLiveMeta,
-  syncSourceDockLabel,
-  setDiagramDirty,
-  setDiagramLocalRev,
-  setDiagramServerRev,
-  setDiagramSaveTimer,
-} from '../state/shell-state.js';
+import { setStatus } from '../state/shell-state.js';
 
 import { renderCloudGroupTabs } from './cloud-group-tabs.js';
 
@@ -212,23 +148,3 @@ function cloudMarkTabDrop(root, event) {
   });
 })();
 
-
-register("moveDiagramId", moveDiagramId);
-register("cloudReorderGroupTabs", cloudReorderGroupTabs);
-register("cloudTabFromEvent", cloudTabFromEvent);
-register("cloudClearDropOn", cloudClearDropOn);
-register("cloudClearTabDragMarks", cloudClearTabDragMarks);
-register("cloudTabDropTarget", cloudTabDropTarget);
-register("cloudSlotLine", cloudSlotLine);
-register("cloudMarkTabDrop", cloudMarkTabDrop);
-
-export {
-  moveDiagramId,
-  cloudReorderGroupTabs,
-  cloudTabFromEvent,
-  cloudClearDropOn,
-  cloudClearTabDragMarks,
-  cloudTabDropTarget,
-  cloudSlotLine,
-  cloudMarkTabDrop
-};
