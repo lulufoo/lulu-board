@@ -1,6 +1,6 @@
 /** Mermaid flowchart source editor (Drawer). */
 import { isFlowchart, normalizeDirection, getDirection, updateDirection, getTitle, updateTitle } from './source.js';
-import { SHAPES, NODE_KINDS, nodeKinds, kindFromShape, shapeFromKind, normalizeNodeKind, shapeKeys } from './kinds.js';
+import { nodeKinds, kindFromShape, shapeFromKind, normalizeNodeKind, shapeKeys } from './kinds.js';
 import { collectIds, findSubgraphRange, isEmptySubgraph } from './source.js';
 import {
   addNode, getNode, updateNodeLabel, updateNodeShape, updateNodeKind, updateNodeId, deleteNode,

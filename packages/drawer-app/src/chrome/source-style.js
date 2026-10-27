@@ -1,5 +1,4 @@
 /* Source panel look: syntax colours, current line. */
-import { register } from '../core/hooks.js';
 
 /* drawer-app/10-source-style.js — Source panel look: syntax colours, current line.
    A highlighted <pre> sits behind the transparent #diagramSource; the textarea stays the editor. */
@@ -114,6 +113,4 @@ import { register } from '../core/hooks.js';
   }
   schedule();
 })();
-
-
 

@@ -1,43 +1,20 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
 import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
-import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
+
 import { loadKindTemplateSource } from '../core/kind-template.js';
-import {
-  cloudDiagramIdFromHash,
-  cloudDiagramHash,
-  cloudShareIdFromHash,
-  cloudShareHash,
-  cloudShortLinkIdFromHash,
-} from '../core/cloud-route.js';
+import { cloudDiagramHash } from '../core/cloud-route.js';
 import {
   cloudClient,
   cloudSession,
-  cloudSessionReady,
-  cloudLoadSeq,
-  cloudSaveSeq,
-  cloudSiblingDiagramIds,
   cloudGroupId,
   cloudGroupMembers,
   cloudPlusDraft,
   cloudPlusDraftActive,
   cloudPlusDraftSource,
   cloudPlusDraftRev,
-  cloudDiagramCache,
-  ownerShareId,
-  ownerShareRole,
-  ownerIsPublic,
   chromeTipEl,
   chromeTipHideTimer,
   cloudRequestedGroupId,
-  cloudTabDragId,
-  cloudTabDropAfter,
-  cloudTabDropId,
-  setCloudClient,
-  setCloudSession,
-  setCloudSessionReady,
-  bumpCloudLoadSeq,
-  bumpCloudSaveSeq,
   setCloudSiblingDiagramIds,
   setCloudGroupId,
   setCloudGroupMembers,
@@ -45,32 +22,19 @@ import {
   setCloudPlusDraftActive,
   setCloudPlusDraftSource,
   setCloudPlusDraftRev,
-  setCloudDiagramCache,
-  setOwnerShareId,
-  setOwnerShareRole,
-  setOwnerIsPublic,
   setChromeTipEl,
   setChromeTipHideTimer,
   setCloudRequestedGroupId,
-  setCloudTabDragId,
-  setCloudTabDropAfter,
-  setCloudTabDropId,
   cloudDiagramId,
 } from './cloud-state.js';
 import {
-  $,
   diagramSourceEl,
   diagramLocalRev,
-  diagramServerRev,
   diagramDirty,
   diagramSaveTimer,
-  liveDiagramId,
   shellGroups,
   setStatus,
-  showDiagramError,
-  updateDiagramChars,
   applyDiagramLiveMeta,
-  syncSourceDockLabel,
   setDiagramDirty,
   setDiagramLocalRev,
   setDiagramServerRev,
@@ -82,7 +46,6 @@ import {
   loadCloudDiagramByHash,
   cloudParkDirtyDiagram,
   syncCloudSaveChrome,
-  getDiagramTitle,
   loadSiblingDiagramIds,
 } from './cloud-sync.js';
 
@@ -359,7 +322,6 @@ async function cloudConfirmLeaveDiagram() {
   return true;
 }
 
-
 function cloudTakeRequestedGroupId() {
   var groupId = cloudRequestedGroupId;
   setCloudRequestedGroupId("");
@@ -546,69 +508,25 @@ async function cloudCommitPlusDraft(kind) {
   setStatus("New diagram in this group");
 }
 
-
-register("sortDiagramRowsByGroupOrder", sortDiagramRowsByGroupOrder);
-register("cloudMembersInclude", cloudMembersInclude);
-register("cloudLabelGroupTab", cloudLabelGroupTab);
-register("clipChromeTipText", clipChromeTipText);
-register("chromeTipCenter", chromeTipCenter);
-register("chromeTip", chromeTip);
-register("showChromeTip", showChromeTip);
-register("hideChromeTip", hideChromeTip);
-register("clearChromeTip", clearChromeTip);
+// 层内反转：cloud-sync.js 是 cloud 内部的底层（其余 cloud 文件都 import 它），
+// 不能 import 回这里，否则成环；所以用 hooks 登记，由 sync 调用。
 register("bindChromeTip", bindChromeTip);
-register("bindGroupTabTip", bindGroupTabTip);
-register("nudgeChromeTip", nudgeChromeTip);
-register("nudgeUncreatedCreateTip", nudgeUncreatedCreateTip);
 register("cloudKnownGroupDiagram", cloudKnownGroupDiagram);
-register("cloudGroupTabsVisible", cloudGroupTabsVisible);
-register("blankPlusDraftSource", blankPlusDraftSource);
 register("cloudClearPlusDraftSlot", cloudClearPlusDraftSlot);
-register("cloudClearDirtyLeave", cloudClearDirtyLeave);
 register("cloudParkPlusDraft", cloudParkPlusDraft);
-register("appendGroupDropLine", appendGroupDropLine);
 register("renderCloudGroupTabs", renderCloudGroupTabs);
 register("cloudClearGroupTabs", cloudClearGroupTabs);
-register("cloudConfirmLeaveDiagram", cloudConfirmLeaveDiagram);
 register("cloudTakeRequestedGroupId", cloudTakeRequestedGroupId);
-register("cloudCachedGroupShells", cloudCachedGroupShells);
 register("refreshCloudGroupMembers", refreshCloudGroupMembers);
-register("cloudOpenDiagramById", cloudOpenDiagramById);
-register("cloudSwitchToDiagram", cloudSwitchToDiagram);
-register("cloudSwitchToPlusDraft", cloudSwitchToPlusDraft);
-register("cloudStartPlusDraft", cloudStartPlusDraft);
-register("cloudCommitPlusDraft", cloudCommitPlusDraft);
 
 export {
-  sortDiagramRowsByGroupOrder,
-  cloudMembersInclude,
-  cloudLabelGroupTab,
-  clipChromeTipText,
-  chromeTipCenter,
-  chromeTip,
-  showChromeTip,
-  hideChromeTip,
-  clearChromeTip,
   bindChromeTip,
-  bindGroupTabTip,
-  nudgeChromeTip,
   nudgeUncreatedCreateTip,
-  cloudKnownGroupDiagram,
-  cloudGroupTabsVisible,
-  blankPlusDraftSource,
   cloudClearPlusDraftSlot,
   cloudClearDirtyLeave,
-  cloudParkPlusDraft,
-  appendGroupDropLine,
   renderCloudGroupTabs,
   cloudClearGroupTabs,
   cloudConfirmLeaveDiagram,
-  cloudTakeRequestedGroupId,
-  cloudCachedGroupShells,
-  refreshCloudGroupMembers,
   cloudOpenDiagramById,
   cloudSwitchToDiagram,
-  cloudSwitchToPlusDraft,
-  cloudStartPlusDraft,
-  cloudCommitPlusDraft
 };
