@@ -66,6 +66,8 @@ assert.match(tabs, /loadCloudDiagramByHash/, 'tab switch does not wait for hashc
 assert.match(cloud, /cloudParkPlusDraft/, '#b: load parks an active draft instead of dropping it');
 assert.match(cloud, /cloudKnownGroupDiagram/, 'known group members skip a second group list fetch');
 assert.match(cloud, /refreshCloudGroupMembers/, '#b: first open still refreshes group tabs');
+assert.match(tabs, /loadSiblingDiagramIds,\n\} from '\.\/cloud-sync\.js'/, 'group tabs import the sibling helper');
+assert.match(tabs, /setCloudSiblingDiagramIds\(loadSiblingDiagramIds\(id, rows\)\)/, 'group tabs call the imported sibling helper');
 assert.doesNotMatch(cloud, /if \(!known\) void cloudRefreshGroups/, 'opening a board does not refresh the whole mine list');
 assert.match(cloud, /function cloudCachePut/, 'visited boards stay in a memory cache');
 assert.match(cloud, /if \(cached\)/, 'a cached board skips the boards query');
