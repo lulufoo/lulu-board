@@ -462,12 +462,12 @@ function setCanvasZoom(nextScale) {
   applyTransform();
 }
 function applyRestoredDiagramView() {
-  if (typeof pinDiagramTitle === "function") pinDiagramTitle();
+  call("pinDiagramTitle");
   call("restoreOrFit");
 }
 function fitDiagramView() {
   if (!previewEl) return;
-  pinDiagramTitle();
+  call("pinDiagramTitle");
   call("fitWorld");
   requestAnimationFrame(function () {
     if (!previewEl || !diagramSourceEl) return;
