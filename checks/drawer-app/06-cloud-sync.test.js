@@ -354,8 +354,11 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(load, /if \(cached\)/, '#b: cache hit does not query boards');
   assert.doesNotMatch(load, /cloudRefreshGroups/, 'opening a board does not refresh the whole mine list');
   assert.match(load, /emit\("shellRenderMine"\)/, 'opening a board repaints the mine highlight from loaded pages');
-  assert.equal((load.match(/swap: true/g) || []).length, 2, 'both open paths fade the drawing');
-  assert.match(load, /emit\("renderDiagram", \{ fit: false, restoreView: true, swap: true \}\)/, 'a switched board hides the drawing before paint');
+  const switching = load.search(/var switching = diagramId !== liveDiagramId;/);
+  assert.ok(switching >= 0 && switching < load.indexOf('await cloudSessionReady'), 'a switch is judged against the shown board before any await or apply');
+  assert.doesNotMatch(load, /swap: true/, 'opening the shown board again does not fade');
+  assert.equal((load.match(/swap: switching/g) || []).length, 2, 'both open paths fade only on a switch');
+  assert.match(load, /emit\("renderDiagram", \{ fit: false, restoreView: true, swap: switching \}\)/, 'a switched board hides the drawing before paint');
   assert.match(boardJs, /function holdDiagramSwap/, 'switch can hide the drawing');
   assert.match(boardJs, /!preview \|\| !preview\.childElementCount/, 'first paint does not hide an empty drawing');
   assert.match(boardJs, /diagramSwapSeq \+= 1/, 'a later paint invalidates an in-flight hide');
@@ -375,6 +378,18 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
   assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_graph/);
+}
+
+{
+  const auth = cloud.slice(
+    cloud.indexOf('cloudClient.auth.onAuthStateChange'),
+    cloud.indexOf('setCloudSessionReady(cloudClient.auth.getSession()')
+  );
+  assert.ok(auth.length > 0, 'the auth subscription is a closed block');
+  assert.match(auth, /setCloudSession\(session \|\| null\)/, 'auth events still sync the session');
+  assert.match(auth, /cloudSetAccountUi\(\)/, 'auth events still repaint the account chrome');
+  assert.doesNotMatch(auth, /loadCloudDiagramByHash|loadSharedDiagramByHash/, 'tab refocus and token refresh do not reopen a board');
+  assert.match(auth, /cloudSession && !cloudShareIdFromHash\(location\.hash\)\) void cloudRefreshGroups\(\)/, 'a share link still skips the list refresh');
 }
 
 {
