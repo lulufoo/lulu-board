@@ -83,6 +83,7 @@ import {
   cloudParkDirtyDiagram,
   syncCloudSaveChrome,
   getDiagramTitle,
+  loadSiblingDiagramIds,
 } from './cloud-sync.js';
 
 /* drawer-app/06-cloud-group-tabs.js — group tab chrome on the canvas */
