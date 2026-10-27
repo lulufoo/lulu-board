@@ -79,12 +79,10 @@ export function renderSketch(opts) {
     setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
     emit("finishCanvasView", opts);
   }
+  // Only the srcdoc load finishes the sketch. A new iframe first holds an empty about:blank document that already
+  // reports "complete" at 800px; measuring it would pin the frame there and skip the real load.
   frame.addEventListener("load", onReady);
   previewEl.appendChild(frame);
-  try {
-    var readyDoc = frame.contentDocument;
-    if (readyDoc && readyDoc.readyState === "complete" && readyDoc.body) onReady();
-  } catch (_e) {}
 }
 
 const Sketch = {
