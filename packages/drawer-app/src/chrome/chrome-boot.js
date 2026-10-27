@@ -5,6 +5,7 @@ import { TypeScale } from '../../../boxes/themes/index.js';
 import { register } from '../core/hooks.js';
 import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
+import DrawerStyleLine from '../core/style-line.js';
 import { persistBoardStyle } from '../kinds/board-style.js';
 import {
   pickBoardElement,

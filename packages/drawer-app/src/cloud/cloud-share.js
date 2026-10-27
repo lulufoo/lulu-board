@@ -264,4 +264,6 @@ export {
   setShareEdit,
   setShareView,
   rememberOwnerShareId,
+  shareRpcError,
+  runShareRpc,
 };

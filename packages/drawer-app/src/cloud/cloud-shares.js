@@ -11,7 +11,8 @@ import {
 } from './cloud-state.js';
 import { setStatus } from '../state/shell-state.js';
 
-import { rememberOwnerShareId } from './cloud-share.js';
+import { rememberOwnerShareId, shareRpcError, runShareRpc } from './cloud-share.js';
+import { displayTitleFromBmd } from './cloud-groups.js';
 
 /* drawer-app/06-cloud-shares.js — the boards I shared out (link shares), as data plus per-board actions. */
 

@@ -125,4 +125,4 @@ async function cloudLoadMoreMineGroups() {
 register("cloudMineCursor", cloudMineCursor);
 register("cloudFetchGroupSummaries", cloudFetchGroupSummaries);
 
-export { cloudLoadMoreMineGroups };
+export { cloudLoadMoreMineGroups, displayTitleFromBmd };

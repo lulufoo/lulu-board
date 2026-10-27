@@ -638,6 +638,7 @@ async function bootstrapDiagram() {
 }
 
 register("finishCanvasView", finishCanvasView);
+register("pinDiagramTitle", pinDiagramTitle);
 register("renderDiagram", renderDiagram);
 register("scheduleDiagramSave", scheduleDiagramSave);
 register("setDiagramSyncUI", setDiagramSyncUI);
