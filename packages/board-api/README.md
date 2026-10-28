@@ -17,4 +17,6 @@ cd packages/board-api
 npx wrangler dev
 ```
 
+The public host is `https://api.luluboard.app`. `GET /health` and `POST /graphs` are served there. The route is `api.luluboard.app` in `wrangler.toml`, the same custom-domain pattern as `mcp.luluboard.app`.
+
 `SUPABASE_PUBLISHABLE_KEY` is a Worker secret. `SUPABASE_URL` is in `wrangler.toml`.

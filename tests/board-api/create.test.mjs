@@ -11,6 +11,7 @@ const env = {
   SUPABASE_PUBLISHABLE_KEY: 'publishable-key',
 };
 const ownedSrc = readFileSync(path.join(root, 'packages/board-api/src/owned-graph.js'), 'utf8');
+const wrangler = readFileSync(path.join(root, 'packages/board-api/wrangler.toml'), 'utf8');
 const workerSrc = readFileSync(path.join(root, 'packages/board-api/src/index.js'), 'utf8');
 const sqlName = readdirSync(path.join(root, 'supabase/migrations')).find((name) => name.endsWith('_lb532_create_owned_graph.sql'));
 const sql = readFileSync(path.join(root, 'supabase/migrations', sqlName), 'utf8');
@@ -23,6 +24,9 @@ assert.doesNotMatch(sql, /service_role key|SUPABASE_SERVICE/i);
 assert.match(ownedSrc, /\/rest\/v1\/rpc\/create_owned_graph/);
 assert.doesNotMatch(ownedSrc + workerSrc, /service_role|SUPABASE_SERVICE|board-mcp/);
 assert.doesNotMatch(ownedSrc, /create_owned_graph_with_group/);
+assert.match(wrangler, /pattern = "api\.luluboard\.app"/);
+assert.match(wrangler, /custom_domain = true/);
+assert.match(wrangler, /workers_dev = false/);
 
 function token(claims) {
   const body = Buffer.from(JSON.stringify(claims)).toString('base64url');
