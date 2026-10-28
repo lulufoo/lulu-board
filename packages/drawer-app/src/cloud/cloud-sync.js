@@ -592,7 +592,6 @@ async function saveDiagramToCloud(opts) {
   var seq = bumpCloudSaveSeq();
   setDiagramSyncUI("saving");
   try {
-    var result;
     if (!diagramId) {
       diagramId = newGraphId();
       if (!diagramId) throw new Error("Could not mint a board id");
@@ -636,14 +635,24 @@ async function saveDiagramToCloud(opts) {
     } else {
       var expected = Number(diagramServerRev);
       if (!(expected > 0)) expected = 1;
-      result = await cloudClient.from("graphs").update({
-        title: title,
-        bmd: source,
-      }).eq("graph_id", diagramId).eq("version", expected).select("graph_id,title,bmd,version,share_id,updated_at");
-      if (result.error) throw result.error;
-      if (seq !== cloudSaveSeq) return false;
-      var rows = result.data || [];
-      if (!rows.length) {
+      var updateToken = cloudSession.access_token;
+      if (!updateToken) throw new Error("Sign in to save to cloud");
+      var updateResponse = await fetch("https://api.luluboard.app/graphs", {
+        method: "PATCH",
+        headers: {
+          Authorization: "Bearer " + updateToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          diagram_id: diagramId,
+          bmd: source,
+          expected_version: expected,
+        }),
+      });
+      var updateText = await updateResponse.text();
+      var updateBody = updateText ? JSON.parse(updateText) : null;
+      if (updateResponse.status === 409) {
+        if (seq !== cloudSaveSeq) return false;
         var latest = await cloudClient.from("graphs")
           .select("graph_id,title,bmd,version,share_id,updated_at")
           .eq("graph_id", diagramId)
@@ -656,7 +665,20 @@ async function saveDiagramToCloud(opts) {
         setStatus("Cloud version conflict — reloaded", true);
         return false;
       }
-      applyCloudDiagramRow(rows[0]);
+      if (!updateResponse.ok) {
+        var updateFail = updateBody && (updateBody.message || updateBody.error) || ("HTTP " + updateResponse.status);
+        throw new Error(updateFail);
+      }
+      if (seq !== cloudSaveSeq) return false;
+      if (!updateBody || !updateBody.diagram_id) throw new Error("Could not update cloud diagram");
+      applyCloudDiagramRow({
+        graph_id: updateBody.diagram_id,
+        title: updateBody.title || title,
+        bmd: updateBody.bmd || source,
+        version: updateBody.version,
+        updated_at: updateBody.updated_at,
+        group_id: updateBody.group_id,
+      });
     }
     // Do not steal the hash back if the user already navigated to another cloud board.
     var openId = cloudDiagramId();
