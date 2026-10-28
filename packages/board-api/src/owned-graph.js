@@ -100,3 +100,33 @@ export async function createOwnedGraph(env, token, input) {
   const row = Array.isArray(rows) ? rows[0] : rows;
   return publicRow(row);
 }
+
+export async function updateOwnedGraph(env, token, input) {
+  if (!env || !env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) {
+    throw fail(500, 'db_error', 'missing supabase config');
+  }
+  const raw = input && typeof input === 'object' ? input : {};
+  const source = stripPersistedMeta(raw.bmd);
+  if (!String(source || '').trim()) throw fail(400, 'invalid_request', 'board source must not be empty');
+  let id;
+  try {
+    id = assertGraphId(raw.diagram_id);
+  } catch (error) {
+    throw fail(400, 'invalid_request', error.message);
+  }
+  const expected = Number(raw.expected_version);
+  if (!Number.isInteger(expected) || expected < 1) throw fail(400, 'invalid_request', 'invalid version');
+  const rows = await restJson(env, token, '/rest/v1/rpc/update_owned_graph', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_graph_id: id,
+      p_title: boardTitleFromBody(source) || 'Untitled',
+      p_bmd: source,
+      p_search_text: searchTextFromBody(source),
+      p_expected: expected,
+    }),
+  });
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  if (!row) throw fail(409, 'conflict');
+  return publicRow(row);
+}
