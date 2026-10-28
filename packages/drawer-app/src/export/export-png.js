@@ -2,6 +2,8 @@
 import BoxesRender from '../../../boxes/index.js';
 import { snapdom } from './snapdom.mjs';
 import Sketch from '../kinds/sketch.js';
+import DrawerStyleLine from '../core/style-line.js';
+import { kindTemplateFileName } from '../core/kind-template.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
 import {
@@ -188,7 +190,7 @@ function exportDiagramStem() {
   return exportStem(title || fromPath || id, "board");
 }
 
-async function saveExportBlob(blob, filename, mime) {
+async function saveExportBlob(blob, filename, mime, description) {
   const name = String(filename || "board");
   const extMatch = name.match(/(\.[A-Za-z0-9]+)$/);
   const ext = extMatch ? extMatch[1] : "";
@@ -198,7 +200,7 @@ async function saveExportBlob(blob, filename, mime) {
       accept[mime || "application/octet-stream"] = ext ? [ext] : [];
       const handle = await window.showSaveFilePicker({
         suggestedName: name,
-        types: [{ description: ext === ".png" ? "PNG image" : "Board file", accept }],
+        types: [{ description: description || (ext === ".png" ? "PNG image" : "Board file"), accept }],
       });
       const writable = await handle.createWritable();
       await writable.write(blob);
@@ -219,16 +221,32 @@ async function saveExportBlob(blob, filename, mime) {
   return "download";
 }
 
+/* The suffix follows the source kind, the same way the new-diagram templates are named:
+ * .bmd for Boxes, .skt for Sketch, .mmd for Mermaid. A kind the template table does not
+ * know keeps the old .bmd. */
+const EXPORT_FILE_FALLBACK_SUFFIX = ".bmd";
+const EXPORT_FILE_LABELS = { ".bmd": "Board file", ".skt": "Sketch file", ".mmd": "Mermaid file" };
+
+function exportFileSuffix(kind) {
+  if (kind === "mermaid-unsupported") return ".mmd";
+  const file = kindTemplateFileName(kind);
+  const dot = file.lastIndexOf(".");
+  return dot > 0 ? file.slice(dot) : EXPORT_FILE_FALLBACK_SUFFIX;
+}
+
 export async function exportDiagramFile() {
   const text = diagramSourceEl ? diagramSourceEl.value : "";
   if (!String(text).trim()) {
     setStatus("Nothing to export", true);
+    showCopyTip("Nothing to export");
     return;
   }
+  const suffix = exportFileSuffix(DrawerStyleLine.bodyKind ? DrawerStyleLine.bodyKind(text) : "");
   const result = await saveExportBlob(
     new Blob([text], { type: "text/plain;charset=utf-8" }),
-    exportDiagramStem() + ".bmd",
-    "text/plain"
+    exportDiagramStem() + suffix,
+    "text/plain",
+    EXPORT_FILE_LABELS[suffix]
   );
   if (result === "abort") return;
   const message = result === "picker" ? "File saved" : "File exported";
