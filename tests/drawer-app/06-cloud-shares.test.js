@@ -17,7 +17,7 @@ const appBuild = read('scripts/build-app/drawer.mjs');
 
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-share.js')), 'shares module is built after the share rpc helpers');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-shares.js')), 'shares module is built after the share rpc helpers');
-assert.match(shares, /rpc\("list_outgoing_shares"\)/, 'the share list is one rpc');
+assert.match(shares, /https:\/\/api\.luluboard\.app\/shares\/outgoing/, 'the share list is one board API call');
 assert.doesNotMatch(shares, /select\("graph_id,bmd,share_id,created_at,updated_at"\)/, 'the share list does not read every body');
 assert.doesNotMatch(shares, /own_share_state/, 'the list does not call own_share_state per diagram');
 assert.match(shares, /title: row\.title \|\| ""/, 'the visible name is the stored title');
@@ -79,7 +79,7 @@ assert.strictEqual(cloudShareSummaries([row('b_1', 's_a', '')], {}, '')[0].isCur
   }], {}, '');
   assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
 }
-assert.match(shares, /rpc\("list_outgoing_shares"\)/, 'the share list reads shells');
+assert.match(shares, /https:\/\/api\.luluboard\.app\/shares\/outgoing/, 'the share list reads shells');
 assert.doesNotMatch(shares.slice(shares.indexOf('async function cloudFetchOwnShares'), shares.indexOf('async function cloudShareMutate')), /displayTitleFromBmd\(row\.bmd\)/, 'the fetch does not parse diagram bodies');
 assert.match(shares, /title: row\.title \|\| ""/, 'the visible name reads the stored title');
 console.log('ok 06-cloud-shares');

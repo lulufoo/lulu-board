@@ -88,6 +88,25 @@ function applySharedDiagramRow(row) {
   syncSourceDockLabel();
   call("syncCloudSaveChrome");
 }
+async function fetchShareRows(path, payload) {
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken) throw new Error("Sign in to open this shared diagram");
+  var response = await fetch("https://api.luluboard.app" + path, {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload || {}),
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
+  return Array.isArray(body) ? body : [];
+}
 async function loadSharedDiagramByHash(raw) {
   var shareId = cloudShareIdFromHash(raw);
   if (!shareId) return false;
@@ -99,24 +118,24 @@ async function loadSharedDiagramByHash(raw) {
   var seq = bumpCloudLoadSeq();
   setStatus("Loading shared diagram…");
   try {
-    var result = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
-    if (result.error) throw result.error;
+    var rows = await fetchShareRows("/shares/get", { share_id: shareId });
+    var data = rows[0] || null;
     if (seq !== cloudLoadSeq) return true;
-    if (!result.data) throw new Error("Shared diagram not found");
-    if (result.data.is_owner && result.data.graph_id) {
+    if (!data) throw new Error("Shared diagram not found");
+    if (data.is_owner && data.graph_id) {
       setShareView(false);
       setShareEdit(false);
       rememberOwnerShareId(shareId);
-      cloudSetDiagramHash(result.data.graph_id, true);
-      await loadCloudDiagramByHash("#b:" + result.data.graph_id);
+      cloudSetDiagramHash(data.graph_id, true);
+      await loadCloudDiagramByHash("#b:" + data.graph_id);
       return true;
     }
     rememberOwnerShareId("");
     var signedIn = !!(cloudSession && cloudSession.user);
-    var canEdit = result.data.access === "edit" && signedIn;
+    var canEdit = data.access === "edit" && signedIn;
     setShareView(!canEdit);
     setShareEdit(canEdit);
-    applySharedDiagramRow(result.data);
+    applySharedDiagramRow(data);
     cloudClearGroupTabs();
     showDiagramError("");
     emit("renderDiagram", { fit: false, restoreView: true });
@@ -142,10 +161,9 @@ async function runShareRpc(name, args) {
     setStatus("Sign in to share", true);
     return null;
   }
-  var result = await cloudClient.rpc(name, args);
-  if (result.error) throw result.error;
-  var row = Array.isArray(result.data) ? result.data[0] : result.data;
-  return row || null;
+  if (name !== "own_share_state") throw new Error("unknown share read");
+  var rows = await fetchShareRows("/shares/state", { diagram_id: args && args.p_graph_id });
+  return rows[0] || null;
 }
 async function refreshOwnShareState() {
   var diagramId = cloudDiagramId();
@@ -190,10 +208,10 @@ async function saveSharedDiagram(opts) {
     var savedBody = rawText ? JSON.parse(rawText) : null;
     if (response.status === 409) {
       if (seq !== cloudSaveSeq) return false;
-      var latest = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
-      if (latest.error) throw latest.error;
-      if (!latest.data) throw new Error("Shared diagram not found");
-      applySharedDiagramRow(latest.data);
+      var rows = await fetchShareRows("/shares/get", { share_id: shareId });
+      var latestData = rows[0] || null;
+      if (!latestData) throw new Error("Shared diagram not found");
+      applySharedDiagramRow(latestData);
       emit("renderDiagram", { fit: false, restoreView: true });
       setDiagramSyncUI("conflict");
       setStatus("Shared version conflict — reloaded", true);
