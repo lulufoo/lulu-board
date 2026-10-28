@@ -36,8 +36,6 @@ import {
 import {
   cloudSetDiagramHash,
   loadCloudDiagramByHash,
-  getDiagramTitle,
-  cloudOpenDiagramId,
   cloudConfigured,
   cloudRowSource,
   saveDiagramToCloud,
@@ -169,22 +167,29 @@ async function saveSharedDiagram(opts) {
   }
   var source = stripDocumentMeta(diagramSourceEl && diagramSourceEl.value);
   if (diagramSourceEl && source !== diagramSourceEl.value) diagramSourceEl.value = source;
-  var title = getDiagramTitle(cloudOpenDiagramId());
   var expected = Number(diagramServerRev);
   if (!(expected > 0)) expected = 1;
   var seq = bumpCloudSaveSeq();
   setDiagramSyncUI("saving");
   try {
-    var result = await cloudClient.rpc("save_shared_graph", {
-      p_share_id: shareId,
-      p_title: title,
-      p_bmd: source,
-      p_expected: expected,
+    var accessToken = cloudSession.access_token;
+    if (!accessToken) throw new Error("Sign in to edit this shared diagram");
+    var response = await fetch("https://api.luluboard.app/shares", {
+      method: "PATCH",
+      headers: {
+        Authorization: "Bearer " + accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        share_id: shareId,
+        bmd: source,
+        expected_version: expected,
+      }),
     });
-    if (result.error) throw result.error;
-    if (seq !== cloudSaveSeq) return false;
-    var row = Array.isArray(result.data) ? result.data[0] : result.data;
-    if (!row) {
+    var rawText = await response.text();
+    var savedBody = rawText ? JSON.parse(rawText) : null;
+    if (response.status === 409) {
+      if (seq !== cloudSaveSeq) return false;
       var latest = await cloudClient.rpc("get_shared_graph", { p_share_id: shareId }).maybeSingle();
       if (latest.error) throw latest.error;
       if (!latest.data) throw new Error("Shared diagram not found");
@@ -194,7 +199,13 @@ async function saveSharedDiagram(opts) {
       setStatus("Shared version conflict — reloaded", true);
       return false;
     }
-    applySharedDiagramRow(row);
+    if (!response.ok) {
+      var fail = savedBody && (savedBody.message || savedBody.error) || ("HTTP " + response.status);
+      throw new Error(fail);
+    }
+    if (seq !== cloudSaveSeq) return false;
+    if (!savedBody) throw new Error("Could not save shared diagram");
+    applySharedDiagramRow(savedBody);
     setDiagramSyncUI("ok");
     setStatus("Saved shared diagram");
     return true;

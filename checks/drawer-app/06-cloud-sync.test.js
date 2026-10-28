@@ -58,7 +58,8 @@ assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longe
 assert.match(shareJs, /rpc\("get_shared_graph"/, 'shared read uses get_shared_graph');
 assert.match(shareJs, /p_graph_id: diagramId/, 'share mutations pass the cloud board id');
 assert.match(read('packages/drawer-app/src/cloud/cloud-shares.js') + read('packages/drawer-app/src/chrome/shell-drawer.js') + read('packages/drawer-app/src/chrome/share-dialog.js'), /set_share_role/, 'owner access uses set_share_role');
-assert.match(shareJs, /save_shared_graph/, 'shared editors save through save_shared_graph');
+assert.match(shareJs, /https:\/\/api\.luluboard\.app\/shares/, 'shared editors save through the board API');
+assert.doesNotMatch(shareJs, /save_shared_graph/, 'shared editors do not call the SQL function');
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedDiagramByHash/, 'hash bootstrap can load a share token');
