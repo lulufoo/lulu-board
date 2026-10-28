@@ -30,6 +30,7 @@ const shareRoleSql = readSql('20260918143300_share_access_role.sql');
 const workerConfig = read('wrangler.toml');
 
 assert.match(html, /Content-Security-Policy/, 'public page declares a CSP');
+assert.match(html, /connect-src[^"]*https:\/\/api\.luluboard\.app/, 'first cloud save may call the board API');
 assert.match(html, /img-src[^"]*https:\/\/\*\.googleusercontent\.com/, 'CSP allows Google avatars');
 assert.match(html, /img-src[^"]*https:\/\/avatars\.githubusercontent\.com/, 'CSP allows GitHub avatars');
 assert.match(html, /id="btnShellSignIn"/, 'public page exposes sign in');
