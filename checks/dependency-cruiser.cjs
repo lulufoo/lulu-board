@@ -37,6 +37,20 @@ module.exports = {
       to: { path: "^packages/board-mcp/" },
     },
     {
+      name: "drawer-no-api",
+      comment: "drawer-app does not import board-api.",
+      severity: "error",
+      from: { path: "^packages/drawer-app/" },
+      to: { path: "^packages/board-api/" },
+    },
+    {
+      name: "api-only-core",
+      comment: "board-api may import board-core only.",
+      severity: "error",
+      from: { path: "^packages/board-api/" },
+      to: { path: "^packages/", pathNot: "^packages/(board-api|board-core)/" },
+    },
+    {
       name: "mcp-only-core",
       comment: "board-mcp may import board-core only.",
       severity: "error",
@@ -48,7 +62,7 @@ module.exports = {
       comment: "shared kernel does not import L1/L2/L3.",
       severity: "error",
       from: { path: "^packages/(board-themes|board-core)/" },
-      to: { path: "^packages/(drawer-app|boxes|mermaid-ext|board-mcp|site|brand)/" },
+      to: { path: "^packages/(drawer-app|boxes|mermaid-ext|board-mcp|board-api|site|brand)/" },
     },
     {
       name: "drawer-core-no-upward",
