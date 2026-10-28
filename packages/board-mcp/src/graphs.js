@@ -113,19 +113,38 @@ export async function saveGraph(env, token, graphId, bmd, expectedVersion) {
   if (!source.trim()) throw new Error("board source must not be empty");
   var expected = Number(expectedVersion);
   if (!(expected > 0)) expected = 1;
-  var rows = await restJson(
-    env,
-    token,
-    "/rest/v1/graphs?graph_id=eq." + encodeURIComponent(id) + "&version=eq." + encodeURIComponent(String(expected)) + "&select=" + GRAPH_PUBLIC_SELECT,
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        title: boardTitleFromBody(source) || "Untitled",
-        bmd: source,
-      }),
-    }
-  );
-  if (rows && rows[0]) return { conflict: false, row: rowPublic(rows[0]) };
-  var latest = await getGraph(env, token, id);
-  return { conflict: true, row: latest };
+  var res = await fetch("https://api.luluboard.app/graphs", {
+    method: "PATCH",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      diagram_id: id,
+      bmd: source,
+      expected_version: expected,
+    }),
+  });
+  var text = await res.text();
+  var body = text ? JSON.parse(text) : null;
+  if (res.status === 409) {
+    var latest = await getGraph(env, token, id);
+    return { conflict: true, row: latest };
+  }
+  if (!res.ok) {
+    var msg = body && (body.message || body.error) || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  if (!body || !body.diagram_id) throw new Error("save failed");
+  return {
+    conflict: false,
+    row: rowPublic({
+      graph_id: body.diagram_id,
+      title: body.title,
+      bmd: body.bmd,
+      version: body.version,
+      updated_at: body.updated_at,
+      group_id: body.group_id,
+    }),
+  };
 }

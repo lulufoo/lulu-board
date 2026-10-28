@@ -58,7 +58,8 @@ assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longe
 assert.match(shareJs, /rpc\("get_shared_graph"/, 'shared read uses get_shared_graph');
 assert.match(shareJs, /p_graph_id: diagramId/, 'share mutations pass the cloud board id');
 assert.match(read('packages/drawer-app/src/cloud/cloud-shares.js') + read('packages/drawer-app/src/chrome/shell-drawer.js') + read('packages/drawer-app/src/chrome/share-dialog.js'), /set_share_role/, 'owner access uses set_share_role');
-assert.match(shareJs, /save_shared_graph/, 'shared editors save through save_shared_graph');
+assert.match(shareJs, /https:\/\/api\.luluboard\.app\/shares/, 'shared editors save through the board API');
+assert.doesNotMatch(shareJs, /save_shared_graph/, 'shared editors do not call the SQL function');
 assert.match(shareJs, /function syncSharedOriginal/, 'Share sync writes the original row');
 assert.match(shareJs, /shareSync.hidden = !\(signedIn && isShareEdit\(\)\)/, 'Share sync needs a signed-in editor');
 assert.match(shareJs, /function loadSharedDiagramByHash/, 'hash bootstrap can load a share token');
@@ -107,8 +108,9 @@ assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys t
 assert.match(cloud, /https:\/\/api\.luluboard\.app\/graphs/, 'first insert calls the board API');
 assert.match(cloud, /Authorization: "Bearer " \+ accessToken/, 'first insert sends the user JWT');
 assert.doesNotMatch(cloud, /create_owned_graph_with_group/, 'web create no longer calls the old SQL function');
-assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
-assert.match(cloud, /\.update\([\s\S]*\.select\("graph_id,title,bmd,version,share_id,updated_at"\)/, 'update returns the saved source');
+assert.match(cloud, /expected_version:\s*expected/, 'updates send the server version');
+assert.match(cloud, /method:\s*"PATCH"/, 'updates call the board API');
+assert.doesNotMatch(cloud, /\.from\("graphs"\)\.update/, 'web update no longer patches the table');
 assert.match(cloud, /\.select\("graph_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
 sqlAssert.match(versionSql, /add column if not exists version/, 'version column is added');
@@ -425,8 +427,14 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.match(save, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
   assert.doesNotMatch(insertBranch, /from\("graphs"\)\.insert|from\("group_members"\)/);
   assert.match(insertBranch, /cloudSetDiagramHash\(diagramId/);
-  assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);
-  assert.doesNotMatch(updateBranch, /api\.luluboard\.app|create_owned_graph_with_group|from\("group_members"\)/);
+  assert.match(updateBranch, /https:\/\/api\.luluboard\.app\/graphs/);
+  assert.match(updateBranch, /method:\s*"PATCH"/);
+  assert.match(updateBranch, /diagram_id:\s*diagramId/);
+  assert.match(updateBranch, /expected_version:\s*expected/);
+  assert.doesNotMatch(updateBranch, /search_text/);
+  assert.doesNotMatch(updateBranch, /\.update\(\{/);
+  assert.match(updateBranch, /status === 409/);
+  assert.doesNotMatch(updateBranch, /create_owned_graph_with_group|from\("group_members"\)/);
   assert.doesNotMatch(updateBranch, /share_id\s*:/);
   assert.doesNotMatch(save, /from\("graphs"\)\.(insert|update)\([\s\S]*group_id/);
 }

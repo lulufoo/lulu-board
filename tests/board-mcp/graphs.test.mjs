@@ -47,6 +47,7 @@ assert.match(graphsSrc, /board-core\/document-format/, 'MCP imports document-for
 assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'create does not POST graphs rows');
 assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/graphs/, 'create calls the board API');
 assert.doesNotMatch(graphsSrc, /create_owned_graph_with_group|\/rpc\/create_owned_graph/, 'create does not call the SQL function');
+assert.doesNotMatch(graphsSrc, /version=eq\./, 'save does not CAS through PostgREST');
 
 const env = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'pub' };
 const calls = [];
@@ -115,21 +116,23 @@ globalThis.fetch = async (url, init) => {
       }),
     };
   }
-  if (href.includes('version=eq.3') && method === 'PATCH') {
-    return { ok: true, text: async () => '[]' };
-  }
-  if (method === 'PATCH') {
-    const patch = JSON.parse(body || '{}');
+  if (href === 'https://api.luluboard.app/graphs' && method === 'PATCH') {
+    const payload = JSON.parse(body);
+    if (payload.expected_version === 3) {
+      return { ok: false, status: 409, text: async () => JSON.stringify({ error: 'conflict' }) };
+    }
     return {
       ok: true,
-      text: async () => JSON.stringify([{
-        graph_id: 'b_0fc10001',
-        title: patch.title,
-        bmd: patch.bmd,
-        version: 5,
+      status: 200,
+      text: async () => JSON.stringify({
+        diagram_id: payload.diagram_id,
+        title: 'Mine',
+        bmd: payload.bmd,
+        version: Number(payload.expected_version) + 1,
         updated_at: latest.updated_at,
         group_id: 'g_99aabbcc',
-      }]),
+        url: 'https://luluboard.app/#b:' + payload.diagram_id,
+      }),
     };
   }
   return { ok: true, text: async () => JSON.stringify([rowForGraphId(href)]) };
@@ -226,9 +229,13 @@ try {
   assert.equal(saved.conflict, false);
   assert.equal(saved.row.group_id, 'g_99aabbcc');
   assert.equal(saved.row.version, 5);
-  const patch = calls.find((c) => c.method === 'PATCH' && c.url.includes('version=eq.4'));
+  const patch = calls.find((c) => c.method === 'PATCH' && c.url === 'https://api.luluboard.app/graphs' && JSON.parse(c.body).expected_version === 4);
   assert.ok(patch);
-  assert.deepEqual(JSON.parse(patch.body), { title: 'Mine', bmd: 'boxes "Mine"\n' });
+  const patchBody = JSON.parse(patch.body);
+  assert.equal(patchBody.diagram_id, 'b_0fc10001');
+  assert.equal(patchBody.bmd, 'boxes "Mine"\n');
+  assert.ok(!('search_text' in patchBody));
+  assert.ok(!('title' in patchBody));
 
   const flowSaved = await saveGraph(env, 'tok', 'b_0fc10001', 'flowchart TD\n  A-->C\n', 5);
   assert.equal(flowSaved.conflict, false);
@@ -240,7 +247,7 @@ try {
   assert.equal(conflict.row.version, 4);
   assert.equal(conflict.row.bmd, 'board "Now"\n');
   assert.equal(conflict.row.group_id, 'g_99aabbcc');
-  assert.ok(calls.some((c) => c.method === 'PATCH' && c.url.includes('version=eq.3')));
+  assert.ok(calls.some((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').expected_version === 3));
 } finally {
   globalThis.fetch = prevFetch;
 }

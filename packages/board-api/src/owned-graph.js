@@ -11,7 +11,7 @@ import { searchTextFromBody } from '../../board-core/search-text.js';
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
 const PUBLIC_WEB_ORIGIN = 'https://luluboard.app';
 
-function fail(status, error, message) {
+export function fail(status, error, message) {
   const err = new Error(message || error);
   err.status = status;
   err.error = error;
@@ -33,7 +33,7 @@ function restHeaders(env, token) {
   };
 }
 
-async function restJson(env, token, path, init) {
+export async function restJson(env, token, path, init) {
   const res = await fetch(env.SUPABASE_URL.replace(/\/$/, '') + path, Object.assign({
     headers: restHeaders(env, token),
   }, init || {}));
@@ -46,7 +46,7 @@ async function restJson(env, token, path, init) {
     const code = body && body.code;
     const message = (body && (body.message || body.error_description || body.error)) || ('HTTP ' + res.status);
     if (code === '28000' || res.status === 401) throw fail(401, 'unauthorized', message);
-    if (code === 'P0002') throw fail(403, 'forbidden', message);
+    if (code === 'P0002' || code === '42501') throw fail(403, 'forbidden', message);
     if (code === '22023') throw fail(400, 'invalid_request', message);
     if (code === '23505') throw fail(409, 'conflict', message);
     throw fail(res.status >= 500 ? 500 : 400, 'db_error', message);
@@ -98,5 +98,35 @@ export async function createOwnedGraph(env, token, input) {
     }),
   });
   const row = Array.isArray(rows) ? rows[0] : rows;
+  return publicRow(row);
+}
+
+export async function updateOwnedGraph(env, token, input) {
+  if (!env || !env.SUPABASE_URL || !env.SUPABASE_PUBLISHABLE_KEY) {
+    throw fail(500, 'db_error', 'missing supabase config');
+  }
+  const raw = input && typeof input === 'object' ? input : {};
+  const source = stripPersistedMeta(raw.bmd);
+  if (!String(source || '').trim()) throw fail(400, 'invalid_request', 'board source must not be empty');
+  let id;
+  try {
+    id = assertGraphId(raw.diagram_id);
+  } catch (error) {
+    throw fail(400, 'invalid_request', error.message);
+  }
+  const expected = Number(raw.expected_version);
+  if (!Number.isInteger(expected) || expected < 1) throw fail(400, 'invalid_request', 'invalid version');
+  const rows = await restJson(env, token, '/rest/v1/rpc/update_owned_graph', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_graph_id: id,
+      p_title: boardTitleFromBody(source) || 'Untitled',
+      p_bmd: source,
+      p_search_text: searchTextFromBody(source),
+      p_expected: expected,
+    }),
+  });
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  if (!row) throw fail(409, 'conflict');
   return publicRow(row);
 }
