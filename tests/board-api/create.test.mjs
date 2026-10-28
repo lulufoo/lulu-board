@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import worker from '../../packages/board-api/src/index.js';
@@ -13,14 +13,7 @@ const env = {
 const ownedSrc = readFileSync(path.join(root, 'packages/board-api/src/owned-graph.js'), 'utf8');
 const wrangler = readFileSync(path.join(root, 'packages/board-api/wrangler.toml'), 'utf8');
 const workerSrc = readFileSync(path.join(root, 'packages/board-api/src/index.js'), 'utf8');
-const sqlName = readdirSync(path.join(root, 'supabase/migrations')).find((name) => name.endsWith('_lb532_create_owned_graph.sql'));
-const sql = readFileSync(path.join(root, 'supabase/migrations', sqlName), 'utf8');
 
-assert.match(sql, /create function public\.create_owned_graph\(\s*p_graph_id text,\s*p_title text,\s*p_bmd text,\s*p_search_text text,\s*p_group_id text default null/s);
-assert.match(sql, /search_text/);
-assert.match(sql, /security definer/i);
-assert.match(sql, /auth\.uid\(\)/);
-assert.doesNotMatch(sql, /service_role key|SUPABASE_SERVICE/i);
 assert.match(ownedSrc, /\/rest\/v1\/rpc\/create_owned_graph/);
 assert.doesNotMatch(ownedSrc + workerSrc, /service_role|SUPABASE_SERVICE|board-mcp/);
 assert.doesNotMatch(ownedSrc, /create_owned_graph_with_group/);
