@@ -10,3 +10,4 @@ import './chrome/share-dialog.js';
 import './chrome/shell-tabs.js';
 import './chrome/shortcuts.js';
 import './chrome/source-style.js';
+import './chrome/theme-picker.js';
