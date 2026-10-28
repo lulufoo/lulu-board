@@ -787,6 +787,26 @@ async function cloudRefreshGroups() {
   }
 }
 
+async function deleteCloudDiagrams(ids) {
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken) throw new Error("Sign in to delete");
+  var response = await fetch("https://api.luluboard.app/graphs/delete", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ diagram_ids: ids }),
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
+  return body;
+}
+
 async function deleteCloudGroup(groupId, diagramIds) {
   if (!cloudClient || !cloudSession || !cloudSession.user || !groupId) return;
   var ids = (diagramIds || []).filter(Boolean);
@@ -799,8 +819,7 @@ async function deleteCloudGroup(groupId, diagramIds) {
     cancel: "Cancel",
   }))) return;
   try {
-    var boards = await cloudClient.from("graphs").delete().in("graph_id", ids);
-    if (boards.error) throw boards.error;
+    await deleteCloudDiagrams(ids);
     cloudForgetDiagramCache(ids);
     var openId = cloudDiagramId();
     if (openId && ids.indexOf(openId) >= 0) {
@@ -922,4 +941,5 @@ export {
   loadCloudDiagramByHash,
   cloudRefreshGroups,
   deleteCloudGroup,
+  deleteCloudDiagrams,
 };
