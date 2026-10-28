@@ -1,6 +1,7 @@
 import { createOwnedGraph, updateOwnedGraph } from './owned-graph.js';
 import { saveSharedGraph } from './share-graph.js';
 import { changeShareSetting } from './share-settings.js';
+import { deleteOwnedGraphs } from './graph-delete.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -19,6 +20,33 @@ function json(data, status) {
 function bearer(request) {
   const header = request.headers.get('authorization') || '';
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
+}
+
+async function authedCall(request, env, run) {
+  const token = bearer(request);
+  if (!token) return json({ error: 'unauthorized' }, 401);
+  try {
+    await verifyAccessToken(env, token);
+  } catch (_error) {
+    return json({ error: 'unauthorized' }, 401);
+  }
+  let input = {};
+  if (request.method !== 'GET') {
+    try {
+      input = await request.json();
+    } catch (_error) {
+      return json({ error: 'invalid_request', message: 'invalid json' }, 400);
+    }
+  }
+  try {
+    return json(await run(token, input, request), 200);
+  } catch (error) {
+    const status = error.status || 500;
+    const code = error.error || 'db_error';
+    const body = { error: code };
+    if (error.message && code !== 'unauthorized') body.message = error.message;
+    return json(body, status);
+  }
 }
 
 async function shareSettingResponse(request, env, action) {
@@ -138,6 +166,9 @@ export default {
     }
     if (request.method === 'PATCH' && url.pathname === '/shares') {
       return shareResponse(request, env);
+    }
+    if (request.method === 'POST' && url.pathname === '/graphs/delete') {
+      return authedCall(request, env, (token, input) => deleteOwnedGraphs(env, token, input));
     }
     if (request.method === 'POST' && url.pathname === '/shares/open') {
       return shareSettingResponse(request, env, 'open_share');
