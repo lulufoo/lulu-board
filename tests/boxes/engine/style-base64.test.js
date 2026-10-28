@@ -25,6 +25,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   assert.ok(!/^style /m.test(Render.serialize(board)), Render.serialize(board));
@@ -42,6 +43,7 @@ item HERO type text "Hi"
     item_cap: 24,
     link_route: 'stagger',
     type_step: 0,
+    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   const out = Render.serialize(board);
@@ -64,6 +66,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
 }
@@ -149,6 +152,7 @@ item HERO type text "Hi"
     item_cap: 16,
     link_route: 'stagger',
     type_step: 0,
+    background: 'paper',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();

@@ -4,11 +4,13 @@ import { ORDER, resolveId } from '../board-themes/index.js';
 
 export const THEMES = Object.fromEntries(ORDER.map((id) => [id, 1]));
 export const ROUTES = { trunk: 1, stagger: 1, straight: 1 };
+export const BACKGROUNDS = { paper: 1, mist: 1, sage: 1, dusk: 1 };
 export const DEFAULTS = {
   theme: 'default',
   item_cap: 16,
   link_route: 'stagger',
   type_step: 0,
+  background: 'paper',
   viewport: { scale: 1, cx: 0, cy: 0 },
 };
 export const ITEM_CAP_MIN = 8;
@@ -19,7 +21,7 @@ export const FACTOR = 1.125;
 export const MIN_PX = 8;
 export const TYPE_STEP_MIN = STEP_MIN;
 export const TYPE_STEP_MAX = STEP_MAX;
-const FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, type_step: 1, viewport: 1 };
+const FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, type_step: 1, background: 1, viewport: 1 };
 
 export function clampStep(raw) {
   const n = Math.round(Number(raw));
@@ -68,6 +70,11 @@ export function resolveLinkRoute(value) {
   return ROUTES[raw] ? raw : DEFAULTS.link_route;
 }
 
+export function resolveBackground(id) {
+  const raw = String(id == null ? '' : id).trim();
+  return BACKGROUNDS[raw] ? raw : DEFAULTS.background;
+}
+
 export function authoredViewport(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const scale = Number(raw.scale);
@@ -102,6 +109,10 @@ export function authoredFields(raw) {
     const step = clampTypeStep(src.type_step);
     if (step !== DEFAULTS.type_step) out.type_step = step;
   }
+  if (src.background != null && src.background !== '') {
+    const background = resolveBackground(src.background);
+    if (background !== DEFAULTS.background) out.background = background;
+  }
   const viewport = authoredViewport(src.viewport || src.view);
   if (viewport && !isDefaultViewport(viewport)) out.viewport = viewport;
   return out;
@@ -115,6 +126,7 @@ export function resolveFields(raw) {
     item_cap: src.item_cap == null || src.item_cap === '' ? DEFAULTS.item_cap : clampItemCap(src.item_cap),
     link_route: src.link_route == null || src.link_route === '' ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
     type_step: src.type_step == null || src.type_step === '' ? DEFAULTS.type_step : clampTypeStep(src.type_step),
+    background: src.background == null || src.background === '' ? DEFAULTS.background : resolveBackground(src.background),
     viewport: viewport || {
       scale: DEFAULTS.viewport.scale,
       cx: DEFAULTS.viewport.cx,
