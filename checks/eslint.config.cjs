@@ -25,6 +25,7 @@ module.exports = [
     // Browser first, Node as the fallback: `typeof Buffer !== 'undefined'` is feature detection.
     files: [
       'packages/board-core/document-format.js',
+      'packages/board-core/search-text.js',
       'packages/board-core/style-token.js',
       'packages/drawer-app/src/core/hash-persist.js',
       'packages/drawer-app/src/core/style-line.js',
