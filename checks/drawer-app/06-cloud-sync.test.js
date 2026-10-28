@@ -133,6 +133,12 @@ sqlAssert.match(shareRoleSql, /function public\.save_shared_board/, 'shared edit
 sqlAssert.match(shareRoleSql, /access text/, 'shared read returns the access role');
 sqlAssert.match(shareRoleSql, /grant execute on function public\.save_shared_board/, 'shared edit is authenticated only');
 assert.match(cloud, /provider: selected/, 'cloud sign in selects an OAuth provider');
+assert.match(
+  cloud,
+  /var provider = button\.getAttribute\("data-shell-oauth"\)[\s\S]*?cloudSignIn\(provider\)/,
+  'the clicked button passes data-shell-oauth into cloudSignIn (LB-571)',
+);
+assert.doesNotMatch(cloud, /dataset\.boardOauth/, 'sign-in does not read the missing data-board-oauth attribute');
 assert.match(cloud, /flowType: "pkce"/, 'OAuth callbacks use query-based PKCE, not a token fragment');
 assert.match(cloud, /redirectTo: returnTo/, 'OAuth uses redirectTo');
 assert.match(cloud, /var returnTo = location\.origin \+ "\/\?ws=1"/, 'OAuth always returns to /?ws=1 (LB-356)');
