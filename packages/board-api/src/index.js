@@ -5,6 +5,7 @@ import { deleteOwnedGraphs } from './graph-delete.js';
 import { reorderGroup } from './group-reorder.js';
 import { readOwnedGraph } from './graph-read.js';
 import { listMine, loadGroupShells } from './mine-lists.js';
+import { searchGraphs } from './graph-search.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -176,6 +177,9 @@ export default {
     }
     if (request.method === 'PATCH' && url.pathname === '/shares') {
       return shareResponse(request, env);
+    }
+    if (request.method === 'POST' && url.pathname === '/search') {
+      return authedCall(request, env, (token, input) => searchGraphs(env, token, input));
     }
     if (request.method === 'POST' && url.pathname === '/mine') {
       return authedCall(request, env, (token, input) => listMine(env, token, input));
