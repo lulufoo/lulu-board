@@ -11,6 +11,7 @@ const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const cssDir = 'packages/drawer-app/css';
 
 const boot = read('packages/drawer-app/src/core/early-head-boot.js');
+const diagram = read('packages/drawer-app/src/kinds/diagram.js');
 const exportPng = read('packages/drawer-app/src/export/export-png.js');
 const chrome = read(`${cssDir}/02-chrome.css`);
 
@@ -34,5 +35,11 @@ for (const name of cssFiles) {
   assert.doesNotMatch(css, /--dot\b/, `${name} has no --dot token`);
 }
 assert.doesNotMatch(exportPng, /#dfe7ea|#f8fafc|paintExportGrid/i, 'export holds no ground numbers of its own');
+assert.match(diagram, /import \{ applyGround \} from '\.\.\/core\/workspace-ground\.js'/, 'diagram imports the ground');
+assert.match(
+  diagram.slice(diagram.indexOf('function finishCanvasView')),
+  /applyDocumentGround\(\)/,
+  'opening a document reapplies the ground from its style',
+);
 
 console.log('ok workspace-ground check');

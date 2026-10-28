@@ -298,6 +298,25 @@ box HERO "Hi"
 }
 
 {
+  const source = src(`
+boxes Demo
+item HERO type text "Hi"
+`);
+  const next = Render.updateStyle(source, { background: 'dusk' });
+  const themed = Render.updateStyle(next, { theme: 'classic' });
+  const token = themed.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    theme: 'classic',
+    background: 'dusk',
+  });
+  const back = Render.updateStyle(themed, { background: 'paper' });
+  const backToken = back.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(backToken, 'base64').toString('utf8')), {
+    theme: 'classic',
+  });
+}
+
+{
   const Token = require('../../../packages/board-core/style-token.js');
   const obj = { theme: 'classic', type_step: 2 };
   assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');

@@ -3,6 +3,7 @@ import BoxesRender from '../../../boxes/index.js';
 import MindmapEdit from '../../../mermaid-ext/mindmap/index.js';
 import { register, emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
+import { applyGround } from '../core/workspace-ground.js';
 import FlowchartTypeScale from '../core/flowchart-type-scale.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerEarlyHead from '../core/early-head.js';
@@ -182,8 +183,22 @@ function previewHasPaint(root) {
   return !!(root && root.querySelector(".board-render, iframe.sketch-frame, svg"));
 }
 
+function applyDocumentGround() {
+  if (typeof applyGround !== "function") return;
+  if (!DrawerStyleLine || !diagramSourceEl) {
+    applyGround(document.documentElement);
+    return;
+  }
+  var raw = typeof stripDocumentMeta === "function"
+    ? stripDocumentMeta(diagramSourceEl.value)
+    : diagramSourceEl.value;
+  var fields = DrawerStyleLine.fieldsFromStyleToken(DrawerStyleLine.splitRendererStyle(raw).token);
+  applyGround(document.documentElement, fields.background);
+}
+
 function finishCanvasView(opts) {
   opts = opts || {};
+  applyDocumentGround();
   try {
     if (opts.fit) {
       fitDiagramView();
