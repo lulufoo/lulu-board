@@ -1,7 +1,6 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
 
 import {
-  cloudClient,
   cloudSession,
 } from './cloud-state.js';
 
@@ -30,10 +29,23 @@ function cloudSearchSplit(rows) {
 
 async function cloudSearchDiagrams(query) {
   var q = String(query || "").trim();
-  if (!q || !cloudSearchSignedIn() || !cloudClient) return { mine: [], public: [] };
-  var result = await cloudClient.rpc("search_graphs", { p_query: q });
-  if (result.error) throw result.error;
-  return cloudSearchSplit(result.data);
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!q || !accessToken) return { mine: [], public: [] };
+  var response = await fetch("https://api.luluboard.app/search", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: q }),
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
+  return cloudSearchSplit(body);
 }
 
 export {
