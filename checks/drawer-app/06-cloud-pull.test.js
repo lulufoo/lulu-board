@@ -24,7 +24,7 @@ assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-pul
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-group-tabs.js')), 'pull module is built after sync');
 
 assert.match(pull, /getElementById\("shellCloudStatus"\)/, 'pull is wired to the green control');
-assert.match(pull, /from\("graphs"\)[\s\S]*\.eq\("graph_id", diagramId\)[\s\S]*maybeSingle/, 'pull reads the boards row by id');
+assert.match(pull, /fetchOwnedGraph\(diagramId\)/, 'pull reads the boards row by id');
 assert.doesNotMatch(pull, /cloudCachedDiagramRow/, 'pull never reads the memory cache');
 assert.match(pull, /cloudForgetDiagramCache\(\[diagramId\]\)/, 'pull drops the stale cache slot');
 assert.match(pull, /cloudPlusDraftActive\) return false/, 'plus draft has nothing to pull');
