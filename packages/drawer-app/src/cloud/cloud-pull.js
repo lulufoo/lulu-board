@@ -18,6 +18,7 @@ import {
   cloudForgetDiagramCache,
   applyCloudDiagramRow,
   cloudCloseAccountMenus,
+  fetchOwnedGraph,
 } from './cloud-sync.js';
 import { setDiagramSyncUI } from '../kinds/diagram.js';
 import { cloudClearDirtyLeave, bindChromeTip } from './cloud-group-tabs.js';
@@ -40,16 +41,12 @@ async function pullDiagramFromCloud() {
   var seq = bumpCloudLoadSeq();
   setDiagramSyncUI("saving");
   try {
-    var result = await cloudClient.from("graphs")
-      .select("graph_id,title,bmd,version,share_id,created_at,updated_at")
-      .eq("graph_id", diagramId)
-      .maybeSingle();
-    if (result.error) throw result.error;
+    var result = await fetchOwnedGraph(diagramId);
     if (seq !== cloudLoadSeq) return false;
-    if (!result.data) throw new Error("Cloud diagram not found");
+    if (!result) throw new Error("Cloud diagram not found");
     cloudClearDirtyLeave();
     cloudForgetDiagramCache([diagramId]);
-    applyCloudDiagramRow(result.data);
+    applyCloudDiagramRow(result);
     emit("renderDiagram", { fit: false, restoreView: true });
     setDiagramSyncUI("ok");
     setStatus("Pulled from cloud");

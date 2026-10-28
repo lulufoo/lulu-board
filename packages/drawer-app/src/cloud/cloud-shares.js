@@ -44,10 +44,24 @@ function cloudShareLinkFor(shareId) {
 // Throws on a cloud error. Signed out: [].
 async function cloudFetchOwnShares() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return [];
-  var result = await cloudClient.rpc("list_outgoing_shares");
-  if (result.error) throw result.error;
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken) return [];
+  var response = await fetch("https://api.luluboard.app/shares/outgoing", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
   var current = cloudDiagramId();
-  return (result.data || []).map(function (row) {
+  return (Array.isArray(body) ? body : []).map(function (row) {
     return {
       diagramId: row.graph_id,
       title: row.title || "",

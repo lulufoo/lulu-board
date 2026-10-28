@@ -363,12 +363,32 @@ async function refreshCloudGroupMembers(diagramId, groupId) {
     renderCloudGroupTabs();
     return;
   }
-  var shellArgs = { p_graph_id: id };
-  if (groupId) shellArgs.p_group_id = String(groupId);
+  var payload = { diagram_id: id };
+  if (groupId) payload.group_id = String(groupId);
+  var accessToken = cloudSession && cloudSession.access_token;
   var cachedShells = cloudCachedGroupShells(id, groupId);
   var members = cachedShells
     ? { data: cachedShells, error: null }
-    : await cloudClient.rpc("load_group_shells", shellArgs);
+    : null;
+  if (!members) {
+    if (!accessToken) {
+      members = { data: null, error: { message: "Sign in" } };
+    } else {
+      var response = await fetch("https://api.luluboard.app/groups/shells", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + accessToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      var text = await response.text();
+      var body = text ? JSON.parse(text) : null;
+      members = response.ok
+        ? { data: body, error: null }
+        : { data: null, error: { message: (body && (body.message || body.error)) || ("HTTP " + response.status) } };
+    }
+  }
   if (members.error) {
     renderCloudGroupTabs();
     return;

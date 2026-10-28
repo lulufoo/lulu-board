@@ -100,13 +100,13 @@ assert.match(boot, /!cloudPlusDraftActive/, 'hashchange does not flush an active
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', 'g_aaaaaaaa', members), true);
   assert.strictEqual(helpers.cloudMembersInclude('b_33333333', 'g_aaaaaaaa', members), false);
   assert.strictEqual(helpers.cloudMembersInclude('b_22222222', '', members), false);
-  assert.match(tabs, /shellArgs = \{ p_graph_id: id \}/, 'tabs load shells for the open board');
+  assert.match(tabs, /payload = \{ diagram_id: id \}/, 'tabs load shells for the open board');
   assert.match(tabs, /cloudCachedGroupShells\(id, groupId\)/, 'a loaded mine group skips the shell rpc');
-  assert.match(tabs, /shellArgs\.p_group_id = String\(groupId\)/, 'a clicked group id is sent with the shell rpc');
+  assert.match(tabs, /payload\.group_id = String\(groupId\)/, 'a clicked group id is sent with the shell request');
   assert.doesNotMatch(tabs, /created_at/, 'tabs no longer sort by created_at');
 }
 
-assert.match(tabs, /rpc\("load_group_shells"/, 'tabs read the group from the shell rpc');
+assert.match(tabs, /https:\/\/api\.luluboard\.app\/groups\/shells/, 'tabs read the group from the board API');
 assert.doesNotMatch(tabs, /from\("graphs"\)/, 'tabs do not read every board row');
 assert.doesNotMatch(tabs, /\bbmd\b/, 'tabs do not read diagram bodies');
 assert.doesNotMatch(tabs, /\.title = /, 'number tabs drop the slow native title');

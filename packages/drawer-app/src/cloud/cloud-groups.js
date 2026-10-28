@@ -99,15 +99,29 @@ function cloudMinePageFromRows(rows, currentDiagramId) {
 // Throws on a cloud error. Signed out: empty page.
 async function cloudFetchGroupSummaries(cursor) {
   if (!cloudClient || !cloudSession || !cloudSession.user) return { groups: [], total: 0 };
-  var args = {};
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken) return { groups: [], total: 0 };
+  var payload = {};
   if (cursor && cursor.updatedAt && cursor.groupId) {
-    args.p_before = cursor.updatedAt;
-    args.p_before_group_id = cursor.groupId;
+    payload.before = cursor.updatedAt;
+    payload.before_group_id = cursor.groupId;
   }
-  var result = await cloudClient.rpc("list_mine_groups", args);
-  if (result.error) throw result.error;
+  var response = await fetch("https://api.luluboard.app/mine", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
   var current = cloudDiagramId();
-  return cloudMinePageFromRows(result.data || [], current);
+  return cloudMinePageFromRows(Array.isArray(body) ? body : [], current);
 }
 
 async function cloudLoadMoreMineGroups() {

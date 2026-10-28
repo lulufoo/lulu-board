@@ -135,6 +135,10 @@ globalThis.fetch = async (url, init) => {
       }),
     };
   }
+  if (href.startsWith('https://api.luluboard.app/graphs?diagram_id=') && method === 'GET') {
+    const id = decodeURIComponent(href.slice(href.indexOf('diagram_id=') + 'diagram_id='.length));
+    return { ok: true, status: 200, text: async () => JSON.stringify(rowForGraphId('graph_id=eq.' + id)) };
+  }
   return { ok: true, text: async () => JSON.stringify([rowForGraphId(href)]) };
 };
 
@@ -213,7 +217,7 @@ try {
   assert.equal(got.version, 4);
   assert.equal(got.updated_at, latest.updated_at);
   assert.equal(got.group_id, 'g_99aabbcc');
-  assert.ok(calls.some((c) => c.url.includes('select=graph_id,title,bmd,version,updated_at,group_id')));
+  assert.ok(calls.some((c) => c.url === 'https://api.luluboard.app/graphs?diagram_id=b_0fc10001'));
   assert.ok(!calls.some((c) => c.url.includes('group_members')));
 
   const fromArray = await getGraph(env, 'tok', 'b_0fc10002');

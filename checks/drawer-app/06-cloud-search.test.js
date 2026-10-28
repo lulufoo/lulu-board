@@ -13,7 +13,7 @@ const drawer = read('packages/drawer-app/src/chrome/shell-drawer.js');
 const appBuild = read('scripts/build-app/drawer.mjs');
 
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-search.js')), 'search helper is in the drawer bundle');
-assert.match(search, /rpc\("search_graphs"/, 'search uses the login rpc');
+assert.match(search, /https:\/\/api\.luluboard\.app\/search/, 'search uses the board API');
 assert.match(drawer, /cloudSearchDiagrams/, 'the search pop calls the helper');
 
 const { cloudSearchSplit } = new Function(

@@ -1,4 +1,4 @@
-/* board-mcp/graphs.js — PostgREST graph reads and writes with CAS */
+/* board-mcp/graphs.js — board API graph reads and writes */
 
 import {
   assertGraphId,
@@ -10,7 +10,6 @@ import {
 export { assertGraphId, boardTitleFromBody, newGraphId, stripPersistedMeta };
 
 const GROUP_ID_RE = /^g_[0-9a-f]{8}$/;
-const GRAPH_PUBLIC_SELECT = "graph_id,title,bmd,version,updated_at,group_id";
 
 export function newGroupId(bytes) {
   var raw = bytes || new Uint8Array(4);
@@ -42,37 +41,19 @@ function rowPublic(row) {
   };
 }
 
-function restHeaders(env, token) {
-  return {
-    apikey: env.SUPABASE_PUBLISHABLE_KEY,
-    Authorization: "Bearer " + token,
-    "Content-Type": "application/json",
-    Prefer: "return=representation",
-  };
-}
-
-async function restJson(env, token, path, init) {
-  var res = await fetch(env.SUPABASE_URL + path, Object.assign({
-    headers: restHeaders(env, token),
-  }, init || {}));
-  var text = await res.text();
-  var body = text ? JSON.parse(text) : null;
-  if (!res.ok) {
-    var msg = body && (body.message || body.error_description || body.error) || ("HTTP " + res.status);
-    throw new Error(msg);
-  }
-  return body;
-}
-
 export async function getGraph(env, token, graphId) {
   var id = assertGraphId(graphId);
-  var rows = await restJson(
-    env,
-    token,
-    "/rest/v1/graphs?graph_id=eq." + encodeURIComponent(id) + "&select=" + GRAPH_PUBLIC_SELECT
-  );
-  if (!rows || !rows[0]) throw new Error("Cloud board not found");
-  return rowPublic(rows[0]);
+  var res = await fetch("https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(id), {
+    headers: { Authorization: "Bearer " + token },
+  });
+  var text = await res.text();
+  var body = text ? JSON.parse(text) : null;
+  if (res.status === 404 || !body) throw new Error("Cloud board not found");
+  if (!res.ok) {
+    var msg = body && (body.message || body.error) || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  return rowPublic(body);
 }
 
 export async function createGraph(env, token, userId, bmd, graphId, groupId) {
