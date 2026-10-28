@@ -24,6 +24,11 @@ assert.match(shares, /title: row\.title \|\| ""/, 'the visible name is the store
 for (const rpc of ['open_share', 'rotate_share', 'unshare', 'set_share_role']) {
   assert.match(shares + drawer + dialog, new RegExp(rpc), rpc + ' is reachable from the drawer or the Share dialog');
 }
+const mutate = shares.slice(shares.indexOf('async function cloudShareMutate'), shares.indexOf('async function cloudShareCopyLink'));
+assert.match(shares, /https:\/\/api\.luluboard\.app/, 'share settings call the board API');
+assert.match(shares, /open_share: "\/shares\/open"/, 'open share uses POST /shares/open');
+assert.match(mutate, /diagram_id: diagramId/, 'the board id is sent as diagram_id');
+assert.doesNotMatch(mutate, /runShareRpc|cloudClient\.rpc/, 'share settings do not call SQL from the page');
 assert.match(drawer, /Stop sharing this diagram\?/, 'Stop asks first: the link stops working');
 assert.match(sync, /call\("cloudRefreshShares"\)/, 'the group refresh also refreshes the shared list');
 
