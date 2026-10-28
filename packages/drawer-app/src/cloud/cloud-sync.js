@@ -874,7 +874,7 @@ async function deleteCloudGroup(groupId, diagramIds) {
       if (provider === "google") sentryCount(onCanvas ? "canvas.auth_google" : "home.auth_google");
       else if (provider === "github") sentryCount(onCanvas ? "canvas.auth_github" : "home.auth_github");
       cloudCloseAccountMenus();
-      void cloudSignIn(button.dataset.boardOauth);
+      void cloudSignIn(provider);
     });
   });
   var closeDialog = document.getElementById("btnShellSignInClose");
