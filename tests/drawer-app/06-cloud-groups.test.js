@@ -73,7 +73,7 @@ assert.deepStrictEqual(cloudGroupSummaries([], [], 'b_1'), [], 'no boards, no gr
   const out = cloudGroupSummaries(rows, [{ graph_id: 'b_1', group_id: 'g_a' }], '');
   assert.strictEqual(out[0].title, '拖动找不到页签', 'a stored Untitled does not hide the sketch title');
 }
-assert.match(groups, /rpc\("list_mine_groups"/, 'mine pages come from the group page rpc');
+assert.match(groups, /https:\/\/api\.luluboard\.app\/mine/, 'mine pages come from the board API');
 assert.doesNotMatch(groups, /select\("graph_id,bmd/, 'mine no longer reads every diagram body');
 assert.match(groups, /face_title/, 'the row title is the newest diagram title from the page');
 
