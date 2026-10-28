@@ -2,6 +2,7 @@ import { createOwnedGraph, updateOwnedGraph } from './owned-graph.js';
 import { saveSharedGraph } from './share-graph.js';
 import { changeShareSetting } from './share-settings.js';
 import { deleteOwnedGraphs } from './graph-delete.js';
+import { reorderGroup } from './group-reorder.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -169,6 +170,9 @@ export default {
     }
     if (request.method === 'POST' && url.pathname === '/graphs/delete') {
       return authedCall(request, env, (token, input) => deleteOwnedGraphs(env, token, input));
+    }
+    if (request.method === 'POST' && url.pathname === '/groups/reorder') {
+      return authedCall(request, env, (token, input) => reorderGroup(env, token, input));
     }
     if (request.method === 'POST' && url.pathname === '/shares/open') {
       return shareSettingResponse(request, env, 'open_share');
