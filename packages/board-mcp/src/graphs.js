@@ -80,18 +80,31 @@ export async function createGraph(env, token, userId, bmd, graphId, groupId) {
   if (!source.trim()) throw new Error("board source must not be empty");
   var id = graphId ? assertGraphId(graphId) : newGraphId();
   var ownedGroup = groupId ? assertGroupId(groupId) : null;
-  var rows = await restJson(env, token, "/rest/v1/rpc/create_owned_graph_with_group", {
+  var payload = { bmd: source, diagram_id: id };
+  if (ownedGroup) payload.group_id = ownedGroup;
+  var res = await fetch("https://api.luluboard.app/graphs", {
     method: "POST",
-    body: JSON.stringify({
-      p_graph_id: id,
-      p_title: boardTitleFromBody(source) || "Untitled",
-      p_bmd: source,
-      p_group_id: ownedGroup,
-    }),
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
   });
-  var row = Array.isArray(rows) ? rows[0] : rows;
-  if (!row) throw new Error("create failed");
-  return rowPublic(row);
+  var text = await res.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    var msg = body && (body.message || body.error) || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  if (!body || !body.diagram_id) throw new Error("create failed");
+  return rowPublic({
+    graph_id: body.diagram_id,
+    title: body.title,
+    bmd: body.bmd,
+    version: body.version,
+    updated_at: body.updated_at,
+    group_id: body.group_id,
+  });
 }
 
 export async function saveGraph(env, token, graphId, bmd, expectedVersion) {
