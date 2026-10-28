@@ -597,16 +597,34 @@ async function saveDiagramToCloud(opts) {
       diagramId = newGraphId();
       if (!diagramId) throw new Error("Could not mint a board id");
       var joinGroupId = cloudPlusDraftActive && cloudGroupId ? cloudGroupId : null;
-      result = await cloudClient.rpc("create_owned_graph_with_group", {
-        p_graph_id: diagramId,
-        p_title: title,
-        p_bmd: source,
-        p_group_id: joinGroupId,
+      var accessToken = cloudSession.access_token;
+      if (!accessToken) throw new Error("Sign in to save to cloud");
+      var payload = { bmd: source, diagram_id: diagramId };
+      if (joinGroupId) payload.group_id = joinGroupId;
+      var response = await fetch("https://api.luluboard.app/graphs", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + accessToken,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
-      if (result.error) throw result.error;
+      var rawText = await response.text();
+      var createdBody = rawText ? JSON.parse(rawText) : null;
+      if (!response.ok) {
+        var fail = createdBody && (createdBody.message || createdBody.error) || ("HTTP " + response.status);
+        throw new Error(fail);
+      }
       if (seq !== cloudSaveSeq) return false;
-      var created = Array.isArray(result.data) ? result.data[0] : result.data;
-      if (!created) throw new Error("Could not create cloud diagram");
+      if (!createdBody || !createdBody.diagram_id) throw new Error("Could not create cloud diagram");
+      var created = {
+        graph_id: createdBody.diagram_id,
+        title: createdBody.title || title,
+        bmd: createdBody.bmd || source,
+        version: createdBody.version,
+        updated_at: createdBody.updated_at,
+        group_id: createdBody.group_id,
+      };
       emit("cloudClearPlusDraftSlot");
       setCloudPlusDraft(false);
       setCloudPlusDraftActive(false);
