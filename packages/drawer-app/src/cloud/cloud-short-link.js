@@ -35,11 +35,21 @@ async function loadShortLinkByHash(raw) {
   var seq = bumpCloudLoadSeq();
   setStatus("Loading short link…");
   try {
-    var result = await cloudClient.rpc("get_short_link", { p_id: id }).maybeSingle();
-    if (result.error) throw result.error;
+    var response = await fetch("https://api.luluboard.app/short-links/get", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: id }),
+    });
+    var text = await response.text();
+    var body = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+      throw new Error(fail);
+    }
+    var row = Array.isArray(body) ? body[0] : body;
     if (seq !== cloudLoadSeq) return true;
-    if (!result.data || result.data.bmd == null) throw new Error("Short link not found");
-    var bmd = String(result.data.bmd);
+    if (!row || row.bmd == null) throw new Error("Short link not found");
+    var bmd = String(row.bmd);
     bmd = stripDocumentMeta(bmd);
     var token = await encodeDiagramHash(bmd, 1);
     if (seq !== cloudLoadSeq) return true;

@@ -24,7 +24,7 @@ const build = read('scripts/build-app/drawer.mjs');
 const ID = 'p_' + 'a'.repeat(64);
 const BMD = 'boxes "LB-417"\n';
 
-assert.match(src, /rpc\("get_short_link", \{ p_id: id \}\)/, 'reads through get_short_link');
+assert.match(src, /https:\/\/api\.luluboard\.app\/short-links\/get/, 'reads through the board API');
 assert.match(src, /encodeDiagramHash\(bmd, 1\)/, 'uses the existing #z: encoder');
 assert.match(src, /history\.replaceState/, 'jumps in the browser, no Location 302');
 assert.doesNotMatch(src, /location\.hash =/, 'does not assign a raw #z: Location');
@@ -46,10 +46,21 @@ function runLoad(rpcResult) {
     history,
     cloudShortLinkIdFromHash: Route.cloudShortLinkIdFromHash,
     cloudConfigured: () => true,
-    cloudClient: {
-      rpc() {
-        return { maybeSingle: async () => rpcResult };
-      },
+    cloudClient: {},
+    fetch: async () => {
+      if (rpcResult.error) {
+        return {
+          ok: false,
+          status: 404,
+          text: async () => JSON.stringify({ error: rpcResult.error.message }),
+        };
+      }
+      const row = rpcResult.data;
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(row ? [row] : []),
+      };
     },
     cloudLoadSeq: 0,
     encodeDiagramHash: Hash.encodeDiagramHash,
