@@ -20,7 +20,6 @@ import {
   cloudCloseAccountMenus,
   fetchOwnedGraph,
 } from './cloud-sync.js';
-} from './cloud-sync.js';
 import { setDiagramSyncUI } from '../kinds/diagram.js';
 import { cloudClearDirtyLeave, bindChromeTip } from './cloud-group-tabs.js';
 
