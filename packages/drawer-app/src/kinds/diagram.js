@@ -194,6 +194,7 @@ function applyDocumentGround() {
     : diagramSourceEl.value;
   var fields = DrawerStyleLine.fieldsFromStyleToken(DrawerStyleLine.splitRendererStyle(raw).token);
   applyGround(document.documentElement, fields.background);
+  emit("applyDocumentGround", fields.background);
 }
 
 function finishCanvasView(opts) {
