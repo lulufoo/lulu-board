@@ -11,7 +11,7 @@ import {
 } from './cloud-state.js';
 import { setStatus } from '../state/shell-state.js';
 
-import { rememberOwnerShareId, shareRpcError, runShareRpc } from './cloud-share.js';
+import { rememberOwnerShareId, shareRpcError } from './cloud-share.js';
 import { displayTitleFromBmd } from './cloud-groups.js';
 
 /* drawer-app/06-cloud-shares.js — the boards I shared out (link shares), as data plus per-board actions. */
@@ -61,10 +61,36 @@ async function cloudFetchOwnShares() {
   });
 }
 
-// One RPC on one board. Keeps the open board's own share state (status chrome) in step.
+// One share setting on one board. The Worker calls the SQL function.
+var SHARE_SETTING_ROUTES = {
+  open_share: "/shares/open",
+  rotate_share: "/shares/rotate",
+  unshare: "/shares/unshare",
+  set_share_role: "/shares/role",
+};
 async function cloudShareMutate(diagramId, name, args, okStatus) {
   try {
-    var row = await runShareRpc(name, Object.assign({ p_graph_id: diagramId }, args || {}));
+    var path = SHARE_SETTING_ROUTES[name];
+    if (!path) throw new Error("unknown share action");
+    var accessToken = cloudSession && cloudSession.access_token;
+    if (!accessToken) throw new Error("Sign in to share");
+    var payload = { diagram_id: diagramId };
+    if (args && args.p_role) payload.role = args.p_role;
+    if (args && args.p_principal) payload.principal = args.p_principal;
+    var response = await fetch("https://api.luluboard.app" + path, {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    var text = await response.text();
+    var row = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      var fail = row && (row.message || row.error) || ("HTTP " + response.status);
+      throw new Error(fail);
+    }
     if (diagramId === cloudDiagramId()) {
       if (name === "unshare") { setOwnerShareRole("view"); setOwnerIsPublic(false); rememberOwnerShareId(""); }
       else if (row) {
