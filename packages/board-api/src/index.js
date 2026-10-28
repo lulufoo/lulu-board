@@ -3,6 +3,7 @@ import { saveSharedGraph } from './share-graph.js';
 import { changeShareSetting } from './share-settings.js';
 import { deleteOwnedGraphs } from './graph-delete.js';
 import { reorderGroup } from './group-reorder.js';
+import { readOwnedGraph } from './graph-read.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -158,6 +159,13 @@ export default {
     }
     if (request.method === 'GET' && url.pathname === '/health') {
       return new Response('ok', { status: 200, headers: CORS });
+    }
+    if (request.method === 'GET' && url.pathname === '/graphs') {
+      return authedCall(request, env, (token, _input, current) => readOwnedGraph(
+        env,
+        token,
+        new URL(current.url).searchParams.get('diagram_id')
+      ));
     }
     if (request.method === 'POST' && url.pathname === '/graphs') {
       return createResponse(request, env);
