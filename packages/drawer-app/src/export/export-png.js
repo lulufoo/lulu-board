@@ -4,6 +4,7 @@ import { snapdom } from './snapdom.mjs';
 import Sketch from '../kinds/sketch.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { kindTemplateFileName } from '../core/kind-template.js';
+import { paintGround } from '../core/workspace-ground.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
 import {
@@ -155,21 +156,6 @@ function cropExportCanvas(canvas, surfaceSize) {
       height: cropped.height / pixelRatio,
     },
   };
-}
-
-function paintExportGrid(ctx, canvas, surfaceSize) {
-  const background = '#f8fafc';
-  const line = 'rgba(100,116,139,.12)';
-  const spacing = 20;
-  const pixelRatio = canvas.width / surfaceSize.width;
-  const step = spacing * pixelRatio;
-  const lineWidth = Math.max(1, Math.round(pixelRatio));
-
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = line;
-  for (let x = 0; x < canvas.width; x += step) ctx.fillRect(Math.round(x), 0, lineWidth, canvas.height);
-  for (let y = 0; y < canvas.height; y += step) ctx.fillRect(0, Math.round(y), canvas.width, lineWidth);
 }
 
 function canvasToPngBlob(canvas) {
@@ -342,7 +328,7 @@ export async function exportPng() {
     output.width = cropped.canvas.width;
     output.height = cropped.canvas.height;
     const context = output.getContext('2d');
-    paintExportGrid(context, output, cropped.surfaceSize);
+    paintGround(context, output, cropped.surfaceSize);
     context.drawImage(cropped.canvas, 0, 0);
 
     const result = await writePngExport(await canvasToPngBlob(output), exportDiagramStem());

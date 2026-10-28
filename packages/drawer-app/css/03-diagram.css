@@ -759,13 +759,6 @@ html[data-drawer-mode="diagram"] .top-float {
 .top-float .btn-theme:hover { background: var(--accent-soft); }
 .top-float-theme .menu-panel { right: 0; left: auto; }
 .top-float-theme .theme-item.is-active { font-weight: 650; color: var(--accent, #2563eb); }
-/* Shared grid canvas — no diagram chrome frame / white plate */
-html[data-drawer-mode="diagram"] .canvas-shell {
-  background-color: #f8fafc !important;
-  background-image: linear-gradient(rgba(100,116,139,.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(100,116,139,.12) 1px, transparent 1px) !important;
-  background-size: 20px 20px !important;
-}
 .board-render,
 .board-render[data-board-theme="default"],
 .board-render:not([data-board-theme]),

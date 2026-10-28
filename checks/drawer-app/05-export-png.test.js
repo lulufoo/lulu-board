@@ -22,7 +22,7 @@ assert.doesNotMatch(html, /Copy Path/, 'Copy Path label is gone');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/export/export-png.js')), 'build includes PNG export module');
 assert.match(build, /snapdom\.mjs/, 'build ships SnapDOM');
 assert.match(exportPng, /import\s*\{\s*snapdom\s*\}\s*from\s*['"]\.\/snapdom\.mjs['"]/, 'uses SnapDOM');
-assert.match(exportPng, /function paintExportGrid/, 'rebuilds the canvas grid offscreen');
+assert.match(exportPng, /paintGround\(context, output, cropped\.surfaceSize\)/, 'paints the shared workspace ground offscreen');
 assert.match(exportPng, /function findExportInkBounds/, 'measures visible content before cropping');
 assert.match(exportPng, /cropExportCanvas\(captured, surfaceSize\)/, 'crops from visible content bounds');
 assert.match(exportPng, /function saveExportBlob/, 'File and PNG share one save helper');

@@ -45,13 +45,6 @@ html[data-drawer-mode="diagram"] .board-edit-tool:disabled { opacity: .5; }
 html[data-drawer-mode="diagram"] .zoom-float .btn { color: var(--ink); }
 html[data-drawer-mode="diagram"] .shell-account-bar .shell-account-btn { background: var(--paper); border-color: var(--paper-line); }
 
-/* ---- canvas ground: white with faint dots ---- */
-html[data-drawer-mode="diagram"][data-theme="light"] .canvas-shell {
-  background-color: #fff !important;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='1' fill='%23dfe7ea'/></svg>") !important;
-  background-size: 24px 24px !important;
-}
-
 /* ---- brand mark = drawer trigger (top-left, where it already sits) ---- */
 html[data-drawer-mode="diagram"] .board-brand {
   pointer-events: auto !important;
