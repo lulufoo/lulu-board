@@ -142,13 +142,13 @@ function b64(obj) {
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
-  const boardJs = ['board.js', 'board-style.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
+  const boardJs = ['board.js', 'board-style.js', 'diagram.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyKindTheme can skip render');
   assert.ok(/stripDocumentMeta/.test(shell) && !/joinDocument/.test(shell), 'wrap strips leftover meta and does not rejoin');
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
-  assert.ok(/mermaidStyleToken\(theme, step, viewport\)/.test(boardJs), 'mermaid persist writes theme, type_step, viewport');
+  assert.ok(/persistStyleToken\(styled\.token, patch/.test(boardJs), 'mermaid persist merges the current token with the patch');
   assert.strictEqual(
     Style.encodeStylePayload({ theme: 'classic' }),
     Token.encodeStylePayload({ theme: 'classic' }),
@@ -188,7 +188,7 @@ function b64(obj) {
     ),
     'flowchart still does not write item_cap',
   );
-  assert.ok(/patch\.theme == null && patch\.type_step == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts viewport without theme');
+  assert.ok(/patch\.theme == null && patch\.type_step == null && patch\.background == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts background and viewport without theme');
   const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });
   assert.deepStrictEqual(Token.decodeStylePayload(withView), {
     theme: 'classic',
@@ -196,6 +196,16 @@ function b64(obj) {
     viewport: { scale: 0.8, cx: 10, cy: 20 },
   });
   assert.strictEqual(Style.mermaidStyleToken('default', 0, { scale: 1, cx: 0, cy: 0 }), '');
+  const dusk = Style.persistStyleToken('', { background: 'dusk' });
+  assert.deepStrictEqual(Token.decodeStylePayload(dusk), { background: 'dusk' });
+  assert.deepStrictEqual(
+    Token.decodeStylePayload(Style.persistStyleToken(dusk, { theme: 'classic' })),
+    { theme: 'classic', background: 'dusk' },
+    'changing theme keeps background',
+  );
+  assert.strictEqual(Style.persistStyleToken(dusk, { background: 'paper' }), '');
+  assert.strictEqual(Style.fieldsFromStyleToken(dusk).background, 'dusk');
+  assert.strictEqual(Style.fieldsFromStyleToken('').background, 'paper');
 }
 
 console.log('ok board-style-theme');

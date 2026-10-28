@@ -8,22 +8,7 @@ import { diagramSourceEl, updateDiagramChars, showDiagramError } from '../state/
 export function persistMermaidStyle(body, patch) {
   if (!DrawerStyleLine) return body;
   var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = patch && patch.theme != null
-    ? DrawerStyleLine.resolveThemeId(patch.theme)
-    : DrawerStyleLine.themeFromStyleToken(styled.token);
-  var step = patch && patch.type_step != null
-    ? DrawerStyleLine.clampMermaidTypeStep(patch.type_step)
-    : DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  var viewport;
-  if (patch && Object.prototype.hasOwnProperty.call(patch, "viewport")) {
-    viewport = patch.viewport;
-  } else {
-    var prev = typeof DrawerStyleLine.decodeStyleTokenJson === "function"
-      ? DrawerStyleLine.decodeStyleTokenJson(styled.token)
-      : null;
-    viewport = prev && (prev.viewport || prev.view);
-  }
-  var token = DrawerStyleLine.mermaidStyleToken(theme, step, viewport);
+  var token = DrawerStyleLine.persistStyleToken(styled.token, patch || {});
   return DrawerStyleLine.joinRendererStyle(token, styled.body);
 }
 
@@ -40,7 +25,7 @@ export function persistBoardStyle(patch) {
     if (kind === "sketch" || (DrawerStyleLine && DrawerStyleLine.isMermaidKind
       ? DrawerStyleLine.isMermaidKind(kind)
       : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported"))) {
-      if (!patch || (patch.theme == null && patch.type_step == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
+      if (!patch || (patch.theme == null && patch.type_step == null && patch.background == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
       if (typeof BoxesRender === "undefined" || typeof BoxesRender.updateStyle !== "function") return;

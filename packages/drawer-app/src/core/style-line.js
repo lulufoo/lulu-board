@@ -213,6 +213,11 @@ import * as Token from '../../../board-core/style-token.js';
     return Token.encodeStylePayload(data);
   }
 
+  function persistStyleToken(token, patch) {
+    var data = Token.authoredFields(Object.assign({}, fieldsFromStyleToken(token), patch || {}));
+    return Object.keys(data).length ? Token.encodeStylePayload(data) : "";
+  }
+
   function themeFromStyleToken(token) {
     return fieldsFromStyleToken(token).theme;
   }
@@ -280,6 +285,8 @@ const DrawerStyleLine = {
     authoredFields: function (raw) { return Token.authoredFields(raw); },
     resolveFields: function (raw) { return Token.resolveFields(raw); },
     mermaidStyleToken: mermaidStyleToken,
+    persistStyleToken: persistStyleToken,
+    fieldsFromStyleToken: fieldsFromStyleToken,
     decodeStyleTokenJson: decodeStyleTokenJson,
     themeFromStyleToken: themeFromStyleToken,
     typeStepFromStyleToken: typeStepFromStyleToken,
