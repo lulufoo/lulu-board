@@ -7,6 +7,7 @@ import { readOwnedGraph } from './graph-read.js';
 import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
 import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
+import { readShortLink } from './short-link.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -25,6 +26,24 @@ function json(data, status) {
 function bearer(request) {
   const header = request.headers.get('authorization') || '';
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
+}
+
+async function publicCall(request, env, run) {
+  let input;
+  try {
+    input = await request.json();
+  } catch (_error) {
+    return json({ error: 'invalid_request', message: 'invalid json' }, 400);
+  }
+  try {
+    return json(await run(input), 200);
+  } catch (error) {
+    const status = error.status || 500;
+    const code = error.error || 'db_error';
+    const body = { error: code };
+    if (error.message && code !== 'unauthorized') body.message = error.message;
+    return json(body, status);
+  }
 }
 
 async function authedCall(request, env, run) {
@@ -214,6 +233,9 @@ export default {
     }
     if (request.method === 'POST' && url.pathname === '/shares/role') {
       return shareSettingResponse(request, env, 'set_share_role');
+    }
+    if (request.method === 'POST' && url.pathname === '/short-links/get') {
+      return publicCall(request, env, (input) => readShortLink(env, input));
     }
     return new Response('Not Found', { status: 404, headers: CORS });
   },
