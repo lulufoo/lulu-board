@@ -13,3 +13,7 @@ PUBLIC_ORIGIN = "https://mcp.luluboard.app"
 [[routes]]
 pattern = "mcp.luluboard.app"
 custom_domain = true
+
+[previews.vars]
+SUPABASE_URL = "https://xjwlxxuafhsfzksxxmtu.supabase.co"
+PUBLIC_ORIGIN = "https://mcp.luluboard.app"
