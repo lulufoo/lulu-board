@@ -45,6 +45,8 @@ assert.throws(() => assertGroupId('b_0fc10001'), /invalid group id/);
 assert.throws(() => assertGroupId(''), /invalid group id/);
 assert.match(graphsSrc, /board-core\/document-format/, 'MCP imports document-format');
 assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'create does not POST graphs rows');
+assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/graphs/, 'create calls the board API');
+assert.doesNotMatch(graphsSrc, /create_owned_graph_with_group|\/rpc\/create_owned_graph/, 'create does not call the SQL function');
 
 const env = { SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'pub' };
 const calls = [];
@@ -90,22 +92,27 @@ globalThis.fetch = async (url, init) => {
   const href = String(url);
   const method = (init && init.method) || 'GET';
   const body = init && init.body;
-  calls.push({ url: href, method, body });
-  if (href.includes('/rpc/create_owned_graph_with_group')) {
+  calls.push({ url: href, method, body, headers: (init && init.headers) || {} });
+  if (href === 'https://api.luluboard.app/graphs' && method === 'POST') {
     const payload = JSON.parse(body);
-    if (payload.p_group_id && payload.p_group_id !== ownedGroupId) {
-      return { ok: false, text: async () => JSON.stringify({ message: 'group not found' }) };
+    if (payload.group_id && payload.group_id !== ownedGroupId) {
+      return { ok: false, status: 403, text: async () => JSON.stringify({ error: 'forbidden', message: 'group not found' }) };
     }
+    var title = 'Untitled';
+    if (String(payload.bmd || '').includes('boxes "Fresh"')) title = 'Fresh';
+    if (String(payload.bmd || '').includes('%% title Demo')) title = 'Demo';
     return {
       ok: true,
-      text: async () => JSON.stringify([{
-        graph_id: payload.p_graph_id,
-        title: payload.p_title,
-        bmd: payload.p_bmd,
+      status: 200,
+      text: async () => JSON.stringify({
+        diagram_id: payload.diagram_id,
+        title: title,
+        bmd: payload.bmd,
         version: 1,
         updated_at: latest.updated_at,
-        group_id: payload.p_group_id || 'g_11223344',
-      }]),
+        group_id: payload.group_id || 'g_11223344',
+        url: 'https://luluboard.app/#b:' + payload.diagram_id,
+      }),
     };
   }
   if (href.includes('version=eq.3') && method === 'PATCH') {
@@ -140,28 +147,29 @@ try {
   assert.equal(created.graph_id, 'b_aabbccdd');
   assert.equal(created.version, 1);
   assert.equal(created.group_id, 'g_11223344');
-  assert.ok(calls[0].url.includes('/rpc/create_owned_graph_with_group'), 'create uses t1 RPC');
+  assert.equal(calls[0].url, 'https://api.luluboard.app/graphs', 'create calls the board API');
+  assert.equal(calls[0].headers.Authorization, 'Bearer tok');
+  assert.ok(!calls[0].headers.apikey, 'create does not send the Supabase key');
   const createBody = JSON.parse(calls[0].body);
-  assert.equal(createBody.p_graph_id, 'b_aabbccdd');
-  assert.equal(createBody.p_title, 'Fresh');
-  assert.equal(createBody.p_bmd, 'boxes "Fresh"\n');
-  assert.equal(createBody.p_group_id, null);
-  assert.ok(!('owner_id' in createBody), 'RPC owner comes from the user JWT');
-  assert.ok(!('share_id' in createBody), 'create does not move share_id');
+  assert.equal(createBody.diagram_id, 'b_aabbccdd');
+  assert.equal(createBody.bmd, 'boxes "Fresh"\n');
+  assert.ok(!('group_id' in createBody), 'omitted group id is not sent');
+  assert.ok(!('search_text' in createBody), 'MCP does not send search_text');
+  assert.ok(!('p_title' in createBody), 'title is derived by the API');
   assert.ok(!calls.some(isGraphsInsert), 'create does not POST /rest/v1/graphs');
 
   const joined = await createGraph(env, 'tok', 'user-1', 'boxes "Fresh"\n', 'b_aabbccdd', ownedGroupId);
   assert.equal(joined.graph_id, 'b_aabbccdd');
   assert.equal(joined.group_id, ownedGroupId);
   const joinBody = JSON.parse(calls[1].body);
-  assert.equal(joinBody.p_group_id, ownedGroupId);
+  assert.equal(joinBody.group_id, ownedGroupId);
 
   const minted = await createGraph(env, 'tok', 'user-1', 'boxes "Fresh"\n');
   assert.match(minted.graph_id, /^b_[0-9a-f]{8}$/);
   assert.match(minted.group_id, /^g_[0-9a-f]{8}$/);
   const mintBody = JSON.parse(calls[2].body);
-  assert.match(mintBody.p_graph_id, /^b_[0-9a-f]{8}$/);
-  assert.equal(mintBody.p_group_id, null);
+  assert.match(mintBody.diagram_id, /^b_[0-9a-f]{8}$/);
+  assert.ok(!('group_id' in mintBody));
 
   const flowCreated = await createGraph(
     env,
@@ -172,10 +180,10 @@ try {
   );
   assert.equal(flowCreated.graph_id, 'b_ff00aa11');
   const flowCreate = JSON.parse(calls[3].body);
-  assert.equal(flowCreate.p_graph_id, 'b_ff00aa11');
-  assert.equal(flowCreate.p_bmd, 'flowchart TD\n  A-->B\n');
-  assert.doesNotMatch(flowCreate.p_bmd, /m_[0-9a-f]{8}/);
-  assert.equal(flowCreate.p_title, 'Untitled');
+  assert.equal(flowCreate.diagram_id, 'b_ff00aa11');
+  assert.equal(flowCreate.bmd, 'flowchart TD\n  A-->B\n');
+  assert.doesNotMatch(flowCreate.bmd, /m_[0-9a-f]{8}/);
+  assert.ok(!('search_text' in flowCreate));
 
   const titledFlow = await createGraph(
     env,
@@ -186,7 +194,8 @@ try {
   );
   assert.equal(titledFlow.title, 'Demo');
   const titledBody = JSON.parse(calls.find((c) => c.body && String(c.body).includes('b_ff00aa12')).body);
-  assert.equal(titledBody.p_title, 'Demo');
+  assert.equal(titledBody.diagram_id, 'b_ff00aa12');
+  assert.match(titledBody.bmd, /%% title Demo/);
 
   await assert.rejects(
     () => createGraph(env, 'tok', 'user-1', 'board "X"\n', 'b_aabbccdd', missingGroupId),
