@@ -100,9 +100,9 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--canvas);
-  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-color: var(--ground-bg);
+  background-image: var(--ground-image);
+  background-size: var(--ground-size);
 }
 #preview-stage {
   position: absolute; inset: 0;

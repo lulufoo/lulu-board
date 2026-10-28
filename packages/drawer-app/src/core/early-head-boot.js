@@ -1,5 +1,6 @@
 /* Early-head boot: Board-only flags before first paint; root routing to /landing. */
 import * as api from './early-head.js';
+import { applyGround } from './workspace-ground.js';
 
 export function bootEarlyHead(root) {
   var host = root || (typeof globalThis !== "undefined" ? globalThis : this);
@@ -18,6 +19,7 @@ export function bootEarlyHead(root) {
     return;
   }
   doc.dataset.drawerMode = "diagram";
+  applyGround(doc);
   doc.dataset.drawerBoot = "1";
   var plan = api.blankStartPlan(ctx);
   if (!plan) return;

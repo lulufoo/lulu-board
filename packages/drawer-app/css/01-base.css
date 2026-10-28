@@ -20,7 +20,6 @@
   --radius: 14px;
   --font: "SF Pro Display", "SF Pro Text", Inter, system-ui, sans-serif;
   --mono: "SF Mono", ui-monospace, Menlo, monospace;
-  --dot: rgba(255,255,255,.07);
 }
 [data-theme="light"] {
   --bg: #e8e8ed;
@@ -39,7 +38,6 @@
   --danger: #d70015;
   --shadow: 0 16px 40px rgba(0,0,0,.12);
   --shadow-soft: 0 4px 14px rgba(0,0,0,.08);
-  --dot: rgba(0,0,0,.06);
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
