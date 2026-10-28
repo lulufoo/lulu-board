@@ -1,6 +1,7 @@
 /* PNG / file export. SnapDOM stays a static import for the vendor copy next to the bundle. */
 import BoxesRender from '../../../boxes/index.js';
 import { snapdom } from './snapdom.mjs';
+import Sketch from '../kinds/sketch.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
 import {
@@ -239,10 +240,57 @@ async function writePngExport(blob, stem) {
   return saveExportBlob(blob, String(stem || "board") + ".png", "image/png");
 }
 
+function assertExportSurface(surfaceSize) {
+  if (
+    surfaceSize.width * PNG_EXPORT_SCALE > PNG_EXPORT_MAX_EDGE
+    || surfaceSize.height * PNG_EXPORT_SCALE > PNG_EXPORT_MAX_EDGE
+    || surfaceSize.width * surfaceSize.height * PNG_EXPORT_SCALE ** 2 > PNG_EXPORT_MAX_PIXELS
+  ) {
+    throw new Error('Diagram is too large to export');
+  }
+}
+
+/* A sketch lives in its own sandboxed iframe, so there is no board canvas to clone.
+ * The same-origin frame document is captured in place, then set inside a transparent
+ * bleed so crop and grid treat it like a board capture. */
+function getExportSketchFrame() {
+  return previewEl && previewEl.querySelector('iframe.sketch-frame');
+}
+
+async function captureSketchCanvas(frame) {
+  const bounds = Sketch.sketchWorldBounds(frame);
+  if (!bounds) throw new Error('Diagram has no exportable size');
+  const doc = frame.contentDocument;
+  if (!doc || !doc.documentElement) throw new Error('Sketch is not ready to export');
+  const size = { width: Math.ceil(bounds.width), height: Math.ceil(bounds.height) };
+  assertExportSurface({
+    width: size.width + PNG_EXPORT_CAPTURE_BLEED * 2,
+    height: size.height + PNG_EXPORT_CAPTURE_BLEED * 2,
+  });
+  if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
+  const shot = await snapdom.toCanvas(doc.documentElement, {
+    backgroundColor: null,
+    dpr: 1,
+    scale: PNG_EXPORT_SCALE,
+  });
+  const pixelRatio = shot.width / size.width;
+  const bleed = Math.round(PNG_EXPORT_CAPTURE_BLEED * pixelRatio);
+  const captured = document.createElement('canvas');
+  captured.width = shot.width + bleed * 2;
+  captured.height = shot.height + bleed * 2;
+  captured.getContext('2d').drawImage(shot, bleed, bleed);
+  return {
+    captured,
+    surfaceSize: { width: captured.width / pixelRatio, height: captured.height / pixelRatio },
+  };
+}
+
 export async function exportPng() {
-  const target = getExportContentTarget();
-  if (!target) {
+  const frame = getExportSketchFrame();
+  const target = frame ? null : getExportContentTarget();
+  if (!frame && !target) {
     setStatus('Nothing to export', true);
+    showCopyTip('Nothing to export');
     return;
   }
   const button = $('#btnCanvasDlPng');
@@ -250,27 +298,27 @@ export async function exportPng() {
   let host;
   try {
     if (document.fonts && document.fonts.ready) await document.fonts.ready;
-    const size = getExportContentSize(target);
-    const surfaceSize = {
-      width: size.width + PNG_EXPORT_CAPTURE_BLEED * 2,
-      height: size.height + PNG_EXPORT_CAPTURE_BLEED * 2,
-    };
-    if (
-      surfaceSize.width * PNG_EXPORT_SCALE > PNG_EXPORT_MAX_EDGE
-      || surfaceSize.height * PNG_EXPORT_SCALE > PNG_EXPORT_MAX_EDGE
-      || surfaceSize.width * surfaceSize.height * PNG_EXPORT_SCALE ** 2 > PNG_EXPORT_MAX_PIXELS
-    ) {
-      throw new Error('Diagram is too large to export');
-    }
+    let captured;
+    let surfaceSize;
+    if (frame) {
+      ({ captured, surfaceSize } = await captureSketchCanvas(frame));
+    } else {
+      const size = getExportContentSize(target);
+      surfaceSize = {
+        width: size.width + PNG_EXPORT_CAPTURE_BLEED * 2,
+        height: size.height + PNG_EXPORT_CAPTURE_BLEED * 2,
+      };
+      assertExportSurface(surfaceSize);
 
-    ({ host } = mountExportClone(target, size));
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    const captured = await snapdom.toCanvas(host, {
-      backgroundColor: null,
-      dpr: 1,
-      outerTransforms: false,
-      scale: PNG_EXPORT_SCALE,
-    });
+      ({ host } = mountExportClone(target, size));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      captured = await snapdom.toCanvas(host, {
+        backgroundColor: null,
+        dpr: 1,
+        outerTransforms: false,
+        scale: PNG_EXPORT_SCALE,
+      });
+    }
     const cropped = cropExportCanvas(captured, surfaceSize);
     const output = document.createElement('canvas');
     output.width = cropped.canvas.width;
