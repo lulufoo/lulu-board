@@ -1,6 +1,6 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
 import {
-  cloudClient,
+  cloudSession,
   cloudGroupId,
   cloudGroupMembers,
   cloudTabDragId,
@@ -15,7 +15,7 @@ import { setStatus } from '../state/shell-state.js';
 
 import { renderCloudGroupTabs } from './cloud-group-tabs.js';
 
-/* drawer-app/06-cloud-group-order.js — drag numbered group tabs to reorder, saved by rpc */
+/* drawer-app/06-cloud-group-order.js — drag numbered group tabs to reorder, saved by the board API */
 
 function moveDiagramId(ids, fromId, toId, after) {
   var from = ids.indexOf(fromId);
@@ -31,7 +31,8 @@ function moveDiagramId(ids, fromId, toId, after) {
 }
 
 async function cloudReorderGroupTabs(fromId, toId, after) {
-  if (!cloudClient || !cloudGroupId) return false;
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken || !cloudGroupId) return false;
   var groupId = cloudGroupId;
   var before = cloudGroupMembers.slice();
   var ids = before.map(function (row) { return row.graph_id; });
@@ -41,18 +42,24 @@ async function cloudReorderGroupTabs(fromId, toId, after) {
   before.forEach(function (row) { byId[row.graph_id] = row; });
   setCloudGroupMembers(next.map(function (id) { return byId[id]; }));
   renderCloudGroupTabs();
-  var result = await cloudClient.rpc("reorder_group_graphs", {
-    p_group_id: groupId,
-    p_graph_ids: next,
+  var response = await fetch("https://api.luluboard.app/groups/reorder", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + accessToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ group_id: groupId, diagram_ids: next }),
   });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
   if (groupId !== cloudGroupId) return false;
-  if (result.error) {
+  if (!response.ok) {
     setCloudGroupMembers(before);
     renderCloudGroupTabs();
-    setStatus(result.error.message || "Reorder failed", true);
+    setStatus((body && (body.message || body.error)) || "Reorder failed", true);
     return false;
   }
-  var saved = (result.data || []).map(function (row) { return byId[row.graph_id]; }).filter(Boolean);
+  var saved = (Array.isArray(body) ? body : []).map(function (row) { return byId[row.graph_id]; }).filter(Boolean);
   if (saved.length === before.length) setCloudGroupMembers(saved);
   renderCloudGroupTabs();
   setStatus("Reordered");
