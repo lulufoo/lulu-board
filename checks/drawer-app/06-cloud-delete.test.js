@@ -50,10 +50,10 @@ assert.match(draft, /cloudGroupMembers\[cloudGroupMembers\.length - 1\]\.graph_i
 
 const saved = del.slice(del.indexOf('async function cloudDeleteSavedDiagram'), del.indexOf('async function cloudDeleteCurrentDiagram'));
 assert.match(saved, /call\("askConfirm", \{[\s\S]*Delete this diagram\?/, 'saved board asks first, in English');
-assert.match(saved, /from\("graphs"\)\.delete\(\)\.eq\("graph_id", diagramId\)/, 'deletes the boards row');
+assert.match(saved, /deleteCloudDiagrams\(\[diagramId\]\)/, 'deletes the boards row through the board API');
 assert.doesNotMatch(saved, /from\("groups"\)/, 'board delete no longer touches the groups table');
 assert.doesNotMatch(saved, /group_members/, 'membership goes by cascade, not by hand');
-assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*from\("graphs"\)\.delete/, 'pending autosave is cancelled before delete');
+assert.match(saved, /cloudClearDirtyLeave\(\);[\s\S]*deleteCloudDiagrams/, 'pending autosave is cancelled before delete');
 assert.match(saved, /cloudForgetDiagramCache\(\[diagramId\]\)/, 'cached row is dropped');
 assert.match(sync.slice(sync.indexOf('async function deleteCloudGroup')), /Delete this group\?/, 'History x still deletes the whole group');
 // Source footer spacing: a hairline closes the editor, Delete has room, the char count lines up with it

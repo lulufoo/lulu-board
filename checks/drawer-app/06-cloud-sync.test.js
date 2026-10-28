@@ -341,7 +341,8 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
     cloud.indexOf('async function deleteCloudGroup'),
     cloud.indexOf('(function wireCloudAuth')
   );
-  assert.match(del, /from\("graphs"\)\.delete\(\)\.in\("graph_id"/, 'group delete removes every board');
+  assert.match(del, /deleteCloudDiagrams\(ids\)/, 'group delete removes every board');
+  assert.match(cloud.slice(cloud.indexOf('async function deleteCloudDiagrams'), cloud.indexOf('async function deleteCloudGroup')), /https:\/\/api\.luluboard\.app\/graphs\/delete/, 'group delete uses the board API');
   assert.doesNotMatch(del, /from\("groups"\)/, 'group delete no longer touches the groups table');
 }
 

@@ -15,6 +15,7 @@ import {
   syncCloudSaveChrome,
   cloudForgetDiagramCache,
   cloudRefreshGroups,
+  deleteCloudDiagrams,
 } from './cloud-sync.js';
 import {
   cloudClearDirtyLeave,
@@ -64,10 +65,9 @@ async function cloudDeleteSavedDiagram() {
   });
   if (!confirmed) return false;
   var nextId = cloudNextDiagramAfterDelete(diagramId);
-  cloudClearDirtyLeave();
-  try {
-    var board = await cloudClient.from("graphs").delete().eq("graph_id", diagramId);
-    if (board.error) throw board.error;
+    cloudClearDirtyLeave();
+    try {
+      await deleteCloudDiagrams([diagramId]);
     cloudForgetDiagramCache([diagramId]);
     if (nextId) {
       setCloudGroupMembers(cloudGroupMembers.filter(function (row) { return row.graph_id !== diagramId; }));
