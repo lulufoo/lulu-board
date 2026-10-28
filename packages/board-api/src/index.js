@@ -6,6 +6,7 @@ import { reorderGroup } from './group-reorder.js';
 import { readOwnedGraph } from './graph-read.js';
 import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
+import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -192,6 +193,15 @@ export default {
     }
     if (request.method === 'POST' && url.pathname === '/groups/reorder') {
       return authedCall(request, env, (token, input) => reorderGroup(env, token, input));
+    }
+    if (request.method === 'POST' && url.pathname === '/shares/get') {
+      return authedCall(request, env, (token, input) => readSharedGraph(env, token, input));
+    }
+    if (request.method === 'POST' && url.pathname === '/shares/state') {
+      return authedCall(request, env, (token, input) => readOwnShareState(env, token, input));
+    }
+    if (request.method === 'POST' && url.pathname === '/shares/outgoing') {
+      return authedCall(request, env, (token) => listOutgoingShares(env, token));
     }
     if (request.method === 'POST' && url.pathname === '/shares/open') {
       return shareSettingResponse(request, env, 'open_share');
