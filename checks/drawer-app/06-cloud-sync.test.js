@@ -103,7 +103,9 @@ assert.match(webBuild, /supabase-client\.js/, 'public site build verifies the cl
 assert.match(webBuild, /\.cache\/web/, 'public site output is temporary cached web assets');
 assert.match(workerConfig, /name = "lulu-board"/, 'Workers Builds deploys the existing Worker');
 assert.match(workerConfig, /directory = "\.\/\.cache\/web\/"/, 'Worker deploys the generated cache directory');
-assert.match(cloud, /rpc\("create_owned_graph_with_group"/, 'first insert writes board, group, and membership together');
+assert.match(cloud, /https:\/\/api\.luluboard\.app\/graphs/, 'first insert calls the board API');
+assert.match(cloud, /Authorization: "Bearer " \+ accessToken/, 'first insert sends the user JWT');
+assert.doesNotMatch(cloud, /create_owned_graph_with_group/, 'web create no longer calls the old SQL function');
 assert.match(cloud, /\.eq\("version", expected\)/, 'updates CAS on the server version');
 assert.match(cloud, /\.update\([\s\S]*\.select\("graph_id,title,bmd,version,share_id,updated_at"\)/, 'update returns the saved source');
 assert.match(cloud, /\.select\("graph_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
@@ -414,15 +416,16 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(minted >= 0 && updated > minted);
   const insertBranch = save.slice(minted, updated);
   const updateBranch = save.slice(updated);
-  assert.match(insertBranch, /rpc\("create_owned_graph_with_group"/);
-  assert.match(insertBranch, /p_graph_id:\s*diagramId/);
+  assert.match(insertBranch, /https:\/\/api\.luluboard\.app\/graphs/);
+  assert.match(insertBranch, /diagram_id:\s*diagramId/);
   assert.match(insertBranch, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
-  assert.match(insertBranch, /p_group_id:\s*joinGroupId/);
+  assert.match(insertBranch, /if \(joinGroupId\) payload\.group_id = joinGroupId/);
+  assert.doesNotMatch(insertBranch, /search_text/);
   assert.match(save, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
   assert.doesNotMatch(insertBranch, /from\("graphs"\)\.insert|from\("group_members"\)/);
   assert.match(insertBranch, /cloudSetDiagramHash\(diagramId/);
   assert.match(updateBranch, /\.update\(\{\s*title:\s*title,\s*bmd:\s*source,/);
-  assert.doesNotMatch(updateBranch, /create_owned_graph_with_group|from\("group_members"\)/);
+  assert.doesNotMatch(updateBranch, /api\.luluboard\.app|create_owned_graph_with_group|from\("group_members"\)/);
   assert.doesNotMatch(updateBranch, /share_id\s*:/);
   assert.doesNotMatch(save, /from\("graphs"\)\.(insert|update)\([\s\S]*group_id/);
 }
