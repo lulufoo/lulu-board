@@ -653,13 +653,9 @@ async function saveDiagramToCloud(opts) {
       var updateBody = updateText ? JSON.parse(updateText) : null;
       if (updateResponse.status === 409) {
         if (seq !== cloudSaveSeq) return false;
-        var latest = await cloudClient.from("graphs")
-          .select("graph_id,title,bmd,version,share_id,updated_at")
-          .eq("graph_id", diagramId)
-          .maybeSingle();
-        if (latest.error) throw latest.error;
-        if (!latest.data) throw new Error("Cloud diagram not found");
-        applyCloudDiagramRow(latest.data);
+        var latest = await fetchOwnedGraph(diagramId);
+        if (!latest) throw new Error("Cloud diagram not found");
+        applyCloudDiagramRow(latest);
         emit("renderDiagram", { fit: false, restoreView: true });
         setDiagramSyncUI("conflict");
         setStatus("Cloud version conflict — reloaded", true);
@@ -738,15 +734,11 @@ async function loadCloudDiagramByHash(raw) {
   }
   setStatus("Loading cloud diagram…");
   try {
-    var result = await cloudClient.from("graphs")
-      .select("graph_id,title,bmd,version,share_id,created_at,updated_at")
-      .eq("graph_id", diagramId)
-      .maybeSingle();
-    if (result.error) throw result.error;
+    var result = await fetchOwnedGraph(diagramId);
     if (seq !== cloudLoadSeq) return true;
-    if (!result.data) throw new Error("Cloud diagram not found");
+    if (!result) throw new Error("Cloud diagram not found");
     setCloudPlusDraftActive(false);
-    applyCloudDiagramRow(result.data, { skipShare: known });
+    applyCloudDiagramRow(result, { skipShare: known });
     if (known) {
       emit("renderCloudGroupTabs");
     } else {
@@ -785,6 +777,22 @@ async function cloudRefreshGroups() {
   } catch (error) {
     setStatus(error && error.message ? error.message : "Could not load your diagrams", true);
   }
+}
+
+async function fetchOwnedGraph(diagramId) {
+  var accessToken = cloudSession && cloudSession.access_token;
+  if (!accessToken) throw new Error("Sign in to open this cloud diagram");
+  var response = await fetch("https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(diagramId), {
+    headers: { Authorization: "Bearer " + accessToken },
+  });
+  var text = await response.text();
+  var body = text ? JSON.parse(text) : null;
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    var fail = body && (body.message || body.error) || ("HTTP " + response.status);
+    throw new Error(fail);
+  }
+  return body;
 }
 
 async function deleteCloudDiagrams(ids) {
@@ -942,4 +950,5 @@ export {
   cloudRefreshGroups,
   deleteCloudGroup,
   deleteCloudDiagrams,
+  fetchOwnedGraph,
 };

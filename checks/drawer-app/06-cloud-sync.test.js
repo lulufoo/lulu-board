@@ -111,7 +111,7 @@ assert.doesNotMatch(cloud, /create_owned_graph_with_group/, 'web create no longe
 assert.match(cloud, /expected_version:\s*expected/, 'updates send the server version');
 assert.match(cloud, /method:\s*"PATCH"/, 'updates call the board API');
 assert.doesNotMatch(cloud, /\.from\("graphs"\)\.update/, 'web update no longer patches the table');
-assert.match(cloud, /\.select\("graph_id,title,bmd,version,share_id,created_at,updated_at"\)/, 'owner load also reads share_id');
+assert.match(cloud, /https:\/\/api\.luluboard\.app\/graphs\?diagram_id=/, 'owner load reads through the board API');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
 sqlAssert.match(versionSql, /add column if not exists version/, 'version column is added');
 sqlAssert.match(versionSql, /new\.version = coalesce\(old\.version, 1\) \+ 1/, 'update increments version');
@@ -380,7 +380,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.doesNotMatch(css, /data-diagram-swap="hold"\][^{]*\.canvas-shell|data-diagram-swap="hold"\][^{]*#preview-stage/, 'the dotted canvas stays visible');
   assert.match(load, /cloudParkPlusDraft/, '#b: parks an active plus draft');
   assert.doesNotMatch(load, /cloudPlusDraft = false/, '#b: load keeps the parked plus draft');
-  assert.match(load, /from\("graphs"\)[\s\S]*maybeSingle/, '#b: still opens one boards row');
+  assert.match(load, /fetchOwnedGraph\(diagramId\)/, '#b: still opens one boards row');
   assert.doesNotMatch(load, /location\.hash\s*=/, '#b: open does not rewrite the hash');
   assert.doesNotMatch(load, /from\("groups"\)/, 'sibling load uses membership, not groups');
   assert.doesNotMatch(load, /open_share|rotate_share|set_share_role|save_shared_graph/);
