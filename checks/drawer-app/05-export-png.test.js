@@ -114,4 +114,34 @@ assert.match(exportPng, /import Sketch from '\.\.\/kinds\/sketch\.js'/, 'export 
   assert.strictEqual(calls.length, 1, 'failed exports never reach the capture');
 }
 
+// Export File: the suffix follows the source kind (.bmd Boxes, .skt Sketch, .mmd Mermaid)
+{
+  const exportBody = exportPng.slice(exportPng.indexOf('export async function exportDiagramFile'), exportPng.indexOf('async function writePngExport'));
+  assert.doesNotMatch(exportBody, /exportDiagramStem\(\) \+ "\.bmd"/, 'file export no longer hard-codes .bmd');
+  assert.match(exportBody, /exportDiagramStem\(\) \+ suffix/, 'file name takes the suffix of the source kind');
+  assert.match(exportBody, /EXPORT_FILE_LABELS\[suffix\]/, 'save picker names the file type from the same suffix');
+  assert.match(exportBody, /showCopyTip\("Nothing to export"\)/, 'an empty file export is shown to the user');
+
+  const Style = require('../../packages/drawer-app/src/core/style-line.js').default;
+  const { kindTemplateFileName } = require('../../packages/drawer-app/src/core/kind-template.js');
+  const helperSrc = exportPng.slice(exportPng.indexOf('const EXPORT_FILE_FALLBACK_SUFFIX'), exportPng.indexOf('export async function exportDiagramFile'));
+  const { exportFileSuffix, EXPORT_FILE_LABELS } = new Function('kindTemplateFileName', `${helperSrc}\nreturn { exportFileSuffix, EXPORT_FILE_LABELS };`)(kindTemplateFileName);
+  const suffixOf = (source) => exportFileSuffix(Style.bodyKind(source));
+  const tpl = (name) => read('packages/drawer-app/templates/' + name);
+
+  assert.strictEqual(suffixOf(tpl('boxes.bmd')), '.bmd', 'Boxes exports .bmd');
+  assert.strictEqual(suffixOf(tpl('sketch.skt')), '.skt', 'Sketch exports .skt');
+  assert.strictEqual(suffixOf(tpl('welcome.bmd')), '.skt', 'the welcome file is a Sketch, so it exports .skt despite its template name');
+  for (const name of fs.readdirSync(path.join(root, 'packages/drawer-app/templates')).filter((n) => n.endsWith('.mmd'))) {
+    assert.strictEqual(suffixOf(tpl(name)), '.mmd', name + ' exports .mmd');
+  }
+  assert.strictEqual(suffixOf('pie\n  "a" : 1\n'), '.mmd', 'a Mermaid type the app cannot draw is still Mermaid source');
+  assert.strictEqual(suffixOf('just some words\n'), '.bmd', 'an unknown source keeps .bmd');
+  assert.strictEqual(exportFileSuffix('empty'), '.bmd', 'an empty source keeps .bmd');
+  assert.strictEqual(exportFileSuffix(''), '.bmd', 'a missing kind keeps .bmd');
+  for (const suffix of ['.bmd', '.skt', '.mmd']) {
+    assert.ok(EXPORT_FILE_LABELS[suffix], suffix + ' has a picker label');
+  }
+}
+
 console.log('ok export-png');
