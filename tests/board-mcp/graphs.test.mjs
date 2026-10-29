@@ -12,6 +12,7 @@ import {
   getGroup,
   createGraph,
   saveGraph,
+  searchDiagrams,
   stripPersistedMeta,
 } from '../../packages/board-mcp/src/graphs.js';
 import { metadataDocument, unauthorized } from '../../packages/board-mcp/src/meta.js';
@@ -49,6 +50,8 @@ assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'crea
 assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/graphs/, 'create calls the board API');
 assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/groups\/shells/, 'get_group calls group shells');
 assert.doesNotMatch(graphsSrc, /\/mine/, 'get_group does not list all groups');
+assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/search/, 'search_diagrams calls board API search');
+assert.doesNotMatch(graphsSrc, /\/rpc\/search_graphs/, 'search_diagrams does not call the RPC itself');
 assert.doesNotMatch(graphsSrc, /create_owned_graph_with_group|\/rpc\/create_owned_graph/, 'create does not call the SQL function');
 assert.doesNotMatch(graphsSrc, /version=eq\./, 'save does not CAS through PostgREST');
 
@@ -161,6 +164,22 @@ globalThis.fetch = async (url, init) => {
         { graph_id: 'b_11111111', group_id: 'g_aaaa0001', title: 'First', sort_order: 1 },
         { graph_id: 'b_33333333', group_id: 'g_aaaa0001', title: 'Third' },
         { graph_id: 'b_44444444', group_id: 'g_bbbb0002', title: 'Other', sort_order: 1 },
+      ]),
+    };
+  }
+  if (href === 'https://api.luluboard.app/search' && method === 'POST') {
+    const payload = JSON.parse(body);
+    if (payload.query === 'boom') {
+      return { ok: false, status: 400, text: async () => JSON.stringify({ error: 'invalid_request', message: 'query required' }) };
+    }
+    return {
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify([
+        { category: 'mine', title: 'Mine Hit', share_id: null, graph_id: 'b_b9918fe6', bmd: 'secret' },
+        { category: 'public', title: 'Public Hit', share_id: 's_public1', graph_id: null },
+        { category: 'mine', title: 'Also Mine', share_id: '', graph_id: 'b_f5a65aa5' },
+        { category: 'mine', title: 'Bad Id', share_id: '', graph_id: 'nope' },
       ]),
     };
   }
@@ -299,6 +318,24 @@ try {
   await assert.rejects(() => getGroup(env, 'tok', 'b_00000000'), /Cloud board not found/);
   await assert.rejects(() => getGroup(env, 'tok', 'b_40440404'), /Cloud board not found/);
   await assert.rejects(() => getGroup(env, 'tok', 'b_0fc10003'), /missing group id/);
+
+  const beforeEmptySearch = calls.length;
+  await assert.rejects(() => searchDiagrams(env, 'tok', '  '), /query required/);
+  assert.equal(calls.length, beforeEmptySearch, 'empty query does not call /search');
+
+  const found = await searchDiagrams(env, 'tok', ' sketch ');
+  assert.deepEqual(found, [
+    { graph_id: 'b_b9918fe6', title: 'Mine Hit' },
+    { graph_id: 'b_f5a65aa5', title: 'Also Mine' },
+  ]);
+  assert.ok(!found.some((row) => 'bmd' in row || 'share_id' in row || 'category' in row || 'url' in row));
+  const searchCall = calls.find((c) => c.url === 'https://api.luluboard.app/search');
+  assert.ok(searchCall);
+  assert.equal(searchCall.method, 'POST');
+  assert.equal(searchCall.headers.Authorization, 'Bearer tok');
+  assert.deepEqual(JSON.parse(searchCall.body), { query: 'sketch' });
+
+  await assert.rejects(() => searchDiagrams(env, 'tok', 'boom'), /query required/);
 } finally {
   globalThis.fetch = prevFetch;
 }
@@ -327,9 +364,11 @@ assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_diagram"/, 'get_diagram is registered');
 assert.match(worker, /registerTool\("get_group"/, 'get_group is registered');
+assert.match(worker, /registerTool\("search_diagrams"/, 'search_diagrams is registered');
 assert.match(worker, /registerTool\("create_diagram"/, 'create_diagram is registered');
 assert.match(worker, /registerTool\("save_diagram"/, 'save_diagram is registered');
 assert.match(worker, /mcpGroup\(await getGroup/, 'get_group maps members to viewer urls');
+assert.match(worker, /mcpSearch\(await searchDiagrams/, 'search_diagrams maps mine hits to viewer urls');
 assert.doesNotMatch(worker, /registerTool\("get_group_id"/, 'no field-getter alias');
 assert.match(worker, /const DIAGRAM_ID = z\.string\(\)\.regex\(GRAPH_ID_RE\)/, 'diagram_id uses board-core GRAPH_ID_RE');
 assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');

@@ -195,3 +195,30 @@ export async function saveGraph(env, token, graphId, bmd, expectedVersion) {
     }),
   };
 }
+
+export async function searchDiagrams(env, token, query) {
+  var q = String(query || "").trim();
+  if (!q) throw new Error("query required");
+  var res = await fetch("https://api.luluboard.app/search", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query: q }),
+  });
+  var text = await res.text();
+  var body = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    var msg = body && (body.message || body.error) || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  var hits = [];
+  (Array.isArray(body) ? body : []).forEach(function (row) {
+    if (!row || row.category !== "mine") return;
+    try {
+      hits.push({ graph_id: assertGraphId(row.graph_id), title: row.title || "" });
+    } catch (_error) { return; }
+  });
+  return hits;
+}
