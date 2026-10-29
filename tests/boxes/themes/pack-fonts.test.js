@@ -12,7 +12,7 @@ const Scale = require('../../../packages/boxes/themes/type-scale');
 assert.match(Scale.FONT_FAMILY, /SF Pro Text.*Inter/, 'the shared stack is the site font stack');
 assert.match(Scale.FONT_FAMILY, /PingFang SC/, 'the shared stack has a CJK sans fallback');
 const W = Scale.WEIGHT;
-assert.deepStrictEqual(W, { title: '550', text: '500', note: '400', bold: '650' });
+assert.deepStrictEqual(W, { title: '550', text: '500', note: '400', bold: '650', subtitle: '520', edgeLabel: '600', header: '720' });
 assert.ok(Number(W.text) <= Number(W.title), 'item text is not heavier than the box title, or the title reads as the weakest line');
 const root = path.join(__dirname, '../../..');
 for (const id of Themes.ORDER) {
@@ -35,6 +35,9 @@ const VAR_KEY = {
   '--board-item-text-weight': 'text',
   '--board-note-weight': 'note',
   '--board-bold-weight': 'bold',
+  '--board-subtitle-weight': 'subtitle',
+  '--board-edge-label-weight': 'edgeLabel',
+  '--board-header-weight': 'header',
 };
 for (const [name, key] of Object.entries(VAR_KEY)) assert.strictEqual(vars[name], W[key], name + ' comes from WEIGHT.' + key);
 

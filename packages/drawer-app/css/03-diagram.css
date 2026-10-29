@@ -1057,7 +1057,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
   letter-spacing: -0.012em;
 }
 .board-html-header { display: block; margin: 0 0 28px; padding: 0 0 18px; border-bottom: 1px solid #dbe4ef; }
-.board-html-header h2 { margin: 0; color: #0f172a; font-size: var(--board-display-size, 24px); line-height: 1.1; font-weight: 720; letter-spacing: -0.04em; }
+.board-html-header h2 { margin: 0; color: #0f172a; font-size: var(--board-display-size, 24px); line-height: 1.1; font-weight: var(--board-header-weight); letter-spacing: -0.04em; }
 .board-html-header p { margin: 8px 0 0; color: #64748b; font-size: 12px; line-height: 1.35; letter-spacing: 0.01em; }
 .board-canvas { position: relative; min-width: 0; overflow: visible; }
 /* Zones under edges so short-gap labels (ABCDE) are not covered by box fill. */
@@ -1085,7 +1085,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-title-name,
 .board-item-text { min-width: 0; overflow-wrap: anywhere; }
 .board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; font-weight: inherit; }
-.board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: 520; }
+.board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: var(--board-subtitle-weight); }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
 .board-icon svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .board-zone .box-content { position: relative; display: flex; min-width: 0; }
@@ -1207,8 +1207,8 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-edge-hit { pointer-events: stroke !important; cursor: pointer; }
 .board-edge-visible { pointer-events: none; stroke-width: 1.2px; }
 .board-edge-visible.board-edge-selected { stroke-width: 2px !important; }
-.board-edge-label { paint-order: stroke; stroke: #fdfaf5; stroke-width: 5px; stroke-linejoin: round; fill: var(--board-edge-label, #5a4330); font-size: var(--board-label-size, 11px); font-weight: 600; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
-.board-edge-label.board-edge-selected { font-weight: 600; }
+.board-edge-label { paint-order: stroke; stroke: #fdfaf5; stroke-width: 5px; stroke-linejoin: round; fill: var(--board-edge-label, #5a4330); font-size: var(--board-label-size, 11px); font-weight: var(--board-edge-label-weight); letter-spacing: 0; pointer-events: auto; cursor: pointer; }
+.board-edge-label.board-edge-selected { font-weight: var(--board-edge-label-weight); }
 .board-slot {
   position: relative;
   display: block;
