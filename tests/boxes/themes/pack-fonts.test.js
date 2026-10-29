@@ -49,12 +49,20 @@ assert.doesNotMatch(css, /\.board-edge-label\s*\{[^}]*font-family/, 'link labels
 // The title text is a <strong>. Without this rule the browser's `bolder` lifts any title weight of 550 or more to 900.
 assert.match(css, /\.board-title-name\s*\{[^}]*font-weight:\s*inherit/, 'the title text follows the title weight instead of the strong default');
 
-// The CSS rules read the variables. The container rule reads no weight at all (it takes the shared one from
-// .board-zone-title), so its variable has no reader.
+// The CSS rules read the variables and carry no weight number of their own: WEIGHT is the only place a number is written.
+// The container rule reads no weight at all (it takes the shared one from .board-zone-title), so its variable has no reader.
 for (const name of Object.keys(VAR_KEY)) {
   if (name === '--board-container-title-weight') continue;
   assert.match(css, new RegExp('var\\(' + name + '[,)]'), name + ' is read by the diagram CSS');
 }
+assert.doesNotMatch(css, /var\(--board-[a-z-]*weight,\s*\d/, 'no CSS variable read carries a numeric weight fallback');
+// Everything boxes draws is a `.board-` rule. App chrome (toolbar, panels, dock) is not drawn by boxes and may keep literals.
+const literalWeights = [];
+for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+  if (!/\.board-/.test(m[1])) continue;
+  if (/font-weight:\s*\d/.test(m[2])) literalWeights.push(m[1].trim());
+}
+assert.deepStrictEqual(literalWeights, [], 'a .board- rule writes a numeric font-weight; add it to WEIGHT instead: ' + literalWeights.join(' | '));
 for (const sel of ['\\.board-item-type-text \\.board-item-text', '\\.board-item-icon \\.board-item-text']) {
   const rule = new RegExp(sel + '\\s*\\{([^}]*)\\}').exec(css);
   assert.ok(rule && /font-weight:\s*var\(--board-item-text-weight/.test(rule[1]), sel + ' takes its weight from the shared variable, not a literal');
