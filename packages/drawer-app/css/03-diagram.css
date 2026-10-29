@@ -84,8 +84,7 @@
 .board-render .box.board-type-container > .box-title,
 .board-render .board-type-container > .board-zone-title,
 .board-render .board-type-container > .box-title.board-zone-title {
-  opacity: 1; /* hierarchy comes from colour (pack titleColor) and weight 600, not opacity */
-  font-weight: 600;
+  opacity: 1; /* hierarchy comes from colour (pack titleColor), not opacity; the weight is the shared box title weight */
   background: transparent !important;
   /* Match container content inset (28/30 = rect zone 12/14 + content 16). */
   padding: 16px 30px 0 !important;

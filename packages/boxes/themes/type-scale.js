@@ -16,8 +16,8 @@ const FONT_FAMILY = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-s
 // reads that variable, so the packs carry no card weight and the rules carry no fallback number.
 // Keep text <= title: item text does not follow the title, and a lighter title reads as the weakest line.
 const WEIGHT = {
-  title: '650', // card title
-  text: '550', // text items and icon captions
+  title: '550', // every box title: card and container
+  text: '500', // text items and icon captions
   note: '400', // note items
   bold: '650', // **bold** and headings inside markdown
 };
