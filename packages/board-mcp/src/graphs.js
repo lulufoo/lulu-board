@@ -41,6 +41,72 @@ function rowPublic(row) {
   };
 }
 
+function sortRank(value) {
+  var n = Number(value);
+  return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+}
+
+function groupFromShells(queriedId, rows) {
+  var id = assertGraphId(queriedId);
+  var groupId = "";
+  var found = false;
+  var pending = [];
+  (Array.isArray(rows) ? rows : []).forEach(function (row) {
+    if (!row || !row.graph_id) return;
+    var diagramId;
+    try { diagramId = assertGraphId(row.graph_id); }
+    catch (_error) { return; }
+    var rawGroup = String(row.group_id || "").trim();
+    if (diagramId === id) {
+      found = true;
+      groupId = rawGroup;
+    }
+    pending.push({
+      diagram_id: diagramId,
+      title: row.title || "",
+      sort_order: sortRank(row.sort_order),
+      group_id: rawGroup,
+    });
+  });
+  if (!found) throw new Error("Cloud board not found");
+  if (!groupId) throw new Error("missing group id");
+  groupId = assertGroupId(groupId);
+  var members = pending.filter(function (row) {
+    return row.group_id === groupId;
+  }).map(function (row) {
+    return {
+      diagram_id: row.diagram_id,
+      title: row.title,
+      sort_order: row.sort_order,
+    };
+  });
+  members.sort(function (a, b) {
+    if (a.sort_order !== b.sort_order) return a.sort_order < b.sort_order ? -1 : 1;
+    return a.diagram_id < b.diagram_id ? -1 : a.diagram_id > b.diagram_id ? 1 : 0;
+  });
+  return { group_id: groupId, members: members };
+}
+
+export async function getGroup(env, token, graphId) {
+  var id = assertGraphId(graphId);
+  var res = await fetch("https://api.luluboard.app/groups/shells", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ diagram_id: id }),
+  });
+  var text = await res.text();
+  var body = text ? JSON.parse(text) : null;
+  if (res.status === 404 || body == null) throw new Error("Cloud board not found");
+  if (!res.ok) {
+    var msg = body && (body.message || body.error) || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  return groupFromShells(id, body);
+}
+
 export async function getGraph(env, token, graphId) {
   var id = assertGraphId(graphId);
   var res = await fetch("https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(id), {
