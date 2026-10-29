@@ -84,7 +84,8 @@
 .board-render .box.board-type-container > .box-title,
 .board-render .board-type-container > .board-zone-title,
 .board-render .board-type-container > .box-title.board-zone-title {
-  opacity: 1; /* hierarchy comes from colour (pack titleColor), not opacity; the weight is the shared box title weight */
+  opacity: 1; /* hierarchy comes from colour (pack titleColor) and weight 600, not opacity */
+  font-weight: 600;
   background: transparent !important;
   /* Match container content inset (28/30 = rect zone 12/14 + content 16). */
   padding: 16px 30px 0 !important;
@@ -565,6 +566,7 @@ html[data-drawer-mode="diagram"] .board-brand { display: inline-flex; }
   margin: 0 0 8px;
   font-size: 16px;
   color: var(--text);
+  font-weight: 600;
   letter-spacing: -.02em;
 }
 .board-placeholder p { margin: 0; font-size: 12.5px; line-height: 1.5; max-width: 280px; }
@@ -587,7 +589,7 @@ html[data-drawer-mode="diagram"] .board-brand { display: inline-flex; }
 .board-render .board-zone-title {
   color: var(--board-title-color, #333);
   font-size: var(--board-title-size, 13px);
-  font-weight: var(--board-title-weight);
+  font-weight: var(--board-title-weight, 700);
   margin: var(--board-title-margin, 0 0 8px);
 }
 /* No title/icon: do not reserve title-row height (empty chrome must collapse). */
@@ -1050,7 +1052,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
   letter-spacing: -0.012em;
 }
 .board-html-header { display: block; margin: 0 0 28px; padding: 0 0 18px; border-bottom: 1px solid #dbe4ef; }
-.board-html-header h2 { margin: 0; color: #0f172a; font-size: var(--board-display-size, 24px); line-height: 1.1; font-weight: var(--board-header-weight); letter-spacing: -0.04em; }
+.board-html-header h2 { margin: 0; color: #0f172a; font-size: var(--board-display-size, 24px); line-height: 1.1; font-weight: 720; letter-spacing: -0.04em; }
 .board-html-header p { margin: 8px 0 0; color: #64748b; font-size: 12px; line-height: 1.35; letter-spacing: 0.01em; }
 .board-canvas { position: relative; min-width: 0; overflow: visible; }
 /* Zones under edges so short-gap labels (ABCDE) are not covered by box fill. */
@@ -1073,12 +1075,12 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
   flex: 1 1 auto;
   min-height: 0;
 }
-.board-zone-title { display: flex; align-items: flex-start; gap: 9px; min-width: 0; min-height: 20px; margin: 0 0 12px; color: #1e293b; font-size: 13px; line-height: 1.22; }
+.board-zone-title { display: flex; align-items: flex-start; gap: 9px; min-width: 0; min-height: 20px; margin: 0 0 12px; color: #1e293b; font-size: 13px; line-height: 1.22; font-weight: 680; }
 .board-title-copy { display: inline-flex; flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 0; overflow: hidden; }
 .board-title-name,
 .board-item-text { min-width: 0; overflow-wrap: anywhere; }
-.board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; font-weight: inherit; }
-.board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: var(--board-subtitle-weight); }
+.board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; }
+.board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: 520; }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
 .board-icon svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .board-zone .box-content { position: relative; display: flex; min-width: 0; }
@@ -1104,7 +1106,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-kit .box-content { gap: 0 !important; }
 .board-branch-local,
 .board-branch-docker { border-left-width: 2px; }
-.board-item-kind { display: block; margin: 0 0 3px; color: #475569; font-size: 10px; line-height: 1.15; }
+.board-item-kind { display: block; margin: 0 0 3px; color: #475569; font-size: 10px; line-height: 1.15; font-weight: 680; }
 .board-item-subtitle { display: block; color: #64748b; font-size: 10px; line-height: 1.25; }
 .board-title-only:not(.board-diamond) {
   display: flex;
@@ -1200,8 +1202,8 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-edge-hit { pointer-events: stroke !important; cursor: pointer; }
 .board-edge-visible { pointer-events: none; stroke-width: 1.2px; }
 .board-edge-visible.board-edge-selected { stroke-width: 2px !important; }
-.board-edge-label { paint-order: stroke; stroke: #fdfaf5; stroke-width: 5px; stroke-linejoin: round; fill: var(--board-edge-label, #5a4330); font-size: var(--board-label-size, 11px); font-weight: var(--board-edge-label-weight); letter-spacing: 0; pointer-events: auto; cursor: pointer; }
-.board-edge-label.board-edge-selected { font-weight: var(--board-edge-label-weight); }
+.board-edge-label { paint-order: stroke; stroke: #fdfaf5; stroke-width: 5px; stroke-linejoin: round; fill: var(--board-edge-label, #5a4330); font-size: var(--board-label-size, 11px); font-weight: 600; letter-spacing: 0; pointer-events: auto; cursor: pointer; }
+.board-edge-label.board-edge-selected { font-weight: 600; }
 .board-slot {
   position: relative;
   display: block;
@@ -1226,6 +1228,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
   transform: translate(-50%, -50%);
   z-index: 1;
   font-size: 10px;
+  font-weight: 650;
   letter-spacing: 0;
   white-space: nowrap;
   pointer-events: none;
@@ -1408,7 +1411,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item.board-item-type-text .board-item-text {
   text-align: left;
   width: 100%;
-  font-weight: var(--board-item-text-weight);
+  font-weight: 550;
   color: var(--board-color, #222);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -1446,7 +1449,7 @@ html[data-drawer-mode="diagram"] .top-float {
   justify-content: flex-start;
   align-items: flex-start;
   text-align: left;
-  font-weight: var(--board-note-weight);
+  font-weight: 400;
   line-height: 1.5;
   padding: 8px 14px 8px 10px !important;
 }
@@ -1467,7 +1470,7 @@ html[data-drawer-mode="diagram"] .top-float {
   color: inherit;
   font-family: inherit;
   line-height: 1.25;
-  font-weight: var(--board-bold-weight);
+  font-weight: 650;
 }
 .board-render .board-item-md h1 {
   font-size: 1.35em;
@@ -1482,7 +1485,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-md h3:last-child {
   margin-bottom: 0;
 }
-.board-render .board-item-md strong { font-weight: var(--board-bold-weight); }
+.board-render .board-item-md strong { font-weight: 650; }
 .board-render .board-item-md em { font-style: italic; }
 .board-render .board-item-md ul,
 .board-render .board-item-md ol {
@@ -1565,7 +1568,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-icon .board-item-text {
   text-align: left;
   width: auto;
-  font-weight: var(--board-item-text-weight);
+  font-weight: 550;
   color: var(--board-ink, var(--text, #1f2937));
 }
 .board-render .board-item-icon.is-icon-only {
