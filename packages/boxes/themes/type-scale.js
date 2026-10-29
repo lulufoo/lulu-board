@@ -17,7 +17,7 @@ const FONT_FAMILY = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-s
 // no weight number. App chrome (toolbar, panels, dock) is not drawn by boxes and keeps its own weights.
 // Keep text <= title: item text does not follow the title, and a lighter title reads as the weakest line.
 const WEIGHT = {
-  title: '550', // every box title: card and container
+  title: '600', // every box title: card and container
   text: '500', // text items and icon captions
   note: '400', // note items
   bold: '650', // **bold** and headings inside markdown
