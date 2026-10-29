@@ -25,4 +25,6 @@ for (const id of Themes.ORDER) {
 const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
 assert.doesNotMatch(css, /Trebuchet/, 'no theme-specific font left in the diagram CSS');
 assert.doesNotMatch(css, /\.board-edge-label\s*\{[^}]*font-family/, 'link labels do not set their own font family');
+// The title text is a <strong>. Without this rule the browser's `bolder` lifts any title weight of 550 or more to 900.
+assert.match(css, /\.board-title-name\s*\{[^}]*font-weight:\s*inherit/, 'the title text follows the title weight instead of the strong default');
 console.log('ok pack-fonts');
