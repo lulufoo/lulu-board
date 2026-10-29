@@ -214,7 +214,9 @@ export default {
       return authedCall(request, env, (token, input) => reorderGroup(env, token, input));
     }
     if (request.method === 'POST' && url.pathname === '/shares/get') {
-      return authedCall(request, env, (token, input) => readSharedGraph(env, token, input));
+      const token = bearer(request);
+      if (token) return authedCall(request, env, (user, input) => readSharedGraph(env, user, input));
+      return publicCall(request, env, (input) => readSharedGraph(env, env.SUPABASE_PUBLISHABLE_KEY, input));
     }
     if (request.method === 'POST' && url.pathname === '/shares/state') {
       return authedCall(request, env, (token, input) => readOwnShareState(env, token, input));

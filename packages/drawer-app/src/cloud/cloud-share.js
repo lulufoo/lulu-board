@@ -90,13 +90,12 @@ function applySharedDiagramRow(row) {
 }
 async function fetchShareRows(path, payload) {
   var accessToken = cloudSession && cloudSession.access_token;
-  if (!accessToken) throw new Error("Sign in to open this shared diagram");
+  if (!accessToken && path !== "/shares/get") throw new Error("Sign in to open this shared diagram");
+  var headers = { "Content-Type": "application/json" };
+  if (accessToken) headers.Authorization = "Bearer " + accessToken;
   var response = await fetch("https://api.luluboard.app" + path, {
     method: "POST",
-    headers: {
-      Authorization: "Bearer " + accessToken,
-      "Content-Type": "application/json",
-    },
+    headers: headers,
     body: JSON.stringify(payload || {}),
   });
   var text = await response.text();

@@ -56,6 +56,8 @@ assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/cloud/cloud-gro
 assert.match(html, /id="diagram-group-tabs"/, 'canvas keeps a group tab strip');
 assert.doesNotMatch(dockCss, /\.zoom-float \{ right: 88px/, 'zoom / Fit no longer sit over group tabs');
 assert.match(shareJs, /\/shares\/get/, 'shared read uses the board API');
+assert.match(shareJs, /path !== "\/shares\/get"/, 'opening a share link does not require a user token');
+assert.match(shareJs, /if \(accessToken\) headers\.Authorization/, 'a signed-in share reader still sends the user JWT');
 assert.match(shareJs, /p_graph_id: diagramId/, 'share mutations pass the cloud board id');
 assert.match(read('packages/drawer-app/src/cloud/cloud-shares.js') + read('packages/drawer-app/src/chrome/shell-drawer.js') + read('packages/drawer-app/src/chrome/share-dialog.js'), /set_share_role/, 'owner access uses set_share_role');
 assert.match(shareJs, /https:\/\/api\.luluboard\.app\/shares/, 'shared editors save through the board API');
