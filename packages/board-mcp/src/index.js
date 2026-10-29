@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
-import { getGraph, getGroup, createGraph, saveGraph } from "./graphs.js";
+import { getGraph, getGroup, createGraph, saveGraph, searchDiagrams } from "./graphs.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
@@ -49,6 +49,16 @@ function mcpGroup(group) {
   };
 }
 
+function mcpSearch(rows) {
+  return (rows || []).map(function (row) {
+    return {
+      diagram_id: row.graph_id,
+      title: row.title,
+      url: PUBLIC_WEB_ORIGIN + "/#b:" + row.graph_id,
+    };
+  });
+}
+
 function createServer(env, identity, token) {
   const server = new McpServer(serverInfo(env));
   server.registerTool("whoami", { description: "Return the authorized Lulu Board account.", inputSchema: {} }, async () => (
@@ -66,6 +76,13 @@ function createServer(env, identity, token) {
     inputSchema: { diagram_id: DIAGRAM_ID },
   }, async ({ diagram_id }) => {
     try { return toolText(mcpGroup(await getGroup(env, token, diagram_id))); }
+    catch (error) { return toolError(error); }
+  });
+  server.registerTool("search_diagrams", {
+    description: "Search owned diagrams. query must be non-empty after trim. Returns diagram_id, title, and url. Drops public shares. Does not return bmd.",
+    inputSchema: { query: z.string() },
+  }, async ({ query }) => {
+    try { return toolText(mcpSearch(await searchDiagrams(env, token, query))); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_diagram", {
