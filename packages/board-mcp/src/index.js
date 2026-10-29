@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
-import { getGraph, createGraph, saveGraph } from "./graphs.js";
+import { getGraph, getGroup, createGraph, saveGraph } from "./graphs.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
@@ -34,6 +34,21 @@ function mcpDoc(row) {
   };
 }
 
+function mcpGroup(group) {
+  if (!group) return group;
+  return {
+    group_id: group.group_id,
+    members: (group.members || []).map(function (row) {
+      return {
+        diagram_id: row.diagram_id,
+        title: row.title,
+        sort_order: row.sort_order,
+        url: PUBLIC_WEB_ORIGIN + "/#b:" + row.diagram_id,
+      };
+    }),
+  };
+}
+
 function createServer(env, identity, token) {
   const server = new McpServer(serverInfo(env));
   server.registerTool("whoami", { description: "Return the authorized Lulu Board account.", inputSchema: {} }, async () => (
@@ -44,6 +59,13 @@ function createServer(env, identity, token) {
     inputSchema: { diagram_id: DIAGRAM_ID },
   }, async ({ diagram_id }) => {
     try { return toolText(mcpDoc(await getGraph(env, token, diagram_id))); }
+    catch (error) { return toolError(error); }
+  });
+  server.registerTool("get_group", {
+    description: "Load the group that owns this diagram_id. Returns group_id and members (diagram_id, title, sort_order, url). Does not return bmd. Missing or unowned diagram_id fails.",
+    inputSchema: { diagram_id: DIAGRAM_ID },
+  }, async ({ diagram_id }) => {
+    try { return toolText(mcpGroup(await getGroup(env, token, diagram_id))); }
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_diagram", {

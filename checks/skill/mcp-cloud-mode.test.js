@@ -22,6 +22,7 @@ assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');
 assert.match(skill, /## Cloud flow/, 'cloud flow is named');
 assert.match(cloud, /create_diagram/, 'cloud create uses MCP');
 assert.match(cloud, /get_diagram/, 'cloud update reads first');
+assert.match(cloud, /get_group/, 'cloud joins a group via get_group');
 assert.match(cloud, /save_diagram/, 'cloud update writes through MCP');
 assert.match(pointers, /#b:<diagram_id>/, 'pointers document the #b: URL');
 assert.match(skill, /Do not mention MCP/, 'disconnected short-link mode stays quiet');

@@ -22,6 +22,7 @@ assert.match(skill, /`sequence`[\s\S]*`railroad`/, 'Design kinds are named in ro
 assert.match(skill, /A closed type/, 'closed types stop');
 assert.match(cloud, /create_diagram/, 'cloud create uses MCP');
 assert.match(cloud, /get_diagram/, 'cloud update reads first');
+assert.match(cloud, /get_group/, 'cloud joins a group via get_group');
 assert.match(cloud, /save_diagram/, 'cloud update writes through MCP');
 assert.match(cloud, /Pass the Source as `bmd`/, 'flowchart body uses the bmd field');
 assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'short-link preview uses flowchart');

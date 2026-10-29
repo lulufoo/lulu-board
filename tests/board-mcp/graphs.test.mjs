@@ -9,6 +9,7 @@ import {
   assertGraphId,
   assertGroupId,
   getGraph,
+  getGroup,
   createGraph,
   saveGraph,
   stripPersistedMeta,
@@ -46,6 +47,8 @@ assert.throws(() => assertGroupId(''), /invalid group id/);
 assert.match(graphsSrc, /board-core\/document-format/, 'MCP imports document-format');
 assert.doesNotMatch(graphsSrc, /\/rest\/v1\/graphs", \{\s*method: "POST"/, 'create does not POST graphs rows');
 assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/graphs/, 'create calls the board API');
+assert.match(graphsSrc, /https:\/\/api\.luluboard\.app\/groups\/shells/, 'get_group calls group shells');
+assert.doesNotMatch(graphsSrc, /\/mine/, 'get_group does not list all groups');
 assert.doesNotMatch(graphsSrc, /create_owned_graph_with_group|\/rpc\/create_owned_graph/, 'create does not call the SQL function');
 assert.doesNotMatch(graphsSrc, /version=eq\./, 'save does not CAS through PostgREST');
 
@@ -138,6 +141,28 @@ globalThis.fetch = async (url, init) => {
   if (href.startsWith('https://api.luluboard.app/graphs?diagram_id=') && method === 'GET') {
     const id = decodeURIComponent(href.slice(href.indexOf('diagram_id=') + 'diagram_id='.length));
     return { ok: true, status: 200, text: async () => JSON.stringify(rowForGraphId('graph_id=eq.' + id)) };
+  }
+  if (href === 'https://api.luluboard.app/groups/shells' && method === 'POST') {
+    const payload = JSON.parse(body);
+    if (payload.diagram_id === 'b_00000000') {
+      return { ok: true, status: 200, text: async () => JSON.stringify([]) };
+    }
+    if (payload.diagram_id === 'b_40440404') {
+      return { ok: false, status: 404, text: async () => JSON.stringify({ error: 'not_found', message: 'Cloud diagram not found' }) };
+    }
+    if (payload.diagram_id === 'b_0fc10003') {
+      return { ok: true, status: 200, text: async () => JSON.stringify([{ graph_id: 'b_0fc10003', title: 'Bare' }]) };
+    }
+    return {
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify([
+        { graph_id: 'b_22222222', group_id: 'g_aaaa0001', title: 'Second', sort_order: 2 },
+        { graph_id: 'b_11111111', group_id: 'g_aaaa0001', title: 'First', sort_order: 1 },
+        { graph_id: 'b_33333333', group_id: 'g_aaaa0001', title: 'Third' },
+        { graph_id: 'b_44444444', group_id: 'g_bbbb0002', title: 'Other', sort_order: 1 },
+      ]),
+    };
   }
   return { ok: true, text: async () => JSON.stringify([rowForGraphId(href)]) };
 };
@@ -252,6 +277,28 @@ try {
   assert.equal(conflict.row.bmd, 'board "Now"\n');
   assert.equal(conflict.row.group_id, 'g_99aabbcc');
   assert.ok(calls.some((c) => c.method === 'PATCH' && JSON.parse(c.body || '{}').expected_version === 3));
+
+  const beforeInvalidGroup = calls.length;
+  await assert.rejects(() => getGroup(env, 'tok', 'nope'), /invalid board id/);
+  assert.equal(calls.length, beforeInvalidGroup);
+
+  const grouped = await getGroup(env, 'tok', 'b_11111111');
+  assert.equal(grouped.group_id, 'g_aaaa0001');
+  assert.equal(grouped.diagram_id, undefined);
+  assert.deepEqual(grouped.members.map((row) => row.diagram_id), ['b_11111111', 'b_22222222', 'b_33333333']);
+  assert.deepEqual(grouped.members.map((row) => row.title), ['First', 'Second', 'Third']);
+  assert.deepEqual(grouped.members.map((row) => row.sort_order), [1, 2, Number.MAX_SAFE_INTEGER]);
+  assert.ok(!grouped.members.some((row) => 'bmd' in row || 'url' in row || 'group_id' in row));
+  const shells = calls.filter((c) => c.url === 'https://api.luluboard.app/groups/shells');
+  assert.equal(shells.length, 1);
+  assert.equal(shells[0].method, 'POST');
+  assert.equal(shells[0].headers.Authorization, 'Bearer tok');
+  assert.deepEqual(JSON.parse(shells[0].body), { diagram_id: 'b_11111111' });
+  assert.ok(!calls.some((c) => c.url.includes('/mine') || c.url.includes('list_mine')));
+
+  await assert.rejects(() => getGroup(env, 'tok', 'b_00000000'), /Cloud board not found/);
+  await assert.rejects(() => getGroup(env, 'tok', 'b_40440404'), /Cloud board not found/);
+  await assert.rejects(() => getGroup(env, 'tok', 'b_0fc10003'), /missing group id/);
 } finally {
   globalThis.fetch = prevFetch;
 }
@@ -279,8 +326,11 @@ assert.match(denied.headers.get('www-authenticate'), /resource_metadata="https:\
 
 assert.match(worker, /registerTool\("whoami"/, 'whoami is registered');
 assert.match(worker, /registerTool\("get_diagram"/, 'get_diagram is registered');
+assert.match(worker, /registerTool\("get_group"/, 'get_group is registered');
 assert.match(worker, /registerTool\("create_diagram"/, 'create_diagram is registered');
 assert.match(worker, /registerTool\("save_diagram"/, 'save_diagram is registered');
+assert.match(worker, /mcpGroup\(await getGroup/, 'get_group maps members to viewer urls');
+assert.doesNotMatch(worker, /registerTool\("get_group_id"/, 'no field-getter alias');
 assert.match(worker, /const DIAGRAM_ID = z\.string\(\)\.regex\(GRAPH_ID_RE\)/, 'diagram_id uses board-core GRAPH_ID_RE');
 assert.match(worker, /url: PUBLIC_WEB_ORIGIN \+ "\/#b:" \+ row\.graph_id/, 'mcpDoc returns viewer url');
 assert.doesNotMatch(worker, /inputSchema: \{ board_id/, 'MCP input does not use board_id');
@@ -311,6 +361,8 @@ assert.match(cloud, /[Oo]ptional\s+`group_id`/, 'cloud create can join a group')
 assert.match(cloud, /group this `diagram_id` belongs to/, 'cloud says group_id is the diagram group');
 assert.match(cloud, /current account/, 'cloud joins on the current account');
 assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
+assert.match(cloud, /`get_group` with that `diagram_id`/, 'cloud joins a pasted #b: group via get_group');
+assert.match(cloud, /Do not `get_diagram` only to join a\n   group/, 'cloud does not load bmd to join a group');
 
 const brandDir = path.join(root, 'packages/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
