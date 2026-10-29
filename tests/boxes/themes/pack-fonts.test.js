@@ -8,23 +8,49 @@ const path = require('path');
 const Themes = require('../../../packages/boxes/themes');
 const Scale = require('../../../packages/boxes/themes/type-scale');
 
-// One font stack and one title weight for every theme; they live next to the size ladder.
+// One font stack and one set of weights for every theme; they live next to the size ladder.
 assert.match(Scale.FONT_FAMILY, /SF Pro Text.*Inter/, 'the shared stack is the site font stack');
 assert.match(Scale.FONT_FAMILY, /PingFang SC/, 'the shared stack has a CJK sans fallback');
-assert.strictEqual(Scale.TITLE_WEIGHT, '650');
+const W = Scale.WEIGHT;
+assert.deepStrictEqual(W, { title: '650', text: '550', note: '400', bold: '650' });
+assert.ok(Number(W.text) <= Number(W.title), 'item text is not heavier than the box title, or the title reads as the weakest line');
 const root = path.join(__dirname, '../../..');
 for (const id of Themes.ORDER) {
   const theme = Themes.get(id);
   assert.strictEqual(theme.fontFamily, Scale.FONT_FAMILY, id + ' uses the shared font');
   const src = fs.readFileSync(path.join(root, 'packages/boxes/themes/packs/chrome-' + id + '.js'), 'utf8');
   assert.doesNotMatch(src, /fontFamily/, id + ' pack does not define its own font');
-  const box = Themes.kitFor(theme, 'card', 0, 8);
-  assert.strictEqual(box.titleWeight, Scale.TITLE_WEIGHT, id + ' card title uses the shared weight');
+  assert.strictEqual(Themes.kitFor(theme, 'card').titleWeight, W.title, id + ' card title uses the shared weight');
 }
+
+// applyTo publishes every weight as a CSS variable on the board root.
+const vars = {};
+Themes.applyTo({ style: { setProperty: (k, v) => { vars[k] = v; } }, dataset: {} }, 'default');
+const VAR_KEY = {
+  '--board-title-weight': 'title',
+  '--board-card-title-weight': 'title',
+  '--board-item-text-weight': 'text',
+  '--board-note-weight': 'note',
+  '--board-bold-weight': 'bold',
+};
+for (const [name, key] of Object.entries(VAR_KEY)) assert.strictEqual(vars[name], W[key], name + ' comes from WEIGHT.' + key);
+
 // edge labels (SVG text) inherit the same --board-font as boxes and items
 const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
 assert.doesNotMatch(css, /Trebuchet/, 'no theme-specific font left in the diagram CSS');
 assert.doesNotMatch(css, /\.board-edge-label\s*\{[^}]*font-family/, 'link labels do not set their own font family');
+
 // The title text is a <strong>. Without this rule the browser's `bolder` lifts any title weight of 550 or more to 900.
 assert.match(css, /\.board-title-name\s*\{[^}]*font-weight:\s*inherit/, 'the title text follows the title weight instead of the strong default');
+
+// The CSS rules read the variables.
+for (const name of Object.keys(VAR_KEY)) {
+  assert.match(css, new RegExp('var\\(' + name + '[,)]'), name + ' is read by the diagram CSS');
+}
+for (const sel of ['\\.board-item-type-text \\.board-item-text', '\\.board-item-icon \\.board-item-text']) {
+  const rule = new RegExp(sel + '\\s*\\{([^}]*)\\}').exec(css);
+  assert.ok(rule && /font-weight:\s*var\(--board-item-text-weight/.test(rule[1]), sel + ' takes its weight from the shared variable, not a literal');
+}
+assert.match(css, /\.board-item-md strong \{ font-weight: var\(--board-bold-weight/, 'markdown bold uses the shared weight');
+assert.match(css, /\.board-item-type-note,[^{]*\{[^}]*font-weight:\s*var\(--board-note-weight/, 'note items use the shared weight');
 console.log('ok pack-fonts');

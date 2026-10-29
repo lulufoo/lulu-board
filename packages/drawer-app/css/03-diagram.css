@@ -589,7 +589,7 @@ html[data-drawer-mode="diagram"] .board-brand { display: inline-flex; }
 .board-render .board-zone-title {
   color: var(--board-title-color, #333);
   font-size: var(--board-title-size, 13px);
-  font-weight: var(--board-title-weight, 700);
+  font-weight: var(--board-title-weight);
   margin: var(--board-title-margin, 0 0 8px);
 }
 /* No title/icon: do not reserve title-row height (empty chrome must collapse). */
@@ -1418,7 +1418,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item.board-item-type-text .board-item-text {
   text-align: left;
   width: 100%;
-  font-weight: 550;
+  font-weight: var(--board-item-text-weight);
   color: var(--board-color, #222);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -1456,7 +1456,7 @@ html[data-drawer-mode="diagram"] .top-float {
   justify-content: flex-start;
   align-items: flex-start;
   text-align: left;
-  font-weight: 400;
+  font-weight: var(--board-note-weight);
   line-height: 1.5;
   padding: 8px 14px 8px 10px !important;
 }
@@ -1477,7 +1477,7 @@ html[data-drawer-mode="diagram"] .top-float {
   color: inherit;
   font-family: inherit;
   line-height: 1.25;
-  font-weight: 650;
+  font-weight: var(--board-bold-weight);
 }
 .board-render .board-item-md h1 {
   font-size: 1.35em;
@@ -1492,7 +1492,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-md h3:last-child {
   margin-bottom: 0;
 }
-.board-render .board-item-md strong { font-weight: 650; }
+.board-render .board-item-md strong { font-weight: var(--board-bold-weight); }
 .board-render .board-item-md em { font-style: italic; }
 .board-render .board-item-md ul,
 .board-render .board-item-md ol {
@@ -1575,7 +1575,7 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-icon .board-item-text {
   text-align: left;
   width: auto;
-  font-weight: 550;
+  font-weight: var(--board-item-text-weight);
   color: var(--board-ink, var(--text, #1f2937));
 }
 .board-render .board-item-icon.is-icon-only {
