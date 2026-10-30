@@ -16,11 +16,32 @@
 
 One text protocol — the AI agent writes it, Lulu Board draws it, you work on the canvas; both stay in sync. A local loop.
 
-| Kind | In Lulu Board |
-|---|---|
-| Sketch | one picture on the public viewer |
-| Boxes | structured whiteboard text |
-| Mermaid | open catalog types |
+<table width="100%">
+  <thead>
+    <tr>
+      <th align="left" width="14%">Kind</th>
+      <th align="left" width="32%">In Lulu Board</th>
+      <th align="left" width="54%">File and content</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Sketch</td>
+      <td>one picture on the public viewer</td>
+      <td><code>.skt</code>. Three lines: <code>sketch "title"</code>, <code>style</code> (camera), <code>content</code> (HTML fragment, base64).</td>
+    </tr>
+    <tr>
+      <td>Boxes</td>
+      <td>structured whiteboard text</td>
+      <td><code>.bmd</code>. <code>boxes "title"</code>, then <code>box</code>, <code>item</code>, links, and <code>layout</code>.</td>
+    </tr>
+    <tr>
+      <td>Mermaid</td>
+      <td>open catalog types</td>
+      <td><code>.mmd</code>. One Mermaid diagram: <code>flowchart</code>, <code>mindmap</code>, or a design type.</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Why
 
