@@ -9,20 +9,21 @@ from pathlib import Path
 
 import unittest
 
-ROOT = Path(__file__).resolve().parents[2]
+_skills = Path(__file__).resolve().parents[1]
+ROOT = _skills.parent
 VECTORS = json.loads((ROOT / "packages" / "board-core" / "document-format.vectors.json").read_text())
 
-sys.path.insert(0, str(ROOT / "skills" / "boxes" / "scripts"))
+sys.path.insert(0, str(_skills / "boxes" / "scripts"))
 
-def _load(name: str, rel: str):
-    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+def _load(name: str, rel: Path):
+    spec = importlib.util.spec_from_file_location(name, rel)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 MERMAID_TITLES = _load(
     "mermaid_drawer_titles",
-    "skills/mermaid/scripts/drawer_ctl/titles.py",
+    _skills / "mermaid" / "scripts" / "drawer_ctl" / "titles.py",
 )
 
 from document_meta import (

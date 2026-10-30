@@ -9,9 +9,9 @@ import argparse
 import sys
 from pathlib import Path
 
-_root = Path(__file__).resolve().parents[2]
-if str(_root) not in sys.path:
-    sys.path.insert(0, str(_root))
+_scripts = Path(__file__).resolve().parents[2] / "scripts"
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
 
 from short_link import PUBLIC_WEB_ORIGIN, create_short_url
 

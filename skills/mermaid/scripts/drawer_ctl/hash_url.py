@@ -4,9 +4,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-_root = Path(__file__).resolve().parents[3]
-if str(_root) not in sys.path:
-    sys.path.insert(0, str(_root))
+_scripts = Path(__file__).resolve().parents[3] / "scripts"
+if str(_scripts) not in sys.path:
+    sys.path.insert(0, str(_scripts))
 
 from short_link import PUBLIC_WEB_ORIGIN, create_short_url
 

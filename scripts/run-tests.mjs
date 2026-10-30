@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const root = path.join(repo, 'tests');
+const roots = [path.join(repo, 'tests'), path.join(repo, 'skills', 'test')];
 
 function listTests(dir, out) {
   for (const name of readdirSync(dir).sort()) {
@@ -20,7 +20,9 @@ function listTests(dir, out) {
 }
 
 const files = [];
-listTests(root, files);
+for (const root of roots) {
+  listTests(root, files);
+}
 if (!files.length) {
   console.error('no tests');
   process.exit(1);

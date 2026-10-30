@@ -15,7 +15,7 @@ from contextlib import redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills" / "boxes" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import assets

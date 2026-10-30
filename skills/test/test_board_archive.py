@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 import sys
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills" / "boxes" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import paths as _ctl_paths
@@ -127,7 +127,7 @@ class BoardArchiveTest(unittest.TestCase):
         self.assertIn("board New", live)
 
     def test_production_does_not_join_envelope(self) -> None:
-        root = Path(__file__).resolve().parents[2] / "skills" / "boxes" / "scripts" / "drawer_ctl"
+        root = Path(__file__).resolve().parents[1] / "boxes" / "scripts" / "drawer_ctl"
         for name in ("document.py", "board.py", "migrate.py"):
             src = (root / name).read_text(encoding="utf-8")
             self.assertNotIn("join_document(", src)
