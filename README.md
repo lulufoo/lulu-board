@@ -79,7 +79,7 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 }
 ```
 
-In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After the `whoami` tool is listed, `/boxes` writes `https://preview.luluboard.app/#b:…` instead of `#z:`.
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After `whoami` returns an account, `/boxes` writes `https://preview.luluboard.app/#b:…` instead of `#z:`. If `whoami` is listed but the call fails, `/boxes` still writes `#z:`.
 
 Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
 

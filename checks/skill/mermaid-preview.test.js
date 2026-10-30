@@ -18,9 +18,9 @@ assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
 assert.match(pointers, /It never mints `#b:`/, 'preview stays unsigned');
 assert.match(viewer, /`--kind flowchart`, `--kind mindmap`, or a Design kind/, 'viewer pins open kinds');
 assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
-assert.match(skill, /\$DRAWER_CTL preview --kind flowchart/, 'skill still calls flowchart preview');
-assert.match(skill, /\$DRAWER_CTL preview --kind mindmap/, 'skill still calls mindmap preview');
-assert.match(skill, /\$DRAWER_CTL preview --kind sequence/, 'skill calls a Design preview');
+assert.match(skill, /\$DRAWER_CTL preview --kind/, 'skill still calls preview --kind');
+assert.match(skill, /one Open kind/, 'empty preview picks one Open kind');
+assert.match(skill, /with the Route/, 'mint uses the Route kind');
 
 const STUB = 'https://luluboard.app/#p:p_' + 'a'.repeat(64);
 

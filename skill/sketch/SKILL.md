@@ -44,6 +44,6 @@ The viewer mounts the fragment in its own document. Write for this environment.
 ## Show
 
 1. Pipe the source to `$SKETCH_CTL preview --kind sketch`, or pass `--file`.
-2. Show only the CLI stdout `url` and stop. Do not build the host.
+2. Show only the CLI stdout `url` and stop.
 3. To change, edit the source and preview again. That creates a new short url.
 4. To keep, use `#b:`.

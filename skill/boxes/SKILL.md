@@ -7,7 +7,7 @@ argument-hint: "[scene intent]"
 # boxes
 
 Define one diagram with the boxes protocol and open it on the public viewer.
-Done when a tool `url` is shown, or chat-only BMD Source is delivered.
+Done when a tool `url` is shown.
 
 ## Script Macros
 
@@ -39,29 +39,21 @@ Pick short link or cloud.
 
 1. If the `whoami` MCP tool is listed, use **cloud mode**. Load [cloud](../references/cloud.md).
 2. If it is missing, use **short-link mode**. Do not mention MCP.
-3. If `whoami` is listed but a tool call fails, stop and report. Do not fall back.
+3. If `whoami` is listed but a tool call fails, use **short-link mode**.
 4. If the user pastes a viewer URL in short-link mode, load [pointers](../references/pointers.md).
 
 ## Short link flow
 
 Publish unsigned.
 
-1. Use the public viewer unless the user explicitly requests chat-only output.
-2. After any preview, show only the CLI stdout `url` and stop. Do not build the host.
-3. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind boxes`
+1. After any preview, show only the CLI stdout `url` and stop.
+2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind boxes`
    with no `--file` and no stdin body.
+3. Run `$DRAWER_CTL preview --kind boxes` with stdin or
+   `--file`. If it reports a DSL error, correct the BMD Source and rerun.
 4. To change, edit this session’s last BMD Source text and preview again. That
    creates a new short url. If none yet, run step 3 first.
-5. For the public viewer, run `$DRAWER_CTL preview --kind boxes` with stdin or
-   `--file`. If it reports a DSL error, correct the BMD Source and rerun.
-6. For chat-only output, return one `boxes`-fenced block and stop.
-7. To keep, use cloud mode (`#b:`).
-
-## Cloud flow
-
-Publish owned.
-
-Follow [cloud](../references/cloud.md). Chat-only: one `boxes`-fenced block.
+5. To keep, use cloud mode (`#b:`).
 
 ## Open wording
 

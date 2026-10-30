@@ -19,13 +19,15 @@ assert.match(skill, /\$DRAWER_CTL preview --kind boxes/, 'short-link mode still 
 assert.match(skill, /show only the CLI stdout `url`/, 'short-link mode prints only the returned url');
 assert.match(skill, /Mint without style/, 'stash rule remains');
 assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');
-assert.match(skill, /## Cloud flow/, 'cloud flow is named');
+assert.match(skill, /Load \[cloud\]/, 'cloud mode loads cloud.md');
 assert.match(cloud, /create_diagram/, 'cloud create uses MCP');
 assert.match(cloud, /get_diagram/, 'cloud update reads first');
 assert.match(cloud, /get_group/, 'cloud joins a group via get_group');
 assert.match(cloud, /save_diagram/, 'cloud update writes through MCP');
+assert.match(cloud, /search_diagrams/, 'cloud search uses MCP');
 assert.match(pointers, /#b:<diagram_id>/, 'pointers document the #b: URL');
 assert.match(skill, /Do not mention MCP/, 'disconnected short-link mode stays quiet');
+assert.match(skill, /listed but a tool call fails, use \*\*short-link mode\*\*/, 'failed MCP falls back to #z:');
 assert.match(pointers, /\| `#p:` \|/, 'pointers table has #p:');
 assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
 assert.match(pointers, /It never mints `#b:`/, 'preview stays unsigned');

@@ -15,7 +15,7 @@ Mermaid CLI preview. Loaded from `/mermaid` for `status` or kind.
 
 ## Seed
 
-1. `preview --kind flowchart`, `preview --kind mindmap`, or `preview --kind sequence` with no file and no stdin does not create a record.
+1. `preview --kind` with one Open kind, no file, and no stdin does not create a record.
 
 ## Write-back
 
