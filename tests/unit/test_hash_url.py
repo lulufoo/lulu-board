@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills" / "boxes" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills"))
 
 from drawer_ctl.hash_url import board_web_url
 from short_link import create_short_url

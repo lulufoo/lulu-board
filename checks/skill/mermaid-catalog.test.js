@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const refs = path.join(root, 'skill/mermaid/references');
+const refs = path.join(root, 'skills/mermaid/references');
 const catalog = fs.readFileSync(path.join(refs, 'catalog.md'), 'utf8');
 const flowchart = fs.readFileSync(path.join(refs, 'flow/flowchart.md'), 'utf8');
 const mindmap = fs.readFileSync(path.join(refs, 'flow/mindmap.md'), 'utf8');

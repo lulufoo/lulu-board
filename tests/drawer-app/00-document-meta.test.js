@@ -90,7 +90,7 @@ function token(id, version) {
 }
 
 {
-  const board = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
+  const board = fs.readFileSync(path.join(__dirname, '../../skills/boxes/SKILL.md'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../packages/boxes/skill-assets/vocab.md'), 'utf8');
   assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
   assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');

@@ -49,7 +49,7 @@ Create.CREATE_KIND_ITEMS.filter((it) => it.ready).forEach((it) => {
 
 {
   const board = fs.readFileSync(path.join(dir, 'boxes.bmd'), 'utf8');
-  const demo = fs.readFileSync(path.join(root, 'skill/boxes/templates/demo.bmd'), 'utf8');
+  const demo = fs.readFileSync(path.join(root, 'skills/boxes/templates/demo.bmd'), 'utf8');
   assert.strictEqual(board, demo, 'boxes.bmd copies skill demo.bmd');
   assert.ok(!/^\s*meta\s+/.test(board), 'board template has no document meta');
   const parsed = Render.parse(board);

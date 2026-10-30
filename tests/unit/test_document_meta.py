@@ -12,7 +12,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 VECTORS = json.loads((ROOT / "packages" / "board-core" / "document-format.vectors.json").read_text())
 
-sys.path.insert(0, str(ROOT / "skill" / "boxes" / "scripts"))
+sys.path.insert(0, str(ROOT / "skills" / "boxes" / "scripts"))
 
 def _load(name: str, rel: str):
     spec = importlib.util.spec_from_file_location(name, ROOT / rel)
@@ -22,7 +22,7 @@ def _load(name: str, rel: str):
 
 MERMAID_TITLES = _load(
     "mermaid_drawer_titles",
-    "skill/mermaid/scripts/drawer_ctl/titles.py",
+    "skills/mermaid/scripts/drawer_ctl/titles.py",
 )
 
 from document_meta import (

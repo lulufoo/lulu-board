@@ -7,10 +7,10 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const pack = fs.readFileSync(path.join(root, 'skill/SKILL.md'), 'utf8');
-const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8');
-const cloud = fs.readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
-const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
+const pack = fs.readFileSync(path.join(root, 'skills/SKILL.md'), 'utf8');
+const skill = fs.readFileSync(path.join(root, 'skills/mermaid/SKILL.md'), 'utf8');
+const cloud = fs.readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
 
 assert.match(pack, /`boxes\/`/, 'pack lists boxes/');
 assert.match(pack, /`mermaid\/`/, 'pack lists mermaid/');

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Public site build: app + site into .cache/web/. Does not copy skill/.
+ * Public site build: app + site into .cache/web/. Does not copy skills/.
  */
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';

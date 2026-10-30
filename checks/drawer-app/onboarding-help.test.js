@@ -28,7 +28,7 @@ assert.doesNotMatch(boot, /openOnboardingHash/, 'welcome has no onboarding helpe
 assert.doesNotMatch(boot, /kind === "welcome"/, 'welcome is a template kind');
 assert.match(src, /^sketch "What each one is for\."/, 'welcome template is the three-kind sketch');
 assert.ok(!fs.existsSync(path.join(root, 'packages/drawer-app/onboarding.bmd')), 'root onboarding.bmd is gone');
-assert.ok(!fs.existsSync(path.join(root, 'skill/boxes/templates/onboarding.bmd')), 'skill no longer holds onboarding');
-assert.ok(fs.existsSync(path.join(root, 'skill/boxes/templates/demo.bmd')), 'AI demo template stays');
+assert.ok(!fs.existsSync(path.join(root, 'skills/boxes/templates/onboarding.bmd')), 'skill no longer holds onboarding');
+assert.ok(fs.existsSync(path.join(root, 'skills/boxes/templates/demo.bmd')), 'AI demo template stays');
 
 console.log('ok onboarding-help');

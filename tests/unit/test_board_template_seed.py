@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Empty history/ no longer seeds packed examples from skill/board/templates/board."""
+"""Empty history/ no longer seeds packed examples from skills/board/templates/board."""
 from __future__ import annotations
 
 import shutil
@@ -10,7 +10,7 @@ import sys
 
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skill" / "boxes" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills" / "boxes" / "scripts"))
 
 import drawer_control as dc
 from drawer_ctl import paths as _ctl_paths

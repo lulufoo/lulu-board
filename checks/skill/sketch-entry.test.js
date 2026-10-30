@@ -9,9 +9,9 @@ const { execFileSync } = require('child_process');
 const STUB = 'https://luluboard.app/#p:p_' + 'd'.repeat(64);
 
 const root = path.join(__dirname, '../..');
-const pack = fs.readFileSync(path.join(root, 'skill/SKILL.md'), 'utf8');
-const skill = fs.readFileSync(path.join(root, 'skill/sketch/SKILL.md'), 'utf8');
-const script = path.join(root, 'skill/sketch/scripts/sketch_control.py');
+const pack = fs.readFileSync(path.join(root, 'skills/SKILL.md'), 'utf8');
+const skill = fs.readFileSync(path.join(root, 'skills/sketch/SKILL.md'), 'utf8');
+const script = path.join(root, 'skills/sketch/scripts/sketch_control.py');
 
 assert.match(pack, /`sketch\/`/, 'pack lists sketch/');
 assert.match(skill, /\$SKETCH_CTL preview --kind sketch/, 'preview kind is sketch');

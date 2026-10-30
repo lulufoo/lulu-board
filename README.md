@@ -16,10 +16,11 @@
 
 One text protocol — the AI agent writes it, Lulu Board draws it, you work on the canvas; both stay in sync. A local loop.
 
-| Kind | In Lulu Board | Source ID |
-|---|---|---|
-| Boxes | structured whiteboard text | BMD (`b_…`) |
-| Flowchart | Mermaid flowchart | same `#z:` / `#b:` |
+| Kind | In Lulu Board |
+|---|---|
+| Sketch | one picture on the public viewer |
+| Boxes | structured whiteboard text |
+| Mermaid | open catalog types |
 
 ## Why
 
@@ -27,7 +28,7 @@ Diagrams go stale when only one side can edit them. Lulu Board keeps one text pr
 
 ## Quick start
 
-Chat entry is [`/boxes`](./skill/boxes/SKILL.md):
+Chat entry is [`/boxes`](./skills/boxes/SKILL.md):
 
 ```text
 /boxes
@@ -108,17 +109,19 @@ Click a preview to open the source.
 Chat entry is `/boxes`.
 
 ```text
-skill/
-  board/     # SKILL.md, scripts/, templates/
+skills/
+  boxes/     # SKILL.md, scripts/, templates/
+  sketch/
+  mermaid/
 ```
 
 ## Develop
 
 ```text
-examples/    # README previews (source) → packed into skill/boxes/templates
+examples/    # README previews (source) → packed into skills/boxes/templates
 packages/    # board, drawer-app, board-mcp
 scripts/     # build tooling
-skill/       # /boxes skill
+skills/     # /boxes /sketch /mermaid
 tests/
 .cache/web/  # generated public viewer
 ```

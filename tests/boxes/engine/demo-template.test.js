@@ -9,7 +9,7 @@ const Layout = require('../../../packages/boxes/engine/layout').default;
 const Render = require('../../../packages/boxes/engine/render.js').default;
 
 const src = fs.readFileSync(
-  path.join(__dirname, '../../../skill/boxes/templates/demo.bmd'),
+  path.join(__dirname, '../../../skills/boxes/templates/demo.bmd'),
   'utf8'
 );
 assert.ok(!/^\s*meta\s+/.test(src), 'demo has no document meta');

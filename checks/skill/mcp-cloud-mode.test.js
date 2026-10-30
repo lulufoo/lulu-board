@@ -7,10 +7,10 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../..');
-const skill = fs.readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
-const viewer = fs.readFileSync(path.join(root, 'skill/boxes/references/viewer.md'), 'utf8');
-const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
-const cloud = fs.readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
+const skill = fs.readFileSync(path.join(root, 'skills/boxes/SKILL.md'), 'utf8');
+const viewer = fs.readFileSync(path.join(root, 'skills/boxes/references/viewer.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
+const cloud = fs.readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
 assert.match(readme, /https:\/\/mcp\.luluboard\.app\/mcp/, 'readme documents the hosted MCP');

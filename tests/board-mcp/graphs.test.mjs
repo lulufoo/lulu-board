@@ -22,8 +22,8 @@ import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serv
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
-const skill = readFileSync(path.join(root, 'skill/boxes/SKILL.md'), 'utf8');
-const cloud = readFileSync(path.join(root, 'skill/references/cloud.md'), 'utf8');
+const skill = readFileSync(path.join(root, 'skills/boxes/SKILL.md'), 'utf8');
+const cloud = readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('boxes "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), '');

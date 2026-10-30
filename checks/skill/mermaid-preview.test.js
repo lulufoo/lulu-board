@@ -8,10 +8,10 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const root = path.join(__dirname, '../..');
-const ctl = path.join(root, 'skill/mermaid/scripts/drawer_control.py');
-const viewer = fs.readFileSync(path.join(root, 'skill/mermaid/references/viewer.md'), 'utf8');
-const pointers = fs.readFileSync(path.join(root, 'skill/references/pointers.md'), 'utf8');
-const skill = fs.readFileSync(path.join(root, 'skill/mermaid/SKILL.md'), 'utf8');
+const ctl = path.join(root, 'skills/mermaid/scripts/drawer_control.py');
+const viewer = fs.readFileSync(path.join(root, 'skills/mermaid/references/viewer.md'), 'utf8');
+const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
+const skill = fs.readFileSync(path.join(root, 'skills/mermaid/SKILL.md'), 'utf8');
 
 assert.match(pointers, /\| `#p:` \|/, 'pointers table has #p:');
 assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
@@ -28,7 +28,7 @@ function run(args, input) {
   return spawnSync('python3', [ctl, ...args], {
     input: input == null ? undefined : input,
     encoding: 'utf8',
-    cwd: path.join(root, 'skill/mermaid'),
+    cwd: path.join(root, 'skills/mermaid'),
     env: Object.assign({}, process.env, { LULU_BOARD_SHORT_LINK_STUB: STUB }),
   });
 }

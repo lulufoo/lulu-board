@@ -137,7 +137,7 @@ function b64(obj) {
   const tokenBuild = fs.readFileSync(path.join(__dirname, '../../scripts/build-app/style-token.mjs'), 'utf8');
   assert.match(drawerBuild, /bundleStyleToken/, 'drawer bundle loads the shared token');
   assert.match(tokenBuild, /board-core\/style-token\.js/, 'drawer build reads board-core');
-  const boardSkill = fs.readFileSync(path.join(__dirname, '../../skill/boxes/SKILL.md'), 'utf8');
+  const boardSkill = fs.readFileSync(path.join(__dirname, '../../skills/boxes/SKILL.md'), 'utf8');
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
