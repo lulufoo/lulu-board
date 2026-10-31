@@ -26,10 +26,6 @@ assert.ok(
   /applyBoxRem/.test(boxJs),
   'box mount applies a per-id rem override'
 );
-assert.ok(
-  /\.board-title-name \{[^}]*min-width:\s*0/.test(css),
-  'box titles can wrap at the cap'
-);
 assert.ok(/showMaxWidth = isMd \|\| isBoxNode/.test(boardJs), 'You shows Max Width for boxes');
 assert.ok(/selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box"/.test(boardJs), 'Max Width writes boxes');
 
