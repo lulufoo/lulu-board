@@ -158,4 +158,24 @@ item HERO type text "Welcome"
   assert.ok(/raw == null \|\| raw === ''/.test(boot), 'empty localStorage uses default width');
 }
 
+{
+  // LB-610: Box layout blanks inline max-width on kids; the authored cap must come back.
+  const MaxWidth = require('../../../packages/boxes/themes/max-width-scale.js');
+  const el = { dataset: {}, style: { maxWidth: '' } };
+  MaxWidth.applyItemRem(el, 21);
+  assert.strictEqual(el.style.maxWidth, '21rem');
+  el.style.maxWidth = '';
+  MaxWidth.restoreItemRem(el);
+  assert.strictEqual(el.style.maxWidth, '21rem', 'restore puts the authored cap back');
+  const plain = { dataset: {}, style: { maxWidth: '' } };
+  MaxWidth.restoreItemRem(plain);
+  assert.strictEqual(plain.style.maxWidth, '', 'no authored cap: nothing to restore');
+
+  const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/render.js'), 'utf8');
+  const reset = renderJs.slice(renderJs.indexOf('function resetBoxKidSizes'), renderJs.indexOf('function resetAllBoxKidSizes'));
+  assert.ok(/MaxWidth\.restoreItemRem\(el\)/.test(reset), 'kid reset restores the authored item cap');
+  const stretch = renderJs.slice(renderJs.indexOf('function applyMainStretch'), renderJs.indexOf('function applyCrossStretch'));
+  assert.ok(/MaxWidth\.restoreItemRem\(el\)/.test(stretch), 'row main-stretch restores the authored item cap');
+}
+
 console.log('ok item-cap');

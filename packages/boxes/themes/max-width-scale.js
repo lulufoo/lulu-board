@@ -42,7 +42,15 @@ function remFromStyle(style, id, kind) {
 
 function applyItemRem(el, rem) {
   if (!el || rem == null) return;
+  if (el.dataset) el.dataset.boardMaxWidthRem = String(rem);
   el.style.maxWidth = rem + 'rem';
+}
+
+// Box layout blanks inline max-width on every kid; put the authored cap back.
+function restoreItemRem(el) {
+  if (!el || !el.dataset) return;
+  const rem = authoredRem(el.dataset.boardMaxWidthRem);
+  if (rem != null) el.style.maxWidth = rem + 'rem';
 }
 
 function applyBoxRem(el, rem) {
@@ -53,5 +61,5 @@ function applyBoxRem(el, rem) {
 export {
   ITEM_BASE_REM, BOX_BASE_REM, BASE_REM, STEP_REM, STEP_MIN, STEP_MAX,
   clampStep, widthKind, remForStep, remCss, authoredRem, remFromStyle,
-  applyItemRem, applyBoxRem,
+  applyItemRem, restoreItemRem, applyBoxRem,
 };
