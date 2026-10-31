@@ -89,12 +89,12 @@ var boardIdCopiedTimer = 0;
 const boardDirEditor = $("#boardDirEditor");
 const boardDirLabel = $("#boardDirLabel");
 const boardDirTip = $("#boardDirTip");
-const boardAlignEditor = $("#boardAlignEditor");
-const boardAlignLabel = $("#boardAlignLabel");
-const boardAlignTip = $("#boardAlignTip");
-const boardJustifyEditor = $("#boardJustifyEditor");
-const boardJustifyLabel = $("#boardJustifyLabel");
-const boardJustifyTip = $("#boardJustifyTip");
+const boardAlignXEditor = $("#board-align-x-editor");
+const boardAlignXLabel = $("#board-align-x-label");
+const boardAlignXTip = $("#board-align-x-tip");
+const boardAlignYEditor = $("#board-align-y-editor");
+const boardAlignYLabel = $("#board-align-y-label");
+const boardAlignYTip = $("#board-align-y-tip");
 const boardOrderField = $("#board-order-field");
 const boardOrderLabel = $("#board-order-label");
 const boardOrderPrev = $("#btn-board-order-prev");
@@ -533,12 +533,12 @@ export {
   boardDirEditor,
   boardDirLabel,
   boardDirTip,
-  boardAlignEditor,
-  boardAlignLabel,
-  boardAlignTip,
-  boardJustifyEditor,
-  boardJustifyLabel,
-  boardJustifyTip,
+  boardAlignXEditor,
+  boardAlignXLabel,
+  boardAlignXTip,
+  boardAlignYEditor,
+  boardAlignYLabel,
+  boardAlignYTip,
   boardOrderField,
   boardOrderLabel,
   boardOrderPrev,

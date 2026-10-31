@@ -103,7 +103,7 @@ binds two edges of nodes or of the `parent` frame.
 
 ### Board
 
-Without ids, `direction` / `align` / `justify` set the board itself. The board
+Without ids, `direction` / `align_x` / `align_y` set the board itself. The board
 defaults to `direction row` with gap 32 and padding 24: top-level boxes flow
 left to right. A horizontal `arrange` or any `pin` turns that flow off; only
 the stated constraints place nodes from then on.
@@ -115,15 +115,15 @@ be listed in one statement.
 
 ```text
 direction <box-id>, <box-id>… row|column
-align <box-id>, <box-id>… start|center|stretch
-justify <box-id>, <box-id>… start|center|stretch
+align_x <box-id>, <box-id>… left|center|right|stretch
+align_y <box-id>, <box-id>… top|center|bottom|stretch
 ```
 
-| Statement | Meaning | Default |
-|---|---|---|
-| `direction` | Children’s main axis | `column` |
-| `align` | Children on the cross axis | `stretch` |
-| `justify` | Children on the main axis | `start` |
+| Statement | Meaning | Default (box) | Default (board) |
+|---|---|---|---|
+| `direction` | Children’s main axis | `column` | `row` |
+| `align_x` | Children on the horizontal axis | `stretch` | `left` |
+| `align_y` | Children on the vertical axis | `top` | `stretch` |
 
 `stretch` grows children to fill leftover space on that axis. Diamond chips
 keep their intrinsic size.

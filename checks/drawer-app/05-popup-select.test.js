@@ -33,7 +33,7 @@ assert.match(html, /id="groundSelectHost"/, 'background listbox has a host');
 assert.match(main, /import '\.\/chrome\/ground-picker\.js'/, 'background picker is booted from main');
 assert.match(main, /import '\.\/chrome\/native-selects\.js'/, 'remaining dock selects are bound');
 const natives = read('packages/drawer-app/src/chrome/native-selects.js');
-['boardTypeEditor', 'boardArrowEditor', 'boardDirEditor', 'boardAlignEditor', 'boardJustifyEditor', 'flowchartTypeEditor', 'flowchartDirEditor', 'mindmapLayoutEditor', 'boardShapeEditor'].forEach((id) => {
+['boardTypeEditor', 'boardArrowEditor', 'boardDirEditor', 'board-align-x-editor', 'board-align-y-editor', 'flowchartTypeEditor', 'flowchartDirEditor', 'mindmapLayoutEditor', 'boardShapeEditor'].forEach((id) => {
   assert.match(natives, new RegExp(id), id + ' is bound to popup-select');
 });
 assert.match(html, /id="boardShapeEditor"/, 'Shape is a select, not a segment');

@@ -1975,8 +1975,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardTypeEditor,
 #boardTitleEditor,
 #boardDirEditor,
-#boardAlignEditor,
-#boardJustifyEditor,
+#board-align-x-editor,
+#board-align-y-editor,
 #boardArrowEditor,
 #board-max-width-input,
 #boardIdEditor,
@@ -2047,8 +2047,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardTypeEditor:focus,
 #boardTitleEditor:focus,
 #boardDirEditor:focus,
-#boardAlignEditor:focus,
-#boardJustifyEditor:focus,
+#board-align-x-editor:focus,
+#board-align-y-editor:focus,
 #boardArrowEditor:focus,
 #board-max-width-input:focus,
 #boardIdEditor:focus,
@@ -2066,8 +2066,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #kindThemeSelect,
 #boardTypeEditor,
 #boardDirEditor,
-#boardAlignEditor,
-#boardJustifyEditor,
+#board-align-x-editor,
+#board-align-y-editor,
 #boardArrowEditor,
 #flowchartTypeEditor,
 #flowchartDirEditor,
@@ -2083,8 +2083,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 html[data-theme="dark"] #kindThemeSelect,
 html[data-theme="dark"] #boardTypeEditor,
 html[data-theme="dark"] #boardDirEditor,
-html[data-theme="dark"] #boardAlignEditor,
-html[data-theme="dark"] #boardJustifyEditor,
+html[data-theme="dark"] #board-align-x-editor,
+html[data-theme="dark"] #board-align-y-editor,
 html[data-theme="dark"] #boardArrowEditor,
 html[data-theme="dark"] #flowchartTypeEditor,
 html[data-theme="dark"] #flowchartDirEditor {
@@ -2130,11 +2130,11 @@ html[data-theme="dark"] #flowchartDirEditor {
 .props-hint { margin: 4px 0 0; font-size: 11px; color: var(--muted, #64748b); line-height: 1.4; }
 .props-field .props-hint-end { margin: 0; }
 #boardDirLabel[hidden],
-#boardAlignLabel[hidden],
-#boardJustifyLabel[hidden] { display: none !important; }
+#board-align-x-label[hidden],
+#board-align-y-label[hidden] { display: none !important; }
 .props-field:has(#boardDirLabel[hidden]),
-.props-field:has(#boardAlignLabel[hidden]),
-.props-field:has(#boardJustifyLabel[hidden]) { display: none !important; }
+.props-field:has(#board-align-x-label[hidden]),
+.props-field:has(#board-align-y-label[hidden]) { display: none !important; }
 #boardIconField { display: flex; flex-direction: column; gap: 10px; }
 #boardIconField[hidden] { display: none !important; }
 .board-render .board-title-node { cursor: pointer; border-radius: 10px; padding: 6px 14px !important; }

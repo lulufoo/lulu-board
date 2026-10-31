@@ -26,9 +26,9 @@ GATE -> NEXT type dashed title "dashed"
 
 layout
   direction ROW, GROUP row
-  align CARD, INNER start
-  align GROUP center
-  align NEXT stretch
+  align_x CARD, INNER left
+  align_y GROUP center
+  align_x NEXT stretch
   pin CARD.start to parent.start -31
   pin CARD.top to parent.top 172
   pin GATE.start to parent.start 352

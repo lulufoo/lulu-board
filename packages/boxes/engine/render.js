@@ -8,12 +8,15 @@ import * as Scale from '../themes/type-scale.js';
 import * as MaxWidth from '../themes/max-width-scale.js';
 import * as ItemAlign from '../themes/item-align.js';
 import * as StyleToken from '../../board-core/style-token.js';
+import * as BoxAlign from './layout/box-align.js';
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
   const DIRECTIONS = new Set(['row', 'column']);
   const RELATIONS = new Set(['after', 'before', 'left-of', 'right-of', 'above', 'below']);
-  const ALIGN = new Set(['start', 'center', 'stretch']);
-  const JUSTIFY = new Set(['start', 'center', 'between', 'stretch']);
+  const ALIGN = BoxAlign.LEGACY_ALIGN;
+  const JUSTIFY = BoxAlign.LEGACY_JUSTIFY;
+  const ALIGN_X = BoxAlign.ALIGN_X;
+  const ALIGN_Y = BoxAlign.ALIGN_Y;
   const BOX_TYPES = new Set(['card', 'container', 'layout']);
   const ITEM_TYPES = new Set(['chip', 'text', 'note', 'icon']);
   const CHIP_SHAPES = new Set(['rect', 'diamond']);
@@ -521,6 +524,14 @@ import * as StyleToken from '../../board-core/style-token.js';
         // Removed from the authoring protocol. Skip so old files still parse.
         if (tokens[i + 1]) i += 2;
         else i += 1;
+      } else if (key === 'align_x') {
+        const value = (tokens[i + 1] || '').toLowerCase();
+        if (!ALIGN_X.has(value)) fail('align_x must be left, center, right, or stretch', lineNo);
+        props.align_x = value; i += 2;
+      } else if (key === 'align_y') {
+        const value = (tokens[i + 1] || '').toLowerCase();
+        if (!ALIGN_Y.has(value)) fail('align_y must be top, center, bottom, or stretch', lineNo);
+        props.align_y = value; i += 2;
       } else if (key === 'align') {
         const value = (tokens[i + 1] || '').toLowerCase();
         if (!ALIGN.has(value)) fail('align must be start, center, or stretch', lineNo);
@@ -642,7 +653,18 @@ import * as StyleToken from '../../board-core/style-token.js';
     Object.keys(board.layout.boxes).forEach((boxId) => { if (!byId.has(boxId)) fail("unknown layout box " + boxId); });
     board._ids = byId;
     cleanTree(board);
+    normalizeLayoutAlign(board);
     return board;
+  }
+
+  function normalizeLayoutAlign(board) {
+    const layout = board && board.layout;
+    if (!layout) return;
+    layout.board = BoxAlign.normalizeProps(layout.board, 'board');
+    const boxes = layout.boxes || {};
+    Object.keys(boxes).forEach((id) => {
+      boxes[id] = BoxAlign.normalizeProps(boxes[id], 'box');
+    });
   }
 
   function commaIds(tokens, lineNo, label) {
@@ -702,6 +724,30 @@ import * as StyleToken from '../../board-core/style-token.js';
       board.layout.aligns.push({ ids, edge, line: lineNo });
       return;
     }
+    if (first === 'align_x') {
+      if (tokens.length < 2) fail('align_x needs a value', lineNo);
+      const value = tokens[tokens.length - 1].toLowerCase();
+      const ids = commaIds(tokens.slice(1, -1), lineNo, 'align_x id');
+      if (!ALIGN_X.has(value)) fail('align_x must be left, center, right, or stretch', lineNo);
+      if (!ids.length) {
+        merge(board.layout.board, { align_x: value });
+        return;
+      }
+      ids.forEach((boxId) => mergeBoxProp(board, boxId, { align_x: value }));
+      return;
+    }
+    if (first === 'align_y') {
+      if (tokens.length < 2) fail('align_y needs a value', lineNo);
+      const value = tokens[tokens.length - 1].toLowerCase();
+      const ids = commaIds(tokens.slice(1, -1), lineNo, 'align_y id');
+      if (!ALIGN_Y.has(value)) fail('align_y must be top, center, bottom, or stretch', lineNo);
+      if (!ids.length) {
+        merge(board.layout.board, { align_y: value });
+        return;
+      }
+      ids.forEach((boxId) => mergeBoxProp(board, boxId, { align_y: value }));
+      return;
+    }
     if (first === 'align') {
       if (tokens.length < 2) fail('align needs a value', lineNo);
       const edge = tokens[tokens.length - 1].toLowerCase();
@@ -743,7 +789,7 @@ import * as StyleToken from '../../board-core/style-token.js';
     }
     let subject = 'board';
     let start = 0;
-    if (first !== 'gap' && first !== 'padding' && first !== 'justify') {
+    if (first !== 'gap' && first !== 'padding' && first !== 'justify' && first !== 'align_x' && first !== 'align_y') {
       subject = id(tokens[0], lineNo, 'layout subject');
       start = 1;
     }
@@ -825,39 +871,38 @@ import * as StyleToken from '../../board-core/style-token.js';
   function writeLayoutLines(lines, layout) {
     const boxes = layout.boxes || {};
     const dirGroups = { row: [], column: [] };
-    const boxAligns = { start: [], center: [], stretch: [] };
-    const boxJustifies = { start: [], center: [], between: [], stretch: [] };
+    const boxAlignX = { left: [], center: [], right: [], stretch: [] };
+    const boxAlignY = { top: [], center: [], bottom: [], stretch: [] };
     Object.keys(boxes).forEach((boxId) => {
       const props = boxes[boxId] || {};
       if (props.direction === 'row' || props.direction === 'column') dirGroups[props.direction].push(boxId);
-      if (props.align && boxAligns[props.align]) boxAligns[props.align].push(boxId);
-      if (props.justify && boxJustifies[props.justify]) boxJustifies[props.justify].push(boxId);
+      if (props.align_x && boxAlignX[props.align_x]) boxAlignX[props.align_x].push(boxId);
+      if (props.align_y && boxAlignY[props.align_y]) boxAlignY[props.align_y].push(boxId);
     });
     const hasBoard = Object.keys(layout.board || {}).some((key) => {
       if (key === 'gap' || key === 'padding') return false;
-      if (key === 'justify' && layout.board.justify === 'start') return false;
       return true;
     });
     const hasBoxes = dirGroups.row.length || dirGroups.column.length
-      || boxAligns.start.length || boxAligns.center.length || boxAligns.stretch.length
-      || boxJustifies.start.length || boxJustifies.center.length || boxJustifies.between.length || boxJustifies.stretch.length;
+      || boxAlignX.left.length || boxAlignX.center.length || boxAlignX.right.length || boxAlignX.stretch.length
+      || boxAlignY.top.length || boxAlignY.center.length || boxAlignY.bottom.length || boxAlignY.stretch.length;
     const hasRest = (layout.places || []).length || (layout.aligns || []).length || (layout.constraints || []).length;
     if (!hasBoard && !hasBoxes && !hasRest) return;
     lines.push('layout');
     const boardDir = layout.board && layout.board.direction;
     if (boardDir) lines.push('  direction ' + boardDir);
-    const boardAlign = layout.board && layout.board.align;
-    if (boardAlign) lines.push('  align ' + boardAlign);
+    const boardX = layout.board && layout.board.align_x;
+    if (boardX) lines.push('  align_x ' + boardX);
+    const boardY = layout.board && layout.board.align_y;
+    if (boardY) lines.push('  align_y ' + boardY);
     if (dirGroups.row.length) lines.push('  direction ' + dirGroups.row.join(', ') + ' row');
     if (dirGroups.column.length) lines.push('  direction ' + dirGroups.column.join(', ') + ' column');
-    ['start', 'center', 'stretch'].forEach((edge) => {
-      if (boxAligns[edge].length) lines.push('  align ' + boxAligns[edge].join(', ') + ' ' + edge);
+    ['left', 'center', 'right', 'stretch'].forEach((edge) => {
+      if (boxAlignX[edge].length) lines.push('  align_x ' + boxAlignX[edge].join(', ') + ' ' + edge);
     });
-    ['start', 'center', 'between', 'stretch'].forEach((edge) => {
-      if (boxJustifies[edge].length) lines.push('  justify ' + boxJustifies[edge].join(', ') + ' ' + edge);
+    ['top', 'center', 'bottom', 'stretch'].forEach((edge) => {
+      if (boxAlignY[edge].length) lines.push('  align_y ' + boxAlignY[edge].join(', ') + ' ' + edge);
     });
-    const boardJustify = layout.board && layout.board.justify;
-    if (boardJustify && boardJustify !== 'start') lines.push('  justify ' + boardJustify);
     (layout.places || []).forEach((place) => {
       lines.push('  arrange ' + place.source + ' ' + place.relation + ' ' + place.targets.join(', '));
     });
@@ -1083,7 +1128,12 @@ import * as StyleToken from '../../board-core/style-token.js';
     if (!allowed.has(next)) fail(error);
     if (!selection) fail("selection required");
     if (selection.kind === "item") fail("items do not have " + key);
-    if (selection.kind !== "box") fail("only a box can set " + key);
+    if (selection.kind === "title") {
+      board.layout.board = board.layout.board || {};
+      board.layout.board[key] = next;
+      return serialize(board);
+    }
+    if (selection.kind !== "box") fail("only board title or a box can set " + key);
     if (!findNode(board, selection)) fail("selected Board node was not found");
     board.layout.boxes = board.layout.boxes || {};
     var cur = Object.assign({}, board.layout.boxes[selection.id] || {});
@@ -1091,11 +1141,11 @@ import * as StyleToken from '../../board-core/style-token.js';
     board.layout.boxes[selection.id] = cur;
     return serialize(board);
   }
-  function updateAlign(source, selection, align) {
-    return updateBoxFlexProp(source, selection, "align", align, ALIGN, "align must be start, center, or stretch");
+  function updateAlignX(source, selection, value) {
+    return updateBoxFlexProp(source, selection, "align_x", value, ALIGN_X, "align_x must be left, center, right, or stretch");
   }
-  function updateJustify(source, selection, justify) {
-    return updateBoxFlexProp(source, selection, "justify", justify, JUSTIFY, "justify must be start, center, or stretch");
+  function updateAlignY(source, selection, value) {
+    return updateBoxFlexProp(source, selection, "align_y", value, ALIGN_Y, "align_y must be top, center, bottom, or stretch");
   }
 
   function occupiedIds(board) {
@@ -1513,8 +1563,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     const isLayout = kind === 'layout';
     const isContainer = kind === 'container';
     return Object.assign(
-      { direction: 'column', gap: 16, padding: 16, align: 'stretch', justify: 'start' },
-      subject === 'board' ? { direction: 'row', gap: 32, padding: 24, align: 'stretch', justify: 'start' } : {},
+      { direction: 'column', gap: 16, padding: 16, align_x: 'stretch', align_y: 'top' },
+      subject === 'board' ? { direction: 'row', gap: 32, padding: 24, align_x: 'left', align_y: 'stretch' } : {},
       isLayout ? { padding: 0, gap: 16 } : {},
       isContainer ? { padding: 16, paddingY: 28, paddingX: 30, gap: 16 } : {},
       base
@@ -1536,14 +1586,9 @@ import * as StyleToken from '../../board-core/style-token.js';
       const padX = Number.isFinite(props.paddingX) ? props.paddingX : props.padding;
       el.style.padding = `${padY}px ${padX}px`;
     }
-    el.style.alignItems = props.align === 'start' ? 'flex-start' : props.align === 'center' ? 'center' : 'stretch';
-    // Main-axis stretch is grow (applyMainStretch), not justify-content:stretch.
-    el.style.justifyContent = props.justify === 'center'
-      ? 'center'
-      : props.justify === 'between' ? 'space-between' : 'flex-start';
+    BoxAlign.applyToFlex(el, props);
     el.classList.toggle('board-dir-row', props.direction === 'row');
     el.classList.toggle('board-dir-column', props.direction !== 'row');
-    el.classList.toggle('board-justify-stretch', props.justify === 'stretch');
     applyMainStretch(el, props);
   }
 
@@ -1569,7 +1614,7 @@ import * as StyleToken from '../../board-core/style-token.js';
   }
 
   function applyMainStretch(content, props) {
-    const stretch = !!(props && props.justify === 'stretch');
+    const stretch = BoxAlign.isMainStretch(props);
     const row = !!(props && props.direction === 'row');
     boxContentKids(content).forEach((el) => {
       if (isDiamondKid(el)) return;
@@ -2235,8 +2280,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
+const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlignX, updateAlignY, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
 export default api;
 export {
-  parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
+  parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlignX, updateAlignY, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
 };

@@ -28,7 +28,7 @@ layout
   assert.strictEqual(board.layout.boxes.A.direction, 'column');
   assert.strictEqual(board.layout.boxes.B.direction, 'column');
   assert.strictEqual(board.layout.boxes.ROW.direction, 'row');
-  assert.strictEqual(board.layout.boxes.A.align, 'start');
+  assert.strictEqual(board.layout.boxes.A.align_x, 'left');
   assert.strictEqual(board.layout.places[0].source, 'B');
   assert.strictEqual(board.layout.places[0].relation, 'after');
   assert.strictEqual(board.layout.aligns[0].edge, 'top');
@@ -36,7 +36,7 @@ layout
   const out = Render.serialize(board);
   assert.ok(out.includes('direction ROW row'), out);
   assert.ok(out.includes('direction A, B column'), out);
-  assert.ok(out.includes('align A start'), out);
+  assert.ok(out.includes('align_x A left'), out);
   assert.ok(out.includes('arrange B after A'), out);
   assert.ok(out.includes('flush A, B top'), out);
   assert.ok(out.includes('pin A.start to parent.start 32'), out);
@@ -59,7 +59,7 @@ layout
   cons A.top to parent.top gap 8
 `);
   const out = Render.serialize(board);
-  assert.ok(out.includes('align A start'), out);
+  assert.ok(out.includes('align_x A left'), out);
   assert.ok(out.includes('arrange B after A'), out);
   assert.ok(out.includes('arrange B below A'), out);
   assert.ok(out.includes('pin A.start to parent.start 24'), out);

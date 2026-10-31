@@ -30,9 +30,9 @@ const Render = require('../../../packages/boxes/engine/render.js').default;
   const board = Render.parse(
     'boxes Demo\nbox A "A"\nlayout\n  align A start\n'
   );
-  assert.strictEqual(board.layout.boxes.A.align, 'start');
+  assert.strictEqual(board.layout.boxes.A.align_x, 'left');
   const out = Render.serialize(board);
-  assert.ok(out.includes('align A start'), out);
+  assert.ok(out.includes('align_x A left'), out);
 }
 
 {
