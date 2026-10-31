@@ -1,4 +1,7 @@
-/* Properties AI / You panes. Tab choice is session-only and not persisted. */
+/* Properties AI / You panes. Tab choice is session-only and not persisted.
+ * preferred stays what the user clicked. Visible pane falls back to AI when
+ * You has no fields, then returns to preferred when the fields come back. */
+var preferred = "ai";
 
 function propsYouHasFields() {
   var maxW = document.getElementById("board-max-width-field");
@@ -6,12 +9,13 @@ function propsYouHasFields() {
   return !!(maxW && !maxW.hidden) || !!(font && !font.hidden);
 }
 
-function setPropsPane(name) {
+function setPropsPane(name, fromUser) {
   var root = document.getElementById("propsFields");
   var bar = document.getElementById("props-panes");
   if (!root) return;
+  if (fromUser && (name === "you" || name === "ai")) preferred = name;
   var youOn = propsYouHasFields();
-  var want = name === "you" && youOn ? "you" : "ai";
+  var want = preferred === "you" && youOn ? "you" : "ai";
   root.setAttribute("data-props-pane", want);
   if (bar) bar.hidden = !youOn;
   ["ai", "you"].forEach(function (pane) {
@@ -25,9 +29,7 @@ function setPropsPane(name) {
 }
 
 function syncPropsPanes() {
-  var root = document.getElementById("propsFields");
-  var current = root ? root.getAttribute("data-props-pane") : "ai";
-  setPropsPane(current === "you" ? "you" : "ai");
+  setPropsPane(preferred, false);
 }
 
 (function wirePropsPanes() {
@@ -37,14 +39,14 @@ function syncPropsPanes() {
   bar.addEventListener("click", function (event) {
     var tab = event.target.closest ? event.target.closest(".props-tab") : null;
     if (!tab) return;
-    setPropsPane(tab.getAttribute("data-props-pane"));
+    setPropsPane(tab.getAttribute("data-props-pane"), true);
   });
   bar.addEventListener("keydown", function (event) {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     if (!propsYouHasFields()) return;
     event.preventDefault();
-    var next = root.getAttribute("data-props-pane") === "ai" ? "you" : "ai";
-    setPropsPane(next);
+    var next = preferred === "ai" ? "you" : "ai";
+    setPropsPane(next, true);
     var tab = document.getElementById("props-pane-" + next);
     if (tab) tab.focus({ preventScroll: true });
   });

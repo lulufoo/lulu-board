@@ -1,6 +1,7 @@
-/* One dropdown for the Style panel (Theme, Background). A native <select> cannot draw icons and its popup
- * is the system menu, so this is a small listbox. Each option may carry an icon: { fill, glyph? }. fill is any
- * CSS background value for a 22px box. By default the box is a disc; glyph: true draws it with no disc. */
+/* One dropdown (Theme, Background, Properties, Flowchart, Mindmap). A native <select>
+ * cannot draw icons and its popup is the system menu, so this is a small listbox.
+ * Each option may carry an icon: { fill, glyph? }. fill is any CSS background value
+ * for a 22px box. By default the box is a disc; glyph: true draws it with no disc. */
 
 const openMenus = new Set();
 
@@ -43,16 +44,26 @@ function buildTrigger(label, withIcon) {
   return { trigger, icon, name };
 }
 
-/* config: { label, options: [{ value, label, icon? }], value, onPick(value) }. Returns { setValue }. */
+function optionsFromSelect(select, iconFor) {
+  return Array.from(select.options).map((option) => ({
+    value: option.value,
+    label: option.textContent,
+    icon: iconFor ? iconFor(option) : undefined,
+  }));
+}
+
+/* config: { label, options: [{ value, label, icon? }], value, onPick(value) }.
+ * Returns { setValue, setOptions, setDisabled }. */
 export function mountPopupSelect(host, config) {
-  const withIcon = config.options.some((option) => option.icon);
+  let options = (config.options || []).slice();
+  const withIcon = options.some((option) => option.icon);
   const { trigger, icon, name } = buildTrigger(config.label, withIcon);
   const menu = document.createElement('ul');
   menu.className = 'ps-menu';
   menu.hidden = true;
   menu.setAttribute('role', 'listbox');
   menu.setAttribute('aria-label', config.label);
-  config.options.forEach((option) => menu.appendChild(buildOption(option)));
+  options.forEach((option) => menu.appendChild(buildOption(option)));
   host.classList.add('popup-select');
   host.classList.toggle('has-icon', withIcon);
   host.append(trigger, menu);
@@ -61,11 +72,29 @@ export function mountPopupSelect(host, config) {
   const rows = () => Array.from(menu.querySelectorAll('.ps-option'));
 
   function setValue(value) {
-    const found = config.options.find((option) => option.value === value) || config.options[0];
+    const found = options.find((option) => option.value === value) || options[0];
+    if (!found) {
+      current = value || '';
+      name.textContent = '';
+      return;
+    }
     current = found.value;
     name.textContent = found.label;
     if (icon && found.icon) paintIcon(icon, found.icon);
     rows().forEach((row) => row.setAttribute('aria-selected', row.dataset.value === current ? 'true' : 'false'));
+  }
+
+  function setOptions(next) {
+    options = (next || []).slice();
+    host.classList.toggle('has-icon', options.some((option) => option.icon));
+    menu.replaceChildren();
+    options.forEach((option) => menu.appendChild(buildOption(option)));
+    setValue(current);
+  }
+
+  function setDisabled(disabled) {
+    trigger.disabled = !!disabled;
+    if (disabled) closeMenu(false);
   }
 
   function closeMenu(returnFocus) {
@@ -77,6 +106,7 @@ export function mountPopupSelect(host, config) {
   }
 
   function openMenu() {
+    if (trigger.disabled || !rows().length) return;
     openMenus.forEach((close) => { if (close !== closeMenu) close(false); });
     menu.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
@@ -92,6 +122,7 @@ export function mountPopupSelect(host, config) {
 
   function moveFocus(step) {
     const list = rows();
+    if (!list.length) return;
     const next = Math.min(list.length - 1, Math.max(0, list.indexOf(document.activeElement) + step));
     list[next].focus({ preventScroll: true });
   }
@@ -114,8 +145,8 @@ export function mountPopupSelect(host, config) {
     const row = event.target.closest('.ps-option');
     if (event.key === 'ArrowDown') moveFocus(1);
     else if (event.key === 'ArrowUp') moveFocus(-1);
-    else if (event.key === 'Home') moveFocus(-config.options.length);
-    else if (event.key === 'End') moveFocus(config.options.length);
+    else if (event.key === 'Home') moveFocus(-options.length);
+    else if (event.key === 'End') moveFocus(options.length);
     else if ((event.key === 'Enter' || event.key === ' ') && row) pick(row.dataset.value);
     else if (event.key === 'Escape') closeMenu(true);
     else if (event.key === 'Tab') closeMenu(false);
@@ -128,5 +159,50 @@ export function mountPopupSelect(host, config) {
   });
 
   setValue(config.value);
-  return { setValue };
+  return { setValue, setOptions, setDisabled };
+}
+
+/* Hide a native <select>, paint a listbox beside it, and keep select.value / change as the SoT. */
+export function bindNativeSelect(select, extras) {
+  const opt = extras || {};
+  if (!select || select.dataset.psBound === '1') return null;
+  select.dataset.psBound = '1';
+  select.classList.add('ps-bound');
+  let host = opt.host || null;
+  if (!host) {
+    host = document.createElement('div');
+    select.insertAdjacentElement('afterend', host);
+  }
+  const native = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  const picker = mountPopupSelect(host, {
+    label: opt.label || select.getAttribute('aria-label') || '',
+    value: native.get.call(select),
+    options: optionsFromSelect(select, opt.iconFor),
+    onPick: (value) => {
+      native.set.call(select, value);
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    },
+  });
+  Object.defineProperty(select, 'value', {
+    configurable: true,
+    get() { return native.get.call(select); },
+    set(value) {
+      native.set.call(select, value);
+      picker.setValue(native.get.call(select));
+    },
+  });
+  function syncChrome() {
+    picker.setDisabled(select.disabled);
+    if (!opt.hostAlways) host.hidden = !!select.hidden;
+    picker.setOptions(optionsFromSelect(select, opt.iconFor));
+    picker.setValue(native.get.call(select));
+  }
+  const observer = new MutationObserver(syncChrome);
+  observer.observe(select, { childList: true, attributes: true, attributeFilter: ['hidden', 'disabled'] });
+  select.addEventListener('focus', () => {
+    const trigger = host.querySelector('.ps-trigger');
+    if (trigger && !select.disabled) trigger.focus();
+  });
+  syncChrome();
+  return picker;
 }

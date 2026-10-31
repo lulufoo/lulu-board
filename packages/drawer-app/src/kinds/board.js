@@ -42,7 +42,7 @@ import {
   propsHint,
   boardTitleEditor,
   boardTypeEditor,
-  boardShapeField,
+  boardShapeEditor,
   boardTitleLabel,
   boardTypeLabel,
   boardShapeLabel,
@@ -240,12 +240,9 @@ function showPropsForLinkEdge(title, type, arrow) {
 }
 function setBoardShapeField(show, shape) {
   var cur = shape === "diamond" ? "diamond" : "rect";
-  if (boardShapeField) {
-    boardShapeField.hidden = !show;
-    Array.from(boardShapeField.querySelectorAll("[data-shape]")).forEach(function(btn) {
-      btn.disabled = !show;
-      btn.setAttribute("aria-pressed", btn.getAttribute("data-shape") === cur ? "true" : "false");
-    });
+  if (boardShapeEditor) {
+    boardShapeEditor.hidden = !show;
+    if (show) boardShapeEditor.value = cur;
   }
   if (boardShapeLabel) boardShapeLabel.hidden = !show;
 }

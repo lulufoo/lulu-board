@@ -12,3 +12,4 @@ import './chrome/shortcuts.js';
 import './chrome/source-style.js';
 import './chrome/theme-picker.js';
 import './chrome/ground-picker.js';
+import './chrome/native-selects.js';

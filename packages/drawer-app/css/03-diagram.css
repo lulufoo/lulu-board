@@ -1895,27 +1895,9 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
   color: var(--accent);
   font-weight: 650;
 }
-.props-shape-seg {
-  display: flex;
-  grid-template-columns: unset;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--stroke);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--stroke) 10%, var(--panel-solid));
-}
-.props-shape-btn {
-  flex: 1;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 7px;
-  border-color: transparent;
-}
-.props-shape-btn svg { display: block; }
-#boardShapeField[hidden],
-#boardShapeLabel[hidden] { display: none !important; }
+#boardShapeEditor[hidden],
+#boardShapeLabel[hidden],
+#boardShapeHost[hidden] { display: none !important; }
 #board-max-width-field[hidden],
 #board-max-width-label[hidden] { display: none !important; }
 #boardNodeFontField[hidden],
