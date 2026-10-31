@@ -5,6 +5,7 @@ import * as Arrow from './route/arrow.js';
 import * as Themes from '../themes/index.js';
 import * as Rotation from '../themes/rotation.js';
 import * as Scale from '../themes/type-scale.js';
+import * as MaxWidth from '../themes/max-width-scale.js';
 import * as StyleToken from '../../board-core/style-token.js';
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
@@ -15,7 +16,6 @@ import * as StyleToken from '../../board-core/style-token.js';
   const BOX_TYPES = new Set(['card', 'container', 'layout']);
   const ITEM_TYPES = new Set(['chip', 'text', 'note', 'icon']);
   const CHIP_SHAPES = new Set(['rect', 'diamond']);
-  const ITEM_CAPS = new Set(['on', 'off']);
   const LINK_TYPES = new Set(['solid', 'dashed']);
   function normalizeBoxType(raw, lineNo) {
     const key = String(raw || 'card').toLowerCase();
@@ -27,11 +27,6 @@ import * as StyleToken from '../../board-core/style-token.js';
     const key = String(raw || 'rect').toLowerCase();
     if (CHIP_SHAPES.has(key)) return key;
     fail(`chip shape must be rect or diamond`, lineNo);
-  }
-  function normalizeItemCap(raw, lineNo) {
-    const key = String(raw || 'on').toLowerCase();
-    if (ITEM_CAPS.has(key)) return key;
-    fail('cap must be on or off', lineNo);
   }
   function encodeStylePayload(obj) {
     return StyleToken.encodeStylePayload(obj);
@@ -62,8 +57,12 @@ import * as StyleToken from '../../board-core/style-token.js';
       if (!row || typeof row !== 'object' || Array.isArray(row)) return;
       const next = {};
       if (row.fz != null && row.fz !== '') next.fz = clampTypeStep(row.fz);
+      if (row.max_width != null && row.max_width !== '') {
+        const rem = MaxWidth.authoredRem(row.max_width);
+        if (rem != null) next.max_width = rem;
+      }
       Object.keys(row).forEach((field) => {
-        if (field === 'fz' || row[field] == null) return;
+        if (field === 'fz' || field === 'max_width' || row[field] == null) return;
         next[field] = row[field];
       });
       if (Object.keys(next).length) out[key] = next;
@@ -135,6 +134,43 @@ import * as StyleToken from '../../board-core/style-token.js';
     applyNodeTypeStep(board, key, step);
     return serialize(board);
   }
+  function authoredNodeMaxWidth(board, id) {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const row = styleIdsOf(board)[key];
+    if (!row || row.max_width == null || row.max_width === '') return null;
+    return MaxWidth.authoredRem(row.max_width);
+  }
+  function globalMaxWidthRem(board) {
+    return MaxWidth.remForStep(resolveStyle(board).max_width);
+  }
+  function nodeMaxWidth(board, id) {
+    const authored = authoredNodeMaxWidth(board, id);
+    return authored == null ? globalMaxWidthRem(board) : authored;
+  }
+  function applyNodeMaxWidth(board, key, rem) {
+    const global = globalMaxWidthRem(board);
+    const ids = Object.assign({}, styleIdsOf(board));
+    const row = Object.assign({}, ids[key] || {});
+    if (rem == null || rem === global) delete row.max_width;
+    else row.max_width = rem;
+    if (!Object.keys(row).length) delete ids[key];
+    else ids[key] = row;
+    setStyleIds(board, ids);
+  }
+  function updateNodeMaxWidth(source, target, remRaw) {
+    const board = parse(source);
+    const node = nodeForTypeStep(board, target);
+    const rem = remRaw == null || remRaw === '' ? null : MaxWidth.authoredRem(remRaw);
+    let key = String(node.id || '').trim();
+    if (!key) {
+      if (rem == null || rem === globalMaxWidthRem(board)) return source;
+      key = String(ensureKidId(board, node) || '').trim();
+    }
+    if (!key) fail('node id is required');
+    applyNodeMaxWidth(board, key, rem);
+    return serialize(board);
+  }
   function resolveStyle(board) {
     const src = board && board.style && typeof board.style === 'object' && !Array.isArray(board.style)
       ? board.style
@@ -155,7 +191,7 @@ import * as StyleToken from '../../board-core/style-token.js';
     setLinkRouteStyle(next.link_route);
     const rootDoc = doc || (typeof document !== 'undefined' ? document : null);
     if (rootDoc && rootDoc.documentElement) {
-      rootDoc.documentElement.style.setProperty('--board-item-cap', next.item_cap + 'rem');
+      rootDoc.documentElement.style.setProperty('--board-item-cap', MaxWidth.remCss(next.max_width));
       rootDoc.documentElement.dataset.kindTheme = next.theme;
       rootDoc.documentElement.dataset.boardTypeStep = String(next.font_size);
     }
@@ -372,7 +408,6 @@ import * as StyleToken from '../../board-core/style-token.js';
       i += 2;
     }
     let shape = 'rect';
-    let cap = 'on';
     while (i < tokens.length) {
       if (/^shape$/i.test(tokens[i])) {
         if (!tokens[i + 1]) fail('chip shape is required', lineNo);
@@ -381,22 +416,18 @@ import * as StyleToken from '../../board-core/style-token.js';
         continue;
       }
       if (/^cap$/i.test(tokens[i])) {
-        if (!tokens[i + 1]) fail('cap is required', lineNo);
-        cap = normalizeItemCap(tokens[i + 1], lineNo);
-        i += 2;
+        i += tokens[i + 1] ? 2 : 1;
         continue;
       }
       break;
     }
     if (shape !== 'rect' && itemType !== 'chip') fail('shape is only valid on chip', lineNo);
-    if (cap === 'off' && itemType === 'icon') fail('cap is only valid on chip, text, or note', lineNo);
     const rest = tokens.slice(i);
     if (itemType === 'icon') return parseIconItem(rest, itemId, raw, lineNo);
     if (!rest.length) fail('item text is required', lineNo);
     if (rest.length > 1) fail(`unexpected item token '${rest[1]}'`, lineNo);
     const item = { kind: 'item', type: itemType, id: itemId, text: unquote(rest[0]), raw, parent: null, line: lineNo };
     if (itemType === 'chip' && shape !== 'rect') item.shape = shape;
-    if (cap === 'off') item.cap = 'off';
     return item;
   }
   function parseLayoutProps(tokens, lineNo, start = 0) {
@@ -760,7 +791,7 @@ import * as StyleToken from '../../board-core/style-token.js';
     });
   }
   function quote(value) { return JSON.stringify(String(value == null ? "" : value)); }
-  function serialize(board) { var lines = ["boxes " + quote(board.title)]; var styleLine = writeStyleLine(board.style); if (styleLine) lines.push(styleLine); var writeItem = function(item, indent) { var it = (item.type || "chip"); var prefix = " ".repeat(indent) + "item" + (item.id ? (" " + item.id) : "") + (it !== "chip" ? (" type " + it) : "") + (it === "chip" && item.shape === "diamond" ? " shape diamond" : "") + (item.cap === "off" && it !== "icon" ? " cap off" : ""); if (it === "icon") { var icon = Number(item.icon); if (!Number.isInteger(icon)) fail("icon n must be an integer"); requireKnownIcon(icon); var iconLine = prefix + " " + String(icon).padStart(3, "0"); if (item.text) iconLine += " " + quote(item.text); lines.push(iconLine); return; } lines.push(prefix + " " + quote(item.text)); }; var writeBox = function(box, indent) { var prefix = " ".repeat(indent); var bt = shapeType(box); var isLayout = bt === "layout"; var boxTitle = isLayout ? "" : String(box.title == null ? "" : box.title); var boxIcon = Number(box.icon); var iconBit = ""; if (!isLayout && box.icon != null && box.icon !== "" && Number.isInteger(boxIcon)) { requireKnownIcon(boxIcon); iconBit = " " + String(boxIcon).padStart(3, "0"); } lines.push(prefix + "box " + box.id + (bt !== "card" && bt !== "diamond" ? (" type " + bt) : "") + iconBit + (boxTitle ? (" " + quote(boxTitle)) : "")); var kids = Array.isArray(box.kids) ? box.kids : (box.items || []).concat(box.boxes || []); kids.forEach(function(kid) { if (kid && (kid.role === "item" || kid.kind === "item")) writeItem(kid, indent + 2); else writeBox(kid, indent + 2); }); }; var roots = (board.views && board.views.length) ? board.views : (board.boxes || []); roots.forEach(function(node) { if (node && (node.role === "item" || node.kind === "item")) writeItem(node, 0); else writeBox(node, 0); }); (board.links || []).forEach(function(link) { var title = linkTitle(link); var lt = linkType(link); var op = linkArrow(link) === "both" ? " <-> " : " -> "; lines.push(link.from + op + link.to + (lt === "dashed" ? " type dashed" : "") + (title ? " title " + quote(title) : "")); }); writeLayoutLines(lines, board.layout || {}); return lines.join("\n") + "\n"; }
+  function serialize(board) { var lines = ["boxes " + quote(board.title)]; var styleLine = writeStyleLine(board.style); if (styleLine) lines.push(styleLine); var writeItem = function(item, indent) { var it = (item.type || "chip"); var prefix = " ".repeat(indent) + "item" + (item.id ? (" " + item.id) : "") + (it !== "chip" ? (" type " + it) : "") + (it === "chip" && item.shape === "diamond" ? " shape diamond" : ""); if (it === "icon") { var icon = Number(item.icon); if (!Number.isInteger(icon)) fail("icon n must be an integer"); requireKnownIcon(icon); var iconLine = prefix + " " + String(icon).padStart(3, "0"); if (item.text) iconLine += " " + quote(item.text); lines.push(iconLine); return; } lines.push(prefix + " " + quote(item.text)); }; var writeBox = function(box, indent) { var prefix = " ".repeat(indent); var bt = shapeType(box); var isLayout = bt === "layout"; var boxTitle = isLayout ? "" : String(box.title == null ? "" : box.title); var boxIcon = Number(box.icon); var iconBit = ""; if (!isLayout && box.icon != null && box.icon !== "" && Number.isInteger(boxIcon)) { requireKnownIcon(boxIcon); iconBit = " " + String(boxIcon).padStart(3, "0"); } lines.push(prefix + "box " + box.id + (bt !== "card" && bt !== "diamond" ? (" type " + bt) : "") + iconBit + (boxTitle ? (" " + quote(boxTitle)) : "")); var kids = Array.isArray(box.kids) ? box.kids : (box.items || []).concat(box.boxes || []); kids.forEach(function(kid) { if (kid && (kid.role === "item" || kid.kind === "item")) writeItem(kid, indent + 2); else writeBox(kid, indent + 2); }); }; var roots = (board.views && board.views.length) ? board.views : (board.boxes || []); roots.forEach(function(node) { if (node && (node.role === "item" || node.kind === "item")) writeItem(node, 0); else writeBox(node, 0); }); (board.links || []).forEach(function(link) { var title = linkTitle(link); var lt = linkType(link); var op = linkArrow(link) === "both" ? " <-> " : " -> "; lines.push(link.from + op + link.to + (lt === "dashed" ? " type dashed" : "") + (title ? " title " + quote(title) : "")); }); writeLayoutLines(lines, board.layout || {}); return lines.join("\n") + "\n"; }
   function findNode(board, selection) {
     if (!selection) return null;
     if (selection.kind === "item" && selection.id && (selection.boxId == null || selection.boxId === "")) {
@@ -917,7 +948,6 @@ import * as StyleToken from '../../board-core/style-token.js';
     if (selection.kind === "item") {
       node.type = normalizeItemType(nextType, 0);
       if (node.type !== "chip") delete node.shape;
-      if (node.type === "icon") delete node.cap;
       if (node.type === "icon") {
         if (!Number.isInteger(Number(node.icon)) || !Icons || !Icons.glyph(node.icon)) {
           node.icon = Icons && Icons.MIN != null ? Icons.MIN : null;
@@ -949,19 +979,6 @@ import * as StyleToken from '../../board-core/style-token.js';
     else node.shape = shape;
     return serialize(board);
   }
-  function updateCap(source, selection, nextCap) {
-    var board = parse(source);
-    if (!selection || selection.kind !== 'item') fail('cap is only valid on chip, text, or note');
-    var node = findNode(board, selection);
-    if (!node || !isItemNode(node)) fail('selected Board item was not found');
-    var itemType = node.type || 'chip';
-    if (itemType === 'icon') fail('cap is only valid on chip, text, or note');
-    var cap = normalizeItemCap(nextCap, 0);
-    if (cap === 'on') delete node.cap;
-    else node.cap = 'off';
-    return serialize(board);
-  }
-
   function updateDir(source, selection, direction) {
     var board = parse(source);
     var dir = String(direction == null ? "" : direction).trim();
@@ -2138,8 +2155,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
+const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
 export default api;
 export {
-  parse, serialize, findNode, updateTitle, updateType, updateShape, updateCap, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
+  parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
 };

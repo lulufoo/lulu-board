@@ -1364,10 +1364,6 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item.board-card.board-item-type-note {
   max-width: var(--board-item-cap, 16rem);
 }
-.board-render .board-item[data-board-cap="off"] {
-  max-width: none;
-  width: max-content;
-}
 .board-render .board-item.board-item-type-chip,
 .board-render .board-item.board-card.board-item-type-chip {
   justify-content: center;
@@ -1890,8 +1886,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 .props-shape-btn svg { display: block; }
 #boardShapeField[hidden],
 #boardShapeLabel[hidden] { display: none !important; }
-#boardCapField[hidden],
-#boardCapLabel[hidden] { display: none !important; }
+#board-max-width-field[hidden],
+#board-max-width-label[hidden] { display: none !important; }
 #boardNodeFontField[hidden],
 #boardNodeFontLabel[hidden] { display: none !important; }
 .props-field:has(#boardNodeFontLabel[hidden]) { display: none !important; }
@@ -1943,7 +1939,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardAlignEditor,
 #boardJustifyEditor,
 #boardArrowEditor,
-#boardCapEditor,
+#board-max-width-input,
 #boardIdEditor,
 #flowchartTypeEditor,
 #flowchartTitleEditor,
@@ -1957,6 +1953,19 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
+.props-max-width-row { display: flex; align-items: stretch; gap: 8px; }
+.props-max-width-row #board-max-width-input { flex: 1 1 auto; min-width: 0; width: auto; }
+#board-max-width-reset {
+  flex: 0 0 40px; width: 40px; box-sizing: border-box;
+  border: 1px solid var(--stroke); border-radius: 8px; padding: 0;
+  background: var(--panel-solid); color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+#board-max-width-reset svg { width: 16px; height: 16px; display: block; }
+#board-max-width-reset:hover { background: var(--accent-soft); }
+#board-max-width-reset[hidden] { display: none !important; }
+.props-field:has(#board-max-width-label[hidden]) { display: none !important; }
 .props-arrow-row { display: flex; align-items: stretch; gap: 8px; }
 .props-arrow-row[hidden],
 #boardArrowLabel[hidden],
@@ -1996,7 +2005,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardAlignEditor:focus,
 #boardJustifyEditor:focus,
 #boardArrowEditor:focus,
-#boardCapEditor:focus,
+#board-max-width-input:focus,
 #boardIdEditor:focus,
 #flowchartTypeEditor:focus,
 #flowchartTitleEditor:focus,
@@ -2015,7 +2024,6 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardAlignEditor,
 #boardJustifyEditor,
 #boardArrowEditor,
-#boardCapEditor,
 #flowchartTypeEditor,
 #flowchartDirEditor,
 #mindmapLayoutEditor {
@@ -2033,7 +2041,6 @@ html[data-theme="dark"] #boardDirEditor,
 html[data-theme="dark"] #boardAlignEditor,
 html[data-theme="dark"] #boardJustifyEditor,
 html[data-theme="dark"] #boardArrowEditor,
-html[data-theme="dark"] #boardCapEditor,
 html[data-theme="dark"] #flowchartTypeEditor,
 html[data-theme="dark"] #flowchartDirEditor {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='none' stroke='%23a1a1a6' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5L6 8l3.5-3.5'/></svg>");
@@ -2211,16 +2218,3 @@ html[data-drawer-mode="diagram"] .shell-account-bar {
   }
 }
 
-/* Width Cap off: never wrap. Kept last and one notch more specific than the
-   per-type rules (text / chip / note / diamond) so it wins for every type. */
-.board-render .board-item.board-item[data-board-cap="off"] .board-item-copy,
-.board-render .board-item.board-item[data-board-cap="off"] .board-item-text {
-  width: max-content;
-  max-width: none;
-  white-space: pre;
-  overflow-wrap: normal;
-}
-.board-render .board-item.board-item[data-board-cap="off"] .board-item-md :is(h1, h2, h3, p, li, blockquote) {
-  white-space: pre;
-  overflow-wrap: normal;
-}

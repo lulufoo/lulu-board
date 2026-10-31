@@ -1,6 +1,7 @@
 /* Internal item base. Concrete types live in item-*.js. */
 import View from '../view/view.js';
 import * as Scale from '../themes/type-scale.js';
+import * as MaxWidth from '../themes/max-width-scale.js';
 import * as Rotation from '../themes/rotation.js';
 
   function decodeItemNewlines(value) {
@@ -99,10 +100,6 @@ import * as Rotation from '../themes/rotation.js';
       if (!el || !frame || !el.classList.contains('board-root-item')) return;
       el.style.minHeight = `${frame.h}px`;
       el.style.height = 'auto';
-      if (el.dataset.boardCap === 'off') {
-        el.style.width = 'max-content';
-        el.style.maxWidth = 'none';
-      }
     }
 
     intrinsicMinWidth() {
@@ -136,12 +133,19 @@ import * as Rotation from '../themes/rotation.js';
       }
       el.dataset.boardKind = 'item';
       el.dataset.boardType = itemType;
-      if (item.cap === 'off' && itemType !== 'icon') el.dataset.boardCap = 'off';
       const fz = item.id && Scale && typeof Scale.stepFromStyle === 'function'
         ? Scale.stepFromStyle(ctx.board && ctx.board.style, item.id)
         : null;
       if (fz != null && Scale && typeof Scale.applyItemStep === 'function') {
         Scale.applyItemStep(el, fz);
+      }
+      const ids = ctx.board && ctx.board.style && ctx.board.style.ids;
+      const row = item.id && ids && ids[item.id];
+      const rem = row && MaxWidth && typeof MaxWidth.authoredRem === 'function'
+        ? MaxWidth.authoredRem(row.max_width)
+        : null;
+      if (rem != null && MaxWidth && typeof MaxWidth.applyItemRem === 'function') {
+        MaxWidth.applyItemRem(el, rem);
       }
       if (ctx.fills) Rotation.paint(el, ctx.fills.get(item), item.shape === 'diamond');
       this.decorate(el, ctx);

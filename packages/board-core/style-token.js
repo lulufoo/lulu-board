@@ -7,21 +7,19 @@ export const ROUTES = { trunk: 1, stagger: 1, straight: 1 };
 export const BACKGROUNDS = { paper: 1, mist: 1, sage: 1, dusk: 1 };
 export const DEFAULTS = {
   theme: 'default',
-  item_cap: 16,
+  max_width: 0,
   link_route: 'stagger',
   font_size: 0,
   background: 'paper',
   viewport: { scale: 1, cx: 0, cy: 0 },
 };
-export const ITEM_CAP_MIN = 8;
-export const ITEM_CAP_MAX = 24;
 export const STEP_MIN = -3;
 export const STEP_MAX = 3;
 export const FACTOR = 1.125;
 export const MIN_PX = 8;
 export const TYPE_STEP_MIN = STEP_MIN;
 export const TYPE_STEP_MAX = STEP_MAX;
-const FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, font_size: 1, background: 1, viewport: 1 };
+const FIELD_KEYS = { theme: 1, max_width: 1, link_route: 1, font_size: 1, background: 1, viewport: 1 };
 const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1 };
 
 export function clampStep(raw) {
@@ -54,12 +52,6 @@ export function decodeStylePayload(b64) {
 export function resolveThemeId(id) {
   const raw = String(id == null ? '' : id).trim();
   return resolveId(raw);
-}
-
-export function clampItemCap(value) {
-  const n = Math.round(Number(value));
-  if (!Number.isFinite(n)) return DEFAULTS.item_cap;
-  return Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, n));
 }
 
 export function clampTypeStep(value) {
@@ -98,9 +90,9 @@ export function authoredFields(raw) {
   const out = {};
   const theme = src.theme != null && src.theme !== '' ? resolveThemeId(src.theme) : '';
   if (theme && theme !== DEFAULTS.theme) out.theme = theme;
-  if (src.item_cap != null && src.item_cap !== '') {
-    const cap = clampItemCap(src.item_cap);
-    if (cap !== DEFAULTS.item_cap) out.item_cap = cap;
+  if (src.max_width != null && src.max_width !== '') {
+    const width = clampStep(src.max_width);
+    if (width !== DEFAULTS.max_width) out.max_width = width;
   }
   if (src.link_route != null && src.link_route !== '') {
     const route = resolveLinkRoute(src.link_route);
@@ -124,7 +116,7 @@ export function resolveFields(raw) {
   const viewport = authoredViewport(src.viewport || src.view);
   return {
     theme: src.theme != null && src.theme !== '' ? resolveThemeId(src.theme) : DEFAULTS.theme,
-    item_cap: src.item_cap == null || src.item_cap === '' ? DEFAULTS.item_cap : clampItemCap(src.item_cap),
+    max_width: src.max_width == null || src.max_width === '' ? DEFAULTS.max_width : clampStep(src.max_width),
     link_route: src.link_route == null || src.link_route === '' ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
     font_size: src.font_size == null || src.font_size === '' ? DEFAULTS.font_size : clampTypeStep(src.font_size),
     background: src.background == null || src.background === '' ? DEFAULTS.background : resolveBackground(src.background),

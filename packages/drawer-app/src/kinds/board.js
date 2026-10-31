@@ -1,6 +1,6 @@
 /* Boxes kind: properties chrome, selection paint, drag, persist. */
 import BoxesRender, { Icons } from '../../../boxes/index.js';
-import { TypeScale } from '../../../boxes/themes/index.js';
+import { TypeScale, MaxWidth } from '../../../boxes/themes/index.js';
 import { register, emit } from '../core/hooks.js';
 import { CanvasInteraction } from '../state/canvas-interaction.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
@@ -45,10 +45,11 @@ import {
   boardTitleLabel,
   boardTypeLabel,
   boardShapeLabel,
-  boardCapField,
-  boardCapEditor,
-  boardCapLabel,
-  boardCapTip,
+  boardMaxWidthField,
+  boardMaxWidthInput,
+  boardMaxWidthLabel,
+  boardMaxWidthTip,
+  boardMaxWidthReset,
   boardNodeFontField,
   boardNodeFontSlider,
   boardNodeFontLabel,
@@ -213,7 +214,7 @@ function showPropsForLinkMode() {
   setBoardIconField(false);
   setBoardIdField(false);
   setBoardShapeField(false);
-  setBoardCapField(false);
+  setBoardMaxWidthField(false);
   setBoardNodeFontField(false);
   if (propsHint) propsHint.textContent = "Type, arrow, and optional title; then click source / target";
 }
@@ -233,7 +234,7 @@ function showPropsForLinkEdge(title, type, arrow) {
   setBoardIdField(false);
   if (propsHint) propsHint.textContent = "Type, arrow, and title write back to DSL";
   setBoardShapeField(false);
-  setBoardCapField(false);
+  setBoardMaxWidthField(false);
   setBoardNodeFontField(false);
 }
 function setBoardShapeField(show, shape) {
@@ -247,16 +248,22 @@ function setBoardShapeField(show, shape) {
   }
   if (boardShapeLabel) boardShapeLabel.hidden = !show;
 }
-function setBoardCapField(show, cap) {
-  var authored = cap === "off";
-  var cur = authored ? "off" : "on";
-  if (boardCapField) boardCapField.hidden = !show;
-  if (boardCapEditor) {
-    boardCapEditor.hidden = !show;
-    if (show) boardCapEditor.value = cur;
+function setBoardMaxWidthField(show, authoredRem, globalRem) {
+  var global = Number(globalRem);
+  if (!Number.isFinite(global) || global <= 0) {
+    global = MaxWidth && typeof MaxWidth.remForStep === "function" ? MaxWidth.remForStep(0) : 16;
   }
-  if (boardCapLabel) boardCapLabel.hidden = !show;
-  setAuthoredTip(boardCapTip, show, authored);
+  var authored = authoredRem == null || authoredRem === "" ? null : Number(authoredRem);
+  if (authored != null && !(Number.isFinite(authored) && authored > 0)) authored = null;
+  var effective = authored == null ? global : authored;
+  if (boardMaxWidthField) boardMaxWidthField.hidden = !show;
+  if (boardMaxWidthInput) {
+    boardMaxWidthInput.hidden = !show;
+    if (show) boardMaxWidthInput.value = String(effective);
+  }
+  if (boardMaxWidthLabel) boardMaxWidthLabel.hidden = !show;
+  if (boardMaxWidthReset) boardMaxWidthReset.hidden = !show || authored == null;
+  setAuthoredTip(boardMaxWidthTip, show, authored != null);
 }
 function selectedNodeStyleId() {
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return "";
@@ -386,7 +393,7 @@ function hidePropsLinkOnlyChrome() {
   setBoardOrderField(false);
   setBoardArrowField(false);
   setBoardShapeField(false);
-  setBoardCapField(false);
+  setBoardMaxWidthField(false);
   setBoardNodeFontField(false);
 }
 function escapeIconText(value) {
@@ -806,7 +813,17 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
       if (boardTitleLabel) boardTitleLabel.hidden = false;
     }
     setBoardShapeField(!!isChipItem, node && node.shape);
-    setBoardCapField(!!isMd, node && node.cap);
+    var widthId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
+    var authoredWidth = (isMd && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeMaxWidth === "function")
+      ? BoxesRender.authoredNodeMaxWidth(board, widthId)
+      : null;
+    var globalWidth = (typeof BoxesRender !== "undefined" && typeof BoxesRender.nodeMaxWidth === "function")
+      ? BoxesRender.nodeMaxWidth(board || {}, "")
+      : ((typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function"
+        && MaxWidth && typeof MaxWidth.remForStep === "function")
+        ? MaxWidth.remForStep(BoxesRender.resolveStyle(board || {}).max_width)
+        : 16);
+    setBoardMaxWidthField(!!isMd, authoredWidth, globalWidth);
     var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
     var showFont = !isTitle;
     var authoredFz = (showFont && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeTypeStep === "function")
@@ -1182,29 +1199,55 @@ function commitBoardShape(shape) {
 function syncBoardStyleChrome(board) {
   if (typeof BoxesRender === "undefined" || typeof BoxesRender.resolveStyle !== "function") return;
   var next = BoxesRender.resolveStyle(board || {});
-  emit("applyBoardItemCap", next.item_cap, false, false);
+  emit("applyBoardMaxWidth", next.max_width, false, false);
   emit("applyBoardTypeStep", next.font_size, false, false);
   if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
   syncBoardLinkRouteButton();
   var themeSelect = document.getElementById("kindThemeSelect");
   if (themeSelect && next.theme) themeSelect.value = next.theme;
 }
-function commitBoardCap() {
-  if (!boardCapEditor || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
-  if (typeof BoxesRender.updateCap !== "function") return;
-  var nextCap = boardCapEditor.value === "off" ? "off" : "on";
+function commitBoardMaxWidth() {
+  if (!boardMaxWidthInput || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateNodeMaxWidth !== "function") return;
+  var rem = Number(boardMaxWidthInput.value);
+  if (!Number.isFinite(rem) || rem <= 0) return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
-    var next = BoxesRender.updateCap(diagramSourceEl.value, selectedBoardNode, nextCap);
+    var next = BoxesRender.updateNodeMaxWidth(diagramSourceEl.value, selectedBoardNode, rem);
     if (next !== diagramSourceEl.value) {
       diagramSourceEl.value = next;
       setSelectedBoardNode(keepSelection);
       updateDiagramChars();
       emit("renderDiagram");
       emit("scheduleDiagramSave");
-      setStatus("Width Cap · " + nextCap);
+      setStatus("Max Width · " + rem);
     }
-    setBoardCapField(true, nextCap);
+    var board = BoxesRender.parse(diagramSourceEl.value);
+    var node = typeof BoxesRender.findNode === "function" ? BoxesRender.findNode(board, keepSelection) : null;
+    var id = node && node.id ? String(node.id) : selectedNodeStyleId();
+    if (id) {
+      setSelectedBoardNode(boardSelectionWithId(keepSelection, id));
+      setBoardIdField(true, id);
+    }
+    setBoardMaxWidthField(true, id ? BoxesRender.authoredNodeMaxWidth(board, id) : null, BoxesRender.nodeMaxWidth(board, ""));
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function resetBoardMaxWidth() {
+  if (!selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateNodeMaxWidth !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateNodeMaxWidth(diagramSourceEl.value, selectedBoardNode, null);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Max Width · reset");
+    }
+    var board = BoxesRender.parse(diagramSourceEl.value);
+    setBoardMaxWidthField(true, null, BoxesRender.nodeMaxWidth(board, ""));
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardType() {
@@ -1567,7 +1610,8 @@ export {
   commitBoardId,
   markBoardIdCopied,
   commitBoardType,
-  commitBoardCap,
+  commitBoardMaxWidth,
+  resetBoardMaxWidth,
   commitBoardShape,
   commitBoardArrow,
   commitBoardReverse,

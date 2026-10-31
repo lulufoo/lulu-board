@@ -63,11 +63,12 @@ const boardShapeField = $("#boardShapeField");
 const boardTitleLabel = $("#boardTitleLabel");
 const boardTypeLabel = $("#boardTypeLabel");
 const boardShapeLabel = $("#boardShapeLabel");
-const boardCapField = $("#boardCapField");
-const boardCapEditor = $("#boardCapEditor");
-const boardCapLabel = $("#boardCapLabel");
-const boardCapTip = $("#boardCapTip");
-const boardItemCapSlider = $("#boardItemCapSlider");
+const boardMaxWidthField = $("#board-max-width-field");
+const boardMaxWidthInput = $("#board-max-width-input");
+const boardMaxWidthLabel = $("#board-max-width-label");
+const boardMaxWidthTip = $("#board-max-width-tip");
+const boardMaxWidthReset = $("#board-max-width-reset");
+const boardMaxWidthSlider = $("#board-max-width-slider");
 const boardFontSizeSlider = $("#boardFontSizeSlider");
 const boardNodeFontField = $("#boardNodeFontField");
 const boardNodeFontSlider = $("#boardNodeFontSlider");
@@ -188,7 +189,7 @@ let scale = 1, panX = 0, panY = 0;
  *   dockTab          "" | "props" | "layout" | "source" | "style" | "export"
  *   dockWidth        number   — open sidebar width (px)
  * Canvas zoom/pan is NOT stored here: it lives only in the board document's style.viewport.
- * Other already-persistent keys (unchanged): drawer.kindTheme, drawer.boardLinkRoute, drawer.boardItemCap
+ * Other already-persistent keys (unchanged): drawer.kindTheme, drawer.boardLinkRoute, drawer.boardMaxWidth
  * Board documents also persist those in `style <base64>` when not default.
  */
 var DRAWER_UI_KEY = "drawer.ui";
@@ -338,8 +339,8 @@ function syncStyleLayoutSections() {
   if (board) board.hidden = mermaid;
   var typeSec = document.getElementById("boardFontSizeSection");
   if (typeSec) typeSec.hidden = kind === "mermaid-unsupported" || kind === "mindmap";
-  var capSec = document.getElementById("boardItemCapSection");
-  var capSlider = document.getElementById("boardItemCapSlider");
+  var capSec = document.getElementById("board-max-width-section");
+  var capSlider = document.getElementById("board-max-width-slider");
   if (capSec) {
     capSec.hidden = kind === "mermaid-unsupported" || kind === "mindmap";
     capSec.classList.toggle("is-disabled", capLocked);
@@ -508,11 +509,12 @@ export {
   boardTitleLabel,
   boardTypeLabel,
   boardShapeLabel,
-  boardCapField,
-  boardCapEditor,
-  boardCapLabel,
-  boardCapTip,
-  boardItemCapSlider,
+  boardMaxWidthField,
+  boardMaxWidthInput,
+  boardMaxWidthLabel,
+  boardMaxWidthTip,
+  boardMaxWidthReset,
+  boardMaxWidthSlider,
   boardFontSizeSlider,
   boardNodeFontField,
   boardNodeFontSlider,

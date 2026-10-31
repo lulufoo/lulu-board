@@ -2,13 +2,14 @@
 import * as Palette from '../../board-themes/index.js';
 import { ring } from '../../board-themes/index.js';
 import * as Scale from './type-scale.js';
+import * as MaxWidth from './max-width-scale.js';
 import * as Rotation from './rotation.js';
 import chromeDefault from './packs/chrome-default.js';
 import chromeClassic from './packs/chrome-classic.js';
 import chromePastel from './packs/chrome-pastel.js';
 
 export * from '../../board-themes/index.js';
-export { Scale as TypeScale, Rotation };
+export { Scale as TypeScale, MaxWidth, Rotation };
 
 const BOX_TYPES = ['card', 'container', 'layout'];
 const EDGE_DASH_ALPHA = 0.3;
