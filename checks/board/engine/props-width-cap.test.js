@@ -12,17 +12,17 @@ const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-a
 
 const idAt = html.indexOf('id="boardIdWrap"');
 const typeAt = html.indexOf('id="boardTypeField"');
-const capAt = html.indexOf('id="boardCapField"');
+const capAt = html.indexOf('id="board-max-width-field"');
 assert.ok(idAt >= 0 && typeAt > idAt, 'ID field is first');
-assert.ok(capAt > typeAt, 'Width Cap follows Type');
+assert.ok(capAt > typeAt, 'Max Width follows Type');
 const fontAt = html.indexOf('id="boardNodeFontField"');
-assert.ok(fontAt > capAt, 'node Font Size follows Width Cap');
+assert.ok(fontAt > capAt, 'node Font Size follows Max Width');
 assert.ok(/id="boardNodeFontLabel"[^>]*>Font Size</.test(html), 'props label is Font Size');
-assert.ok(/id="boardCapLabel">Width Cap</.test(html), 'label is Width Cap');
-assert.ok(/aria-label="Width Cap"/.test(html), 'select aria is Width Cap');
+assert.ok(/id="board-max-width-label">Max Width</.test(html), 'label is Max Width');
+assert.ok(/aria-label="Max Width"/.test(html), 'input aria is Max Width');
 assert.ok(!/>Width</.test(html), 'bare Width label removed');
 assert.ok(/\.props-field\s*\{[^}]*gap:\s*10px/.test(css), 'field label-to-control gap is 10px');
 assert.ok(/\.props-fields\s*\{[^}]*gap:\s*14px/.test(css), 'field groups use 14px');
-assert.ok(/Width Cap · /.test(boardJs), 'status names Width Cap');
+assert.ok(/Max Width · /.test(boardJs), 'status names Max Width');
 
 console.log('ok props-width-cap');

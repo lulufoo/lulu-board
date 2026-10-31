@@ -155,14 +155,14 @@ function b64(obj) {
     'mermaid encode is the shared token',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ theme: 'classic', font_size: 0, item_cap: 16 }),
+    Token.authoredFields({ theme: 'classic', font_size: 0, max_width: 0 }),
     { theme: 'classic' },
     'shared fields omit defaults',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ theme: 'default', font_size: 2, item_cap: 20 }),
-    { font_size: 2, item_cap: 20 },
-    'shared fields keep non-default cap and step',
+    Token.authoredFields({ theme: 'default', font_size: 2, max_width: 2 }),
+    { font_size: 2, max_width: 2 },
+    'shared fields keep non-default width and step',
   );
   assert.deepStrictEqual(
     Token.authoredFields({ viewport: { scale: 1, cx: 0, cy: 0 } }),
@@ -184,9 +184,9 @@ function b64(obj) {
   assert.ok(
     !Object.prototype.hasOwnProperty.call(
       Token.decodeStylePayload(Style.mermaidStyleToken('classic', 2)),
-      'item_cap',
+      'max_width',
     ),
-    'flowchart still does not write item_cap',
+    'flowchart still does not write max_width',
   );
   assert.ok(/patch\.theme == null && patch\.font_size == null && patch\.background == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts background and viewport without theme');
   const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });

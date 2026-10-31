@@ -22,7 +22,7 @@ item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
     theme: 'default',
-    item_cap: 16,
+    max_width: 0,
     link_route: 'stagger',
     font_size: 0,
     background: 'paper',
@@ -40,7 +40,7 @@ item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
     theme: 'pastel',
-    item_cap: 24,
+    max_width: 0,
     link_route: 'stagger',
     font_size: 0,
     background: 'paper',
@@ -63,7 +63,7 @@ item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
     theme: 'default',
-    item_cap: 16,
+    max_width: 0,
     link_route: 'stagger',
     font_size: 0,
     background: 'paper',
@@ -87,9 +87,9 @@ item HERO type text "Hi"
 boxes Demo
 item HERO type text "Hi"
 `);
-  const next = Render.updateStyle(source, { theme: 'pastel', item_cap: 20, link_route: 'stagger' });
+  const next = Render.updateStyle(source, { theme: 'pastel', max_width: 2, link_route: 'stagger' });
   assert.ok(/^style /m.test(next), next);
-  const back = Render.updateStyle(next, { theme: 'default', item_cap: 16, link_route: 'stagger' });
+  const back = Render.updateStyle(next, { theme: 'default', max_width: 0, link_route: 'stagger' });
   assert.ok(!/^style /m.test(back), back);
 }
 
@@ -149,7 +149,7 @@ item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
     theme: 'pastel',
-    item_cap: 16,
+    max_width: 0,
     link_route: 'stagger',
     font_size: 0,
     background: 'paper',
@@ -196,16 +196,16 @@ item HERO type text "Hi"
 {
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/skill-assets/vocab.md'), 'utf8');
-  assert.ok(/id="boardCapEditor"/.test(html), 'props have Width Cap select');
-  assert.ok(/Width Cap/.test(html), 'cap field is labeled Width Cap');
-  assert.ok(!/Capped/.test(html) && !/data-cap=/.test(html), 'cap segments removed');
+  assert.ok(/id="board-max-width-input"/.test(html), 'props have Max Width input');
+  assert.ok(/Max Width/.test(html), 'width field is labeled Max Width');
+  assert.ok(!/Width Cap/.test(html) && !/data-cap=/.test(html), 'Width Cap removed');
   assert.ok(/id="btnRouteStraight"/.test(html), 'props have Straight route');
   assert.ok(/props-route-seg/.test(html), 'route control is a segmented axis');
   assert.ok(
     /id="btnRouteStraight"[\s\S]*id="btnRouteStagger"[\s\S]*id="btnRouteTrunk"/.test(html),
     'route axis order is Straight Stagger Trunk',
   );
-  assert.ok(!/item_cap|link_route|type_step|font_size/.test(vocab), 'vocab does not expose style keys');
+  assert.ok(!/item_cap|link_route|type_step|font_size|max_width/.test(vocab), 'vocab does not expose style keys');
   assert.ok(/id="boardFontSizeSection"/.test(html), 'style has Font Size');
   assert.ok(/id="boardFontSizeSlider"/.test(html), 'font size is a slider');
   assert.ok(/Font Size/.test(html), 'font size label');

@@ -27,7 +27,7 @@ A Board document has these layers:
 |---|---|---|
 | Board | `boxes "<title>"` | Document root and canvas title |
 | Box | `box <id> [type <box-type>] [<n>] ["<title>"]` | Container; indentation defines nesting |
-| Item | `item [<id>] [type <item-type>] [shape …] [cap off] <body>` | Leaf inside a box or at board level |
+| Item | `item [<id>] [type <item-type>] [shape …] <body>` | Leaf inside a box or at board level |
 
 - Indent box children by two spaces.
 - A box always has an ID. A board-level item needs an ID to be linked, laid
@@ -58,11 +58,6 @@ Use `container` for visible grouping and `layout` for arrangement without a fram
 
 - `rect` — default; omit `shape rect`
 - `diamond` — rhombus
-
-`cap` is chip/text/note only and chooses whether Drawer limits reading width.
-
-- `on` — default; omit `cap on`
-- `off` — no max-width
 
 `chip`, `text`, and `note` share this markdown subset:
 

@@ -1,7 +1,7 @@
 /* Board chrome + boot. */
 import BoxesRender from '../../../boxes/index.js';
 import * as BoxesThemes from '../../../boxes/themes/index.js';
-import { TypeScale } from '../../../boxes/themes/index.js';
+import { TypeScale, MaxWidth } from '../../../boxes/themes/index.js';
 import { register } from '../core/hooks.js';
 import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
@@ -16,7 +16,8 @@ import {
   commitBoardId,
   markBoardIdCopied,
   commitBoardType,
-  commitBoardCap,
+  commitBoardMaxWidth,
+  resetBoardMaxWidth,
   commitBoardShape,
   commitBoardArrow,
   commitBoardReverse,
@@ -55,7 +56,8 @@ import {
   boardIdEditor,
   boardIdCopy,
   boardTypeEditor,
-  boardCapEditor,
+  boardMaxWidthInput,
+  boardMaxWidthReset,
   boardShapeField,
   boardArrowEditor,
   boardArrowReverse,
@@ -70,7 +72,7 @@ import {
   diagramDock,
   toggleDock,
   openDock,
-  boardItemCapSlider,
+  boardMaxWidthSlider,
   boardFontSizeSlider,
   boardNodeFontSlider,
   scale,
@@ -154,7 +156,15 @@ if (boardIdCopy) boardIdCopy.addEventListener("click", function() {
   markBoardIdCopied(true);
 });
 if (boardTypeEditor) boardTypeEditor.addEventListener("change", commitBoardType);
-if (boardCapEditor) boardCapEditor.addEventListener("change", commitBoardCap);
+if (boardMaxWidthInput) {
+  boardMaxWidthInput.addEventListener("change", commitBoardMaxWidth);
+  boardMaxWidthInput.addEventListener("keydown", function(event) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    commitBoardMaxWidth();
+  });
+}
+if (boardMaxWidthReset) boardMaxWidthReset.addEventListener("click", resetBoardMaxWidth);
 if (boardShapeField) boardShapeField.addEventListener("click", function(event) {
   var btn = event.target && event.target.closest ? event.target.closest("[data-shape]") : null;
   if (!btn || btn.disabled) return;
@@ -239,11 +249,9 @@ function currentKindTheme() {
   const allowed = ['default', 'classic', 'pastel'];
   return allowed.includes(v) ? v : 'default';
 }
-const ITEM_CAP_KEY = 'drawer.boardItemCap';
-const ITEM_CAP_MIN = 8;
-const ITEM_CAP_MAX = 24;
-const ITEM_CAP_DEFAULT = 16;
-let boardItemCapTimer = 0;
+const MAX_WIDTH_KEY = 'drawer.boardMaxWidth';
+const MAX_WIDTH_DEFAULT = 0;
+let boardMaxWidthTimer = 0;
 function paintStyleRange(el) {
   if (!el) return;
   var min = Number(el.min);
@@ -252,41 +260,47 @@ function paintStyleRange(el) {
   var span = max - min;
   el.style.setProperty('--cap-fill', (span === 0 ? 0 : ((val - min) / span) * 100) + '%');
 }
-function currentBoardItemCap() {
-  const raw = localStorage.getItem(ITEM_CAP_KEY);
-  if (raw == null || raw === '') return ITEM_CAP_DEFAULT;
+function currentBoardMaxWidth() {
+  const raw = localStorage.getItem(MAX_WIDTH_KEY);
+  if (raw == null || raw === '') return MAX_WIDTH_DEFAULT;
   const n = Number(raw);
-  if (!Number.isFinite(n)) return ITEM_CAP_DEFAULT;
-  return Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(n)));
+  if (!Number.isFinite(n)) return MAX_WIDTH_DEFAULT;
+  return (TypeScale && typeof TypeScale.clampStep === 'function')
+    ? TypeScale.clampStep(n)
+    : Math.min(3, Math.max(-3, Math.round(n)));
 }
-function applyBoardItemCap(rem, rerender, persist) {
+function applyBoardMaxWidth(step, rerender, persist) {
   const kind = document.documentElement && document.documentElement.dataset.kind;
   if (typeof DrawerStyleLine !== "undefined" && typeof DrawerStyleLine.isMermaidKind === "function"
     ? DrawerStyleLine.isMermaidKind(kind)
     : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported")) {
-    if (boardItemCapSlider) {
+    if (boardMaxWidthSlider) {
       var lockCap = kind === "flowchart" || (typeof DrawerStyleLine !== "undefined"
         && typeof DrawerStyleLine.isDesignKind === "function"
         && DrawerStyleLine.isDesignKind(kind));
-      boardItemCapSlider.disabled = lockCap;
-      if (lockCap) boardItemCapSlider.setAttribute("aria-disabled", "true");
-      else boardItemCapSlider.removeAttribute("aria-disabled");
-      paintStyleRange(boardItemCapSlider);
+      boardMaxWidthSlider.disabled = lockCap;
+      if (lockCap) boardMaxWidthSlider.setAttribute("aria-disabled", "true");
+      else boardMaxWidthSlider.removeAttribute("aria-disabled");
+      paintStyleRange(boardMaxWidthSlider);
     }
     return;
   }
-  const n = rem == null
-    ? currentBoardItemCap()
-    : Math.min(ITEM_CAP_MAX, Math.max(ITEM_CAP_MIN, Math.round(Number(rem) || ITEM_CAP_DEFAULT)));
-  localStorage.setItem(ITEM_CAP_KEY, String(n));
-  const css = n + 'rem';
+  const n = step == null
+    ? currentBoardMaxWidth()
+    : ((TypeScale && typeof TypeScale.clampStep === 'function')
+      ? TypeScale.clampStep(step)
+      : Math.min(3, Math.max(-3, Math.round(Number(step) || MAX_WIDTH_DEFAULT))));
+  localStorage.setItem(MAX_WIDTH_KEY, String(n));
+  const css = (MaxWidth && typeof MaxWidth.remCss === 'function')
+    ? MaxWidth.remCss(n)
+    : ((16 + 2 * n) + 'rem');
   document.documentElement.style.setProperty('--board-item-cap', css);
-  if (boardItemCapSlider) {
-    boardItemCapSlider.disabled = false;
-    boardItemCapSlider.value = String(n);
+  if (boardMaxWidthSlider) {
+    boardMaxWidthSlider.disabled = false;
+    boardMaxWidthSlider.value = String(n);
   }
-  paintStyleRange(boardItemCapSlider);
-  if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ item_cap: n });
+  paintStyleRange(boardMaxWidthSlider);
+  if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ max_width: n });
   if (rerender && document.documentElement.dataset.drawerMode === 'diagram'
     && typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) {
     renderDiagram({ fit: false });
@@ -366,12 +380,12 @@ const _themeMo = new MutationObserver(() => {
 const _themeStage = $('#preview');
 if (_themeStage) _themeMo.observe(_themeStage, { childList: true, subtree: true });
 applyKindTheme(currentKindTheme());
-applyBoardItemCap();
-if (boardItemCapSlider) {
-  boardItemCapSlider.addEventListener('input', function() {
-    applyBoardItemCap(boardItemCapSlider.value, false, false);
-    clearTimeout(boardItemCapTimer);
-    boardItemCapTimer = setTimeout(function() { applyBoardItemCap(boardItemCapSlider.value, true, true); }, 160);
+applyBoardMaxWidth();
+if (boardMaxWidthSlider) {
+  boardMaxWidthSlider.addEventListener('input', function() {
+    applyBoardMaxWidth(boardMaxWidthSlider.value, false, false);
+    clearTimeout(boardMaxWidthTimer);
+    boardMaxWidthTimer = setTimeout(function() { applyBoardMaxWidth(boardMaxWidthSlider.value, true, true); }, 160);
   });
 }
 let boardFontSizeTimer = 0;
@@ -563,8 +577,8 @@ register("flashChrome", flashChrome);
 register("closeExportMenu", closeExportMenu);
 register("currentKindTheme", currentKindTheme);
 register("paintStyleRange", paintStyleRange);
-register("currentBoardItemCap", currentBoardItemCap);
-register("applyBoardItemCap", applyBoardItemCap);
+register("currentBoardMaxWidth", currentBoardMaxWidth);
+register("applyBoardMaxWidth", applyBoardMaxWidth);
 register("applyPeleThemeVars", applyPeleThemeVars);
 register("applyBoardThemeToPreview", applyBoardThemeToPreview);
 register("applyKindTheme", applyKindTheme);
@@ -586,8 +600,8 @@ export {
   closeExportMenu,
   currentKindTheme,
   paintStyleRange,
-  currentBoardItemCap,
-  applyBoardItemCap,
+  currentBoardMaxWidth,
+  applyBoardMaxWidth,
   applyPeleThemeVars,
   applyBoardThemeToPreview,
   applyKindTheme,

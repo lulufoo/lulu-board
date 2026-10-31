@@ -37,5 +37,10 @@ assert.deepStrictEqual(leftoverFields({ type_step: 3, theme: 'pastel' }), { type
 assert.deepStrictEqual(authoredFields({ font_size: 2 }), { font_size: 2 });
 assert.strictEqual(resolveFields({ font_size: 2 }).font_size, 2);
 assert.deepStrictEqual(authoredFields({ font_size: 0 }), {});
+assert.deepStrictEqual(authoredFields({ max_width: 2 }), { max_width: 2 });
+assert.deepStrictEqual(authoredFields({ max_width: 0 }), {});
+assert.strictEqual(resolveFields({}).max_width, 0);
+assert.strictEqual(resolveFields({ item_cap: 24 }).max_width, 0);
+assert.deepStrictEqual(leftoverFields({ item_cap: 24, theme: 'pastel' }), { item_cap: 24 });
 
 console.log('ok board-core style-token');

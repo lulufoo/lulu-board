@@ -174,14 +174,19 @@
             </button>
           </div>
         </div>
-        <div class="props-field" id="boardCapField" hidden>
-          <label class="props-label" for="boardCapEditor" id="boardCapLabel">Width Cap</label>
+        <div class="props-field" id="board-max-width-field" hidden>
+          <label class="props-label" for="board-max-width-input" id="board-max-width-label">Max Width</label>
           <div class="props-control">
-            <select id="boardCapEditor" aria-label="Width Cap">
-              <option value="on">on</option>
-              <option value="off">off</option>
-            </select>
-            <p class="props-hint props-hint-end" id="boardCapTip" hidden></p>
+            <div class="props-max-width-row">
+              <input type="number" id="board-max-width-input" aria-label="Max Width" step="any">
+              <button type="button" class="props-max-width-reset" id="board-max-width-reset" title="Reset" aria-label="Reset Max Width" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 14 4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <p class="props-hint props-hint-end" id="board-max-width-tip" hidden></p>
           </div>
         </div>
         <div class="props-field" id="boardNodeFontField" hidden>
@@ -381,12 +386,12 @@
         </div>
         <p class="style-hint">Middle is default · non-default saves in source</p>
       </section>
-      <section class="style-block" id="boardItemCapSection" hidden aria-label="Max item width">
-        <p class="style-section-label">Max Item Width</p>
+      <section class="style-block" id="board-max-width-section" hidden aria-label="Max Width">
+        <p class="style-section-label">Max Width</p>
         <div class="style-cap-row">
-          <input type="range" id="boardItemCapSlider" min="8" max="24" step="1" value="16" aria-label="Max item width">
+          <input type="range" id="board-max-width-slider" min="-3" max="3" step="1" value="0" aria-label="Max Width">
         </div>
-        <p class="style-hint">Applies when Width Cap is on · non-default saves in source</p>
+        <p class="style-hint">Middle is default · non-default saves in source</p>
       </section>
       <section class="style-block" id="boardLayoutSection" hidden aria-label="Board link">
         <p class="style-section-label">Link</p>
