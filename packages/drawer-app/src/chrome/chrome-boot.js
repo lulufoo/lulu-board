@@ -382,7 +382,7 @@ function applyBoardTypeStep(raw, persist, rerender) {
   document.documentElement.dataset.boardTypeStep = String(n);
   if (boardFontSizeSlider) boardFontSizeSlider.value = String(n);
   paintStyleRange(boardFontSizeSlider);
-  if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ type_step: n });
+  if (persist && typeof persistBoardStyle === 'function') persistBoardStyle({ font_size: n });
   if (rerender && document.documentElement.dataset.drawerMode === 'diagram'
     && typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) {
     renderDiagram({ fit: false });

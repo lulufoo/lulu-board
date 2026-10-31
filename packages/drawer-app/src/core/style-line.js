@@ -206,15 +206,23 @@ import * as Token from '../../../board-core/style-token.js';
   function mermaidStyleToken(theme, typeStep, viewport) {
     var data = Token.authoredFields({
       theme: Token.resolveThemeId(theme),
-      type_step: Token.clampTypeStep(typeStep),
+      font_size: Token.clampTypeStep(typeStep),
       viewport: viewport,
     });
     if (!Object.keys(data).length) return "";
     return Token.encodeStylePayload(data);
   }
 
+  function rawStyleObject(token) {
+    var raw = String(token == null ? "" : token).trim();
+    if (!raw) return {};
+    if (isShortStyleName(raw)) return { theme: raw };
+    return Token.decodeStylePayload(raw);
+  }
+
   function persistStyleToken(token, patch) {
-    var data = Token.authoredFields(Object.assign({}, fieldsFromStyleToken(token), patch || {}));
+    var next = Object.assign({}, rawStyleObject(token), patch || {});
+    var data = Object.assign({}, Token.authoredFields(next), Token.leftoverFields(next));
     return Object.keys(data).length ? Token.encodeStylePayload(data) : "";
   }
 
@@ -223,7 +231,7 @@ import * as Token from '../../../board-core/style-token.js';
   }
 
   function typeStepFromStyleToken(token) {
-    return fieldsFromStyleToken(token).type_step;
+    return fieldsFromStyleToken(token).font_size;
   }
 
   function joinRendererStyle(token, body) {

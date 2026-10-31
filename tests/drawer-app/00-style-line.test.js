@@ -50,7 +50,7 @@ function b64(obj) {
   assert.strictEqual(Style.typeStepFromStyleToken('classic'), 0);
   assert.strictEqual(Style.typeStepFromStyleToken(''), 0);
   const stepped = Style.mermaidStyleToken('classic', 2);
-  assert.strictEqual(stepped, b64({ theme: 'classic', type_step: 2 }));
+  assert.strictEqual(stepped, b64({ theme: 'classic', font_size: 2 }));
   assert.strictEqual(Style.themeFromStyleToken(stepped), 'classic');
   assert.strictEqual(Style.typeStepFromStyleToken(stepped), 2);
   const defaultStepped = Style.mermaidStyleToken('default', -1);
@@ -147,7 +147,7 @@ function b64(obj) {
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');
   assert.ok(/skipRender/.test(chrome), 'applyKindTheme can skip render');
   assert.ok(/stripDocumentMeta/.test(shell) && !/joinDocument/.test(shell), 'wrap strips leftover meta and does not rejoin');
-  assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads type_step');
+  assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads font_size');
   assert.ok(/persistStyleToken\(styled\.token, patch/.test(boardJs), 'mermaid persist merges the current token with the patch');
   assert.strictEqual(
     Style.encodeStylePayload({ theme: 'classic' }),
@@ -155,13 +155,13 @@ function b64(obj) {
     'mermaid encode is the shared token',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ theme: 'classic', type_step: 0, item_cap: 16 }),
+    Token.authoredFields({ theme: 'classic', font_size: 0, item_cap: 16 }),
     { theme: 'classic' },
     'shared fields omit defaults',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ theme: 'default', type_step: 2, item_cap: 20 }),
-    { type_step: 2, item_cap: 20 },
+    Token.authoredFields({ theme: 'default', font_size: 2, item_cap: 20 }),
+    { font_size: 2, item_cap: 20 },
     'shared fields keep non-default cap and step',
   );
   assert.deepStrictEqual(
@@ -178,7 +178,7 @@ function b64(obj) {
   assert.deepStrictEqual(Token.resolveFields({}).viewport, { scale: 1, cx: 0, cy: 0 });
   assert.strictEqual(
     Style.mermaidStyleToken('classic', 2),
-    Token.encodeStylePayload(Token.authoredFields({ theme: 'classic', type_step: 2 })),
+    Token.encodeStylePayload(Token.authoredFields({ theme: 'classic', font_size: 2 })),
     'mermaid token is shared authored fields',
   );
   assert.ok(
@@ -188,11 +188,11 @@ function b64(obj) {
     ),
     'flowchart still does not write item_cap',
   );
-  assert.ok(/patch\.theme == null && patch\.type_step == null && patch\.background == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts background and viewport without theme');
+  assert.ok(/patch\.theme == null && patch\.font_size == null && patch\.background == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts background and viewport without theme');
   const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });
   assert.deepStrictEqual(Token.decodeStylePayload(withView), {
     theme: 'classic',
-    type_step: 2,
+    font_size: 2,
     viewport: { scale: 0.8, cx: 10, cy: 20 },
   });
   assert.strictEqual(Style.mermaidStyleToken('default', 0, { scale: 1, cx: 0, cy: 0 }), '');
@@ -206,6 +206,19 @@ function b64(obj) {
   assert.strictEqual(Style.persistStyleToken(dusk, { background: 'paper' }), '');
   assert.strictEqual(Style.fieldsFromStyleToken(dusk).background, 'dusk');
   assert.strictEqual(Style.fieldsFromStyleToken('').background, 'paper');
+  const stale = Style.persistStyleToken(b64({ theme: 'pastel', type_step: 3 }), { theme: 'classic' });
+  assert.deepStrictEqual(Token.decodeStylePayload(stale), {
+    theme: 'classic',
+    type_step: 3,
+  });
+  assert.strictEqual(Style.typeStepFromStyleToken(stale), 0);
+  const sized = Style.persistStyleToken(stale, { font_size: 2 });
+  assert.deepStrictEqual(Token.decodeStylePayload(sized), {
+    theme: 'classic',
+    font_size: 2,
+    type_step: 3,
+  });
+  assert.strictEqual(Style.typeStepFromStyleToken(sized), 2);
 }
 
 console.log('ok board-style-theme');
