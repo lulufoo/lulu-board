@@ -1357,7 +1357,7 @@ html[data-drawer-mode="diagram"] .top-float {
   font-size: var(--board-card-size, 12px);
 }
 
-/* Item text default: centered */
+/* Item align lives on [data-board-align]; type rules do not set justify / align / text-align. */
 .board-render .board-item.board-item-type-chip,
 .board-render .board-item.board-card.board-item-type-chip,
 .board-render .board-item.board-item-type-text,
@@ -1367,17 +1367,11 @@ html[data-drawer-mode="diagram"] .top-float {
 }
 .board-render .board-item.board-item-type-chip,
 .board-render .board-item.board-card.board-item-type-chip {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
   min-width: min-content;
 }
 .board-render .board-item.board-item-type-chip .board-item-copy,
 .board-render .board-item.board-item-type-chip .board-item-text {
-  text-align: center;
   width: 100%;
-  justify-content: center;
-  align-items: center;
   white-space: pre-wrap;
   overflow-wrap: break-word;
   min-width: min-content;
@@ -1387,7 +1381,6 @@ html[data-drawer-mode="diagram"] .top-float {
   width: auto;
   max-width: 100%;
   line-height: 1.1;
-  text-align: center;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1397,13 +1390,9 @@ html[data-drawer-mode="diagram"] .top-float {
   box-shadow: none !important;
   border-radius: 0 !important;
   padding: 2px 0 !important;
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
 }
 .board-render .board-item.board-item-type-text .board-item-copy,
 .board-render .board-item.board-item-type-text .board-item-text {
-  text-align: left;
   width: 100%;
   font-weight: var(--board-item-text-weight);
   color: var(--board-color, #222);
@@ -1440,9 +1429,6 @@ html[data-drawer-mode="diagram"] .top-float {
 #boardTypeEditor:focus { border-color: var(--accent); }
 .board-render .board-item.board-item-type-note,
 .board-render .board-item.board-card.board-item-type-note {
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
   font-weight: var(--board-note-weight);
   line-height: 1.5;
   padding: 8px 14px 8px 10px !important;
@@ -1451,7 +1437,6 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-note .board-item-text {
   position: relative;
   z-index: 1;
-  text-align: left;
   width: 100%;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -1571,8 +1556,6 @@ html[data-drawer-mode="diagram"] .top-float {
   border-radius: 0 !important;
   padding: 2px 0 !important;
   min-height: 0;
-  justify-content: flex-start;
-  align-items: center;
   gap: 8px !important;
 }
 .board-render .board-item-icon .board-item-glyph {
@@ -1589,7 +1572,6 @@ html[data-drawer-mode="diagram"] .top-float {
 }
 .board-render .board-item-icon .board-item-copy,
 .board-render .board-item-icon .board-item-text {
-  text-align: left;
   width: auto;
   font-weight: var(--board-item-text-weight);
   color: var(--board-ink, var(--text, #1f2937));
@@ -1605,30 +1587,69 @@ html[data-drawer-mode="diagram"] .top-float {
   display: none !important;
 }
 .board-render .board-item[data-board-align="top-left"],
+.board-render .board-item.board-card[data-board-align="top-left"],
 .board-render .board-item[data-board-align="left"],
-.board-render .board-item[data-board-align="bottom-left"] {
+.board-render .board-item.board-card[data-board-align="left"],
+.board-render .board-item[data-board-align="bottom-left"],
+.board-render .board-item.board-card[data-board-align="bottom-left"] {
   justify-content: flex-start;
   text-align: left;
 }
 .board-render .board-item[data-board-align="top"],
+.board-render .board-item.board-card[data-board-align="top"],
 .board-render .board-item[data-board-align="center"],
-.board-render .board-item[data-board-align="bottom"] {
+.board-render .board-item.board-card[data-board-align="center"],
+.board-render .board-item[data-board-align="bottom"],
+.board-render .board-item.board-card[data-board-align="bottom"] {
   justify-content: center;
   text-align: center;
 }
 .board-render .board-item[data-board-align="top-right"],
+.board-render .board-item.board-card[data-board-align="top-right"],
 .board-render .board-item[data-board-align="right"],
-.board-render .board-item[data-board-align="bottom-right"] {
+.board-render .board-item.board-card[data-board-align="right"],
+.board-render .board-item[data-board-align="bottom-right"],
+.board-render .board-item.board-card[data-board-align="bottom-right"] {
   justify-content: flex-end;
   text-align: right;
 }
-.board-render .board-item[data-board-align^="top"] { align-items: flex-start; }
+.board-render .board-item[data-board-align^="top"],
+.board-render .board-item.board-card[data-board-align^="top"] { align-items: flex-start; }
 .board-render .board-item[data-board-align="left"],
+.board-render .board-item.board-card[data-board-align="left"],
 .board-render .board-item[data-board-align="center"],
-.board-render .board-item[data-board-align="right"] { align-items: center; }
-.board-render .board-item[data-board-align^="bottom"] { align-items: flex-end; }
+.board-render .board-item.board-card[data-board-align="center"],
+.board-render .board-item[data-board-align="right"],
+.board-render .board-item.board-card[data-board-align="right"] { align-items: center; }
+.board-render .board-item[data-board-align^="bottom"],
+.board-render .board-item.board-card[data-board-align^="bottom"] { align-items: flex-end; }
 .board-render .board-item[data-board-align] .board-item-copy,
-.board-render .board-item[data-board-align] .board-item-text { text-align: inherit; }
+.board-render .board-item[data-board-align] .board-item-text,
+.board-render .board-item.board-item-type-chip[data-board-align] .board-item-copy,
+.board-render .board-item.board-item-type-chip[data-board-align] .board-item-text { text-align: inherit; }
+/* Hug chip: park on the parent so left / center / right is visible. */
+.board-dir-column > .board-item.board-item-type-chip[data-board-align*="left"] {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-right: auto;
+}
+.board-dir-column > .board-item.board-item-type-chip[data-board-align="top"],
+.board-dir-column > .board-item.board-item-type-chip[data-board-align="center"],
+.board-dir-column > .board-item.board-item-type-chip[data-board-align="bottom"] {
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.board-dir-column > .board-item.board-item-type-chip[data-board-align*="right"] {
+  align-self: flex-end;
+  margin-left: auto;
+  margin-right: 0;
+}
+.board-dir-row > .board-item.board-item-type-chip[data-board-align^="top"] { align-self: flex-start; }
+.board-dir-row > .board-item.board-item-type-chip[data-board-align="left"],
+.board-dir-row > .board-item.board-item-type-chip[data-board-align="center"],
+.board-dir-row > .board-item.board-item-type-chip[data-board-align="right"] { align-self: center; }
+.board-dir-row > .board-item.board-item-type-chip[data-board-align^="bottom"] { align-self: flex-end; }
 .board-render .board-type-card { /* default */ }
 .board-render .board-type-diamond { }
 

@@ -17,6 +17,22 @@ assert.ok(
   /data-board-align\^="top"/.test(css) && /data-board-align\^="bottom"/.test(css),
   'item align uses 3x3 data-board-align'
 );
+{
+  const chipType = css.match(/\.board-item\.board-card\.board-item-type-chip \{[^}]+\}/);
+  assert.ok(chipType, 'chip+card type rule');
+  assert.ok(
+    !/justify-content|align-items|text-align/.test(chipType[0]),
+    'chip type CSS must not force alignment'
+  );
+}
+assert.ok(
+  /\.board-item\.board-card\[data-board-align="left"\]/.test(css),
+  'item align beats chip+card specificity'
+);
+assert.ok(
+  /\.board-dir-column > \.board-item\.board-item-type-chip\[data-board-align\*="left"\]/.test(css),
+  'column chip parks left on the parent'
+);
 assert.ok(/id="board-item-align-field"/.test(html), 'You has Align');
 assert.ok(/id="board-item-align-editor"/.test(html), 'Align is a select');
 assert.ok(/id="board-item-align-reset"/.test(html), 'Align has Reset');
