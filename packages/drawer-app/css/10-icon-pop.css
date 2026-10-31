@@ -1,0 +1,112 @@
+/* Icon picker. Closed, it is one row. The menu is fixed, so it does not add panel height. */
+#board-icon-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 34px;
+  padding: 8px 32px 8px 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background-color: var(--panel-solid);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='none' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5L6 8l3.5-3.5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 12px;
+  color: var(--text);
+  font: 13px var(--sans);
+  text-align: left;
+  cursor: pointer;
+}
+#board-icon-trigger.is-open {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+#board-icon-trigger-glyph { width: 16px; height: 16px; }
+#board-icon-trigger-glyph:empty { display: none; }
+
+.props-icon-pop {
+  position: fixed;
+  z-index: 80;
+  box-sizing: border-box;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--panel-solid, #fff);
+  color: var(--text);
+  box-shadow: 0 0 0 1px var(--stroke), 0 16px 40px rgba(0, 0, 0, .18);
+}
+.props-icon-pop[hidden] { display: none !important; }
+.props-icon-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  margin: 2px 2px 4px;
+  padding: 0 10px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel-solid, #fff));
+  color: var(--accent);
+  font: 600 14px var(--sans);
+}
+.props-icon-current[hidden] { display: none !important; }
+.props-icon-list { overflow: auto; }
+.props-icon-sec {
+  margin: 8px 8px 2px;
+  font: 600 12px var(--sans);
+  color: var(--muted, #64748b);
+}
+.props-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  padding: 0 2px 2px;
+}
+.props-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted, #64748b);
+  cursor: pointer;
+}
+.props-icon-btn:hover { background: var(--accent-soft); color: var(--text); }
+.props-icon-btn.is-selected {
+  background: color-mix(in srgb, var(--accent) 14%, var(--panel-solid, #fff));
+  color: var(--accent);
+}
+.props-icon-glyph { width: 18px; height: 18px; flex: 0 0 auto; color: inherit; }
+.props-icon-glyph svg { display: block; width: 100%; height: 100%; }
+
+html[data-drawer-mode="diagram"] #board-icon-trigger {
+  border: 0;
+  border-radius: 12px;
+  min-height: 40px;
+  padding: 8px 36px 8px 14px;
+  background-color: var(--fill);
+  color: var(--ink);
+  font-size: 14px;
+}
+html[data-drawer-mode="diagram"] #board-icon-trigger.is-open {
+  background-color: #fff;
+  box-shadow: 0 0 0 2px rgba(219, 76, 132, .32);
+}
+html[data-drawer-mode="diagram"] .props-icon-pop {
+  background: #fff;
+  color: #4a3524;
+  box-shadow: 0 0 0 1px rgba(120, 80, 40, .08), 0 16px 40px rgba(80, 55, 30, .14);
+}
+html[data-drawer-mode="diagram"] .props-icon-current {
+  background: rgba(219, 76, 132, .14);
+  color: #db4c84;
+}
+html[data-drawer-mode="diagram"] .props-icon-sec { color: #8b7358; }
+html[data-drawer-mode="diagram"] .props-icon-btn { color: #64748b; }
+html[data-drawer-mode="diagram"] .props-icon-btn:hover { background: rgba(219, 76, 132, .08); color: #4a3524; }
+html[data-drawer-mode="diagram"] .props-icon-btn.is-selected {
+  background: rgba(219, 76, 132, .14);
+  color: #db4c84;
+}

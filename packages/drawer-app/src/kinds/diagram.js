@@ -52,6 +52,7 @@ function clearDrawerBoot() {
 }
 
 var diagramSwapSeq = 0;
+var diagramRenderToken = 0;
 
 // Hide the drawing before a whole-diagram replace. The dotted canvas stays.
 // No drawing yet (first paint): leave it to the boot hide.
@@ -375,6 +376,7 @@ function renderMindmap(opts) {
 function renderDiagram(opts) {
   opts = opts || {};
   holdDiagramSwap(opts);
+  var renderToken = ++diagramRenderToken;
   var body = sourceBodyForKind(diagramSourceEl ? diagramSourceEl.value : "");
   var kind = DrawerStyleLine.bodyKind
     ? DrawerStyleLine.bodyKind(body)
@@ -390,6 +392,7 @@ function renderDiagram(opts) {
   const text = diagramSourceEl.value.trim(); updateDiagramChars();
   if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); pinDiagramTitle(); showDiagramError(''); setStatus('No Board source'); clearDrawerBoot(); releaseDiagramSwap(opts); return; }
   BoxesRender.render(text, previewEl).then((rendered) => {
+    if (renderToken !== diagramRenderToken) return;
     try {
       var worldRoot = rendered && rendered.root && rendered.root.querySelector
         ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
@@ -423,6 +426,7 @@ function renderDiagram(opts) {
       releaseDiagramSwap(opts);
     }
   }).catch((err) => {
+    if (renderToken !== diagramRenderToken) return;
     pinDiagramTitle();
     clearDrawerBoot();
     releaseDiagramSwap(opts);

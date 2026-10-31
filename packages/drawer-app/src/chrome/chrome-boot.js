@@ -24,8 +24,9 @@ import {
   commitBoardAlign,
   commitBoardJustify,
   commitBoardIcon,
-  fillBoardIconList,
-  markBoardIconPick,
+  openBoardIconPop,
+  closeBoardIconPop,
+  placeBoardIconPop,
   commitBoardNodeFont,
   syncBoardLinkRouteButton,
   boardTitlePinEl,
@@ -62,7 +63,8 @@ import {
   boardAlignEditor,
   boardJustifyEditor,
   boardIconList,
-  boardIconSec,
+  boardIconTrigger,
+  boardIconPop,
   boardIconPick,
   selectedBoardNode,
   diagramDock,
@@ -88,7 +90,6 @@ import {
   diagramSaveTimer,
   setDiagramDirty,
   setDiagramSaveTimer,
-  setBoardIconSecId,
   setDrawerUiRestoreLock,
   updateDiagramChars,
 } from '../state/shell-state.js';
@@ -164,21 +165,38 @@ if (boardArrowReverse) boardArrowReverse.addEventListener("click", commitBoardRe
 if (boardDirEditor) boardDirEditor.addEventListener("change", commitBoardDir);
 if (boardAlignEditor) boardAlignEditor.addEventListener("change", commitBoardAlign);
 if (boardJustifyEditor) boardJustifyEditor.addEventListener("change", commitBoardJustify);
+if (boardIconTrigger) boardIconTrigger.addEventListener("click", function() {
+  if (boardIconPop && !boardIconPop.hidden) closeBoardIconPop();
+  else openBoardIconPop();
+});
 if (boardIconList) boardIconList.addEventListener("click", function(event) {
   var btn = event.target && event.target.closest ? event.target.closest(".props-icon-btn") : null;
   if (!btn) return;
   var n = Number(btn.dataset.icon);
   if (selectedBoardNode && selectedBoardNode.kind === "box" && Number(boardIconPick) === n) {
     commitBoardIcon(null);
-    return;
+  } else {
+    commitBoardIcon(n);
   }
-  commitBoardIcon(n);
+  closeBoardIconPop();
 });
-if (boardIconSec) boardIconSec.addEventListener("change", function() {
-  setBoardIconSecId(boardIconSec.value);
-  fillBoardIconList();
-  markBoardIconPick(boardIconPick);
-});
+if (typeof document !== "undefined") {
+  document.addEventListener("pointerdown", function(event) {
+    if (!boardIconPop || boardIconPop.hidden) return;
+    var target = event.target;
+    if (target && target.closest && (target.closest("#board-icon-pop") || target.closest("#board-icon-trigger"))) return;
+    closeBoardIconPop();
+  });
+  document.addEventListener("keydown", function(event) {
+    if (event.key !== "Escape" || !boardIconPop || boardIconPop.hidden) return;
+    closeBoardIconPop();
+  });
+  var iconPropsPanel = document.querySelector("[data-dock-panel=\"props\"]");
+  if (iconPropsPanel) iconPropsPanel.addEventListener("scroll", closeBoardIconPop);
+  window.addEventListener("resize", function() {
+    if (boardIconPop && !boardIconPop.hidden) placeBoardIconPop();
+  });
+}
 
 (function(){
   if (diagramDock) {
