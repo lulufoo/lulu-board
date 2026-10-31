@@ -30,8 +30,8 @@ assert.ok(
   'item align beats chip+card specificity'
 );
 assert.ok(
-  /\.board-dir-column > \.board-item\.board-item-type-chip\[data-board-align\*="left"\]/.test(css),
-  'column chip parks left on the parent'
+  !/\.board-dir-column > \.board-item\.board-item-type-chip\[data-board-align/.test(css),
+  'item align must not park a chip on the parent'
 );
 assert.ok(/id="board-item-align-field"/.test(html), 'You has Align');
 assert.ok(/id="board-item-align-editor"/.test(html), 'Align is a select');
