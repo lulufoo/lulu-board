@@ -1078,7 +1078,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-title-copy { display: inline-flex; flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 0; overflow: hidden; }
 .board-title-name,
 .board-item-text { min-width: 0; overflow-wrap: anywhere; }
-.board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; font-weight: inherit; }
+.board-title-name { display: block; min-width: 0; overflow-wrap: anywhere; font-weight: inherit; }
 .board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: var(--board-subtitle-weight); }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
 .board-icon svg { display: block; width: 100%; height: 100%; overflow: visible; }
