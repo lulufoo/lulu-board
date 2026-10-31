@@ -141,15 +141,32 @@ import * as StyleToken from '../../board-core/style-token.js';
     if (!row || row.max_width == null || row.max_width === '') return null;
     return MaxWidth.authoredRem(row.max_width);
   }
-  function globalMaxWidthRem(board) {
-    return MaxWidth.remForStep(resolveStyle(board).max_width);
+  function widthKindForId(board, id) {
+    const key = String(id || '').trim();
+    if (!key) return 'item';
+    let found = '';
+    const take = (node, kind) => {
+      if (node && node.id === key) found = kind;
+    };
+    (View.topItems(board) || []).forEach((node) => take(node, 'item'));
+    const walk = (box) => {
+      if (!box || View.isItem(box)) return;
+      take(box, 'box');
+      (box.items || []).forEach((node) => take(node, 'item'));
+      (box.boxes || []).forEach(walk);
+    };
+    (View.topBoxes(board) || []).forEach(walk);
+    return found || 'item';
+  }
+  function globalMaxWidthRem(board, kind) {
+    return MaxWidth.remForStep(resolveStyle(board).max_width, kind);
   }
   function nodeMaxWidth(board, id) {
     const authored = authoredNodeMaxWidth(board, id);
-    return authored == null ? globalMaxWidthRem(board) : authored;
+    return authored == null ? globalMaxWidthRem(board, widthKindForId(board, id)) : authored;
   }
   function applyNodeMaxWidth(board, key, rem) {
-    const global = globalMaxWidthRem(board);
+    const global = globalMaxWidthRem(board, widthKindForId(board, key));
     const ids = Object.assign({}, styleIdsOf(board));
     const row = Object.assign({}, ids[key] || {});
     if (rem == null || rem === global) delete row.max_width;
@@ -164,7 +181,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     const rem = remRaw == null || remRaw === '' ? null : MaxWidth.authoredRem(remRaw);
     let key = String(node.id || '').trim();
     if (!key) {
-      if (rem == null || rem === globalMaxWidthRem(board)) return source;
+      const kind = View.isBox(node) ? 'box' : 'item';
+      if (rem == null || rem === globalMaxWidthRem(board, kind)) return source;
       key = String(ensureKidId(board, node) || '').trim();
     }
     if (!key) fail('node id is required');
@@ -191,7 +209,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     setLinkRouteStyle(next.link_route);
     const rootDoc = doc || (typeof document !== 'undefined' ? document : null);
     if (rootDoc && rootDoc.documentElement) {
-      rootDoc.documentElement.style.setProperty('--board-item-cap', MaxWidth.remCss(next.max_width));
+      rootDoc.documentElement.style.setProperty('--board-item-cap', MaxWidth.remCss(next.max_width, 'item'));
+      rootDoc.documentElement.style.setProperty('--board-box-cap', MaxWidth.remCss(next.max_width, 'box'));
       rootDoc.documentElement.dataset.kindTheme = next.theme;
       rootDoc.documentElement.dataset.boardTypeStep = String(next.font_size);
     }

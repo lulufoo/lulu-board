@@ -1,6 +1,7 @@
 /* Internal box base. Concrete types live in box-*.js. */
 import View from '../view/view.js';
 import * as Scale from '../themes/type-scale.js';
+import * as MaxWidth from '../themes/max-width-scale.js';
 import * as Rotation from '../themes/rotation.js';
 import Icons from '../item/icons.js';
 
@@ -143,9 +144,18 @@ import Icons from '../item/icons.js';
         el.style.zIndex = '1';
       }
       el.style.minWidth = nested ? 'min-content' : '0';
-      el.style.maxWidth = 'none';
       el.style.width = 'max-content';
       el.style.boxSizing = 'border-box';
+      {
+        const ids = ctx.board && ctx.board.style && ctx.board.style.ids;
+        const row = box.id && ids && ids[box.id];
+        const rem = row && MaxWidth && typeof MaxWidth.authoredRem === 'function'
+          ? MaxWidth.authoredRem(row.max_width)
+          : null;
+        if (rem != null && MaxWidth && typeof MaxWidth.applyBoxRem === 'function') {
+          MaxWidth.applyBoxRem(el, rem);
+        }
+      }
       el.dataset.boardId = box.id;
       el.dataset.boardKey = 'box:' + box.id;
       el.dataset.boardType = bType;

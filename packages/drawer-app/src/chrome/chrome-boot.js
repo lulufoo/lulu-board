@@ -289,10 +289,14 @@ function applyBoardMaxWidth(step, rerender, persist) {
       ? TypeScale.clampStep(step)
       : Math.min(3, Math.max(-3, Math.round(Number(step) || MAX_WIDTH_DEFAULT))));
   localStorage.setItem(MAX_WIDTH_KEY, String(n));
-  const css = (MaxWidth && typeof MaxWidth.remCss === 'function')
-    ? MaxWidth.remCss(n)
+  const itemCss = (MaxWidth && typeof MaxWidth.remCss === 'function')
+    ? MaxWidth.remCss(n, 'item')
     : ((16 + 2 * n) + 'rem');
-  document.documentElement.style.setProperty('--board-item-cap', css);
+  const boxCss = (MaxWidth && typeof MaxWidth.remCss === 'function')
+    ? MaxWidth.remCss(n, 'box')
+    : ((20 + 2 * n) + 'rem');
+  document.documentElement.style.setProperty('--board-item-cap', itemCss);
+  document.documentElement.style.setProperty('--board-box-cap', boxCss);
   if (boardMaxWidthSlider) {
     boardMaxWidthSlider.disabled = false;
     boardMaxWidthSlider.value = String(n);
