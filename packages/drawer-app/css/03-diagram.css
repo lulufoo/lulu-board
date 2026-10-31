@@ -1627,29 +1627,6 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item[data-board-align] .board-item-text,
 .board-render .board-item.board-item-type-chip[data-board-align] .board-item-copy,
 .board-render .board-item.board-item-type-chip[data-board-align] .board-item-text { text-align: inherit; }
-/* Hug chip: park on the parent so left / center / right is visible. */
-.board-dir-column > .board-item.board-item-type-chip[data-board-align*="left"] {
-  align-self: flex-start;
-  margin-left: 0;
-  margin-right: auto;
-}
-.board-dir-column > .board-item.board-item-type-chip[data-board-align="top"],
-.board-dir-column > .board-item.board-item-type-chip[data-board-align="center"],
-.board-dir-column > .board-item.board-item-type-chip[data-board-align="bottom"] {
-  align-self: center;
-  margin-left: auto;
-  margin-right: auto;
-}
-.board-dir-column > .board-item.board-item-type-chip[data-board-align*="right"] {
-  align-self: flex-end;
-  margin-left: auto;
-  margin-right: 0;
-}
-.board-dir-row > .board-item.board-item-type-chip[data-board-align^="top"] { align-self: flex-start; }
-.board-dir-row > .board-item.board-item-type-chip[data-board-align="left"],
-.board-dir-row > .board-item.board-item-type-chip[data-board-align="center"],
-.board-dir-row > .board-item.board-item-type-chip[data-board-align="right"] { align-self: center; }
-.board-dir-row > .board-item.board-item-type-chip[data-board-align^="bottom"] { align-self: flex-end; }
 .board-render .board-type-card { /* default */ }
 .board-render .board-type-diamond { }
 

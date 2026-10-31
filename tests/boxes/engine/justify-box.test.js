@@ -47,6 +47,8 @@ const Render = require('../../../packages/boxes/engine/render.js').default;
   const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/render.js'), 'utf8');
   const alignJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/layout/box-align.js'), 'utf8');
   assert.ok(/function applyMainStretch/.test(renderJs), 'stretch grows kids');
+  assert.ok(/function applyCrossStretch/.test(renderJs), 'cross stretch');
+  assert.ok(/el.style.alignSelf = 'stretch'/.test(renderJs), 'cross stretch sets align-self');
   assert.ok(/flex = '1 0 auto'/.test(renderJs), 'stretch flex grow');
   assert.ok(/board-justify-stretch/.test(alignJs), 'stretch class');
   assert.ok(/isMainStretch/.test(alignJs), 'main-axis stretch');

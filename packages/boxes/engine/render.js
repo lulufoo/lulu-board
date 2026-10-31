@@ -1590,6 +1590,7 @@ import * as BoxAlign from './layout/box-align.js';
     el.classList.toggle('board-dir-row', props.direction === 'row');
     el.classList.toggle('board-dir-column', props.direction !== 'row');
     applyMainStretch(el, props);
+    applyCrossStretch(el, props);
   }
 
   function boxContentKids(content) {
@@ -1637,6 +1638,23 @@ import * as BoxAlign from './layout/box-align.js';
     });
   }
 
+  // Cross-axis stretch must beat item CSS `align-self` (chip Item Align is
+  // text-inside-item, not a park in the parent).
+  function applyCrossStretch(content, props) {
+    const row = !!(props && props.direction === 'row');
+    const cross = row ? props.align_y : props.align_x;
+    boxContentKids(content).forEach((el) => {
+      if (isDiamondKid(el)) return;
+      if (cross === 'stretch') {
+        el.style.alignSelf = 'stretch';
+        if (row) el.style.height = '';
+        else el.style.width = '';
+      } else {
+        el.style.alignSelf = '';
+      }
+    });
+  }
+
   // Reset leftover sizes and restore each kid's own content floor. Cross-axis
   // sizing is left to flex `align`; siblings are not pinned to a shared max.
   function resetBoxKidSizes(content) {
@@ -1664,6 +1682,7 @@ import * as BoxAlign from './layout/box-align.js';
       const props = propsFor(board, id);
       resetBoxKidSizes(content);
       applyMainStretch(content, props);
+      applyCrossStretch(content, props);
     });
   }
 
