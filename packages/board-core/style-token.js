@@ -9,7 +9,7 @@ export const DEFAULTS = {
   theme: 'default',
   item_cap: 16,
   link_route: 'stagger',
-  type_step: 0,
+  font_size: 0,
   background: 'paper',
   viewport: { scale: 1, cx: 0, cy: 0 },
 };
@@ -21,7 +21,8 @@ export const FACTOR = 1.125;
 export const MIN_PX = 8;
 export const TYPE_STEP_MIN = STEP_MIN;
 export const TYPE_STEP_MAX = STEP_MAX;
-const FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, type_step: 1, background: 1, viewport: 1 };
+const FIELD_KEYS = { theme: 1, item_cap: 1, link_route: 1, font_size: 1, background: 1, viewport: 1 };
+const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1 };
 
 export function clampStep(raw) {
   const n = Math.round(Number(raw));
@@ -105,9 +106,9 @@ export function authoredFields(raw) {
     const route = resolveLinkRoute(src.link_route);
     if (route !== DEFAULTS.link_route) out.link_route = route;
   }
-  if (src.type_step != null && src.type_step !== '') {
-    const step = clampTypeStep(src.type_step);
-    if (step !== DEFAULTS.type_step) out.type_step = step;
+  if (src.font_size != null && src.font_size !== '') {
+    const step = clampTypeStep(src.font_size);
+    if (step !== DEFAULTS.font_size) out.font_size = step;
   }
   if (src.background != null && src.background !== '') {
     const background = resolveBackground(src.background);
@@ -125,7 +126,7 @@ export function resolveFields(raw) {
     theme: src.theme != null && src.theme !== '' ? resolveThemeId(src.theme) : DEFAULTS.theme,
     item_cap: src.item_cap == null || src.item_cap === '' ? DEFAULTS.item_cap : clampItemCap(src.item_cap),
     link_route: src.link_route == null || src.link_route === '' ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
-    type_step: src.type_step == null || src.type_step === '' ? DEFAULTS.type_step : clampTypeStep(src.type_step),
+    font_size: src.font_size == null || src.font_size === '' ? DEFAULTS.font_size : clampTypeStep(src.font_size),
     background: src.background == null || src.background === '' ? DEFAULTS.background : resolveBackground(src.background),
     viewport: viewport || {
       scale: DEFAULTS.viewport.scale,
@@ -137,4 +138,15 @@ export function resolveFields(raw) {
 
 export function isFieldKey(key) {
   return !!FIELD_KEYS[key];
+}
+
+export function leftoverFields(raw) {
+  const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const out = {};
+  Object.keys(src).forEach((key) => {
+    if (isFieldKey(key) || SKIP_LEFTOVER[key]) return;
+    if (src[key] == null) return;
+    out[key] = src[key];
+  });
+  return out;
 }

@@ -322,7 +322,7 @@ function commitBoardNodeFont(persist, rerender) {
       setSelectedBoardNode(boardSelectionWithId(selectedBoardNode, id));
       setBoardIdField(true, id);
     }
-    setBoardNodeFontField(true, id ? BoxesRender.authoredNodeTypeStep(board, id) : null, BoxesRender.resolveStyle(board).type_step);
+    setBoardNodeFontField(true, id ? BoxesRender.authoredNodeTypeStep(board, id) : null, BoxesRender.resolveStyle(board).font_size);
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function setAuthoredTip(el, show, authored) {
@@ -764,7 +764,7 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
       ? BoxesRender.authoredNodeTypeStep(board, nodeId)
       : null;
     var globalStep = (typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function")
-      ? BoxesRender.resolveStyle(board || {}).type_step
+      ? BoxesRender.resolveStyle(board || {}).font_size
       : 0;
     setBoardNodeFontField(showFont, authoredFz, globalStep);
     setBoardIconField((isIcon || isBoxIcon) && !isLayoutBox, ((isIcon || isBoxIcon) && !isLayoutBox) ? (node && node.icon) : null);
@@ -1134,7 +1134,7 @@ function syncBoardStyleChrome(board) {
   if (typeof BoxesRender === "undefined" || typeof BoxesRender.resolveStyle !== "function") return;
   var next = BoxesRender.resolveStyle(board || {});
   emit("applyBoardItemCap", next.item_cap, false, false);
-  emit("applyBoardTypeStep", next.type_step, false, false);
+  emit("applyBoardTypeStep", next.font_size, false, false);
   if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
   syncBoardLinkRouteButton();
   var themeSelect = document.getElementById("kindThemeSelect");

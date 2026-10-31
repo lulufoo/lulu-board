@@ -4,6 +4,7 @@ import {
   clampStep,
   clampTypeStep,
   DEFAULTS,
+  leftoverFields,
   resolveBackground,
   resolveFields,
   resolveThemeId,
@@ -30,5 +31,11 @@ assert.deepStrictEqual(authoredFields({}), {});
 assert.deepStrictEqual(authoredFields({ background: 'paper' }), {});
 assert.deepStrictEqual(authoredFields({ background: 'dusk' }), { background: 'dusk' });
 assert.deepStrictEqual(authoredFields({ background: 'nope' }), {});
+assert.strictEqual(resolveFields({ type_step: 3 }).font_size, 0);
+assert.deepStrictEqual(authoredFields({ type_step: 3 }), {});
+assert.deepStrictEqual(leftoverFields({ type_step: 3, theme: 'pastel' }), { type_step: 3 });
+assert.deepStrictEqual(authoredFields({ font_size: 2 }), { font_size: 2 });
+assert.strictEqual(resolveFields({ font_size: 2 }).font_size, 2);
+assert.deepStrictEqual(authoredFields({ font_size: 0 }), {});
 
 console.log('ok board-core style-token');

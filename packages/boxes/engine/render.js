@@ -47,14 +47,9 @@ import * as StyleToken from '../../board-core/style-token.js';
   }
   function authoredStyle(raw) {
     const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    const out = Object.assign({}, StyleToken.authoredFields(src));
+    const out = Object.assign({}, StyleToken.authoredFields(src), StyleToken.leftoverFields(src));
     const ids = authoredIds(src.ids);
     if (ids) out.ids = ids;
-    Object.keys(src).forEach((key) => {
-      if (StyleToken.isFieldKey(key) || key === 'view' || key === 'viewport' || key === 'ids') return;
-      if (src[key] == null) return;
-      out[key] = src[key];
-    });
     return out;
   }
   function authoredIds(raw) {
@@ -104,11 +99,11 @@ import * as StyleToken from '../../board-core/style-token.js';
   }
   function nodeTypeStep(board, id) {
     const authored = authoredNodeTypeStep(board, id);
-    return authored == null ? resolveStyle(board).type_step : authored;
+    return authored == null ? resolveStyle(board).font_size : authored;
   }
   function applyNodeTypeStep(board, key, step) {
     const n = clampTypeStep(step);
-    const global = resolveStyle(board).type_step;
+    const global = resolveStyle(board).font_size;
     const ids = Object.assign({}, styleIdsOf(board));
     const row = Object.assign({}, ids[key] || {});
     if (n === global) delete row.fz;
@@ -133,7 +128,7 @@ import * as StyleToken from '../../board-core/style-token.js';
     const node = nodeForTypeStep(board, target);
     let key = String(node.id || '').trim();
     if (!key) {
-      if (clampTypeStep(step) === resolveStyle(board).type_step) return source;
+      if (clampTypeStep(step) === resolveStyle(board).font_size) return source;
       key = String(ensureKidId(board, node) || '').trim();
     }
     if (!key) fail('node id is required');
@@ -162,7 +157,7 @@ import * as StyleToken from '../../board-core/style-token.js';
     if (rootDoc && rootDoc.documentElement) {
       rootDoc.documentElement.style.setProperty('--board-item-cap', next.item_cap + 'rem');
       rootDoc.documentElement.dataset.kindTheme = next.theme;
-      rootDoc.documentElement.dataset.boardTypeStep = String(next.type_step);
+      rootDoc.documentElement.dataset.boardTypeStep = String(next.font_size);
     }
     return next;
   }

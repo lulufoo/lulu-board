@@ -24,7 +24,7 @@ item HERO type text "Hi"
     theme: 'default',
     item_cap: 16,
     link_route: 'stagger',
-    type_step: 0,
+    font_size: 0,
     background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
@@ -42,7 +42,7 @@ item HERO type text "Hi"
     theme: 'pastel',
     item_cap: 24,
     link_route: 'stagger',
-    type_step: 0,
+    font_size: 0,
     background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
@@ -65,7 +65,7 @@ item HERO type text "Hi"
     theme: 'default',
     item_cap: 16,
     link_route: 'stagger',
-    type_step: 0,
+    font_size: 0,
     background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
@@ -116,16 +116,16 @@ item HERO type text "Hi"
 boxes Demo
 item HERO type text "Hi"
 `);
-  const next = Render.updateStyle(source, { type_step: 2 });
+  const next = Render.updateStyle(source, { font_size: 2 });
   assert.ok(/^style /m.test(next), next);
   const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    type_step: 2,
+    font_size: 2,
   });
-  assert.strictEqual(Render.resolveStyle(Render.parse(next)).type_step, 2);
-  const back = Render.updateStyle(next, { type_step: 0 });
+  assert.strictEqual(Render.resolveStyle(Render.parse(next)).font_size, 2);
+  const back = Render.updateStyle(next, { font_size: 0 });
   assert.ok(!/^style /m.test(back), back);
-  assert.strictEqual(Render.resolveStyle(Render.parse(source + '\n')).type_step, 0);
+  assert.strictEqual(Render.resolveStyle(Render.parse(source + '\n')).font_size, 0);
 }
 
 {
@@ -151,7 +151,7 @@ item HERO type text "Hi"
     theme: 'pastel',
     item_cap: 16,
     link_route: 'stagger',
-    type_step: 0,
+    font_size: 0,
     background: 'paper',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
@@ -205,7 +205,7 @@ item HERO type text "Hi"
     /id="btnRouteStraight"[\s\S]*id="btnRouteStagger"[\s\S]*id="btnRouteTrunk"/.test(html),
     'route axis order is Straight Stagger Trunk',
   );
-  assert.ok(!/item_cap|link_route|type_step/.test(vocab), 'vocab does not expose style keys');
+  assert.ok(!/item_cap|link_route|type_step|font_size/.test(vocab), 'vocab does not expose style keys');
   assert.ok(/id="boardFontSizeSection"/.test(html), 'style has Font Size');
   assert.ok(/id="boardFontSizeSlider"/.test(html), 'font size is a slider');
   assert.ok(/Font Size/.test(html), 'font size label');
@@ -230,17 +230,17 @@ box HERO "Hi"
   assert.strictEqual(Render.authoredNodeTypeStep(board, 'HERO'), 1);
   assert.strictEqual(Render.nodeTypeStep(board, 'HERO'), 1);
   assert.strictEqual(Render.nodeTypeStep(board, 'LEAF'), 0);
-  const kept = Render.updateStyle(next, { type_step: 1 });
+  const kept = Render.updateStyle(next, { font_size: 1 });
   const keptToken = kept.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(keptToken, 'base64').toString('utf8')), {
-    type_step: 1,
+    font_size: 1,
     ids: { HERO: { fz: 1 } },
   });
   const back = Render.updateNodeTypeStep(kept, 'HERO', 1);
   assert.ok(/^style /m.test(back), back);
   const backToken = back.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(backToken, 'base64').toString('utf8')), {
-    type_step: 1,
+    font_size: 1,
   });
   const onlyNode = Render.updateNodeTypeStep(source, 'LEAF', 2);
   const reset = Render.updateNodeTypeStep(onlyNode, 'LEAF', 0);
@@ -317,8 +317,26 @@ item HERO type text "Hi"
 }
 
 {
+  const payload = b64({ theme: 'pastel', type_step: 3 });
+  const board = Render.parse(`boxes Demo\nstyle ${payload}\nitem HERO type text "Hi"\n`);
+  assert.strictEqual(Render.resolveStyle(board).font_size, 0);
+  const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    theme: 'pastel',
+    type_step: 3,
+  });
+  const next = Render.updateStyle(Render.serialize(board), { font_size: 2 });
+  const nextToken = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(nextToken, 'base64').toString('utf8')), {
+    theme: 'pastel',
+    font_size: 2,
+    type_step: 3,
+  });
+}
+
+{
   const Token = require('../../../packages/board-core/style-token.js');
-  const obj = { theme: 'classic', type_step: 2 };
+  const obj = { theme: 'classic', font_size: 2 };
   assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');
   assert.deepStrictEqual(Render.decodeStylePayload(Token.encodeStylePayload(obj)), obj);
 }
