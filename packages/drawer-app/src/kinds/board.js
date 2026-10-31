@@ -77,10 +77,13 @@ import {
   boardArrowField,
   boardArrowReverse,
   boardIconField,
+  boardIconTrigger,
+  boardIconTriggerGlyph,
+  boardIconTriggerName,
+  boardIconPop,
+  boardIconCurrent,
   boardIconList,
-  boardIconSec,
   boardIconPick,
-  boardIconSecId,
   boardInspector,
   boardAddBoxButton,
   boardAddItemButton,
@@ -101,7 +104,6 @@ import {
   setBoardLinkModeFlag,
   setBoardLinkStart,
   setBoardIconPick,
-  setBoardIconSecId,
   setBoardIdCopiedTimer,
 } from '../state/shell-state.js';
 
@@ -387,50 +389,91 @@ function hidePropsLinkOnlyChrome() {
   setBoardCapField(false);
   setBoardNodeFontField(false);
 }
-function fillBoardIconSec() {
-  if (!boardIconSec || !Icons || !Icons.sections) return;
-  // One category at a time, picked from a dropdown.
-  boardIconSec.innerHTML = Icons.sections.map(function(sec) {
-    return "<option value=\"" + sec.id + "\"" + (sec.id === boardIconSecId ? " selected" : "") + ">" + sec.label + "</option>";
-  }).join("");
-  if (boardIconSecId) boardIconSec.value = boardIconSecId;
+function escapeIconText(value) {
+  return String(value == null ? "" : value).replace(/[&<>"]/g, function(ch) {
+    return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" })[ch];
+  });
+}
+function syncBoardIconTrigger() {
+  var n = Number(boardIconPick);
+  var glyph = Icons && Icons.glyph ? (Icons.glyph(n) || "") : "";
+  var gloss = glyph ? ((Icons.gloss && Icons.gloss[n]) || String(n)) : "None";
+  if (boardIconTriggerGlyph) boardIconTriggerGlyph.innerHTML = glyph;
+  if (boardIconTriggerName) boardIconTriggerName.textContent = gloss;
+  if (!boardIconCurrent) return;
+  if (!glyph) {
+    boardIconCurrent.hidden = true;
+    boardIconCurrent.innerHTML = "";
+    return;
+  }
+  boardIconCurrent.hidden = false;
+  boardIconCurrent.innerHTML = "<span class=\"props-icon-glyph\" aria-hidden=\"true\">" + glyph + "</span><span>" + escapeIconText(gloss) + "</span>";
 }
 function fillBoardIconList() {
   if (!boardIconList || !Icons || !Icons.glyph || !Icons.sections) return;
-  var spec = boardIconSecId ? Icons.sections.filter(function(sec) { return sec.id === boardIconSecId; })[0] : null;
-  if (!spec) {
-    var first = Icons.sections[0];
-    if (first && first.id) {
-      setBoardIconSecId(first.id);
-      spec = first;
-    } else {
-      setBoardIconSecId("");
-      boardIconList.innerHTML = "";
-      fillBoardIconSec();
-      return;
-    }
-  }
   var html = "";
-  (spec.icons || []).forEach(function(n) {
-    var num = String(n).padStart(3, "0");
-    var gloss = (Icons.gloss && Icons.gloss[n]) || "";
-    html += "<button type=\"button\" class=\"props-icon-btn\" role=\"option\" data-icon=\"" + n + "\" title=\"" + num + (gloss ? " " + gloss : "") + "\">" +
-      "<span class=\"props-icon-glyph\" aria-hidden=\"true\">" + (Icons.glyph(n) || "") + "</span>" +
-      "<span class=\"props-icon-num\">" + num + "</span>" +
-      (gloss ? "<span class=\"props-icon-gloss\">" + gloss + "</span>" : "") + "</button>";
+  Icons.sections.forEach(function(sec) {
+    html += "<div class=\"props-icon-sec\">" + escapeIconText(sec.label) + "</div><div class=\"props-icon-grid\">";
+    (sec.icons || []).forEach(function(n) {
+      var gloss = (Icons.gloss && Icons.gloss[n]) || "";
+      html += "<button type=\"button\" class=\"props-icon-btn\" data-icon=\"" + n + "\" title=\"" + escapeIconText(gloss) + "\" aria-label=\"" + escapeIconText(gloss || n) + "\">" +
+        "<span class=\"props-icon-glyph\" aria-hidden=\"true\">" + (Icons.glyph(n) || "") + "</span></button>";
+    });
+    html += "</div>";
   });
   boardIconList.innerHTML = html;
-  fillBoardIconSec();
+  syncBoardIconTrigger();
 }
 function markBoardIconPick(icon) {
   if (!boardIconList) return;
   Array.from(boardIconList.querySelectorAll(".props-icon-btn")).forEach(function(btn) {
     var on = Number(btn.dataset.icon) === Number(icon);
     btn.classList.toggle("is-selected", on);
-    btn.setAttribute("aria-selected", on ? "true" : "false");
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
   });
-  var selected = boardIconList.querySelector(".props-icon-btn.is-selected");
-  if (selected && selected.scrollIntoView) selected.scrollIntoView({ block: "nearest" });
+}
+function closeBoardIconPop() {
+  if (!boardIconPop || boardIconPop.hidden) return;
+  boardIconPop.hidden = true;
+  if (boardIconTrigger) {
+    boardIconTrigger.classList.remove("is-open");
+    boardIconTrigger.setAttribute("aria-expanded", "false");
+  }
+}
+function placeBoardIconPop() {
+  if (!boardIconPop || !boardIconTrigger || boardIconPop.hidden) return;
+  var rect = boardIconTrigger.getBoundingClientRect();
+  var gap = 6;
+  var edge = 8;
+  var width = Math.max(240, rect.width);
+  var left = Math.min(Math.max(edge, rect.left), window.innerWidth - width - edge);
+  var spaceBelow = window.innerHeight - rect.bottom - gap - edge;
+  var spaceAbove = rect.top - gap - edge;
+  var openUp = spaceBelow < 220 && spaceAbove > spaceBelow;
+  var room = Math.max(160, Math.min(440, openUp ? spaceAbove : spaceBelow));
+  var chrome = boardIconCurrent && !boardIconCurrent.hidden ? boardIconCurrent.offsetHeight + 8 : 0;
+  boardIconPop.style.width = width + "px";
+  boardIconPop.style.left = left + "px";
+  if (boardIconList) boardIconList.style.maxHeight = Math.max(120, room - chrome) + "px";
+  if (openUp) {
+    boardIconPop.style.top = "auto";
+    boardIconPop.style.bottom = (window.innerHeight - rect.top + gap) + "px";
+  } else {
+    boardIconPop.style.bottom = "auto";
+    boardIconPop.style.top = (rect.bottom + gap) + "px";
+  }
+}
+function openBoardIconPop() {
+  if (!boardIconPop || !boardIconTrigger || (boardIconField && boardIconField.hidden)) return;
+  boardIconPop.hidden = false;
+  boardIconTrigger.classList.add("is-open");
+  boardIconTrigger.setAttribute("aria-expanded", "true");
+  placeBoardIconPop();
+  var selected = boardIconList && boardIconList.querySelector(".props-icon-btn.is-selected");
+  if (!selected || !boardIconList) return;
+  var listRect = boardIconList.getBoundingClientRect();
+  var btnRect = selected.getBoundingClientRect();
+  boardIconList.scrollTop += btnRect.top - listRect.top - (listRect.height - btnRect.height) / 2;
 }
 
 
@@ -512,11 +555,13 @@ function commitBoardId() {
 }
 function setBoardIconField(show, icon) {
   if (boardIconField) boardIconField.hidden = !show;
-  if (!show || !boardIconList) return;
+  if (!show) {
+    closeBoardIconPop();
+    return;
+  }
   var n = Number(icon);
   var ok = Number.isInteger(n) && n > 0 && Icons && Icons.glyph && Icons.glyph(n);
   setBoardIconPick(ok ? n : null);
-  setBoardIconSecId(ok && Icons.sectionOf ? Icons.sectionOf(n) : "");
   fillBoardIconList();
   markBoardIconPick(boardIconPick);
 }
@@ -533,6 +578,10 @@ function commitBoardIcon(nextIcon) {
       emit("scheduleDiagramSave");
       setStatus(nextIcon == null ? "Icon cleared" : "Icon · " + nextIcon);
     }
+    var picked = nextIcon == null || nextIcon === "" ? null : Number(nextIcon);
+    setBoardIconPick(Number.isInteger(picked) && picked > 0 ? picked : null);
+    syncBoardIconTrigger();
+    markBoardIconPick(boardIconPick);
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 
@@ -1324,7 +1373,7 @@ if (boardLinkButton) boardLinkButton.onclick = function() { setBoardLinkMode(!bo
 if (typeof document !== "undefined") document.addEventListener("keydown", function(event) {
   if (!isBoardCanvasKind() || document.documentElement.dataset.drawerMode !== "diagram" || (event.key !== "Delete" && event.key !== "Backspace") || (!selectedBoardNode && !selectedBoardEdge)) return;
   var target = event.target;
-  if (target === diagramSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && target.closest("#boardIconField")) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+  if (target === diagramSourceEl || target === boardTitleEditor || target === boardTypeEditor || (target && target.closest && (target.closest("#boardIconField") || target.closest("#board-icon-pop"))) || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
   event.preventDefault();
   boardEditAction(function() { return selectedBoardEdge ? BoxesRender.deleteLink(diagramSourceEl.value, selectedBoardEdge) : BoxesRender.deleteNode(diagramSourceEl.value, selectedBoardNode); });
 });
@@ -1415,7 +1464,7 @@ if (typeof document !== "undefined") document.addEventListener("keydown", functi
   if (!delta) return;
   var target = event.target;
   if (target === diagramSourceEl || target === boardTitleEditor || (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
-  if (target && target.closest && target.closest("#boardIconField")) return;
+  if (target && target.closest && (target.closest("#boardIconField") || target.closest("#board-icon-pop"))) return;
   if (boardNudgeSelection(delta)) {
     event.preventDefault();
     return;
@@ -1528,6 +1577,9 @@ export {
   commitBoardIcon,
   fillBoardIconList,
   markBoardIconPick,
+  openBoardIconPop,
+  closeBoardIconPop,
+  placeBoardIconPop,
   commitBoardNodeFont,
   setBoardIdField,
   boardDomSelectionKey,

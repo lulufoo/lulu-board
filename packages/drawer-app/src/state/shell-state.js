@@ -106,10 +106,13 @@ const boardArrowReverse = $("#boardArrowReverse");
 
 const boardIconField = $("#boardIconField");
 const boardIconLabel = $("#boardIconLabel");
-const boardIconList = $("#boardIconList");
-const boardIconSec = $("#boardIconSec");
+const boardIconTrigger = $("#board-icon-trigger");
+const boardIconTriggerGlyph = $("#board-icon-trigger-glyph");
+const boardIconTriggerName = $("#board-icon-trigger-name");
+const boardIconPop = $("#board-icon-pop");
+const boardIconCurrent = $("#board-icon-current");
+const boardIconList = $("#board-icon-list");
 var boardIconPick = 1;
-var boardIconSecId = ""; // first section comes from Icons / icons.json
 function currentDockTab() {
   return (diagramDock && diagramDock.getAttribute("data-open")) || "";
 }
@@ -429,7 +432,6 @@ function setBoardInspectGesture(v) { boardInspectGesture = v; }
 function setBoardLinkModeFlag(v) { boardLinkMode = !!v; }
 function setBoardLinkStart(v) { boardLinkStart = v; }
 function setBoardIconPick(v) { boardIconPick = v; }
-function setBoardIconSecId(v) { boardIconSecId = v; }
 function setBoardIdCopiedTimer(v) { boardIdCopiedTimer = v; }
 function setShellGroups(v) { shellGroups = v; }
 function setShellShares(v) { shellShares = v; }
@@ -545,10 +547,13 @@ export {
   boardArrowReverse,
   boardIconField,
   boardIconLabel,
+  boardIconTrigger,
+  boardIconTriggerGlyph,
+  boardIconTriggerName,
+  boardIconPop,
+  boardIconCurrent,
   boardIconList,
-  boardIconSec,
   boardIconPick,
-  boardIconSecId,
   currentDockTab,
   openDock,
   openPropsPanel,
@@ -615,7 +620,6 @@ export {
   setBoardLinkModeFlag,
   setBoardLinkStart,
   setBoardIconPick,
-  setBoardIconSecId,
   setBoardIdCopiedTimer,
   setShellGroups,
   setShellShares,

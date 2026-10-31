@@ -1940,7 +1940,6 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardTypeEditor,
 #boardTitleEditor,
 #boardDirEditor,
-#boardIconSec,
 #boardAlignEditor,
 #boardJustifyEditor,
 #boardArrowEditor,
@@ -1994,7 +1993,6 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardTypeEditor:focus,
 #boardTitleEditor:focus,
 #boardDirEditor:focus,
-#boardIconSec:focus,
 #boardAlignEditor:focus,
 #boardJustifyEditor:focus,
 #boardArrowEditor:focus,
@@ -2014,7 +2012,6 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #kindThemeSelect,
 #boardTypeEditor,
 #boardDirEditor,
-#boardIconSec,
 #boardAlignEditor,
 #boardJustifyEditor,
 #boardArrowEditor,
@@ -2033,7 +2030,6 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 html[data-theme="dark"] #kindThemeSelect,
 html[data-theme="dark"] #boardTypeEditor,
 html[data-theme="dark"] #boardDirEditor,
-html[data-theme="dark"] #boardIconSec,
 html[data-theme="dark"] #boardAlignEditor,
 html[data-theme="dark"] #boardJustifyEditor,
 html[data-theme="dark"] #boardArrowEditor,
@@ -2089,39 +2085,6 @@ html[data-theme="dark"] #flowchartDirEditor {
 .props-field:has(#boardJustifyLabel[hidden]) { display: none !important; }
 #boardIconField { display: flex; flex-direction: column; gap: 10px; }
 #boardIconField[hidden] { display: none !important; }
-.props-icon-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2px;
-  max-height: 220px;
-  overflow: auto;
-  padding: 4px;
-  border: 1px solid var(--stroke);
-  border-radius: 8px;
-  background: var(--panel-solid);
-}
-.props-icon-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text);
-  font: 12px var(--sans);
-  cursor: pointer;
-}
-.props-icon-btn:hover { background: var(--accent-soft); }
-.props-icon-btn.is-selected {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 14%, var(--panel-solid));
-}
-.props-icon-glyph { width: 16px; height: 16px; flex: 0 0 auto; color: var(--text); }
-.props-icon-glyph svg { display: block; width: 100%; height: 100%; }
-.props-icon-num { width: 3ch; flex: 0 0 auto; font-variant-numeric: tabular-nums; color: var(--muted, #64748b); }
-.props-icon-gloss { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-render .board-title-node { cursor: pointer; border-radius: 10px; padding: 6px 14px !important; }
 .board-render .board-title-node.board-selection,
 .board-render .board-title-node.canvas-selected {

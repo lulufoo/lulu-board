@@ -209,9 +209,11 @@
           </div>
         </div>
         <div id="boardIconField" hidden>
-          <label class="props-label" id="boardIconLabel" for="boardIconSec">Icon</label>
-          <select id="boardIconSec" aria-label="Icon category"></select>
-          <div class="props-icon-list" id="boardIconList" role="listbox" aria-labelledby="boardIconLabel"></div>
+          <label class="props-label" id="boardIconLabel" for="board-icon-trigger">Icon</label>
+          <button type="button" id="board-icon-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="board-icon-pop">
+            <span class="props-icon-glyph" id="board-icon-trigger-glyph" aria-hidden="true"></span>
+            <span id="board-icon-trigger-name">None</span>
+          </button>
         </div>
         <div class="props-field" id="boardTitleField">
           <label class="props-label" for="boardTitleEditor" id="boardTitleLabel">Title</label>
@@ -529,6 +531,10 @@
     </div>
     <div class="create-kind-list" id="createKindList" role="listbox" aria-label="Diagram types"></div>
   </div>
+</div>
+<div id="board-icon-pop" class="props-icon-pop" hidden role="dialog" aria-labelledby="boardIconLabel">
+  <div class="props-icon-current" id="board-icon-current" hidden></div>
+  <div class="props-icon-list" id="board-icon-list"></div>
 </div>
 </body>
 </html>

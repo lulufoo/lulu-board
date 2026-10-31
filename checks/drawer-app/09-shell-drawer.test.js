@@ -104,15 +104,24 @@ console.log('ok 09-shell-drawer');
   assert.doesNotMatch(src, /^var SHELL_ARROW/m, 'icon markup is not a var that the first render can miss');
 }
 
-// ---- properties panel: icon categories are a dropdown, not a grid of blocks ----
+// ---- properties panel: the icon picker stays closed and does not take height ----
 {
   const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
   const board = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/board.js'), 'utf8');
   const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
-  assert.match(html, /<select id="boardIconSec"/, 'Icon category is a select');
-  assert.doesNotMatch(html, /id="boardIconSec" role="group"/, 'no block group for categories');
-  assert.match(board, /<option value=/, 'categories are rendered as options');
-  assert.match(boot, /boardIconSec\.addEventListener\("change"/, 'picking a category switches the icon list');
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/10-icon-pop.css'), 'utf8');
+  const field = html.slice(html.indexOf('id="boardIconField"'), html.indexOf('id="boardTitleField"'));
+  assert.match(html, /<button type="button" id="board-icon-trigger"/, 'Icon is a trigger');
+  assert.match(html, /id="board-icon-pop"[^>]*hidden/, 'the popup starts closed');
+  assert.doesNotMatch(field, /board-icon-list/, 'the icon grid is not in the field');
+  assert.doesNotMatch(html, /id="boardIconSec"/, 'no category select');
+  assert.match(css, /\.props-icon-pop\s*\{[^}]*position:\s*fixed/, 'the popup is fixed, so it adds no panel height');
+  assert.match(board, /props-icon-sec/, 'sections are labels inside the popup');
+  assert.match(board, /props-icon-grid/, 'icons are a grid');
+  assert.doesNotMatch(board, /props-icon-num/, 'the grid does not show numbers');
+  assert.doesNotMatch(board, /boardIconSec/, 'categories are not a select');
+  assert.match(boot, /openBoardIconPop/, 'the trigger opens the popup');
+  assert.doesNotMatch(boot, /boardIconSec/, 'no category change handler');
 }
 
 // ---- shared rows: one action (Stop) at the right; the rest lives in the Share dialog ----
