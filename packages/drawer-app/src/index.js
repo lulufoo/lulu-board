@@ -34,6 +34,7 @@ import DrawerDocumentMeta, {
 } from './core/document-meta.js';
 import { cameraToPan, panToCamera, normalizeDocumentView } from './core/canvas-math.js';
 export * from './state/shell-state.js';
+export * from './state/props-panes.js';
 export * from './state/canvas-interaction.js';
 export * from './kinds/sketch.js';
 export * from './kinds/design.js';

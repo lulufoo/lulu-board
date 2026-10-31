@@ -147,7 +147,12 @@
         <span class="props-kind" id="propsKindLabel">—</span>
       </div>
       <div class="props-empty" id="propsEmpty">Select a title, box, or item</div>
-      <div class="props-fields" id="propsFields" hidden>
+      <div class="props-fields" id="propsFields" hidden data-props-pane="ai">
+        <div class="props-tabs" id="props-panes" role="tablist" aria-label="Properties" hidden>
+          <button type="button" class="props-tab" id="props-pane-ai" role="tab" aria-selected="true" aria-controls="props-ai-panel" data-props-pane="ai">AI</button>
+          <button type="button" class="props-tab" id="props-pane-you" role="tab" aria-selected="false" aria-controls="props-you-panel" data-props-pane="you" tabindex="-1" hidden>You</button>
+        </div>
+        <div id="props-ai-panel" role="tabpanel" aria-labelledby="props-pane-ai">
         <div class="props-field" id="boardIdWrap">
           <label class="props-label" for="boardIdEditor" id="boardIdLabel" hidden>ID</label>
           <div class="props-id-row" id="boardIdField" hidden>
@@ -172,30 +177,6 @@
             <button type="button" class="props-seg-btn props-shape-btn" data-shape="diamond" aria-pressed="false" title="diamond" aria-label="diamond">
               <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><path d="M11 1.5L20 8L11 14.5L2 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
             </button>
-          </div>
-        </div>
-        <div class="props-field" id="board-max-width-field" hidden>
-          <label class="props-label" for="board-max-width-input" id="board-max-width-label">Max Width</label>
-          <div class="props-control">
-            <div class="props-max-width-row">
-              <input type="number" id="board-max-width-input" aria-label="Max Width" step="any">
-              <button type="button" class="props-max-width-reset" id="board-max-width-reset" title="Reset" aria-label="Reset Max Width" hidden>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M9 14 4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
-            </div>
-            <p class="props-hint props-hint-end" id="board-max-width-tip" hidden></p>
-          </div>
-        </div>
-        <div class="props-field" id="boardNodeFontField" hidden>
-          <label class="props-label" for="boardNodeFontSlider" id="boardNodeFontLabel" hidden>Font Size</label>
-          <div class="props-control">
-            <div class="style-cap-row">
-              <input type="range" id="boardNodeFontSlider" min="-3" max="3" step="1" value="0" aria-label="Font size">
-            </div>
-            <p class="props-hint props-hint-end" id="boardNodeFontTip" hidden></p>
           </div>
         </div>
         <div class="props-field" id="boardArrowWrap">
@@ -265,6 +246,33 @@
           </div>
         </div>
         <p class="props-hint" id="propsHint"></p>
+        </div>
+        <div id="props-you-panel" role="tabpanel" aria-labelledby="props-pane-you">
+        <div class="props-field" id="board-max-width-field" hidden>
+          <label class="props-label" for="board-max-width-input" id="board-max-width-label">Max Width</label>
+          <div class="props-control">
+            <div class="props-max-width-row">
+              <input type="number" id="board-max-width-input" aria-label="Max Width" step="any">
+              <button type="button" class="props-max-width-reset" id="board-max-width-reset" title="Reset" aria-label="Reset Max Width" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 14 4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1 5.5 5.5H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            <p class="props-hint props-hint-end" id="board-max-width-tip" hidden></p>
+          </div>
+        </div>
+        <div class="props-field" id="boardNodeFontField" hidden>
+          <label class="props-label" for="boardNodeFontSlider" id="boardNodeFontLabel" hidden>Font Size</label>
+          <div class="props-control">
+            <div class="style-cap-row">
+              <input type="range" id="boardNodeFontSlider" min="-3" max="3" step="1" value="0" aria-label="Font size">
+            </div>
+            <p class="props-hint props-hint-end" id="boardNodeFontTip" hidden></p>
+          </div>
+        </div>
+        </div>
       </div>
       <div class="props-field" id="flowchartDocTitleField" hidden>
         <label class="props-label" for="flowchartDocTitleEditor" id="flowchartDocTitleLabel">Title</label>
