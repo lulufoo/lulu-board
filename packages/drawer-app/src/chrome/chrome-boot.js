@@ -58,7 +58,7 @@ import {
   boardTypeEditor,
   boardMaxWidthInput,
   boardMaxWidthReset,
-  boardShapeField,
+  boardShapeEditor,
   boardArrowEditor,
   boardArrowReverse,
   boardDirEditor,
@@ -165,10 +165,8 @@ if (boardMaxWidthInput) {
   });
 }
 if (boardMaxWidthReset) boardMaxWidthReset.addEventListener("click", resetBoardMaxWidth);
-if (boardShapeField) boardShapeField.addEventListener("click", function(event) {
-  var btn = event.target && event.target.closest ? event.target.closest("[data-shape]") : null;
-  if (!btn || btn.disabled) return;
-  commitBoardShape(btn.getAttribute("data-shape"));
+if (boardShapeEditor) boardShapeEditor.addEventListener("change", function() {
+  commitBoardShape(boardShapeEditor.value);
 });
 if (boardArrowEditor) boardArrowEditor.addEventListener("change", commitBoardArrow);
 if (boardArrowReverse) boardArrowReverse.addEventListener("click", commitBoardReverse);

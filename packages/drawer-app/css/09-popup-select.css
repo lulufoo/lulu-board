@@ -1,6 +1,16 @@
-/* drawer-app/09-popup-select.css — the Style panel dropdown (Theme, Background).
-   The trigger copies the old Theme select (fill, radius, chevron, focus ring); rows may carry an icon. */
+/* drawer-app/09-popup-select.css — dock dropdown (Theme, Background, Properties, Flowchart, Mindmap).
+   The trigger copies the Theme select (fill, radius, chevron, focus ring); rows may carry an icon. */
 .popup-select { position: relative; }
+select.ps-bound {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.props-arrow-row .popup-select { flex: 1 1 auto; min-width: 0; }
 
 .ps-icon {
   flex: none;

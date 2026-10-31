@@ -169,15 +169,12 @@
           <select id="boardTypeEditor" aria-label="Type"></select>
         </div>
         <div class="props-field" id="boardShapeWrap">
-          <label class="props-label" id="boardShapeLabel" hidden>Shape</label>
-          <div class="props-seg props-shape-seg" id="boardShapeField" hidden role="group" aria-labelledby="boardShapeLabel">
-            <button type="button" class="props-seg-btn props-shape-btn" data-shape="rect" aria-pressed="true" title="rect" aria-label="rect">
-              <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><rect x="2.5" y="3.5" width="17" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
-            </button>
-            <button type="button" class="props-seg-btn props-shape-btn" data-shape="diamond" aria-pressed="false" title="diamond" aria-label="diamond">
-              <svg width="22" height="16" viewBox="0 0 22 16" fill="none" aria-hidden="true"><path d="M11 1.5L20 8L11 14.5L2 8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            </button>
-          </div>
+          <label class="props-label" for="boardShapeEditor" id="boardShapeLabel" hidden>Shape</label>
+          <select id="boardShapeEditor" aria-label="Shape" hidden>
+            <option value="rect">rect</option>
+            <option value="diamond">diamond</option>
+          </select>
+          <div id="boardShapeHost"></div>
         </div>
         <div class="props-field" id="boardArrowWrap">
           <label class="props-label" for="boardArrowEditor" id="boardArrowLabel" hidden>Arrow</label>

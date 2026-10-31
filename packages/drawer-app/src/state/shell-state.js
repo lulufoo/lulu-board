@@ -59,7 +59,7 @@ const propsKindLabel = $("#propsKindLabel");
 const propsHint = $("#propsHint");
 const boardTitleEditor = $("#boardTitleEditor");
 const boardTypeEditor = $("#boardTypeEditor");
-const boardShapeField = $("#boardShapeField");
+const boardShapeEditor = $("#boardShapeEditor");
 const boardTitleLabel = $("#boardTitleLabel");
 const boardTypeLabel = $("#boardTypeLabel");
 const boardShapeLabel = $("#boardShapeLabel");
@@ -505,7 +505,7 @@ export {
   propsHint,
   boardTitleEditor,
   boardTypeEditor,
-  boardShapeField,
+  boardShapeEditor,
   boardTitleLabel,
   boardTypeLabel,
   boardShapeLabel,

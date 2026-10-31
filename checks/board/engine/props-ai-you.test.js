@@ -45,6 +45,9 @@ assert.ok(/data-props-pane="ai"\] #props-you-panel/.test(css), 'AI pane hides Yo
 
 assert.ok(/function syncPropsPanes/.test(js), 'syncs pane from field visibility');
 assert.ok(/bar\.hidden = !youOn/.test(js), 'hides tabs when You has no fields');
+assert.ok(/var preferred = "ai"/.test(js), 'remembers the last tab the user clicked');
+assert.ok(/fromUser && \(name === "you" \|\| name === "ai"\)/.test(js), 'hiding You fields does not overwrite the remembered tab');
+assert.ok(/preferred === "you" && youOn/.test(js), 'You stays selected when its fields come back');
 assert.ok(!/saveDrawerUi/.test(js), 'does not persist the tab');
 assert.ok(/syncPropsPanes\(\)/.test(boardJs), 'Boxes inspect syncs panes');
 
