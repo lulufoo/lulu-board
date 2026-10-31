@@ -143,7 +143,8 @@ item HERO type text "Welcome"
   const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/item.js'), 'utf8');
   const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/render.js'), 'utf8');
   assert.ok(/max-width:\s*var\(--board-item-cap/.test(css), 'items use --board-item-cap');
-  assert.ok(/max-width:\s*var\(--board-box-cap/.test(css), 'boxes use --board-box-cap');
+  assert.ok(/max-width:\s*var\(--board-box-cap/.test(css), 'box titles use --board-box-cap');
+  assert.ok(/\.board-zone\s*\{[^}]*max-width:\s*none/.test(css), 'box shell is not rem-capped');
   assert.ok(!/data-board-cap/.test(css), 'cap-off CSS removed');
   assert.ok(!/dataset\.boardCap/.test(itemJs), 'item mount does not mark cap');
   assert.ok(/id="board-max-width-input"/.test(html) && /Max Width/.test(html), 'props have Max Width input');
