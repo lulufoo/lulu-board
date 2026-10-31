@@ -1624,6 +1624,7 @@ import * as BoxAlign from './layout/box-align.js';
         if (row) {
           el.style.width = '';
           el.style.maxWidth = '';
+          MaxWidth.restoreItemRem(el);
           el.style.minWidth = contentFloorStyle(el, 'width') || 'min-content';
         } else {
           el.style.height = '';
@@ -1668,6 +1669,7 @@ import * as BoxAlign from './layout/box-align.js';
       if (!isDiamondKid(el)) {
         el.style.height = '';
         el.style.minHeight = contentFloorStyle(el, 'height');
+        MaxWidth.restoreItemRem(el);
       }
     });
   }
