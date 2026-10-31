@@ -1,6 +1,6 @@
 /* Boxes kind: properties chrome, selection paint, drag, persist. */
 import BoxesRender, { Icons } from '../../../boxes/index.js';
-import { TypeScale, MaxWidth } from '../../../boxes/themes/index.js';
+import { TypeScale, MaxWidth, ItemAlign } from '../../../boxes/themes/index.js';
 import { register, emit } from '../core/hooks.js';
 import { CanvasInteraction } from '../state/canvas-interaction.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
@@ -216,6 +216,7 @@ function showPropsForLinkMode() {
   setBoardIdField(false);
   setBoardShapeField(false);
   setBoardMaxWidthField(false);
+  setBoardItemAlignField(false);
   setBoardNodeFontField(false);
   if (propsHint) propsHint.textContent = "Type, arrow, and optional title; then click source / target";
 }
@@ -236,6 +237,7 @@ function showPropsForLinkEdge(title, type, arrow) {
   if (propsHint) propsHint.textContent = "Type, arrow, and title write back to DSL";
   setBoardShapeField(false);
   setBoardMaxWidthField(false);
+  setBoardItemAlignField(false);
   setBoardNodeFontField(false);
 }
 function setBoardShapeField(show, shape) {
@@ -262,6 +264,29 @@ function setBoardMaxWidthField(show, authoredRem, globalRem) {
   if (boardMaxWidthLabel) boardMaxWidthLabel.hidden = !show;
   if (boardMaxWidthReset) boardMaxWidthReset.hidden = !show || authored == null;
   setAuthoredTip(boardMaxWidthTip, show, authored != null);
+  syncPropsPanes();
+}
+function itemAlignEls() {
+  return {
+    field: document.getElementById("board-item-align-field"),
+    editor: document.getElementById("board-item-align-editor"),
+    label: document.getElementById("board-item-align-label"),
+    reset: document.getElementById("board-item-align-reset"),
+  };
+}
+function setBoardItemAlignField(show, authored, type) {
+  var fallback = ItemAlign && typeof ItemAlign.defaultForType === "function"
+    ? ItemAlign.defaultForType(type)
+    : "top-left";
+  var next = authored || fallback;
+  var els = itemAlignEls();
+  if (els.field) els.field.hidden = !show;
+  if (els.editor) {
+    els.editor.hidden = !show;
+    if (show) els.editor.value = next;
+  }
+  if (els.label) els.label.hidden = !show;
+  if (els.reset) els.reset.hidden = !show || authored == null;
   syncPropsPanes();
 }
 function selectedMaxWidthKind() {
@@ -405,6 +430,7 @@ function hidePropsLinkOnlyChrome() {
   setBoardArrowField(false);
   setBoardShapeField(false);
   setBoardMaxWidthField(false);
+  setBoardItemAlignField(false);
   setBoardNodeFontField(false);
 }
 function escapeIconText(value) {
@@ -832,6 +858,10 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
       : null;
     setBoardMaxWidthField(showMaxWidth, authoredWidth, selectedGlobalMaxWidthRem(board));
     var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
+    var authoredAlign = (isItem && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeAlign === "function")
+      ? BoxesRender.authoredNodeAlign(board, nodeId)
+      : null;
+    setBoardItemAlignField(!!isItem, authoredAlign, itemType);
     var showFont = !isTitle;
     var authoredFz = (showFont && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeTypeStep === "function")
       ? BoxesRender.authoredNodeTypeStep(board, nodeId)
@@ -1258,6 +1288,50 @@ function resetBoardMaxWidth() {
     setBoardMaxWidthField(true, null, selectedGlobalMaxWidthRem(board));
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
+function commitBoardItemAlign() {
+  var editor = document.getElementById("board-item-align-editor");
+  if (!editor || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateNodeAlign !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateNodeAlign(diagramSourceEl.value, selectedBoardNode, editor.value);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Align · " + editor.value);
+    }
+    var board = BoxesRender.parse(diagramSourceEl.value);
+    var node = typeof BoxesRender.findNode === "function" ? BoxesRender.findNode(board, keepSelection) : null;
+    var id = node && node.id ? String(node.id) : selectedNodeStyleId();
+    if (id) {
+      setSelectedBoardNode(boardSelectionWithId(keepSelection, id));
+      setBoardIdField(true, id);
+    }
+    setBoardItemAlignField(true, id ? BoxesRender.authoredNodeAlign(board, id) : null, node && node.type);
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
+function resetBoardItemAlign() {
+  if (!selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (typeof BoxesRender.updateNodeAlign !== "function") return;
+  var keepSelection = Object.assign({}, selectedBoardNode);
+  try {
+    var next = BoxesRender.updateNodeAlign(diagramSourceEl.value, selectedBoardNode, null);
+    if (next !== diagramSourceEl.value) {
+      diagramSourceEl.value = next;
+      setSelectedBoardNode(keepSelection);
+      updateDiagramChars();
+      emit("renderDiagram");
+      emit("scheduleDiagramSave");
+      setStatus("Align · reset");
+    }
+    var board = BoxesRender.parse(diagramSourceEl.value);
+    var node = typeof BoxesRender.findNode === "function" ? BoxesRender.findNode(board, keepSelection) : null;
+    setBoardItemAlignField(true, null, node && node.type);
+  } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
+}
 function commitBoardType() {
   if (!boardTypeEditor) return;
   if (selectedBoardEdge && typeof BoxesRender.updateLinkType === "function") {
@@ -1620,6 +1694,8 @@ export {
   commitBoardType,
   commitBoardMaxWidth,
   resetBoardMaxWidth,
+  commitBoardItemAlign,
+  resetBoardItemAlign,
   commitBoardShape,
   commitBoardArrow,
   commitBoardReverse,

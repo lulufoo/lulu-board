@@ -18,6 +18,8 @@ import {
   commitBoardType,
   commitBoardMaxWidth,
   resetBoardMaxWidth,
+  commitBoardItemAlign,
+  resetBoardItemAlign,
   commitBoardShape,
   commitBoardArrow,
   commitBoardReverse,
@@ -165,6 +167,10 @@ if (boardMaxWidthInput) {
   });
 }
 if (boardMaxWidthReset) boardMaxWidthReset.addEventListener("click", resetBoardMaxWidth);
+var boardItemAlignEditor = document.getElementById("board-item-align-editor");
+var boardItemAlignReset = document.getElementById("board-item-align-reset");
+if (boardItemAlignEditor) boardItemAlignEditor.addEventListener("change", commitBoardItemAlign);
+if (boardItemAlignReset) boardItemAlignReset.addEventListener("click", resetBoardItemAlign);
 if (boardShapeEditor) boardShapeEditor.addEventListener("change", function() {
   commitBoardShape(boardShapeEditor.value);
 });

@@ -6,6 +6,7 @@ import * as Themes from '../themes/index.js';
 import * as Rotation from '../themes/rotation.js';
 import * as Scale from '../themes/type-scale.js';
 import * as MaxWidth from '../themes/max-width-scale.js';
+import * as ItemAlign from '../themes/item-align.js';
 import * as StyleToken from '../../board-core/style-token.js';
 
   const IDENT = /^[A-Za-z_][\w.-]*$/;
@@ -61,8 +62,12 @@ import * as StyleToken from '../../board-core/style-token.js';
         const rem = MaxWidth.authoredRem(row.max_width);
         if (rem != null) next.max_width = rem;
       }
+      if (row.align != null && row.align !== '') {
+        const align = ItemAlign.authored(row.align);
+        if (align) next.align = align;
+      }
       Object.keys(row).forEach((field) => {
-        if (field === 'fz' || field === 'max_width' || row[field] == null) return;
+        if (field === 'fz' || field === 'max_width' || field === 'align' || row[field] == null) return;
         next[field] = row[field];
       });
       if (Object.keys(next).length) out[key] = next;
@@ -187,6 +192,61 @@ import * as StyleToken from '../../board-core/style-token.js';
     }
     if (!key) fail('node id is required');
     applyNodeMaxWidth(board, key, rem);
+    return serialize(board);
+  }
+  function authoredNodeAlign(board, id) {
+    const key = String(id || '').trim();
+    if (!key) return null;
+    const row = styleIdsOf(board)[key];
+    return row ? ItemAlign.authored(row.align) : null;
+  }
+  function itemNodeForId(board, id) {
+    const key = String(id || '').trim();
+    let found = null;
+    const take = (node) => {
+      if (node && node.id === key && isItemNode(node)) found = node;
+    };
+    (View.topItems(board) || []).forEach(take);
+    const walk = (box) => {
+      if (!box || View.isItem(box)) return;
+      (box.items || []).forEach(take);
+      (box.boxes || []).forEach(walk);
+    };
+    (View.topBoxes(board) || []).forEach(walk);
+    return found;
+  }
+  function itemTypeForId(board, id) {
+    const node = itemNodeForId(board, id);
+    return node ? String(node.type || 'chip') : 'chip';
+  }
+  function nodeAlign(board, id) {
+    return ItemAlign.resolve(authoredNodeAlign(board, id), itemTypeForId(board, id));
+  }
+  function applyNodeAlign(board, key, value) {
+    const fallback = ItemAlign.defaultForType(itemTypeForId(board, key));
+    const ids = Object.assign({}, styleIdsOf(board));
+    const row = Object.assign({}, ids[key] || {});
+    const next = ItemAlign.authored(value);
+    if (next == null || next === fallback) delete row.align;
+    else row.align = next;
+    if (!Object.keys(row).length) delete ids[key];
+    else ids[key] = row;
+    setStyleIds(board, ids);
+  }
+  function updateNodeAlign(source, target, value) {
+    const board = parse(source);
+    const node = nodeForTypeStep(board, target);
+    const item = isItemNode(node) ? node : itemNodeForId(board, node && node.id);
+    if (!item) fail('align is for items');
+    const next = value == null || value === '' ? null : ItemAlign.authored(value);
+    const fallback = ItemAlign.defaultForType(String(item.type || 'chip'));
+    let key = String(item.id || node.id || '').trim();
+    if (!key) {
+      if (next == null || next === fallback) return source;
+      key = String(ensureKidId(board, node) || '').trim();
+    }
+    if (!key) fail('node id is required');
+    applyNodeAlign(board, key, next);
     return serialize(board);
   }
   function resolveStyle(board) {
@@ -2175,8 +2235,8 @@ import * as StyleToken from '../../board-core/style-token.js';
     });
     drawEdges(board, canvas, svg, elements, document, frames);
   }
-const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
+const api = { parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError };
 export default api;
 export {
-  parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
+  parse, serialize, findNode, updateTitle, updateType, updateShape, updateStyle, encodeStylePayload, decodeStylePayload, authoredViewport, authoredNodeTypeStep, nodeTypeStep, updateNodeTypeStep, authoredNodeMaxWidth, nodeMaxWidth, updateNodeMaxWidth, authoredNodeAlign, nodeAlign, updateNodeAlign, updateIcon, updateId, isIdTaken, updateDir, updateAlign, updateJustify, updateLinkTitle, updateLinkType, updateLinkArrow, reverseLink, updatePosition, reorderInfo, reorderFinalIndex, reorderNode, addBox, addItem, deleteNode, addLink, deleteLink, setLinkRouteStyle, getLinkRouteStyle, resolveStyle, applyDocumentStyle, render, refreshEdges, worldBounds, canvasScale, worldPointFromClient, BoxesParseError
 };

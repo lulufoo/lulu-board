@@ -6,7 +6,8 @@ var preferred = "ai";
 function propsYouHasFields() {
   var maxW = document.getElementById("board-max-width-field");
   var font = document.getElementById("boardNodeFontField");
-  return !!(maxW && !maxW.hidden) || !!(font && !font.hidden);
+  var align = document.getElementById("board-item-align-field");
+  return !!(maxW && !maxW.hidden) || !!(font && !font.hidden) || !!(align && !align.hidden);
 }
 
 function setPropsPane(name, fromUser) {
