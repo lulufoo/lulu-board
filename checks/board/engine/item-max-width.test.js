@@ -15,8 +15,12 @@ assert.ok(
   'chip/text/note share --board-item-cap'
 );
 assert.ok(
-  /\.board-zone\s*\{[^}]*max-width:\s*var\(--board-box-cap/.test(css),
-  '.board-zone uses --board-box-cap'
+  /\.board-zone\s*\{[^}]*max-width:\s*none/.test(css),
+  '.board-zone shell is not rem-capped'
+);
+assert.ok(
+  /\.board-title-name \{[^}]*max-width:\s*var\(--board-box-cap/.test(css),
+  'box title uses --board-box-cap'
 );
 assert.ok(
   !/el\.style\.maxWidth\s*=\s*['"]none['"]/.test(boxJs),
@@ -27,7 +31,7 @@ assert.ok(
   'box mount applies a per-id rem override'
 );
 assert.ok(
-  /\.board-title-name \{[^}]*min-width:\s*0[^}]*overflow-wrap:\s*anywhere/.test(css),
+  /\.board-title-name \{[^}]*min-width:\s*0[^}]*max-width:\s*var\(--board-box-cap[^}]*overflow-wrap:\s*anywhere/.test(css),
   'box titles wrap at the rem cap'
 );
 assert.ok(/showMaxWidth = isMd \|\| isBoxNode/.test(boardJs), 'You shows Max Width for boxes');
