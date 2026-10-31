@@ -3,66 +3,57 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
-const Layout = require('../../../packages/boxes/engine/layout').default;
 const Render = require('../../../packages/boxes/engine/render.js').default;
 
 const src = 'boxes Demo\nbox A "A"\n';
 
 {
-  const out = Render.updateAlign(src, { kind: 'box', id: 'A' }, 'center');
-  assert.ok(out.includes('align A center'), out);
+  const out = Render.updateAlignX(src, { kind: 'box', id: 'A' }, 'center');
+  assert.ok(out.includes('align_x A center'), out);
   const board = Render.parse(out);
-  assert.strictEqual(board.layout.boxes.A.align, 'center');
+  assert.strictEqual(board.layout.boxes.A.align_x, 'center');
 }
 
 {
-  const centered = Render.updateAlign(src, { kind: 'box', id: 'A' }, 'center');
-  const out = Render.updateAlign(centered, { kind: 'box', id: 'A' }, 'stretch');
-  assert.ok(out.includes('align A stretch'), out);
+  const centered = Render.updateAlignX(src, { kind: 'box', id: 'A' }, 'center');
+  const out = Render.updateAlignX(centered, { kind: 'box', id: 'A' }, 'stretch');
+  assert.ok(out.includes('align_x A stretch'), out);
 }
 
 {
-  const out = Render.updateJustify(src, { kind: 'box', id: 'A' }, 'stretch');
-  assert.ok(out.includes('justify A stretch'), out);
+  const out = Render.updateAlignY(src, { kind: 'box', id: 'A' }, 'stretch');
+  assert.ok(out.includes('align_y A stretch'), out);
   const board = Render.parse(out);
-  assert.strictEqual(board.layout.boxes.A.justify, 'stretch');
+  assert.strictEqual(board.layout.boxes.A.align_y, 'stretch');
 }
 
 {
-  const out = Render.updateJustify(src, { kind: 'box', id: 'A' }, 'between');
-  assert.ok(out.includes('justify A between'), out);
-  const board = Render.parse(out);
-  assert.strictEqual(board.layout.boxes.A.justify, 'between');
+  const out = Render.updateAlignY(src, { kind: 'box', id: 'A' }, 'bottom');
+  assert.ok(out.includes('align_y A bottom'), out);
 }
 
 {
-  const stretched = Render.updateJustify(src, { kind: 'box', id: 'A' }, 'stretch');
-  const out = Render.updateJustify(stretched, { kind: 'box', id: 'A' }, 'start');
-  assert.ok(out.includes('justify A start'), out);
+  const out = Render.updateAlignX(src, { kind: 'title' }, 'right');
+  assert.ok(out.includes('align_x right'), out);
+  assert.strictEqual(Render.parse(out).layout.board.align_x, 'right');
 }
 
 {
   let threw = false;
-  try { Render.updateAlign(src, { kind: 'title' }, 'center'); }
-  catch (err) { threw = /only a box can set align/.test(String(err.message)); }
-  assert.ok(threw, 'title cannot set box align');
-}
-
-{
-  let threw = false;
-  try { Render.updateJustify(src, { kind: 'item', id: 'X' }, 'center'); }
-  catch (err) { threw = /items do not have justify/.test(String(err.message)); }
-  assert.ok(threw, 'item cannot set justify');
+  try { Render.updateAlignX(src, { kind: 'item', id: 'X' }, 'center'); }
+  catch (err) { threw = /items do not have align_x/.test(String(err.message)); }
+  assert.ok(threw, 'item cannot set align_x');
 }
 
 {
   const html = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-  assert.ok(/id="boardAlignEditor"/.test(html), 'align control');
-  assert.ok(/id="boardJustifyEditor"/.test(html), 'justify control');
-  assert.ok(/<option value="between">between<\/option>/.test(html), 'between justify control');
-  assert.ok(/id="boardDirTip"/.test(html), 'direction tip');
-  assert.ok(/id="boardAlignTip"/.test(html), 'align tip');
-  assert.ok(/id="boardJustifyTip"/.test(html), 'justify tip');
+  assert.ok(/id="board-align-x-editor"/.test(html), 'align x control');
+  assert.ok(/id="board-align-y-editor"/.test(html), 'align y control');
+  assert.ok(/<option value="right">right<\/option>/.test(html), 'right align x');
+  assert.ok(/<option value="bottom">bottom<\/option>/.test(html), 'bottom align y');
+  assert.ok(!/<option value="between">between<\/option>/.test(html), 'no between');
+  assert.ok(/id="board-align-x-tip"/.test(html), 'align x tip');
+  assert.ok(/id="board-align-y-tip"/.test(html), 'align y tip');
   assert.ok(!/<option value="">default<\/option>/.test(html), 'no default option');
 }
 
@@ -77,7 +68,8 @@ const src = 'boxes Demo\nbox A "A"\n';
   assert.ok(out.includes('direction A column'), out);
   const again = Render.serialize(Render.parse(src));
   assert.ok(!/direction A/.test(again), again);
-  assert.ok(!/align A/.test(again), again);
+  assert.ok(!/align_x A/.test(again), again);
+  assert.ok(!/align_y A/.test(again), again);
   assert.ok(!/justify A/.test(again), again);
 }
 

@@ -27,11 +27,11 @@ CANVAS <-> YOU title "on canvas"
 CANVAS <-> PROTO title "in sync"
 layout
   direction HERO, MINI, PROTOROW row
-  align COPY, WORDS start
-  align HERO, PROTOROW, AI, YOU, PROTO, CANVAS center
-  align MINI stretch
-  justify WORDS, AI, YOU center
-  justify MINI stretch
+  align_x COPY, WORDS left
+  align_x AI, YOU, PROTO, CANVAS center
+  align_x MINI stretch
+  align_y HERO, PROTOROW, WORDS, AI, YOU center
+  align_y MINI stretch
   arrange AI below HERO
   arrange CANVAS after AI
   arrange YOU after CANVAS

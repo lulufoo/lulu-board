@@ -24,8 +24,8 @@ import {
   commitBoardArrow,
   commitBoardReverse,
   commitBoardDir,
-  commitBoardAlign,
-  commitBoardJustify,
+  commitBoardAlignX,
+  commitBoardAlignY,
   commitBoardIcon,
   openBoardIconPop,
   closeBoardIconPop,
@@ -64,8 +64,8 @@ import {
   boardArrowEditor,
   boardArrowReverse,
   boardDirEditor,
-  boardAlignEditor,
-  boardJustifyEditor,
+  boardAlignXEditor,
+  boardAlignYEditor,
   boardIconList,
   boardIconTrigger,
   boardIconPop,
@@ -177,8 +177,8 @@ if (boardShapeEditor) boardShapeEditor.addEventListener("change", function() {
 if (boardArrowEditor) boardArrowEditor.addEventListener("change", commitBoardArrow);
 if (boardArrowReverse) boardArrowReverse.addEventListener("click", commitBoardReverse);
 if (boardDirEditor) boardDirEditor.addEventListener("change", commitBoardDir);
-if (boardAlignEditor) boardAlignEditor.addEventListener("change", commitBoardAlign);
-if (boardJustifyEditor) boardJustifyEditor.addEventListener("change", commitBoardJustify);
+if (boardAlignXEditor) boardAlignXEditor.addEventListener("change", commitBoardAlignX);
+if (boardAlignYEditor) boardAlignYEditor.addEventListener("change", commitBoardAlignY);
 if (boardIconTrigger) boardIconTrigger.addEventListener("click", function() {
   if (boardIconPop && !boardIconPop.hidden) closeBoardIconPop();
   else openBoardIconPop();

@@ -1,6 +1,7 @@
 /* Boxes kind: properties chrome, selection paint, drag, persist. */
 import BoxesRender, { Icons } from '../../../boxes/index.js';
 import { TypeScale, MaxWidth, ItemAlign } from '../../../boxes/themes/index.js';
+import * as BoxAlign from '../../../boxes/engine/layout/box-align.js';
 import { register, emit } from '../core/hooks.js';
 import { CanvasInteraction } from '../state/canvas-interaction.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
@@ -64,12 +65,12 @@ import {
   boardDirEditor,
   boardDirLabel,
   boardDirTip,
-  boardAlignEditor,
-  boardAlignLabel,
-  boardAlignTip,
-  boardJustifyEditor,
-  boardJustifyLabel,
-  boardJustifyTip,
+  boardAlignXEditor,
+  boardAlignXLabel,
+  boardAlignXTip,
+  boardAlignYEditor,
+  boardAlignYLabel,
+  boardAlignYTip,
   boardOrderField,
   boardOrderLabel,
   boardOrderPrev,
@@ -211,7 +212,7 @@ function showPropsForLinkMode() {
   if (boardDirEditor) boardDirEditor.hidden = true;
   if (boardDirLabel) boardDirLabel.hidden = true;
   setBoardDirTip(false);
-  setBoardAlignJustifyFields(false);
+  setBoardAlignXYFields(false);
   setBoardIconField(false);
   setBoardIdField(false);
   setBoardShapeField(false);
@@ -231,7 +232,7 @@ function showPropsForLinkEdge(title, type, arrow) {
   if (boardDirEditor) boardDirEditor.hidden = true;
   if (boardDirLabel) boardDirLabel.hidden = true;
   setBoardDirTip(false);
-  setBoardAlignJustifyFields(false);
+  setBoardAlignXYFields(false);
   setBoardIconField(false);
   setBoardIdField(false);
   if (propsHint) propsHint.textContent = "Type, arrow, and title write back to DSL";
@@ -379,23 +380,24 @@ function setAuthoredTip(el, show, authored) {
 function setBoardDirTip(show, authored) {
   setAuthoredTip(boardDirTip, show, authored);
 }
-function setBoardAlignJustifyFields(show, align, justify) {
-  var authoredA = align === "start" || align === "center" || align === "stretch";
-  var authoredJ = justify === "start" || justify === "center" || justify === "between" || justify === "stretch";
-  var a = authoredA ? align : "stretch";
-  var j = authoredJ ? justify : "start";
-  if (boardAlignEditor) {
-    boardAlignEditor.hidden = !show;
-    if (show) boardAlignEditor.value = a;
+function setBoardAlignXYFields(show, props, kind) {
+  var resolved = BoxAlign && typeof BoxAlign.resolve === "function"
+    ? BoxAlign.resolve(props, kind)
+    : { align_x: kind === "board" ? "left" : "stretch", align_y: kind === "board" ? "stretch" : "top" };
+  var authoredX = !!(props && BoxAlign.authoredX(props.align_x));
+  var authoredY = !!(props && BoxAlign.authoredY(props.align_y));
+  if (boardAlignXEditor) {
+    boardAlignXEditor.hidden = !show;
+    if (show) boardAlignXEditor.value = resolved.align_x;
   }
-  if (boardAlignLabel) boardAlignLabel.hidden = !show;
-  setAuthoredTip(boardAlignTip, show, authoredA);
-  if (boardJustifyEditor) {
-    boardJustifyEditor.hidden = !show;
-    if (show) boardJustifyEditor.value = j;
+  if (boardAlignXLabel) boardAlignXLabel.hidden = !show;
+  setAuthoredTip(boardAlignXTip, show, authoredX);
+  if (boardAlignYEditor) {
+    boardAlignYEditor.hidden = !show;
+    if (show) boardAlignYEditor.value = resolved.align_y;
   }
-  if (boardJustifyLabel) boardJustifyLabel.hidden = !show;
-  setAuthoredTip(boardJustifyTip, show, authoredJ);
+  if (boardAlignYLabel) boardAlignYLabel.hidden = !show;
+  setAuthoredTip(boardAlignYTip, show, authoredY);
 }
 function setBoardOrderField(show, info) {
   if (boardOrderField) boardOrderField.hidden = !show;
@@ -425,7 +427,7 @@ function hidePropsLinkOnlyChrome() {
   if (boardTitleLabel) boardTitleLabel.hidden = false;
   if (boardDirEditor) boardDirEditor.hidden = false;
   if (boardDirLabel) boardDirLabel.hidden = false;
-  setBoardAlignJustifyFields(false);
+  setBoardAlignXYFields(false);
   setBoardOrderField(false);
   setBoardArrowField(false);
   setBoardShapeField(false);
@@ -889,11 +891,13 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
         setBoardDirTip(false);
       }
     }
-    if (!isTitle && !isItem) {
-      var boxProps = (((board && board.layout && board.layout.boxes) || {})[selectedBoardNode.id] || {});
-      setBoardAlignJustifyFields(true, boxProps.align, boxProps.justify);
+    if (!isItem) {
+      var alignProps = isTitle
+        ? ((board && board.layout && board.layout.board) || {})
+        : ((((board && board.layout && board.layout.boxes) || {})[selectedBoardNode.id]) || {});
+      setBoardAlignXYFields(true, alignProps, isTitle ? "board" : "box");
     } else {
-      setBoardAlignJustifyFields(false);
+      setBoardAlignXYFields(false);
     }
     var orderInfo = null;
     if (!isTitle && typeof BoxesRender !== "undefined" && typeof BoxesRender.reorderInfo === "function") {
@@ -1383,7 +1387,7 @@ function commitBoardDir() {
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardBoxFlex(kind, editor, updateFn) {
-  if (!selectedBoardNode || selectedBoardNode.kind !== "box" || !editor || typeof updateFn !== "function") return;
+  if (!selectedBoardNode || selectedBoardNode.kind === "item" || !editor || typeof updateFn !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
     var next = updateFn(diagramSourceEl.value, selectedBoardNode, editor.value);
@@ -1397,11 +1401,11 @@ function commitBoardBoxFlex(kind, editor, updateFn) {
     }
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
-function commitBoardAlign() {
-  commitBoardBoxFlex("Align", boardAlignEditor, BoxesRender.updateAlign);
+function commitBoardAlignX() {
+  commitBoardBoxFlex("Align X", boardAlignXEditor, BoxesRender.updateAlignX);
 }
-function commitBoardJustify() {
-  commitBoardBoxFlex("Justify", boardJustifyEditor, BoxesRender.updateJustify);
+function commitBoardAlignY() {
+  commitBoardBoxFlex("Align Y", boardAlignYEditor, BoxesRender.updateAlignY);
 }
 function commitBoardTitle() {
   if (!boardTitleEditor) return;
@@ -1700,8 +1704,8 @@ export {
   commitBoardArrow,
   commitBoardReverse,
   commitBoardDir,
-  commitBoardAlign,
-  commitBoardJustify,
+  commitBoardAlignX,
+  commitBoardAlignY,
   commitBoardIcon,
   fillBoardIconList,
   markBoardIconPick,
