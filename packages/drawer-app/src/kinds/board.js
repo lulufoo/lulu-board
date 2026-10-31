@@ -5,6 +5,7 @@ import { register, emit } from '../core/hooks.js';
 import { CanvasInteraction } from '../state/canvas-interaction.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
 import { persistBoardStyle } from './board-style.js';
+import { syncPropsPanes } from '../state/props-panes.js';
 import {
   boardNodeForSelection,
   boardLinkTargetForElement,
@@ -264,6 +265,7 @@ function setBoardMaxWidthField(show, authoredRem, globalRem) {
   if (boardMaxWidthLabel) boardMaxWidthLabel.hidden = !show;
   if (boardMaxWidthReset) boardMaxWidthReset.hidden = !show || authored == null;
   setAuthoredTip(boardMaxWidthTip, show, authored != null);
+  syncPropsPanes();
 }
 function selectedNodeStyleId() {
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return "";
@@ -293,6 +295,7 @@ function setBoardNodeFontField(show, authoredStep, globalStep) {
     boardNodeFontTip.hidden = !inherit;
     boardNodeFontTip.textContent = inherit ? "same as global" : "";
   }
+  syncPropsPanes();
 }
 function previewBoardNodeFont(step) {
   if (!TypeScale) return;
