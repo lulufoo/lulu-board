@@ -10,8 +10,8 @@ const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/c
 const boxJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/box.js'), 'utf8');
 
 assert.ok(
-  /\.board-title-name \{ display: block; min-width: min-content; overflow-wrap: break-word;[^}]*\}/.test(css),
-  'title does not wrap mid-word'
+  /\.board-title-name \{ display: block; min-width: 0; overflow-wrap: anywhere;[^}]*\}/.test(css),
+  'title wraps at the box cap, including long words'
 );
 assert.ok(
   /el\.style\.minWidth = nested \? 'min-content' : '0'/.test(boxJs),
