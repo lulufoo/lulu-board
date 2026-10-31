@@ -1732,6 +1732,7 @@ import * as StyleToken from '../../board-core/style-token.js';
       fitNestedBoxes();
       applyRootFrames();
       if (View && typeof View.fitChipDiamonds === 'function') View.fitChipDiamonds(root);
+      if (View && typeof View.fitNoteRings === 'function') View.fitNoteRings(root);
     };
     const liveCssMeasure = (measured) => {
       const adjusted = new Map(measured);

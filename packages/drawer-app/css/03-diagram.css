@@ -36,14 +36,15 @@
   box-sizing: border-box !important;
   pointer-events: auto !important;
 }
-/* Layout = pure arrangement: no fill, no border. Hit ring is .board-layout-halo. */
+/* Layout = pure arrangement: no fill, no border. Hit ring is .board-layout-halo.
+   The radius is only for the hover / selected outline; it matches the chip corner. */
 .board-render .box.board-type-layout,
 .board-render .board-zone.board-type-layout,
 .board-render .board-layout {
   background: transparent !important;
   background-color: transparent !important;
   border: 0 !important;
-  border-radius: 0;
+  border-radius: var(--bf-radius-chip, 8px);
   box-shadow: none !important;
   outline: none;
   padding: 0 !important;
@@ -1534,6 +1535,35 @@ html[data-drawer-mode="diagram"] .top-float {
   background: #d4ce86;
   clip-path: polygon(0 0, 100% 100%, 0 100%);
 }
+/* Note rings. An outline is a rectangle and cannot trace the dog-ear, so a note draws its hover
+   and selected rings as SVG paths (packages/boxes/item/note-ring.js) and drops the outline. */
+.board-render .board-item-note:hover,
+.board-render .board-item-note.canvas-hover,
+.board-render .board-item-note.canvas-selected,
+.board-render .board-item-note.board-selection { outline: none !important; }
+.board-render .board-item-note-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+}
+.board-render .board-item-note-ring path { fill: none; visibility: hidden; }
+.board-render .board-item-note-ring-hover {
+  stroke: var(--canvas-ring-soft, rgba(219, 76, 132, .45));
+  stroke-width: 1px;
+  stroke-dasharray: 3 3;
+}
+.board-render .board-item-note-ring-select {
+  stroke: var(--canvas-ring, #db4c84);
+  stroke-width: var(--canvas-ring-width, 2px);
+}
+.board-render .board-item-note:hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree) .board-item-note-ring-hover,
+.board-render .board-item-note.canvas-hover:not(.canvas-selected):not(.board-selection):not(.board-selection-tree) .board-item-note-ring-hover,
+.board-render .board-item-note.canvas-selected .board-item-note-ring-select,
+.board-render .board-item-note.board-selection .board-item-note-ring-select { visibility: visible; }
 .board-render .board-item-icon {
   background: transparent !important;
   border: 0 !important;
