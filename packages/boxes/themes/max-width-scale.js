@@ -1,15 +1,25 @@
-/* Boxes item max-width: 0-step rem + linear step. Clamp lives in board-core. */
+/* Boxes max-width: Box and Item bases + linear step. Clamp lives in board-core. */
 import { clampStep, STEP_MIN, STEP_MAX } from '../../board-core/style-token.js';
 
-const BASE_REM = 16;
+const ITEM_BASE_REM = 16;
+const BOX_BASE_REM = 20;
+const BASE_REM = ITEM_BASE_REM;
 const STEP_REM = 2;
 
-function remForStep(step) {
-  return BASE_REM + STEP_REM * clampStep(step);
+function widthKind(kind) {
+  return kind === 'box' ? 'box' : 'item';
 }
 
-function remCss(step) {
-  return remForStep(step) + 'rem';
+function baseRem(kind) {
+  return widthKind(kind) === 'box' ? BOX_BASE_REM : ITEM_BASE_REM;
+}
+
+function remForStep(step, kind) {
+  return baseRem(kind) + STEP_REM * clampStep(step);
+}
+
+function remCss(step, kind) {
+  return remForStep(step, kind) + 'rem';
 }
 
 function authoredRem(raw) {
@@ -18,7 +28,7 @@ function authoredRem(raw) {
   return n;
 }
 
-function remFromStyle(style, id) {
+function remFromStyle(style, id, kind) {
   const key = String(id || '').trim();
   if (key && style && style.ids && typeof style.ids === 'object' && !Array.isArray(style.ids)) {
     const row = style.ids[key];
@@ -27,7 +37,7 @@ function remFromStyle(style, id) {
       if (rem != null) return rem;
     }
   }
-  return remForStep(style && style.max_width);
+  return remForStep(style && style.max_width, kind);
 }
 
 function applyItemRem(el, rem) {
@@ -35,7 +45,13 @@ function applyItemRem(el, rem) {
   el.style.maxWidth = rem + 'rem';
 }
 
+function applyBoxRem(el, rem) {
+  if (!el || rem == null) return;
+  el.style.setProperty('--board-box-cap', rem + 'rem');
+}
+
 export {
-  BASE_REM, STEP_REM, STEP_MIN, STEP_MAX,
-  clampStep, remForStep, remCss, authoredRem, remFromStyle, applyItemRem,
+  ITEM_BASE_REM, BOX_BASE_REM, BASE_REM, STEP_REM, STEP_MIN, STEP_MAX,
+  clampStep, widthKind, remForStep, remCss, authoredRem, remFromStyle,
+  applyItemRem, applyBoxRem,
 };

@@ -1062,7 +1062,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
   transform: translateZ(0); /* own layer above HTML boxes */
 }
 .board-zone {
-  position: absolute; box-sizing: border-box; min-width: 0; max-width: none; padding: 12px 14px;
+  position: absolute; box-sizing: border-box; min-width: 0; max-width: var(--board-box-cap, 20rem); padding: 12px 14px;
   border: 1px solid #dbe4ef; border-radius: 6px; background: #fff;
   box-shadow: 0 3px 10px rgba(15, 23, 42, .045), 0 1px 2px rgba(15, 23, 42, .04); z-index: 1;
 }
@@ -1078,7 +1078,7 @@ html[data-drawer-mode="diagram"] #preview.board-preview {
 .board-title-copy { display: inline-flex; flex: 1 1 auto; flex-direction: column; gap: 3px; min-width: 0; overflow: hidden; }
 .board-title-name,
 .board-item-text { min-width: 0; overflow-wrap: anywhere; }
-.board-title-name { display: block; min-width: min-content; overflow-wrap: break-word; font-weight: inherit; }
+.board-title-name { display: block; min-width: 0; overflow-wrap: anywhere; font-weight: inherit; }
 .board-title-subtitle { color: #64748b; font-size: 10px; line-height: 1.2; font-weight: var(--board-subtitle-weight); }
 .board-icon { display: inline-flex; flex: 0 0 auto; width: 18px; height: 18px; align-items: center; justify-content: center; color: #64748b; line-height: 1; }
 .board-icon svg { display: block; width: 100%; height: 100%; overflow: visible; }

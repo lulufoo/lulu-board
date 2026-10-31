@@ -264,6 +264,17 @@ function setBoardMaxWidthField(show, authoredRem, globalRem) {
   setAuthoredTip(boardMaxWidthTip, show, authored != null);
   syncPropsPanes();
 }
+function selectedMaxWidthKind() {
+  return selectedBoardNode && selectedBoardNode.kind === "box" ? "box" : "item";
+}
+function selectedGlobalMaxWidthRem(board) {
+  var step = (typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function")
+    ? BoxesRender.resolveStyle(board || {}).max_width
+    : 0;
+  if (MaxWidth && typeof MaxWidth.remForStep === "function") return MaxWidth.remForStep(step, selectedMaxWidthKind());
+  var n = Number(step) || 0;
+  return (selectedMaxWidthKind() === "box" ? 20 : 16) + 2 * n;
+}
 function selectedNodeStyleId() {
   if (!selectedBoardNode || selectedBoardNode.kind === "title") return "";
   return String(selectedBoardNode.id || "").trim();
@@ -814,16 +825,12 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     }
     setBoardShapeField(!!isChipItem, node && node.shape);
     var widthId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
-    var authoredWidth = (isMd && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeMaxWidth === "function")
+    var isBoxNode = !isTitle && !isItem;
+    var showMaxWidth = isMd || isBoxNode;
+    var authoredWidth = (showMaxWidth && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeMaxWidth === "function")
       ? BoxesRender.authoredNodeMaxWidth(board, widthId)
       : null;
-    var globalWidth = (typeof BoxesRender !== "undefined" && typeof BoxesRender.nodeMaxWidth === "function")
-      ? BoxesRender.nodeMaxWidth(board || {}, "")
-      : ((typeof BoxesRender !== "undefined" && typeof BoxesRender.resolveStyle === "function"
-        && MaxWidth && typeof MaxWidth.remForStep === "function")
-        ? MaxWidth.remForStep(BoxesRender.resolveStyle(board || {}).max_width)
-        : 16);
-    setBoardMaxWidthField(!!isMd, authoredWidth, globalWidth);
+    setBoardMaxWidthField(showMaxWidth, authoredWidth, selectedGlobalMaxWidthRem(board));
     var nodeId = isTitle ? "" : String((node && node.id) || selectedBoardNode.id || "");
     var showFont = !isTitle;
     var authoredFz = (showFont && typeof BoxesRender !== "undefined" && typeof BoxesRender.authoredNodeTypeStep === "function")
@@ -1207,7 +1214,8 @@ function syncBoardStyleChrome(board) {
   if (themeSelect && next.theme) themeSelect.value = next.theme;
 }
 function commitBoardMaxWidth() {
-  if (!boardMaxWidthInput || !selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (!boardMaxWidthInput || !selectedBoardNode) return;
+  if (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box") return;
   if (typeof BoxesRender.updateNodeMaxWidth !== "function") return;
   var rem = Number(boardMaxWidthInput.value);
   if (!Number.isFinite(rem) || rem <= 0) return;
@@ -1229,11 +1237,11 @@ function commitBoardMaxWidth() {
       setSelectedBoardNode(boardSelectionWithId(keepSelection, id));
       setBoardIdField(true, id);
     }
-    setBoardMaxWidthField(true, id ? BoxesRender.authoredNodeMaxWidth(board, id) : null, BoxesRender.nodeMaxWidth(board, ""));
+    setBoardMaxWidthField(true, id ? BoxesRender.authoredNodeMaxWidth(board, id) : null, selectedGlobalMaxWidthRem(board));
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function resetBoardMaxWidth() {
-  if (!selectedBoardNode || selectedBoardNode.kind !== "item") return;
+  if (!selectedBoardNode || (selectedBoardNode.kind !== "item" && selectedBoardNode.kind !== "box")) return;
   if (typeof BoxesRender.updateNodeMaxWidth !== "function") return;
   var keepSelection = Object.assign({}, selectedBoardNode);
   try {
@@ -1247,7 +1255,7 @@ function resetBoardMaxWidth() {
       setStatus("Max Width · reset");
     }
     var board = BoxesRender.parse(diagramSourceEl.value);
-    setBoardMaxWidthField(true, null, BoxesRender.nodeMaxWidth(board, ""));
+    setBoardMaxWidthField(true, null, selectedGlobalMaxWidthRem(board));
   } catch (err) { showDiagramError(err instanceof Error ? err.message : String(err)); }
 }
 function commitBoardType() {

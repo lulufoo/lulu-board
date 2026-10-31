@@ -17,17 +17,36 @@ boxes Demo
 item A "x"
 `));
   assert.strictEqual(Render.nodeMaxWidth(empty, 'A'), 16);
+  const emptyBox = Render.parse(src(`
+boxes Demo
+box CARD "Title"
+item A "x"
+`));
+  assert.strictEqual(Render.nodeMaxWidth(emptyBox, 'CARD'), 20);
+  assert.strictEqual(Render.nodeMaxWidth(emptyBox, 'A'), 16);
   const wide = Render.parse(Render.updateStyle(src(`
 boxes Demo
 item A "x"
 `), { max_width: 3 }));
   assert.strictEqual(Render.resolveStyle(wide).max_width, 3);
   assert.strictEqual(Render.nodeMaxWidth(wide, 'A'), 22);
+  const wideBox = Render.parse(Render.updateStyle(src(`
+boxes Demo
+box CARD "Title"
+item A "x"
+`), { max_width: 3 }));
+  assert.strictEqual(Render.nodeMaxWidth(wideBox, 'CARD'), 26);
+  assert.strictEqual(Render.nodeMaxWidth(wideBox, 'A'), 22);
   const slim = Render.parse(Render.updateStyle(src(`
 boxes Demo
 item A "x"
 `), { max_width: -3 }));
   assert.strictEqual(Render.nodeMaxWidth(slim, 'A'), 10);
+  const slimBox = Render.parse(Render.updateStyle(src(`
+boxes Demo
+box CARD "Title"
+`), { max_width: -3 }));
+  assert.strictEqual(Render.nodeMaxWidth(slimBox, 'CARD'), 14);
 }
 
 {
@@ -98,11 +117,33 @@ item HERO type text "Welcome"
 }
 
 {
+  const source = src(`
+boxes Demo
+box CARD "Title"
+item HERO type text "Welcome"
+`);
+  const boxSel = { kind: 'box', id: 'CARD' };
+  const sameBox = Render.updateNodeMaxWidth(source, boxSel, 20);
+  assert.ok(!/^style /m.test(sameBox), sameBox);
+  const slimBox = Render.updateNodeMaxWidth(source, boxSel, 16);
+  const token = slimBox.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
+    ids: { CARD: { max_width: 16 } },
+  });
+  const board = Render.parse(slimBox);
+  assert.strictEqual(Render.nodeMaxWidth(board, 'CARD'), 16);
+  assert.strictEqual(Render.nodeMaxWidth(board, 'HERO'), 16);
+  const reset = Render.updateNodeMaxWidth(slimBox, boxSel, null);
+  assert.ok(!/^style /m.test(reset), reset);
+}
+
+{
   const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
   const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
   const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/item.js'), 'utf8');
   const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/render.js'), 'utf8');
   assert.ok(/max-width:\s*var\(--board-item-cap/.test(css), 'items use --board-item-cap');
+  assert.ok(/max-width:\s*var\(--board-box-cap/.test(css), 'boxes use --board-box-cap');
   assert.ok(!/data-board-cap/.test(css), 'cap-off CSS removed');
   assert.ok(!/dataset\.boardCap/.test(itemJs), 'item mount does not mark cap');
   assert.ok(/id="board-max-width-input"/.test(html) && /Max Width/.test(html), 'props have Max Width input');
