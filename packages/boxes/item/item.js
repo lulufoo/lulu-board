@@ -2,6 +2,7 @@
 import View from '../view/view.js';
 import * as Scale from '../themes/type-scale.js';
 import * as MaxWidth from '../themes/max-width-scale.js';
+import * as ItemAlign from '../themes/item-align.js';
 import * as Rotation from '../themes/rotation.js';
 
   function decodeItemNewlines(value) {
@@ -146,6 +147,9 @@ import * as Rotation from '../themes/rotation.js';
         : null;
       if (rem != null && MaxWidth && typeof MaxWidth.applyItemRem === 'function') {
         MaxWidth.applyItemRem(el, rem);
+      }
+      if (ItemAlign && typeof ItemAlign.apply === 'function') {
+        ItemAlign.apply(el, ItemAlign.resolve(row && row.align, itemType));
       }
       if (ctx.fills) Rotation.paint(el, ctx.fills.get(item), item.shape === 'diamond');
       this.decorate(el, ctx);

@@ -260,6 +260,31 @@
             <p class="props-hint props-hint-end" id="board-max-width-tip" hidden></p>
           </div>
         </div>
+        <div class="props-field" id="board-item-align-field" hidden>
+          <label class="props-label" for="board-item-align-editor" id="board-item-align-label">Align</label>
+          <div class="props-control">
+            <div class="props-max-width-row">
+              <select id="board-item-align-editor" aria-label="Align">
+                <option value="top-left">top left</option>
+                <option value="top">top</option>
+                <option value="top-right">top right</option>
+                <option value="left">left</option>
+                <option value="center">center</option>
+                <option value="right">right</option>
+                <option value="bottom-left">bottom left</option>
+                <option value="bottom">bottom</option>
+                <option value="bottom-right">bottom right</option>
+              </select>
+              <div id="board-item-align-host"></div>
+              <button type="button" class="props-max-width-reset" id="board-item-align-reset" title="Reset" aria-label="Reset Align" hidden>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 14 4 9l5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1 5.5 5.5H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="props-field" id="boardNodeFontField" hidden>
           <label class="props-label" for="boardNodeFontSlider" id="boardNodeFontLabel" hidden>Font Size</label>
           <div class="props-control">

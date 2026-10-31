@@ -1604,6 +1604,31 @@ html[data-drawer-mode="diagram"] .top-float {
 .board-render .board-item-icon.is-icon-only .board-item-copy {
   display: none !important;
 }
+.board-render .board-item[data-board-align="top-left"],
+.board-render .board-item[data-board-align="left"],
+.board-render .board-item[data-board-align="bottom-left"] {
+  justify-content: flex-start;
+  text-align: left;
+}
+.board-render .board-item[data-board-align="top"],
+.board-render .board-item[data-board-align="center"],
+.board-render .board-item[data-board-align="bottom"] {
+  justify-content: center;
+  text-align: center;
+}
+.board-render .board-item[data-board-align="top-right"],
+.board-render .board-item[data-board-align="right"],
+.board-render .board-item[data-board-align="bottom-right"] {
+  justify-content: flex-end;
+  text-align: right;
+}
+.board-render .board-item[data-board-align^="top"] { align-items: flex-start; }
+.board-render .board-item[data-board-align="left"],
+.board-render .board-item[data-board-align="center"],
+.board-render .board-item[data-board-align="right"] { align-items: center; }
+.board-render .board-item[data-board-align^="bottom"] { align-items: flex-end; }
+.board-render .board-item[data-board-align] .board-item-copy,
+.board-render .board-item[data-board-align] .board-item-text { text-align: inherit; }
 .board-render .board-type-card { /* default */ }
 .board-render .board-type-diamond { }
 
@@ -1899,7 +1924,9 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #boardShapeLabel[hidden],
 #boardShapeHost[hidden] { display: none !important; }
 #board-max-width-field[hidden],
-#board-max-width-label[hidden] { display: none !important; }
+#board-max-width-label[hidden],
+#board-item-align-field[hidden],
+#board-item-align-label[hidden] { display: none !important; }
 #boardNodeFontField[hidden],
 #boardNodeFontLabel[hidden] { display: none !important; }
 .props-field:has(#boardNodeFontLabel[hidden]) { display: none !important; }
@@ -1966,18 +1993,24 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
 }
 .props-max-width-row { display: flex; align-items: stretch; gap: 8px; }
-.props-max-width-row #board-max-width-input { flex: 1 1 auto; min-width: 0; width: auto; }
-#board-max-width-reset {
+.props-max-width-row #board-max-width-input,
+.props-max-width-row .popup-select { flex: 1 1 auto; min-width: 0; width: auto; }
+#board-max-width-reset,
+#board-item-align-reset {
   flex: 0 0 40px; width: 40px; box-sizing: border-box;
   border: 1px solid var(--stroke); border-radius: 8px; padding: 0;
   background: var(--panel-solid); color: var(--text);
   display: inline-flex; align-items: center; justify-content: center;
   cursor: pointer;
 }
-#board-max-width-reset svg { width: 16px; height: 16px; display: block; }
-#board-max-width-reset:hover { background: var(--accent-soft); }
-#board-max-width-reset[hidden] { display: none !important; }
-.props-field:has(#board-max-width-label[hidden]) { display: none !important; }
+#board-max-width-reset svg,
+#board-item-align-reset svg { width: 16px; height: 16px; display: block; }
+#board-max-width-reset:hover,
+#board-item-align-reset:hover { background: var(--accent-soft); }
+#board-max-width-reset[hidden],
+#board-item-align-reset[hidden] { display: none !important; }
+.props-field:has(#board-max-width-label[hidden]),
+.props-field:has(#board-item-align-label[hidden]) { display: none !important; }
 .props-arrow-row { display: flex; align-items: stretch; gap: 8px; }
 .props-arrow-row[hidden],
 #boardArrowLabel[hidden],
