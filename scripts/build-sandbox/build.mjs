@@ -2,12 +2,14 @@
 /**
  * Sandbox runner build: packages/sandbox-app into .cache/sandbox/.
  * runner.html is served at /runner; runner-<hash>.js is the bundle (runner logic + SnapDOM).
+ * _headers carries the CSP response header for a Workers static assets Worker.
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
+import { runnerHeadersFile } from '../../packages/sandbox-app/src/headers.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
@@ -35,4 +37,5 @@ writeFileSync(path.join(outDir, jsName), bytes);
 const html = readFileSync(path.join(srcDir, 'runner.html'), 'utf8');
 if (!html.includes('./runner.js')) throw new Error('runner.html missing ./runner.js');
 writeFileSync(path.join(outDir, 'runner.html'), html.replace('./runner.js', './' + jsName));
+writeFileSync(path.join(outDir, '_headers'), runnerHeadersFile());
 console.log('ok sandbox runner ' + jsName + ' (' + bytes.length + ' bytes)');

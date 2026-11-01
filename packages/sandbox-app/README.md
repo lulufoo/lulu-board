@@ -21,6 +21,23 @@ Writes `.cache/sandbox/`:
   script on purpose: an opaque-origin page loads a classic script without CORS, but a module
   would need `Access-Control-Allow-Origin`.
 
+## Response headers
+
+`src/headers.js` is the one definition. The build writes it as `.cache/sandbox/_headers` for a
+Workers static assets Worker; a Worker with its own code imports `runnerHeaders()` instead.
+
+```
+Content-Security-Policy: sandbox allow-scripts; connect-src 'none'; frame-ancestors https://luluboard.app; frame-src 'none'; object-src 'none'
+```
+
+It applies to `/runner` and `/runner.html`, as a header. In a `<meta>` tag `sandbox` and
+`frame-ancestors` do nothing. Checked in a browser against a local server: with the header,
+a fragment's `fetch` and a script-created `iframe` never reach the network, and an
+unlisted parent cannot embed the page. Without it both requests go out.
+
+Known gap: `connect-src` does not cover images. A fragment can still send data out with an
+`<img>` GET. `script-src`, `img-src`, and `style-src` stay open on purpose.
+
 ## Message contract
 
 Source of truth: `src/protocol.js`. Board imports the same module, so names and validators
