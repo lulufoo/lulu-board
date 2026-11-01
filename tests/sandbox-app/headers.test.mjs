@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { runnerCsp, runnerHeaders, runnerHeadersFile, RUNNER_PATHS } from '../../packages/sandbox-app/src/headers.js';
+import { runnerCsp, runnerHeaders, runnerHeadersFile, RUNNER_PATHS, RUNNER_CACHE } from '../../packages/sandbox-app/src/headers.js';
 
 const csp = runnerCsp();
 const directives = csp.split('; ');
@@ -21,6 +21,13 @@ assert.deepEqual(Object.keys(runnerHeaders()), ['Content-Security-Policy']);
 const file = runnerHeadersFile();
 for (const p of RUNNER_PATHS) {
   assert.ok(file.includes(p + '\n  Content-Security-Policy: ' + csp + '\n'), p + ' block');
+}
+assert.deepEqual(Object.keys(RUNNER_CACHE), ['/', '/capture-*']);
+assert.match(RUNNER_CACHE['/capture-*'], /immutable/, 'a content-hashed file is immutable');
+assert.ok(!/immutable/.test(RUNNER_CACHE['/']), 'the page is not immutable: it must pick up a new core');
+assert.match(RUNNER_CACHE['/'], /stale-while-revalidate/, 'the page refreshes in the background');
+for (const p of Object.keys(RUNNER_CACHE)) {
+  assert.ok(file.includes('\n' + p + '\n  Cache-Control: ' + RUNNER_CACHE[p] + '\n'), p + ' cache block');
 }
 
 console.log('ok sandbox headers');

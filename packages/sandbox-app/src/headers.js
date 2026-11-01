@@ -24,17 +24,25 @@ export function runnerHeaders(frameAncestors) {
   return { 'Content-Security-Policy': runnerCsp(frameAncestors) };
 }
 
-/* One catch-all block: a future page on this domain gets the CSP too. */
+/* The path pattern that carries the CSP: the whole domain. */
 export const RUNNER_PATHS = Object.freeze(['/*']);
 
-/* Cloudflare Workers static assets `_headers` file. */
+/* The page changes only when the core changes, so it is cached briefly and revalidated in the background.
+ * capture-<hash>.js is named by its content and never changes. */
+export const RUNNER_CACHE = Object.freeze({
+  '/': 'public, max-age=60, stale-while-revalidate=86400',
+  '/capture-*': 'public, max-age=31536000, immutable',
+});
+
+/* Cloudflare Workers static assets `_headers` file. One catch-all block carries the CSP, so a future page
+ * on this domain gets it too; the cache rules add to it. */
 export function runnerHeadersFile(frameAncestors) {
   var headers = runnerHeaders(frameAncestors);
-  var lines = [];
-  RUNNER_PATHS.forEach(function (p) {
-    lines.push(p);
-    Object.keys(headers).forEach(function (name) { lines.push('  ' + name + ': ' + headers[name]); });
-    lines.push('');
+  var lines = ['/*'];
+  Object.keys(headers).forEach(function (name) { lines.push('  ' + name + ': ' + headers[name]); });
+  lines.push('');
+  Object.keys(RUNNER_CACHE).forEach(function (p) {
+    lines.push(p, '  Cache-Control: ' + RUNNER_CACHE[p], '');
   });
   return lines.join('\n');
 }
