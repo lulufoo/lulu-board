@@ -23,6 +23,40 @@ function json(data, status) {
   });
 }
 
+function gzipAccepted(header) {
+  return String(header || '').toLowerCase().split(',').some((part) => {
+    const bits = part.trim().split(';').map((item) => item.trim());
+    if (bits[0] !== 'gzip') return false;
+    const quality = bits.find((item) => item.startsWith('q='));
+    if (!quality) return true;
+    const q = Number(quality.slice(2));
+    return Number.isFinite(q) && q > 0;
+  });
+}
+
+function clientAcceptsGzip(request) {
+  const original = request.cf && request.cf.clientAcceptEncoding;
+  return gzipAccepted(request.headers.get('accept-encoding')) || gzipAccepted(original);
+}
+
+async function gzipBytes(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function gzipJsonResponse(request, response) {
+  if (!response || response.status !== 200 || !clientAcceptsGzip(request)) return response;
+  const plain = new TextEncoder().encode(await response.text());
+  const packed = await gzipBytes(plain);
+  if (packed.byteLength >= plain.byteLength) {
+    return new Response(plain, { status: 200, headers: response.headers });
+  }
+  const headers = new Headers(response.headers);
+  headers.set('content-encoding', 'gzip');
+  headers.delete('content-length');
+  return new Response(packed, { status: 200, headers: headers, encodeBody: 'manual' });
+}
+
 function bearer(request) {
   const header = request.headers.get('authorization') || '';
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
@@ -183,11 +217,11 @@ export default {
       return new Response('ok', { status: 200, headers: CORS });
     }
     if (request.method === 'GET' && url.pathname === '/graphs') {
-      return authedCall(request, env, (token, _input, current) => readOwnedGraph(
+      return gzipJsonResponse(request, await authedCall(request, env, (token, _input, current) => readOwnedGraph(
         env,
         token,
         new URL(current.url).searchParams.get('diagram_id')
-      ));
+      )));
     }
     if (request.method === 'POST' && url.pathname === '/graphs') {
       return createResponse(request, env);
