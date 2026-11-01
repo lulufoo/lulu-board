@@ -1,6 +1,6 @@
 /* Cloud layer. Chrome leftover is reached through hooks. */
 import { register, emit, call } from '../core/hooks.js';
-import { sentryCount } from '../core/sentry-count.js';
+import { diagramFetchRequestBytes, diagramFetchWireBytes, recordDiagramFetch, sentryCount, utf8ByteLength } from '../core/sentry-count.js';
 import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
 
 import {
@@ -782,8 +782,13 @@ async function cloudRefreshGroups() {
 async function fetchOwnedGraph(diagramId) {
   var accessToken = cloudSession && cloudSession.access_token;
   if (!accessToken) throw new Error("Sign in to open this cloud diagram");
-  var response = await fetch("https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(diagramId), {
-    headers: { Authorization: "Bearer " + accessToken },
+  var url = "https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(diagramId);
+  var traceId = "";
+  try { traceId = crypto.randomUUID(); } catch (_error) { traceId = ""; }
+  var started = new Date();
+  var authorization = "Bearer " + accessToken;
+  var response = await fetch(url, {
+    headers: { Authorization: authorization },
   });
   var text = await response.text();
   var body = text ? JSON.parse(text) : null;
@@ -791,6 +796,13 @@ async function fetchOwnedGraph(diagramId) {
   if (!response.ok) {
     var fail = body && (body.message || body.error) || ("HTTP " + response.status);
     throw new Error(fail);
+  }
+  if (body) {
+    recordDiagramFetch(traceId, started, {
+      requestBytes: diagramFetchRequestBytes(url, authorization),
+      responseBytes: utf8ByteLength(text),
+      wireBytes: diagramFetchWireBytes(url),
+    });
   }
   return body;
 }

@@ -217,11 +217,13 @@ export default {
       return new Response('ok', { status: 200, headers: CORS });
     }
     if (request.method === 'GET' && url.pathname === '/graphs') {
-      return gzipJsonResponse(request, await authedCall(request, env, (token, _input, current) => readOwnedGraph(
+      const response = await gzipJsonResponse(request, await authedCall(request, env, (token, _input, current) => readOwnedGraph(
         env,
         token,
         new URL(current.url).searchParams.get('diagram_id')
       )));
+      response.headers.set('timing-allow-origin', '*');
+      return response;
     }
     if (request.method === 'POST' && url.pathname === '/graphs') {
       return createResponse(request, env);
