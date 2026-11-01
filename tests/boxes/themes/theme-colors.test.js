@@ -28,4 +28,12 @@ assert.strictEqual(
   'color-mix(in srgb, var(--_s) 90%, rgb(var(--bf-rgb, 74, 53, 36)))',
 );
 assert.strictEqual(Themes.FILL_STROKE_INK, 'rgb(var(--bf-rgb, 74, 53, 36))');
+{
+  const vars = {};
+  Themes.applyTo({ style: { setProperty: (k, v) => { vars[k] = v; } }, dataset: {} }, 'dark');
+  assert.strictEqual(vars['--board-color'], Themes.get('dark').color);
+  assert.strictEqual(vars['--board-card-bg'], Themes.get('dark').colors[0]);
+  assert.strictEqual(vars['--board-note-sheet'], '#3d3520');
+  assert.strictEqual(vars['--board-title-color'], '#f7efe4');
+}
 console.log('ok theme-colors');

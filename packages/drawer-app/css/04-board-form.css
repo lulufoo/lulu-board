@@ -74,15 +74,15 @@
 
 /* ---- Item · note: warm cream paper, no outline, 4px corners, folded top-right ---- */
 .board-render .board-item-note-sheet {
-  background: #fff6dc;
+  background: var(--board-note-sheet, #fff6dc);
   border: 0;
   border-radius: 4px;
 }
 .board-render .board-item-note-fold {
-  background: #f0deaa;
+  background: var(--board-note-fold, #f0deaa);
   border-bottom-left-radius: 4px;
 }
 .board-render .board-item-note .board-item-md h1 {
   font-size: 1.15em;
-  border-bottom-color: rgba(90, 67, 48, .14);
+  border-bottom-color: var(--board-note-heading-border, rgba(90, 67, 48, .14));
 }

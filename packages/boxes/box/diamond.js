@@ -121,7 +121,7 @@ import { get, ring } from '../../board-themes/index.js';
     halo.setAttribute('vector-effect', 'non-scaling-stroke');
     const polygon = doc.createElementNS('http://www.w3.org/2000/svg', 'path');
     polygon.classList.add('board-item-diamond-face');
-    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'default';
+    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'light';
     const theme = get(themeId);
     polygon.setAttribute('fill', (theme && theme.colors && theme.colors[0]) || '#fff');
     polygon.setAttribute('stroke', (theme && theme.edgeStroke) || '#9370db');

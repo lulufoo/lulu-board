@@ -216,7 +216,7 @@ function finishCanvasView(opts) {
 function syncMermaidStyleChrome(body) {
   if (!DrawerStyleLine) return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = DrawerStyleLine.paletteFromStyleToken(styled.token);
+  var theme = DrawerStyleLine.appearanceFromStyleToken(styled.token);
   var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
   emit("applyKindTheme", theme, { persist: false, skipRender: true });
   emit("applyBoardTypeStep", step, false, false);
@@ -339,11 +339,11 @@ function renderMindmap(opts) {
     return;
   }
   try {
-    var theme = "default";
+    var theme = "light";
     if (DrawerStyleLine) {
-      theme = DrawerStyleLine.paletteFromStyleToken(
+      theme = DrawerStyleLine.appearanceFromStyleToken(
         DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token
-      ) || "default";
+      ) || "light";
     }
     var layout = currentMindmapLayout();
     var result = MindmapEdit.render(body, { layout: layout, theme: theme, id: "mm" });

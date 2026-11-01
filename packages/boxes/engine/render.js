@@ -1800,7 +1800,7 @@ import * as BoxAlign from './layout/box-align.js';
     const docStyle = applyDocumentStyle(board, doc);
     targetEl.innerHTML = '';
     const root = doc.createElement('section'); root.className = 'board-html board-render board-engine'; root.dataset.boardTitle = board.title; root.style.width = 'max-content'; root.style.minWidth = '0'; root.style.boxSizing = 'border-box';
-    const themeId = 'default';
+    const themeId = docStyle.appearance;
     if (Themes && typeof Themes.applyTo === 'function') Themes.applyTo(root, themeId);
     const header = doc.createElement('header'); header.className = 'board-html-header board-title-node'; header.dataset.boardKey = 'title:board'; header.dataset.boardKind = 'title'; header.dataset.boardType = 'title'; header.setAttribute('title', 'Board title'); const heading = doc.createElement('h2'); heading.textContent = board.title || ''; header.appendChild(heading); if (board.title) root.appendChild(header);
     // World layer: a zero-size anchor. Children carry world coordinates in
@@ -2025,7 +2025,7 @@ import * as BoxAlign from './layout/box-align.js';
   function getLinkRouteStyle() { return linkRouteStyle; }
 
   function themeStroke(name, fallback) {
-    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'default';
+    const themeId = (typeof document !== 'undefined' && document.documentElement && document.documentElement.dataset.kindTheme) || 'light';
     const theme = Themes && Themes.get ? Themes.get(themeId) : null;
     if (theme) {
       if (name === '--board-edge') return theme.edgeStroke || fallback;

@@ -26,5 +26,9 @@ assert.deepStrictEqual(resolveBackground('dark'), dark.ground);
 assert.notDeepStrictEqual(dark.diagram.colors, light.diagram.colors);
 assert.strictEqual(get('default').colors[0], light.diagram.colors[0]);
 assert.strictEqual(get('default').color, light.diagram.color);
+assert.strictEqual(get('light').id, 'light');
+assert.strictEqual(get('dark').id, 'dark');
+assert.strictEqual(get('dark').color, dark.diagram.color);
+assert.deepStrictEqual(get('dark').colors, dark.diagram.colors);
 
 console.log('ok board-themes appearance');

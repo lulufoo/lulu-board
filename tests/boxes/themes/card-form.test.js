@@ -34,7 +34,7 @@ assert.match(css, /board-item-diamond-face\s*\{[^}]*stroke:\s*var\(--bf-edge\)/)
 assert.match(css, /board-item-diamond\[data-bf-fill\] \.board-item-diamond-face\s*\{[^}]*fill:\s*var\(--bf-fill\) !important/);
 
 // note: cream paper without an outline, quieter title
-assert.match(css, /board-item-note-sheet\s*\{[^}]*background:\s*#fff6dc[^}]*border:\s*0/);
+assert.match(css, /board-item-note-sheet\s*\{[^}]*background:\s*var\(--board-note-sheet, #fff6dc\)[^}]*border:\s*0/);
 assert.match(css, /board-item-note \.board-item-md h1\s*\{[^}]*font-size:\s*1\.15em/);
 
 // every pack has a first fill that is not plain white

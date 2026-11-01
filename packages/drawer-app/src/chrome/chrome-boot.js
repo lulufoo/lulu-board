@@ -247,11 +247,15 @@ if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 
 const KIND_THEME_KEY = 'drawer.kindTheme';
 function currentKindTheme() {
-  const legacy = localStorage.getItem('drawer.diagramTheme') || localStorage.getItem('drawer.boardTheme');
-  const v = localStorage.getItem(KIND_THEME_KEY) || legacy || 'default';
-  if (BoxesThemes && typeof BoxesThemes.resolveId === 'function') return BoxesThemes.resolveId(v);
-  const allowed = ['default', 'classic', 'pastel'];
-  return allowed.includes(v) ? v : 'default';
+  if (diagramSourceEl && diagramSourceEl.value && DrawerStyleLine && typeof DrawerStyleLine.appearanceFromStyleToken === 'function') {
+    return DrawerStyleLine.appearanceFromStyleToken(
+      DrawerStyleLine.splitRendererStyle(diagramSourceEl.value).token
+    );
+  }
+  const v = localStorage.getItem(KIND_THEME_KEY) || '';
+  return BoxesThemes && typeof BoxesThemes.resolveAppearance === 'function'
+    ? BoxesThemes.resolveAppearance(v)
+    : (v === 'dark' ? 'dark' : 'light');
 }
 const MAX_WIDTH_KEY = 'drawer.boardMaxWidth';
 const MAX_WIDTH_DEFAULT = 0;
@@ -319,7 +323,7 @@ function applyPeleThemeVars(theme) {
   DrawerPeleTheme.applyTo([document.documentElement, document.getElementById("preview")], theme);
 }
 function applyBoardThemeToPreview() {
-  const t = (typeof currentKindTheme === 'function') ? currentKindTheme() : (localStorage.getItem('drawer.kindTheme') || 'default');
+  const t = document.documentElement.dataset.kindTheme || currentKindTheme();
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
@@ -327,13 +331,14 @@ function applyBoardThemeToPreview() {
   applyPeleThemeVars(t);
 }
 function applyKindTheme(theme, opts) {
-  const t = (BoxesThemes && typeof BoxesThemes.resolveId === 'function')
-    ? BoxesThemes.resolveId(theme)
-    : ((['default', 'classic', 'pastel'].includes(theme) ? theme : 'default'));
+  const t = (BoxesThemes && typeof BoxesThemes.resolveAppearance === 'function')
+    ? BoxesThemes.resolveAppearance(theme)
+    : (theme === 'dark' ? 'dark' : 'light');
   localStorage.setItem(KIND_THEME_KEY, t);
-  localStorage.setItem('drawer.boardTheme', t); // back-compat
   const themeSelect = document.getElementById('kindThemeSelect');
-  if (themeSelect) themeSelect.value = t;
+  if (themeSelect && (t === themeSelect.value || Array.from(themeSelect.options).some((opt) => opt.value === t))) {
+    themeSelect.value = t;
+  }
   document.documentElement.dataset.kindTheme = t;
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
@@ -341,7 +346,7 @@ function applyKindTheme(theme, opts) {
   });
   applyPeleThemeVars(t);
   if (opts && opts.persist && typeof persistBoardStyle === 'function') {
-    persistBoardStyle({ palette: t });
+    persistBoardStyle({ appearance: t });
   }
   if (opts && opts.skipRender) return;
   if (typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) renderDiagram({ fit: false });
@@ -382,7 +387,7 @@ if (kindThemeSelect) {
   kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value, { persist: true }); });
 }
 const _themeMo = new MutationObserver(() => {
-  const t = currentKindTheme();
+  const t = document.documentElement.dataset.kindTheme || 'light';
   document.querySelectorAll('.board-render').forEach((el) => { el.dataset.boardTheme = t; });
 });
 const _themeStage = $('#preview');

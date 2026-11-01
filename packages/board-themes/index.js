@@ -2,6 +2,9 @@
 import packDefault from './packs/default.js';
 import packClassic from './packs/classic.js';
 import packPastel from './packs/pastel.js';
+import { APPEARANCES, getAppearance } from './appearance/index.js';
+
+export { APPEARANCES, DEFAULT_APPEARANCE, getAppearance, resolveAppearance } from './appearance/index.js';
 
 export const FONT_FAMILY = '"SF Pro Text", "SF Pro Display", Inter, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
 export const ORDER = ['default', 'classic', 'pastel'];
@@ -54,8 +57,28 @@ export function resolveId(id) {
   return THEMES[mapped] ? mapped : 'default';
 }
 
+export function appearanceTheme(id) {
+  const table = getAppearance(id);
+  return hydrate({
+    id: table.id,
+    label: table.id === 'dark' ? 'Dark' : 'Light',
+    color: table.diagram.color,
+    edgeStroke: table.diagram.edgeStroke,
+    edgeLabel: table.diagram.edgeLabel,
+    edgeEvidence: table.diagram.edgeEvidence,
+    edgeFeedback: table.diagram.edgeFeedback,
+    bandBg: table.diagram.bandBg,
+    bandBorder: table.diagram.bandBorder,
+    edgeRgb: table.diagram.edgeRgb,
+    colors: table.diagram.colors,
+  });
+}
+
 export function get(id) {
-  return THEMES[resolveId(id)];
+  if (id == null || id === '') return THEMES.default;
+  const raw = String(id).trim();
+  if (APPEARANCES[raw]) return appearanceTheme(raw);
+  return THEMES[resolveId(raw)];
 }
 
 export function list() {

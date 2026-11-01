@@ -1,6 +1,7 @@
 /* Box chrome. Palette lives in board-themes; this module adds kitFor / applyTo. */
 import * as Palette from '../../board-themes/index.js';
 import { ring } from '../../board-themes/index.js';
+import { APPEARANCES, getAppearance } from '../../board-themes/appearance/index.js';
 import * as Scale from './type-scale.js';
 import * as MaxWidth from './max-width-scale.js';
 import * as ItemAlign from './item-align.js';
@@ -34,9 +35,31 @@ function typeChrome(partial) {
   }, partial || {});
 }
 
+function chromePartial(id) {
+  if (APPEARANCES[id]) {
+    const table = getAppearance(id);
+    return {
+      card: {
+        radius: chromeDefault.card.radius,
+        titleColor: table.chrome.card.titleColor,
+        cardColor: table.chrome.card.cardColor,
+      },
+      layout: chromeDefault.layout,
+      container: {
+        shell: chromeDefault.container.shell,
+        borderStyle: chromeDefault.container.borderStyle,
+        pad: chromeDefault.container.pad,
+        titleColor: table.chrome.container.titleColor,
+        cardColor: table.chrome.container.cardColor,
+      },
+    };
+  }
+  return partials[id] || partials.default;
+}
+
 function typesFor(id) {
   if (typesById[id]) return typesById[id];
-  const partial = partials[id] || partials.default;
+  const partial = chromePartial(id);
   const types = {};
   BOX_TYPES.forEach((typeName) => {
     const chrome = typeChrome(partial[typeName] || {});
@@ -116,6 +139,7 @@ function typeStepOf(el) {
 function applyTo(el, id) {
   if (!el) return withChrome(id);
   const theme = withChrome(id);
+  const table = getAppearance(APPEARANCES[theme.id] ? theme.id : 'light');
   const step = typeStepOf(el);
   const base = kitFor(theme, 'card');
   const map = {
@@ -151,6 +175,11 @@ function applyTo(el, id) {
     '--board-label-size': Scale.sizeForLabel(step),
     '--board-card-color': base.cardColor,
     '--board-card-left': base.cardLeft,
+    '--board-note-sheet': table.note.sheet,
+    '--board-note-fold': table.note.fold,
+    '--board-note-heading-border': table.note.headingBorder,
+    '--board-edge-label-stroke': table.halo.edgeLabelStroke,
+    '--board-slot-shadow': table.halo.slotShadow,
     '--board-panel-bg': base.panelBg,
     '--board-panel-header-bg': base.panelHeaderBg,
     '--bf-ring': ring.color,
