@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const assert = require('assert');
 const Chrome = require('../../packages/drawer-app/src/core/appearance-chrome.js').default;
@@ -43,6 +44,17 @@ const { getAppearance } = require('../../packages/board-themes/appearance/index.
   assert.notStrictEqual(set['--bg'], getAppearance('light').page.bg);
   assert.strictEqual(root.dataset.theme, 'dark');
   assert.strictEqual(root.dataset.appearance, 'dark');
+}
+
+// Dark sets color-scheme: dark on the page. The Sketch runner is a light page, so its frame
+// must stay pinned to light or the browser paints it as an opaque white block.
+{
+  const fs = require('fs');
+  const path = require('path');
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const css = fs.readFileSync(path.join(here, '../../packages/drawer-app/css/01-base.css'), 'utf8');
+  assert.match(css, /html\[data-theme="dark"\]\s*\{\s*color-scheme:\s*dark;?\s*\}/, 'Dark page scheme');
+  assert.match(css, /iframe\.sketch-frame\s*\{\s*color-scheme:\s*light;?\s*\}/, 'Sketch frame stays light');
 }
 
 console.log('ok appearance-chrome');
