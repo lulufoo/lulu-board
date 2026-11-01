@@ -1,7 +1,7 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, parseReady, parseSize } from '../../../sandbox-app/src/protocol.js';
+import { renderMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -35,7 +35,12 @@ function bindWorld(rootEl, boundsFn) {
 export const SKETCH_RUNNER_URL = "https://sandbox.luluboard.app/runner";
 // A runner that never reports a size (offline, blocked, not deployed) must not hold the canvas view forever.
 var RUNNER_TIMEOUT_MS = 10000;
+// A capture waits for the runner's screenshot; a stuck page must not freeze the export button.
+var CAPTURE_TIMEOUT_MS = 30000;
 var stopListening = null;
+// One channel per sketch frame: the captures it is still waiting for.
+var channels = new WeakMap();
+var captureSeq = 0;
 
 export function renderSketch(opts) {
   opts = opts || {};
@@ -95,6 +100,21 @@ export function renderSketch(opts) {
     if (size.height !== frame.offsetHeight) frame.style.height = size.height + "px";
   }
   var sent = false;
+  var channel = { pending: new Map() };
+  channels.set(frame, channel);
+  function settle(id) {
+    var entry = channel.pending.get(id);
+    if (!entry) return null;
+    clearTimeout(entry.timer);
+    channel.pending.delete(id);
+    return entry;
+  }
+  function failCaptures(message) {
+    Array.from(channel.pending.keys()).forEach(function (id) {
+      var entry = settle(id);
+      if (entry) entry.reject(new Error(message));
+    });
+  }
   function onMessage(event) {
     // The runner has an opaque origin, so event.origin is the string "null" and proves nothing about who sent it.
     // The sender is the frame we made; every field is untrusted and goes through the protocol parsers.
@@ -114,11 +134,24 @@ export function renderSketch(opts) {
     if (size) {
       applySize(size);
       finish(false);
+      return;
+    }
+    var captured = parseCaptured(event.data);
+    if (captured) {
+      var done = settle(captured.id);
+      if (done) done.resolve(captured.bitmap);
+      return;
+    }
+    var failure = parseError(event.data);
+    if (failure && failure.id) {
+      var failed = settle(failure.id);
+      if (failed) failed.reject(new Error("Sketch capture failed: " + failure.message));
     }
   }
   function stop() {
     window.removeEventListener("message", onMessage);
     clearTimeout(timer);
+    failCaptures("Sketch was replaced before the capture finished");
   }
   window.addEventListener("message", onMessage);
   stopListening = stop;
@@ -126,8 +159,28 @@ export function renderSketch(opts) {
   previewEl.appendChild(frame);
 }
 
+/* Ask the runner for a transparent bitmap of the whole sketch document, scale times its CSS size.
+ * The bitmap is untrusted pixels from another origin: the caller bounds its size before using it. */
+export function captureSketch(frame, scale) {
+  var channel = frame && channels.get(frame);
+  if (!channel || !frame.isConnected || !frame.contentWindow) {
+    return Promise.reject(new Error("Sketch is not ready to export"));
+  }
+  captureSeq += 1;
+  var id = "capture-" + captureSeq;
+  return new Promise(function (resolve, reject) {
+    var timer = setTimeout(function () {
+      channel.pending.delete(id);
+      reject(new Error("Sketch capture timed out"));
+    }, CAPTURE_TIMEOUT_MS);
+    channel.pending.set(id, { resolve: resolve, reject: reject, timer: timer });
+    frame.contentWindow.postMessage(captureMessage(id, scale), "*");
+  });
+}
+
 const Sketch = {
   renderSketch: renderSketch,
+  captureSketch: captureSketch,
   sketchWorldBounds: sketchWorldBounds,
   sketchFragmentRoot: sketchFragmentRoot,
 };

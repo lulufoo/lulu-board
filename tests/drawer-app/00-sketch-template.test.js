@@ -41,6 +41,11 @@ assert.doesNotMatch(mount, /contentDocument/, 'Board never reads into the frame'
 assert.match(mount, /event\.source !== frame\.contentWindow \|\| event\.origin !== "null"/, 'Messages must come from this frame, which has an opaque origin');
 assert.match(mount, /parseSize\(event\.data\)/, 'Size comes through the protocol parser');
 assert.match(mount, /renderMessage\(html\)/, 'Fragment travels as a protocol message');
+assert.match(mount, /export function captureSketch\(frame, scale\)/, 'Export asks the runner through one function');
+assert.match(mount, /captureMessage\(id, scale\)/, 'Capture travels as a protocol message');
+assert.match(mount, /parseCaptured\(event\.data\)/, 'A bitmap comes back through the protocol parser');
+assert.match(mount, /failCaptures\("Sketch was replaced/, 'A replaced sketch fails its waiting captures');
+assert.match(mount, /CAPTURE_TIMEOUT_MS/, 'A silent runner cannot hold an export forever');
 assert.match(mount, /pointer-events:none/, 'Canvas keeps pan and zoom over the sketch');
 assert.doesNotMatch(mount, /attachShadow/, 'Sketch does not share the Board document');
 assert.doesNotMatch(mount, /previewEl\.appendChild\(sketchFragmentRoot/, 'Fragment does not mount in the Board document');
