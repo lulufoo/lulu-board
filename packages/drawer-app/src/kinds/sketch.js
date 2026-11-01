@@ -32,7 +32,7 @@ function bindWorld(rootEl, boundsFn) {
 }
 
 /* The runner is a separate origin that only Board may frame. Its scripts run there, not here. */
-export const SKETCH_RUNNER_URL = "https://sandbox.luluboard.app/runner";
+export const SKETCH_RUNNER_URL = "https://sandbox.luluboard.app/";
 // A runner that never reports a size (offline, blocked, not deployed) must not hold the canvas view forever.
 var RUNNER_TIMEOUT_MS = 10000;
 // A capture waits for the runner's screenshot; a stuck page must not freeze the export button.

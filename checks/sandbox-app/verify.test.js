@@ -8,7 +8,7 @@ function serve(handler) {
     const server = http.createServer(handler).listen(0, '127.0.0.1', () => resolve(server));
   });
 }
-const urlOf = (server) => 'http://127.0.0.1:' + server.address().port + '/runner';
+const urlOf = (server) => 'http://127.0.0.1:' + server.address().port + '/';
 
 const good = await serve((_req, res) => { res.writeHead(200, { 'Content-Security-Policy': runnerCsp() }); res.end('x'); });
 assert.deepEqual(await verifyRunner(urlOf(good)), [], 'matching header passes');

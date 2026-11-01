@@ -1,4 +1,4 @@
-/* Response headers for the runner page. A Worker applies them to /runner (and /runner.html).
+/* Response headers for the runner page. The whole sandbox domain is the runner, so they apply to every path.
  * CSP must be a header: `sandbox` and `frame-ancestors` do nothing in a <meta> tag.
  * Not covered on purpose: script-src, img-src, style-src. Sketch scripts and styles must run,
  * and image GETs can still leak data; connect-src only closes fetch, XHR, WebSocket, and beacon. */
@@ -24,8 +24,8 @@ export function runnerHeaders(frameAncestors) {
   return { 'Content-Security-Policy': runnerCsp(frameAncestors) };
 }
 
-/* Paths that serve the runner document. The hashed script is a subresource and needs no CSP. */
-export const RUNNER_PATHS = Object.freeze(['/runner', '/runner.html']);
+/* One catch-all block: a future page on this domain gets the CSP too. */
+export const RUNNER_PATHS = Object.freeze(['/*']);
 
 /* Cloudflare Workers static assets `_headers` file. */
 export function runnerHeadersFile(frameAncestors) {

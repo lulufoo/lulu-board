@@ -34,7 +34,7 @@ assert.match(mount, /createElement\("iframe"\)/, 'Sketch mounts in its own docum
 assert.match(mount, /setAttribute\("sandbox", "allow-scripts"\)/, 'Sketch iframe may run scripts');
 assert.doesNotMatch(mount, /setAttribute\("sandbox",[^)]*allow-same-origin/, 'Sketch iframe never gets an origin back');
 assert.doesNotMatch(mount, /allow-(top-navigation|popups|forms|modals|downloads|pointer-lock)/, 'Sketch iframe gets no permission beyond scripts');
-assert.match(mount, /SKETCH_RUNNER_URL = "https:\/\/sandbox\.luluboard\.app\/runner"/, 'Runner lives on its own origin');
+assert.match(mount, /SKETCH_RUNNER_URL = "https:\/\/sandbox\.luluboard\.app\/"/, 'Runner lives on its own origin');
 assert.match(mount, /frame\.src = SKETCH_RUNNER_URL/, 'Frame loads the runner');
 assert.doesNotMatch(mount, /srcdoc/, 'Fragment no longer shares an origin through srcdoc');
 assert.doesNotMatch(mount, /contentDocument/, 'Board never reads into the frame');
