@@ -70,10 +70,16 @@ Opaque-origin consequences, for both sides:
 |---|---|---|---|
 | runner to Board | `lulu-sandbox:ready` | none | Runner is loaded and listening. Board sends `render` after this. |
 | Board to runner | `lulu-sandbox:render` | `html: string` | Mount one fragment as the body. Scripts in it run. Only the first `render` per runner load is used; Board mounts a fresh frame per sketch. |
-| runner to Board | `lulu-sandbox:size` | `width, height` (CSS px) | Content size. Sent after mount and whenever it changes. Values outside `0 < n <= 32768` are rejected by `parseSize`. |
+| runner to Board | `lulu-sandbox:size` | `width, height` (CSS px), `bleed` (whole px, optional) | Frame size. Sent after mount and whenever it changes. `bleed` is the transparent room the runner keeps on every side inside the frame, so the picture is `(width - 2 * bleed)` by `(height - 2 * bleed)`. A message with no `bleed` means the frame is the picture. `width` and `height` outside `0 < n <= 32768` are rejected by `parseSize`. A `bleed` that is not a whole number from 1 to 12, or that leaves no picture, is read as 0. |
 | Board to runner | `lulu-sandbox:capture` | `id: string` (1 to 64 chars), `scale: number` (`0 < scale <= 8`) | Ask for a transparent bitmap of the whole document. |
 | runner to Board | `lulu-sandbox:captured` | `id`, `bitmap: ImageBitmap` | Reply to `capture`. The bitmap is transferred, not copied. |
 | runner to Board | `lulu-sandbox:error` | `id: string or null`, `message: string` | `capture` failed or came before `render`. `message` is cut to 200 characters. |
 
-Capture runs `snapdom.toCanvas(document.documentElement, { backgroundColor: null, dpr: 1, scale })`.
-Background, bleed, crop, and saving stay in Board.
+The bleed is padding that the runner sets inline on `<html>`, so a fragment's own reset cannot remove it. A
+shadow or ring that spills past the picture then stays inside the frame. A fragment sized by the viewport
+(`min-height: 100vh`, `width: 100vw`) follows the frame, and the frame follows the size message, so the padding
+would grow it on every round. The runner detects that the frame already has its last size while the page asks for
+exactly `2 * bleed` more, removes the padding, and reports `bleed: 0`.
+
+Capture runs `snapdom.toCanvas(document.documentElement, { backgroundColor: null, dpr: 1, scale })`, so the
+bitmap includes the bleed. Background, export bleed, crop, and saving stay in Board.

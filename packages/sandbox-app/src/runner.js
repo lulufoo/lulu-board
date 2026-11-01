@@ -9,6 +9,7 @@ import {
   sizeMessage,
   capturedMessage,
   errorMessage,
+  SANDBOX_BLEED,
 } from './protocol.js';
 
 export function createRunner(env) {
@@ -18,31 +19,59 @@ export function createRunner(env) {
   var rendered = false;
   var lastW = 0;
   var lastH = 0;
+  var bleed = SANDBOX_BLEED;
+  var lastBleed = -1;
 
   function post(message, transfer) {
     // The runner has an opaque origin and cannot name its parent's origin; frame-ancestors decides who may embed it.
     win.parent.postMessage(message, '*', transfer || []);
   }
 
+  /* The frame is the picture plus the bleed on every side. The bleed is padding on <html>, set inline so a
+   * fragment's own reset (`* { padding: 0 }`, `html { padding: 0 }`) cannot remove it, and so the fragment's
+   * `body` rules keep their meaning. Returns the whole frame size. */
   function measure() {
     var root = doc.documentElement;
     var body = doc.body;
     if (!root || !body) return null;
-    var w = Math.ceil(root.scrollWidth);
-    var h = Math.ceil(Math.max(body.getBoundingClientRect().height, body.scrollHeight));
+    var rect = body.getBoundingClientRect();
+    var top = rect.top || 0;
+    var bottom = rect.bottom != null ? rect.bottom : top + rect.height;
+    // A picture wider than the frame overflows to its own edge, and the padding at the far side is not part of
+    // that overflow, so put it back. A narrower picture fills the frame and needs nothing.
+    var wide = root.scrollWidth > root.clientWidth;
+    var w = Math.ceil(root.scrollWidth) + (wide ? bleed : 0);
+    var h = Math.ceil(Math.max(bottom, top + body.scrollHeight)) + bleed;
     return w > 0 && h > 0 ? { width: w, height: h } : null;
+  }
+
+  /* A fragment sized by the viewport (`min-height: 100vh`, `width: 100vw`) follows the frame, and the frame
+   * follows the report, so the bleed padding would add one more 2 * bleed on every round and never settle.
+   * The tell: the frame already has our last size, yet the page asks for exactly 2 * bleed more. Such a
+   * fragment gets no bleed, which is how every Sketch behaved before the bleed existed. */
+  function followsViewport(size) {
+    if (bleed === 0 || lastW === 0) return false;
+    return (win.innerWidth === lastW && size.width === lastW + 2 * bleed)
+      || (win.innerHeight === lastH && size.height === lastH + 2 * bleed);
   }
 
   function reportSize() {
     var size = measure();
-    if (!size || (size.width === lastW && size.height === lastH)) return;
+    if (size && followsViewport(size)) {
+      bleed = 0;
+      doc.documentElement.style.padding = '0';
+      size = measure();
+    }
+    if (!size || (size.width === lastW && size.height === lastH && bleed === lastBleed)) return;
     lastW = size.width;
     lastH = size.height;
-    post(sizeMessage(size.width, size.height));
+    lastBleed = bleed;
+    post(sizeMessage(size.width, size.height, bleed));
   }
 
   function mount(html) {
     var body = doc.body;
+    if (doc.documentElement && doc.documentElement.style) doc.documentElement.style.padding = SANDBOX_BLEED + 'px';
     var range = doc.createRange();
     range.selectNodeContents(body);
     // createContextualFragment keeps scripts runnable on insertion, unlike innerHTML.

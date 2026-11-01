@@ -9,6 +9,8 @@ import {
   showDiagramError,
 } from '../state/shell-state.js';
 
+/* The size of one box, as the camera and the export see it. Pass the picture for the canvas world and the frame for
+ * a capture: the frame is the picture plus the runner's bleed on every side. */
 function sketchWorldBounds(el) {
   if (!el) return null;
   var w = el.offsetWidth;
@@ -68,6 +70,11 @@ export function renderSketch(opts) {
   var holder = document.createElement("div");
   holder.appendChild(sketchFragmentRoot(fragment));
   var html = holder.innerHTML;
+  // The picture box is what the canvas centers, zooms, and snaps. The frame hangs out of it by the bleed so a shadow,
+  // outline, or ring at the picture edge is painted instead of cut off by the frame.
+  var picture = document.createElement("div");
+  picture.className = "sketch-picture";
+  picture.style.cssText = "position:relative;width:100%;";
   var frame = document.createElement("iframe");
   frame.className = "sketch-frame";
   // allow-scripts without allow-same-origin: the frame gets an opaque origin, so its scripts cannot reach Board's
@@ -75,16 +82,17 @@ export function renderSketch(opts) {
   // an escape.
   frame.setAttribute("sandbox", "allow-scripts");
   frame.setAttribute("scrolling", "no");
-  // Width and height are replaced by the picture size. Until that arrives, a placeholder keeps the frame on screen.
+  // Width and height are replaced by the runner's size. Until that arrives, a placeholder keeps the frame on screen.
   frame.style.cssText = "display:block;border:0;width:100%;height:800px;background:transparent;pointer-events:none;";
   frame.src = SKETCH_RUNNER_URL;
+  picture.appendChild(frame);
   var finished = false;
   var timer = 0;
   function finish(failed) {
     if (finished || !frame.isConnected) return;
     finished = true;
     clearTimeout(timer);
-    bindWorld(frame, function () { return sketchWorldBounds(frame); });
+    bindWorld(picture, function () { return sketchWorldBounds(picture); });
     if (failed) {
       showDiagramError("Sketch runner did not respond");
       setStatus("Sketch runner did not respond", true);
@@ -95,9 +103,16 @@ export function renderSketch(opts) {
     emit("finishCanvasView", opts);
   }
   function applySize(size) {
-    // The frame is the picture. The camera then centers that box on the stage, on both axes.
-    if (size.width > 0) frame.style.width = size.width + "px";
-    if (size.height > 0) frame.style.height = size.height + "px";
+    // The runner reports the whole frame. The picture is the frame less the bleed on each side, and the camera
+    // centers that box on the stage on both axes; the frame is moved out by the bleed so it still covers it.
+    var bleed = size.bleed || 0;
+    picture.style.width = (size.width - bleed * 2) + "px";
+    picture.style.height = (size.height - bleed * 2) + "px";
+    frame.style.position = "absolute";
+    frame.style.left = -bleed + "px";
+    frame.style.top = -bleed + "px";
+    frame.style.width = size.width + "px";
+    frame.style.height = size.height + "px";
   }
   var sent = false;
   var channel = { pending: new Map() };
@@ -156,7 +171,7 @@ export function renderSketch(opts) {
   window.addEventListener("message", onMessage);
   stopListening = stop;
   timer = setTimeout(function () { finish(true); }, RUNNER_TIMEOUT_MS);
-  previewEl.appendChild(frame);
+  previewEl.appendChild(picture);
 }
 
 /* Ask the runner for a transparent bitmap of the whole sketch document, scale times its CSS size.

@@ -52,8 +52,14 @@ assert.match(mount, /parseCaptured\(event\.data\)/, 'A bitmap comes back through
 assert.match(mount, /failCaptures\("Sketch was replaced/, 'A replaced sketch fails its waiting captures');
 assert.match(mount, /CAPTURE_TIMEOUT_MS/, 'A silent runner cannot hold an export forever');
 assert.match(mount, /pointer-events:none/, 'Canvas keeps pan and zoom over the sketch');
-assert.match(mount, /frame\.style\.width = size\.width \+ "px"/, 'The frame width is the picture, so a narrower picture stays centered');
-assert.match(mount, /frame\.style\.height = size\.height \+ "px"/, 'The frame height is the picture, so the camera can center it vertically');
+assert.match(mount, /picture\.style\.width = \(size\.width - bleed \* 2\) \+ "px"/, 'The picture is the frame less the bleed, so a narrower picture stays centered');
+assert.match(mount, /picture\.style\.height = \(size\.height - bleed \* 2\) \+ "px"/, 'The picture height is what the camera centers vertically');
+assert.match(mount, /frame\.style\.left = -bleed \+ "px"/, 'The frame hangs out of the picture by the bleed on the left');
+assert.match(mount, /frame\.style\.top = -bleed \+ "px"/, 'The frame hangs out of the picture by the bleed on top');
+assert.match(mount, /frame\.style\.width = size\.width \+ "px"/, 'The frame is the whole runner document, bleed included');
+assert.match(mount, /frame\.style\.height = size\.height \+ "px"/, 'The frame is the whole runner document, bleed included');
+assert.match(mount, /bindWorld\(picture, function \(\) \{ return sketchWorldBounds\(picture\); \}\)/, 'The canvas centers and zooms the picture, not the frame with its bleed');
+assert.match(mount, /previewEl\.appendChild\(picture\)/, 'The picture box is what goes on the canvas');
 assert.doesNotMatch(mount, /size\.width > frame\.clientWidth/, 'A narrower picture shrinks the frame instead of sticking to the left');
 assert.doesNotMatch(mount, /attachShadow/, 'Sketch does not share the Board document');
 assert.doesNotMatch(mount, /previewEl\.appendChild\(sketchFragmentRoot/, 'Fragment does not mount in the Board document');
