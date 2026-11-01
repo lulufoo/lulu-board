@@ -16,10 +16,14 @@ node scripts/build-sandbox/build.mjs
 
 Writes `.cache/sandbox/`:
 
-- `index.html`: the page, served at `/`. The whole sandbox domain is the runner.
-- `runner-<hash>.js`: one classic script with the runner logic and SnapDOM. It is a classic
-  script on purpose: an opaque-origin page loads a classic script without CORS, but a module
-  would need `Access-Control-Allow-Origin`.
+- `index.html`: the page, served at `/`. The whole sandbox domain is the runner. The runner
+  logic and protocol are inline, so rendering waits for one request only.
+- `capture-<hash>.js`: SnapDOM, the largest part. Only export needs it, so the page loads it
+  after `load` (or on the first `capture`), never before rendering.
+- `_headers`: the response headers below.
+
+Both scripts are classic on purpose: an opaque-origin page loads a classic script without
+CORS, but a module or a dynamic `import()` would need `Access-Control-Allow-Origin`.
 
 ## Response headers
 
