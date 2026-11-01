@@ -1,7 +1,7 @@
 /* Frozen Dark appearance. Same keys as Light. */
 export default {
   id: 'dark',
-  ground: { background: '#14110e', dot: '#3f3830' },
+  ground: { background: '#14110e', dot: '#29241f' },
   diagram: {
     color: '#f7efe4',
     edgeStroke: '#d2b48c',

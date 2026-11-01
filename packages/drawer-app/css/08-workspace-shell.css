@@ -87,7 +87,7 @@ html[data-drawer-mode="diagram"] .board-brand {
   border: 0;
   border-radius: 6px;
   color: var(--ink-soft);
-  background: rgba(80, 55, 30, .06);
+  background: var(--chip);
 }
 
 /* ---- left drawer: a floating card summoned from the brand mark ---- */
@@ -308,7 +308,6 @@ html[data-drawer-mode="diagram"] .board-brand-mark { width: 34px; height: 34px; 
 }
 .shell-search:hover { background: var(--fill-hover); }
 .shell-search svg { width: 16px; height: 16px; }
-.shell-search kbd { background: rgba(255, 255, 255, .7); }
 
 html[data-drawer-mode="diagram"] .zoom-float,
 html[data-drawer-mode="diagram"] .group-tab-float {

@@ -20,7 +20,7 @@ assert.strictEqual(getAppearance('nope').id, 'light');
 assert.deepStrictEqual(Object.keys(light).sort(), KEYS);
 assert.deepStrictEqual(Object.keys(dark).sort(), KEYS);
 assert.deepStrictEqual(light.ground, { background: '#fff', dot: '#dfe7ea' });
-assert.deepStrictEqual(dark.ground, { background: '#14110e', dot: '#3f3830' });
+assert.deepStrictEqual(dark.ground, { background: '#14110e', dot: '#29241f' });
 assert.strictEqual(light.dock.chip, '#fff9f0');
 assert.strictEqual(dark.dock.chip, '#3c3329');
 assert.strictEqual(light.note.sheet, '#fff6dc');
