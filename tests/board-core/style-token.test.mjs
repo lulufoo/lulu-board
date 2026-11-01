@@ -5,6 +5,7 @@ import {
   clampTypeStep,
   DEFAULTS,
   leftoverFields,
+  resolveBackground,
   resolveFields,
   resolveThemeId,
   STEP_MAX,
@@ -23,6 +24,12 @@ assert.deepStrictEqual(authoredFields({ color: 'classic' }), {});
 assert.strictEqual(clampTypeStep(99), STEP_MAX);
 assert.strictEqual(clampStep(-99), STEP_MIN);
 assert.strictEqual(clampTypeStep('x'), 0);
+assert.deepStrictEqual(resolveBackground(), { background: '#fff', dot: '#dfe7ea' });
+{
+  const colors = resolveBackground();
+  colors.background = '#000';
+  assert.strictEqual(resolveBackground().background, '#fff');
+}
 assert.ok(!Object.prototype.hasOwnProperty.call(resolveFields({}), 'background'));
 assert.deepStrictEqual(resolveFields({}), DEFAULTS);
 assert.deepStrictEqual(authoredFields({}), {});

@@ -1,11 +1,13 @@
 /* Workspace ground: the locked paper canvas.
- * The canvas CSS reads it through custom properties (applyGround); PNG export paints it (paintGround). */
+ * Colors come from resolveBackground; the canvas CSS reads them through custom properties (applyGround); PNG export paints them (paintGround). */
+import { resolveBackground } from '../../../board-core/style-token.js';
+
 const STEP = 24;
 const DOT_RADIUS = 1;
-const PAPER = { background: '#fff', dot: '#dfe7ea' };
 
 export function resolveGround() {
-  return { background: PAPER.background, dot: PAPER.dot, dotRadius: DOT_RADIUS, step: STEP };
+  const colors = resolveBackground();
+  return { background: colors.background, dot: colors.dot, dotRadius: DOT_RADIUS, step: STEP };
 }
 
 function buildGroundImage(ground) {

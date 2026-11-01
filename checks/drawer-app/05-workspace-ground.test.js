@@ -13,7 +13,12 @@ const cssDir = 'packages/drawer-app/css';
 const boot = read('packages/drawer-app/src/core/early-head-boot.js');
 const diagram = read('packages/drawer-app/src/kinds/diagram.js');
 const exportPng = read('packages/drawer-app/src/export/export-png.js');
+const ground = read('packages/drawer-app/src/core/workspace-ground.js');
 const chrome = read(`${cssDir}/02-chrome.css`);
+
+assert.match(ground, /import \{ resolveBackground \} from '..\/..\/..\/board-core\/style-token\.js'/, 'ground colors come from resolveBackground');
+assert.match(ground, /resolveBackground\(\)/, 'apply and paint ask resolveBackground');
+assert.doesNotMatch(ground, /#dfe7ea|%23dfe7ea/, 'ground file holds no paper color of its own');
 
 assert.match(boot, /import \{ applyGround \} from '\.\/workspace-ground\.js'/, 'early head imports the ground');
 assert.ok(

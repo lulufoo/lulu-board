@@ -61,6 +61,10 @@ export function resolveLinkRoute(value) {
   return ROUTES[raw] ? raw : DEFAULTS.link_route;
 }
 
+export function resolveBackground() {
+  return { background: '#fff', dot: '#dfe7ea' };
+}
+
 export function authoredViewport(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const scale = Number(raw.scale);
