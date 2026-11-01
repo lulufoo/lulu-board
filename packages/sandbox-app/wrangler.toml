@@ -1,0 +1,16 @@
+# The whole sandbox.luluboard.app domain is the runner: static assets only, no Worker code.
+# Build first: node scripts/build-sandbox/build.mjs (writes .cache/sandbox/ with index.html and _headers).
+# Deploy from the repo root: npx wrangler deploy --config packages/sandbox-app/wrangler.toml
+name = "lulu-board-sandbox"
+compatibility_date = "2026-09-17"
+workers_dev = false
+account_id = "e03cf681f1dc2215f3ea12fd7f58b2d1"
+
+[assets]
+# Relative to this file.
+directory = "../../.cache/sandbox/"
+not_found_handling = "none"
+
+[[routes]]
+pattern = "sandbox.luluboard.app"
+custom_domain = true
