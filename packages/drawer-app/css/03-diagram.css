@@ -1505,8 +1505,8 @@ html[data-drawer-mode="diagram"] .top-float {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: #fffbeb;
-  border: 1px solid #c5c07a;
+  background: var(--board-note-sheet, #fff6dc);
+  border: 0;
   clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
 }
 .board-render .board-item-note-fold {
@@ -1517,7 +1517,7 @@ html[data-drawer-mode="diagram"] .top-float {
   height: 22px;
   z-index: 1;
   pointer-events: none;
-  background: #d4ce86;
+  background: var(--board-note-fold, #f0deaa);
   clip-path: polygon(0 0, 100% 100%, 0 100%);
 }
 /* Note rings. An outline is a rectangle and cannot trace the dog-ear, so a note draws its hover

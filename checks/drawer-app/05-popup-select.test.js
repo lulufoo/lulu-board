@@ -27,6 +27,11 @@ assert.match(popup, /export function bindNativeSelect/, 'native selects share th
 assert.match(popup, /function setOptions/, 'listbox options can change after mount');
 assert.match(popup, /function setDisabled/, 'listbox can disable');
 assert.match(css, /\.ps-trigger/, 'listbox trigger is styled');
+assert.match(css, /background-color: var\(--chip\)/, 'open trigger uses the appearance chip');
+assert.match(css, /\.ps-option\[aria-selected="true"\]\s*\{[^}]*background-color:\s*var\(--chip\)/, 'selected row uses the appearance chip');
+assert.match(css, /\.ps-menu\s*\{[^}]*background:\s*var\(--fill\)/, 'menu uses the appearance fill');
+assert.doesNotMatch(css, /background-color: #fff/, 'open trigger is not hard-coded white');
+assert.doesNotMatch(css, /\.ps-menu\s*\{[^}]*background:\s*#fff/, 'menu is not hard-coded white');
 assert.match(css, /\.ps-icon\.is-glyph/, 'theme chips are not dotted discs');
 assert.match(css, /select\.ps-bound/, 'bound native selects are visually hidden');
 assert.doesNotMatch(html, /groundSelectHost/, 'background listbox is gone');

@@ -33,6 +33,7 @@ const DOCK_VARS = {
   wash: '--wash',
   fill: '--fill',
   fillHover: '--fill-hover',
+  chip: '--chip',
 };
 
 const SOURCE_VARS = {
@@ -40,6 +41,7 @@ const SOURCE_VARS = {
   ink: '--src-ink',
   num: '--src-num',
   numOn: '--src-num-on',
+  indent: '--src-indent',
 };
 
 function writeVars(root, map, values) {

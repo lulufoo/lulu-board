@@ -17,7 +17,7 @@ select.ps-bound {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(74, 53, 36, .22);
+  box-shadow: inset 0 0 0 1px var(--paper-line, rgba(74, 53, 36, .22));
 }
 .ps-icon.is-glyph {
   border-radius: 0;
@@ -45,10 +45,13 @@ html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger {
   cursor: pointer;
   outline: none;
 }
+html[data-theme="dark"] .diagram-dock .ps-trigger {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path fill='none' stroke='%23b8a28a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M2.5 4.5L6 8l3.5-3.5'/></svg>");
+}
 html[data-drawer-mode="diagram"] .diagram-dock .popup-select.has-icon .ps-trigger { padding-left: 10px; }
 html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger:focus-visible,
 html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger[aria-expanded="true"] {
-  background-color: #fff;
+  background-color: var(--chip);
   box-shadow: 0 0 0 2px rgba(219, 76, 132, .32);
 }
 
@@ -62,8 +65,9 @@ html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger[aria-expanded="true"]
   padding: 6px;
   list-style: none;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgba(74, 53, 36, .08), 0 10px 28px rgba(74, 53, 36, .18);
+  background: var(--fill);
+  border: 1px solid var(--paper-line);
+  box-shadow: var(--shadow-soft);
 }
 .ps-option {
   display: flex;
@@ -78,11 +82,14 @@ html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger[aria-expanded="true"]
   outline: none;
 }
 .ps-option:hover,
-.ps-option:focus { background: var(--fill); }
+.ps-option:focus { background-color: var(--fill-hover); }
 .ps-option[aria-selected="true"] {
   font-weight: 600;
+  background-color: var(--chip);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path fill='none' stroke='%23db4c84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M2.8 7.4l2.6 2.6 5.8-6'/></svg>");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 14px 14px;
 }
+.ps-option[aria-selected="true"]:hover,
+.ps-option[aria-selected="true"]:focus { background-color: var(--chip); }

@@ -22,7 +22,7 @@
   cursor: pointer;
 }
 .props-tab:hover { color: var(--ink); }
-.props-tab[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: var(--press); }
+.props-tab[aria-selected="true"] { background: var(--chip); color: var(--ink); box-shadow: var(--press); }
 .props-tab:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 #props-ai-panel,
 #props-you-panel {

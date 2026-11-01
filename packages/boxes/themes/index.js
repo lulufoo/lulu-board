@@ -177,6 +177,7 @@ function applyTo(el, id) {
     '--board-card-left': base.cardLeft,
     '--board-note-sheet': table.note.sheet,
     '--board-note-fold': table.note.fold,
+    '--board-note-ink': table.note.ink,
     '--board-note-heading-border': table.note.headingBorder,
     '--board-edge-label-stroke': table.halo.edgeLabelStroke,
     '--board-slot-shadow': table.halo.slotShadow,

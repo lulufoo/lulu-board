@@ -48,17 +48,20 @@ export default {
     wash: 'rgba(243, 232, 216, .06)',
     fill: '#322a22',
     fillHover: '#3c3329',
+    chip: '#3c3329',
   },
   source: {
     paper: '#241f1a',
     ink: '#f7efe4',
     num: '#8a7d6c',
     numOn: '#db4c84',
+    indent: 'rgba(243, 232, 216, .16)',
   },
   note: {
-    sheet: '#3d3520',
-    fold: '#6a5c32',
-    headingBorder: 'rgba(228, 212, 184, .16)',
+    sheet: '#c9a63a',
+    fold: '#a88828',
+    ink: '#2c220e',
+    headingBorder: 'rgba(44, 34, 14, .28)',
   },
   halo: {
     edgeLabelStroke: '#14110e',

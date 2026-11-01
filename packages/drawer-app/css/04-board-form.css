@@ -73,6 +73,10 @@
 }
 
 /* ---- Item · note: warm cream paper, no outline, 4px corners, folded top-right ---- */
+.board-render .board-item-note,
+.board-render .board-item.board-card.board-item-type-note {
+  color: var(--board-note-ink, var(--board-color));
+}
 .board-render .board-item-note-sheet {
   background: var(--board-note-sheet, #fff6dc);
   border: 0;

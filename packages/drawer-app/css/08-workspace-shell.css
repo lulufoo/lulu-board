@@ -422,7 +422,7 @@ html[data-drawer-mode="diagram"] .diagram-dock #boardTypeEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardTitleEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardDirEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #board-align-x-editor:focus,
-html[data-drawer-mode="diagram"] .diagram-dock #board-align-y-editor:focus
+html[data-drawer-mode="diagram"] .diagram-dock #board-align-y-editor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardArrowEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardIdEditor:focus,
@@ -434,7 +434,7 @@ html[data-drawer-mode="diagram"] .diagram-dock #flowchartDirEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapDocTitleEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapLayoutEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapTextEditor:focus,
-html[data-drawer-mode="diagram"] .diagram-dock #designDocTitleEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="diagram"] .diagram-dock #designDocTitleEditor:focus { background: var(--chip); box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
 html[data-drawer-mode="diagram"] .diagram-dock .props-arrow-reverse,
 html[data-drawer-mode="diagram"] .diagram-dock .props-id-copy,
 html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-reset,
@@ -455,7 +455,7 @@ html[data-drawer-mode="diagram"] #stylePanel .props-seg-btn { height: 40px; bord
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn + .props-seg-btn { box-shadow: none; }
-html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .14); }
+html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: var(--chip); color: var(--ink); box-shadow: var(--press); }
 html[data-drawer-mode="diagram"] .export-actions .btn { height: 40px; }
 html[data-drawer-mode="diagram"] .export-type-row { border: 0; border-radius: 12px; background: var(--fill); }
 html[data-drawer-mode="diagram"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }

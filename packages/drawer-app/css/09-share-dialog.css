@@ -31,7 +31,7 @@
   cursor: pointer;
 }
 .share-seg button:hover { color: var(--text); }
-.share-seg button[aria-checked="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(18, 18, 18, 0.14); }
+.share-seg button[aria-checked="true"] { background: var(--chip); color: var(--text); box-shadow: var(--press); }
 .share-seg button:disabled { opacity: 0.45; cursor: not-allowed; }
 .share-switch-row {
   display: flex;

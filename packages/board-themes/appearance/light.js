@@ -48,16 +48,19 @@ export default {
     wash: 'rgba(80, 55, 30, .05)',
     fill: '#f3ede2',
     fillHover: '#ebe3d4',
+    chip: '#fff',
   },
   source: {
     paper: '#fffdf9',
     ink: '#4a3524',
     num: '#b09b7e',
     numOn: '#db4c84',
+    indent: '#e6dccb',
   },
   note: {
     sheet: '#fff6dc',
     fold: '#f0deaa',
+    ink: '#4a3524',
     headingBorder: 'rgba(90, 67, 48, .14)',
   },
   halo: {

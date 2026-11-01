@@ -1,11 +1,14 @@
 /* drawer-app/09-source-style.css — Source panel as a code editor in this project's warm palette:
    paper body, tan line numbers, pink for keywords. */
+:root {
+  --src-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+}
 [data-theme="light"] {
   --src-paper: #fffdf9;
   --src-ink: #4a3524;
   --src-num: #b09b7e;
   --src-num-on: #db4c84;
-  --src-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --src-indent: #e6dccb;
 }
 html[data-drawer-mode="diagram"] .diagram-dock[data-open="source"] [data-dock-panel="source"] {
   padding: 0;
@@ -52,7 +55,7 @@ html[data-drawer-mode="diagram"] [data-dock-panel="source"] #diagramSource {
   font: 12px/1.65 var(--src-mono);
   tab-size: 2;
   color: transparent;
-  caret-color: #4a3524;
+  caret-color: var(--src-ink);
   background: transparent;
 }
 html[data-drawer-mode="diagram"] [data-dock-panel="source"] #diagramSource::selection { background: rgba(219, 76, 132, .22); color: transparent; }
@@ -73,11 +76,11 @@ html[data-drawer-mode="diagram"] [data-dock-panel="source"] #diagramSource::plac
 }
 .hl-line { display: block; }
 .hl-line.is-current { background: rgba(74, 53, 36, .04); box-shadow: inset 0 1px 0 rgba(74, 53, 36, .08), inset 0 -1px 0 rgba(74, 53, 36, .08); }
-.hl-line.ind-1,.hl-line.ind-2,.hl-line.ind-3,.hl-line.ind-4 { background-repeat: no-repeat; background-size: 1px 1.65em; }
-.hl-line.ind-1 { background-image: linear-gradient(#e6dccb, #e6dccb); background-position: .5ch 0; }
-.hl-line.ind-2 { background-image: linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb); background-position: .5ch 0, 2.5ch 0; }
-.hl-line.ind-3 { background-image: linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb); background-position: .5ch 0, 2.5ch 0, 4.5ch 0; }
-.hl-line.ind-4 { background-image: linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb), linear-gradient(#e6dccb, #e6dccb); background-position: .5ch 0, 2.5ch 0, 4.5ch 0, 6.5ch 0; }
+.hl-line.ind-1,.hl-line.ind-2,.hl-line.ind-3,.hl-line.ind-4 { background-repeat: repeat-y; background-size: 1px 100%; }
+.hl-line.ind-1 { background-image: linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)); background-position: .5ch 0; }
+.hl-line.ind-2 { background-image: linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)); background-position: .5ch 0, 2.5ch 0; }
+.hl-line.ind-3 { background-image: linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)); background-position: .5ch 0, 2.5ch 0, 4.5ch 0; }
+.hl-line.ind-4 { background-image: linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)), linear-gradient(var(--src-indent, #e6dccb), var(--src-indent, #e6dccb)); background-position: .5ch 0, 2.5ch 0, 4.5ch 0, 6.5ch 0; }
 .hl-kw { color: #c93a73; font-weight: 700; }
 .hl-key { color: #9a7b52; }
 .hl-id { color: #a85a2a; }
