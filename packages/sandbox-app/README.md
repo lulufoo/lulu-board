@@ -16,10 +16,14 @@ node scripts/build-sandbox/build.mjs
 
 Writes `.cache/sandbox/`:
 
-- `index.html`: the page, served at `/`. The whole sandbox domain is the runner.
-- `runner-<hash>.js`: one classic script with the runner logic and SnapDOM. It is a classic
-  script on purpose: an opaque-origin page loads a classic script without CORS, but a module
-  would need `Access-Control-Allow-Origin`.
+- `index.html`: the page, served at `/`. The whole sandbox domain is the runner. The runner
+  logic and protocol are inline, so rendering waits for one request only.
+- `capture-<hash>.js`: SnapDOM, the largest part. Only export needs it, so the page loads it
+  after `load` (or on the first `capture`), never before rendering.
+- `_headers`: the response headers below.
+
+Both scripts are classic on purpose: an opaque-origin page loads a classic script without
+CORS, but a module or a dynamic `import()` would need `Access-Control-Allow-Origin`.
 
 ## Response headers
 
@@ -30,7 +34,11 @@ Workers static assets Worker; a Worker with its own code imports `runnerHeaders(
 Content-Security-Policy: sandbox allow-scripts; connect-src 'none'; frame-ancestors https://luluboard.app; frame-src 'none'; object-src 'none'
 ```
 
-It applies to every path (`/*`), as a header. In a `<meta>` tag `sandbox` and
+Cache rules sit in the same file (`RUNNER_CACHE`): `/` is `max-age=60, stale-while-revalidate=86400`
+so a new core reaches users within a minute and a repeat visit never waits; `/capture-*` is
+`immutable` because the file name carries its hash.
+
+The CSP applies to every path (`/*`), as a header. In a `<meta>` tag `sandbox` and
 `frame-ancestors` do nothing. Checked in a browser against a local server: with the header,
 a fragment's `fetch` and a script-created `iframe` never reach the network, and an
 unlisted parent cannot embed the page. Without it both requests go out.

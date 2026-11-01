@@ -49,6 +49,7 @@ assert.match(mount, /CAPTURE_TIMEOUT_MS/, 'A silent runner cannot hold an export
 assert.match(mount, /pointer-events:none/, 'Canvas keeps pan and zoom over the sketch');
 assert.doesNotMatch(mount, /attachShadow/, 'Sketch does not share the Board document');
 assert.doesNotMatch(mount, /previewEl\.appendChild\(sketchFragmentRoot/, 'Fragment does not mount in the Board document');
+assert.match(html, /<link rel="preconnect" href="https:\/\/sandbox\.luluboard\.app">/, 'The runner connection is opened while the app loads');
 assert.match(html, /frame-src https:\/\/sandbox\.luluboard\.app;/, 'Board page may frame the runner and nothing else');
 
 console.log('ok sketch template');
