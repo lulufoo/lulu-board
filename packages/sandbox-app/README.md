@@ -35,6 +35,9 @@ It applies to `/runner` and `/runner.html`, as a header. In a `<meta>` tag `sand
 a fragment's `fetch` and a script-created `iframe` never reach the network, and an
 unlisted parent cannot embed the page. Without it both requests go out.
 
+After deploying, check the live page with
+`node scripts/verify-sandbox/verify.mjs [url]` (default `https://sandbox.luluboard.app/runner`).
+
 Known gap: `connect-src` does not cover images. A fragment can still send data out with an
 `<img>` GET. `script-src`, `img-src`, and `style-src` stay open on purpose.
 
