@@ -27,9 +27,27 @@ export function createRunner(env) {
     win.parent.postMessage(message, '*', transfer || []);
   }
 
-  /* The frame is the picture plus the bleed on every side. The bleed is padding on <html>, set inline so a
-   * fragment's own reset (`* { padding: 0 }`, `html { padding: 0 }`) cannot remove it, and so the fragment's
-   * `body` rules keep their meaning. Returns the whole frame size. */
+  /* The bleed is padding on <html>, set inline so a fragment's own reset (`* { padding: 0 }`,
+   * `html { padding: 0 }`) cannot remove it, and so the fragment's `body` rules keep their meaning.
+   * It must also stay transparent. The browser paints a page's `body { background }` over the whole page unless
+   * <html> has a background of its own, which would color the bleed. So <html> gets an invisible background
+   * image, and its color is forced transparent so `html { background: #fff }` cannot fill the bleed either.
+   * The fragment's background then covers the picture only. */
+  function setBleed(px) {
+    bleed = px;
+    var style = doc.documentElement && doc.documentElement.style;
+    if (!style) return;
+    style.padding = px ? px + 'px' : '0';
+    if (px) {
+      style.setProperty('background-color', 'transparent', 'important');
+      style.setProperty('background-image', 'linear-gradient(transparent, transparent)', 'important');
+    } else {
+      style.removeProperty('background-color');
+      style.removeProperty('background-image');
+    }
+  }
+
+  /* The frame is the picture plus the bleed on every side. Returns the whole frame size. */
   function measure() {
     var root = doc.documentElement;
     var body = doc.body;
@@ -58,8 +76,7 @@ export function createRunner(env) {
   function reportSize() {
     var size = measure();
     if (size && followsViewport(size)) {
-      bleed = 0;
-      doc.documentElement.style.padding = '0';
+      setBleed(0);
       size = measure();
     }
     if (!size || (size.width === lastW && size.height === lastH && bleed === lastBleed)) return;
@@ -71,7 +88,7 @@ export function createRunner(env) {
 
   function mount(html) {
     var body = doc.body;
-    if (doc.documentElement && doc.documentElement.style) doc.documentElement.style.padding = SANDBOX_BLEED + 'px';
+    setBleed(SANDBOX_BLEED);
     var range = doc.createRange();
     range.selectNodeContents(body);
     // createContextualFragment keeps scripts runnable on insertion, unlike innerHTML.

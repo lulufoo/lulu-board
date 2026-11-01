@@ -36,7 +36,7 @@ The fragment is the picture.
 The viewer mounts the fragment in its own document. Write for this environment.
 
 1. The fragment renders in a sandboxed `iframe`. Board's CSS, variables, and fonts do not reach it. Its CSS does not reach Board.
-2. Board supplies `html` and `body` with zero margin and a transparent background. `:root`, `html`, and `body` selectors act on that document. The runner pads `html` by 12px on every side. That room is not part of the picture: it keeps a shadow, outline, or ring at the picture edge from being cut off. Anything farther than 12px outside the picture is cut.
+2. Board supplies `html` and `body` with zero margin and a transparent background. `:root`, `html`, and `body` selectors act on that document. The runner pads `html` by 12px on every side. That room keeps a shadow, outline, or ring at the picture edge from being cut off. Anything farther than 12px outside the picture is cut. The room is not part of the picture and stays transparent: a background on `body` paints the picture only, and a background on `html` is ignored. To color the picture, set the background on `body` or on the root element.
 3. Scripts run when the sketch mounts, inside the sandbox. They cannot reach Board's page, storage, or cookies. `fetch`, `XMLHttpRequest`, and `WebSocket` are blocked. Use a script to build the picture.
 4. The frame takes no pointer input. The canvas pans and zooms over it. Buttons, inputs, and links draw as pictures with no hover or click. Scripts get no pointer events, so click handlers and `:hover` do nothing.
 5. No network. Put every style, shape, glyph, and script in the fragment.

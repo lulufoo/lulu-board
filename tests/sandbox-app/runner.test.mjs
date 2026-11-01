@@ -10,7 +10,11 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
   const mounted = [];
   const parent = { postMessage: (msg, target, transfer) => posted.push({ msg, target, transfer }) };
   const page = { scrollWidth: width, clientWidth: undefined, bodyHeight: height, innerWidth: undefined, innerHeight: undefined };
-  const rootStyle = {};
+  const rootStyle = {
+    props: {},
+    setProperty(name, value, priority) { this.props[name] = { value, priority }; },
+    removeProperty(name) { delete this.props[name]; },
+  };
   const body = {
     get scrollHeight() { return page.bodyHeight; },
     getBoundingClientRect: () => {
@@ -122,6 +126,10 @@ const sizes = (posted) => posted.filter((p) => p.msg.type === SANDBOX_MSG.SIZE).
   runner.start();
   runner.onMessage({ source: parent, data: renderMessage('<p>x</p>') });
   assert.equal(rootStyle.padding, `${SANDBOX_BLEED}px`, 'bleed is inline padding on the root element');
+  // A body background is painted over the whole page unless <html> has a background of its own. An invisible one
+  // keeps the bleed transparent; the color is forced too so `html { background: #fff }` cannot fill it.
+  assert.deepEqual(rootStyle.props['background-image'], { value: 'linear-gradient(transparent, transparent)', priority: 'important' }, 'html has an invisible background image');
+  assert.deepEqual(rootStyle.props['background-color'], { value: 'transparent', priority: 'important' }, 'html color cannot be set by the fragment');
   assert.deepEqual(sizes(posted).map((m) => [m.width, m.height, m.bleed]), [[300, 120 + SANDBOX_BLEED * 2, SANDBOX_BLEED]]);
 }
 
@@ -176,6 +184,7 @@ const sizes = (posted) => posted.filter((p) => p.msg.type === SANDBOX_MSG.SIZE).
   assert.equal(all.length, 2, 'one more report, not an endless chain');
   assert.deepEqual([all[1].width, all[1].height, all[1].bleed], [300, first.height, 0], 'bleed is dropped and the page fits the frame');
   assert.equal(rootStyle.padding, '0', 'the padding is removed with it');
+  assert.deepEqual(rootStyle.props, {}, 'the invisible background goes with the bleed, so the page behaves as it did before the bleed');
   page.innerHeight = all[1].height;
   fire();
   fire();

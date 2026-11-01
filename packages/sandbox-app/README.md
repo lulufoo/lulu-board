@@ -76,7 +76,11 @@ Opaque-origin consequences, for both sides:
 | runner to Board | `lulu-sandbox:error` | `id: string or null`, `message: string` | `capture` failed or came before `render`. `message` is cut to 200 characters. |
 
 The bleed is padding that the runner sets inline on `<html>`, so a fragment's own reset cannot remove it. A
-shadow or ring that spills past the picture then stays inside the frame. A fragment sized by the viewport
+shadow or ring that spills past the picture then stays inside the frame. The bleed stays transparent: a browser
+paints a page's `body` background over the whole page unless `<html>` has a background of its own, so the runner
+gives `<html>` an invisible background image and forces its background color to transparent, both with
+`!important`. A `body` background in the fragment then covers the picture only. A background set on `html`
+itself is ignored, because it would paint the whole page, bleed included. A fragment sized by the viewport
 (`min-height: 100vh`, `width: 100vw`) follows the frame, and the frame follows the size message, so the padding
 would grow it on every round. The runner detects that the frame already has its last size while the page asks for
 exactly `2 * bleed` more, removes the padding, and reports `bleed: 0`.
