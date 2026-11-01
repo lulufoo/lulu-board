@@ -53,5 +53,10 @@ assert.match(
 );
 assert.match(diagram, /appearanceFromStyleToken/, 'document ground reads appearance from the style token');
 assert.match(diagram, /applyChrome\(document\.documentElement, appearance\)/, 'opening a document reapplies dock chrome');
+assert.match(
+  diagram.slice(diagram.indexOf('BoxesRender.render')),
+  /applyDocumentGround\(\)/,
+  'Boxes paint reapplies the document appearance ground',
+);
 
 console.log('ok workspace-ground check');

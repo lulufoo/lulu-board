@@ -149,6 +149,7 @@ function b64(obj) {
   assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
   assert.match(chrome, /persistBoardStyle\(\{ appearance: t \}\)/, 'theme click persists appearance, not palette');
   assert.match(chrome, /resolveAppearance/, 'kind theme resolves appearance ids');
+  assert.match(chrome, /applyGround\(document\.documentElement, t\)/, 'theme click paints the canvas ground');
   const boardJs = ['board.js', 'board-style.js', 'diagram.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
   assert.ok(/same as global/.test(boardJs), 'unset node font hints same as global');

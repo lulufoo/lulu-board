@@ -406,6 +406,7 @@ function renderDiagram(opts) {
       // Repaint the live root after any mode/bootstrap render race.
       if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
       showDiagramError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);
+      applyDocumentGround();
       emit("syncBoardStyleChrome", rendered.board);
       emit("applyBoardThemeToPreview");
       if (opts.fit) {

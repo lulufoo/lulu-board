@@ -7,6 +7,7 @@ import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyChrome } from '../core/appearance-chrome.js';
+import { applyGround } from '../core/workspace-ground.js';
 import { persistBoardStyle } from '../kinds/board-style.js';
 import {
   pickBoardElement,
@@ -339,6 +340,7 @@ function applyKindTheme(theme, opts) {
   const themeSelect = document.getElementById('kindThemeSelect');
   if (themeSelect) themeSelect.value = t;
   document.documentElement.dataset.kindTheme = t;
+  if (typeof applyGround === 'function') applyGround(document.documentElement, t);
   if (typeof applyChrome === 'function') applyChrome(document.documentElement, t);
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
