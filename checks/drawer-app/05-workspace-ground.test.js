@@ -21,9 +21,14 @@ assert.match(ground, /resolveBackground\(id\)/, 'apply and paint ask resolveBack
 assert.doesNotMatch(ground, /#dfe7ea|%23dfe7ea/, 'ground file holds no paper color of its own');
 
 assert.match(boot, /import \{ applyGround \} from '\.\/workspace-ground\.js'/, 'early head imports the ground');
+assert.match(boot, /import \{ applyChrome \} from '\.\/appearance-chrome\.js'/, 'early head imports dock chrome');
 assert.ok(
   boot.indexOf('dataset.drawerMode = "diagram"') < boot.indexOf('applyGround(doc)'),
   'ground is applied right after drawerMode, before first paint'
+);
+assert.ok(
+  boot.indexOf('applyGround(doc)') < boot.indexOf('applyChrome(doc)'),
+  'dock chrome is applied with the ground, before first paint'
 );
 
 const shell = chrome.match(/\n\.canvas-shell \{[^}]*\}/);
@@ -47,5 +52,6 @@ assert.match(
   'opening a document reapplies the document appearance ground',
 );
 assert.match(diagram, /appearanceFromStyleToken/, 'document ground reads appearance from the style token');
+assert.match(diagram, /applyChrome\(document\.documentElement, appearance\)/, 'opening a document reapplies dock chrome');
 
 console.log('ok workspace-ground check');

@@ -6,6 +6,7 @@ import { register } from '../core/hooks.js';
 import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerStyleLine from '../core/style-line.js';
+import { applyChrome } from '../core/appearance-chrome.js';
 import { persistBoardStyle } from '../kinds/board-style.js';
 import {
   pickBoardElement,
@@ -340,6 +341,7 @@ function applyKindTheme(theme, opts) {
     themeSelect.value = t;
   }
   document.documentElement.dataset.kindTheme = t;
+  if (typeof applyChrome === 'function') applyChrome(document.documentElement, t);
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;

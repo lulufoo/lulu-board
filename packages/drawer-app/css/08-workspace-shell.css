@@ -333,7 +333,7 @@ html[data-drawer-mode="diagram"] .zoom-float .zoom-type[hidden] { display: none 
 .shell-drawer { top: 64px; }
 
 /* ---- right dock in the same language: wider rail, borderless fills, bigger controls ---- */
-[data-theme="light"] { --rail-w: 56px; }
+:root { --rail-w: 56px; }
 html[data-drawer-mode="diagram"] .diagram-dock[data-open=""] { width: var(--rail-w); }
 html[data-drawer-mode="diagram"] .diagram-dock-rail {
   flex: 0 0 var(--rail-w);

@@ -4,6 +4,7 @@ import MindmapEdit from '../../../mermaid-ext/mindmap/index.js';
 import { register, emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyGround } from '../core/workspace-ground.js';
+import { applyChrome } from '../core/appearance-chrome.js';
 import FlowchartTypeScale from '../core/flowchart-type-scale.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerEarlyHead from '../core/early-head.js';
@@ -190,7 +191,9 @@ function documentAppearance() {
 }
 
 function applyDocumentGround() {
-  if (typeof applyGround === "function") applyGround(document.documentElement, documentAppearance());
+  var appearance = documentAppearance();
+  if (typeof applyGround === "function") applyGround(document.documentElement, appearance);
+  if (typeof applyChrome === "function") applyChrome(document.documentElement, appearance);
 }
 
 function finishCanvasView(opts) {
