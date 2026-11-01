@@ -1,6 +1,7 @@
 /* Shared style token: field KV + JSON ↔ base64.
  * Board `style` and mermaid `%% style` both use these keys. */
 import { ORDER, resolveId } from '../board-themes/index.js';
+import { getAppearance } from '../board-themes/appearance/index.js';
 
 export const THEMES = Object.fromEntries(ORDER.map((id) => [id, 1]));
 export const ROUTES = { trunk: 1, stagger: 1, straight: 1 };
@@ -61,8 +62,9 @@ export function resolveLinkRoute(value) {
   return ROUTES[raw] ? raw : DEFAULTS.link_route;
 }
 
-export function resolveBackground() {
-  return { background: '#fff', dot: '#dfe7ea' };
+export function resolveBackground(id) {
+  const ground = getAppearance(id).ground;
+  return { background: ground.background, dot: ground.dot };
 }
 
 export function authoredViewport(raw) {
