@@ -435,6 +435,25 @@ html[data-drawer-mode="diagram"] .diagram-dock #mindmapDocTitleEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapLayoutEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapTextEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #designDocTitleEditor:focus { background: var(--chip); box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'><path fill='none' stroke='%238b7358' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 6L6 3.2 9 6'/><path fill='none' stroke='%238b7358' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 10L6 12.8 9 10'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 16px;
+}
+html[data-theme="dark"][data-drawer-mode="diagram"] .diagram-dock #board-max-width-input {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'><path fill='none' stroke='%23b8a28a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 6L6 3.2 9 6'/><path fill='none' stroke='%23b8a28a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 10L6 12.8 9 10'/></svg>");
+}
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input::-webkit-inner-spin-button,
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input::-webkit-outer-spin-button {
+  -webkit-appearance: inner-spin-button;
+  width: 22px;
+  height: 28px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
 html[data-drawer-mode="diagram"] .diagram-dock .props-arrow-reverse,
 html[data-drawer-mode="diagram"] .diagram-dock .props-id-copy,
 html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-reset,

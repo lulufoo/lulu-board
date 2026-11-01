@@ -1,12 +1,16 @@
 /* Bind remaining dock <select>s to popup-select. Theme keeps theme-picker.js. */
 import { bindNativeSelect } from './popup-select.js';
 
+function glyphIcon(svg) {
+  return { fill: "url(\"data:image/svg+xml;utf8," + svg + "\") center / contain no-repeat", glyph: true, ink: true };
+}
+
 function shapeIcon(option) {
   const diamond = option.value === 'diamond';
   const svg = diamond
-    ? "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'><path d='M11 1.5L20 8L11 14.5L2 8Z' fill='none' stroke='%234a3524' stroke-width='1.5' stroke-linejoin='round'/></svg>"
-    : "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'><rect x='2.5' y='3.5' width='17' height='9' rx='1.5' fill='none' stroke='%234a3524' stroke-width='1.5'/></svg>";
-  return { fill: "url(\"data:image/svg+xml;utf8," + svg + "\") center / contain no-repeat", glyph: true };
+    ? "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'><path d='M11 1.5L20 8L11 14.5L2 8Z' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round'/></svg>"
+    : "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'><rect x='2.5' y='3.5' width='17' height='9' rx='1.5' fill='none' stroke='black' stroke-width='1.5'/></svg>";
+  return glyphIcon(svg);
 }
 
 const ALIGN_DOT = {
@@ -24,10 +28,10 @@ const ALIGN_DOT = {
 function alignIcon(option) {
   const spot = ALIGN_DOT[option.value] || ALIGN_DOT.center;
   const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 16'>"
-    + "<rect x='3.5' y='2.5' width='15' height='11' rx='1.5' fill='none' stroke='%234a3524' stroke-width='1.5'/>"
-    + "<rect x='" + (spot[0] - 1.5) + "' y='" + (spot[1] - 1.5) + "' width='3' height='3' rx='0.6' fill='%234a3524'/>"
+    + "<rect x='3.5' y='2.5' width='15' height='11' rx='1.5' fill='none' stroke='black' stroke-width='1.5'/>"
+    + "<rect x='" + (spot[0] - 1.5) + "' y='" + (spot[1] - 1.5) + "' width='3' height='3' rx='0.6' fill='black'/>"
     + "</svg>";
-  return { fill: "url(\"data:image/svg+xml;utf8," + svg + "\") center / contain no-repeat", glyph: true };
+  return glyphIcon(svg);
 }
 
 const PLAIN = [

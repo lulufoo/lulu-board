@@ -1,13 +1,24 @@
 /* One dropdown (Theme, Properties, Flowchart, Mindmap). A native <select>
  * cannot draw icons and its popup is the system menu, so this is a small listbox.
- * Each option may carry an icon: { fill, glyph? }. fill is any CSS background value
- * for a 22px box. By default the box is a disc; glyph: true draws it with no disc. */
+ * Each option may carry an icon: { fill, glyph?, ink? }. fill is any CSS background
+ * value for a 22px box. By default the box is a disc; glyph: true draws it with no
+ * disc; ink: true masks fill onto --ink so Light/Dark share one glyph. */
 
 const openMenus = new Set();
 
 function paintIcon(icon, spec) {
-  icon.style.background = spec.fill;
+  const ink = Boolean(spec.ink);
   icon.classList.toggle('is-glyph', Boolean(spec.glyph));
+  icon.classList.toggle('is-ink', ink);
+  if (ink) {
+    icon.style.background = 'var(--ink)';
+    icon.style.webkitMask = spec.fill;
+    icon.style.mask = spec.fill;
+    return;
+  }
+  icon.style.background = spec.fill;
+  icon.style.webkitMask = '';
+  icon.style.mask = '';
 }
 
 function buildIcon(spec) {

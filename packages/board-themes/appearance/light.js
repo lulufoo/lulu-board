@@ -48,7 +48,7 @@ export default {
     wash: 'rgba(80, 55, 30, .05)',
     fill: '#f3ede2',
     fillHover: '#ebe3d4',
-    chip: '#fff',
+    chip: '#fff9f0',
   },
   source: {
     paper: '#fffdf9',

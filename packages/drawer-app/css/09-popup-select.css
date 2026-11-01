@@ -23,6 +23,9 @@ select.ps-bound {
   border-radius: 0;
   box-shadow: none;
 }
+.ps-icon.is-ink {
+  background-color: var(--ink);
+}
 
 html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger {
   display: flex;
@@ -86,6 +89,7 @@ html[data-drawer-mode="diagram"] .diagram-dock .ps-trigger[aria-expanded="true"]
 .ps-option[aria-selected="true"] {
   font-weight: 600;
   background-color: var(--chip);
+  box-shadow: var(--press);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path fill='none' stroke='%23db4c84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M2.8 7.4l2.6 2.6 5.8-6'/></svg>");
   background-repeat: no-repeat;
   background-position: right 12px center;

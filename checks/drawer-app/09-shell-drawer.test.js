@@ -185,3 +185,11 @@ console.log('ok 09-shell-drawer');
   assert.match(commit, /syncCloudSaveChrome\(\);\n  if \(typeof nudgeUncreatedCreateTip === "function"\) nudgeUncreatedCreateTip\(\);/, 'new board shows the Create tip once the button is up');
 }
 
+{
+  const base = fs.readFileSync(path.join(root, 'packages/drawer-app/css/01-base.css'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/08-workspace-shell.css'), 'utf8');
+  assert.match(base, /html\[data-theme="dark"\] \{ color-scheme: dark; \}/, 'Dark appearance sets the native color-scheme');
+  assert.match(css, /#board-max-width-input::-webkit-inner-spin-button/, 'Max Width hides the system stepper chip');
+  assert.match(css, /html\[data-theme="dark"\]\[data-drawer-mode="diagram"\] \.diagram-dock #board-max-width-input \{[\s\S]*?%23b8a28a/, 'Dark Max Width stepper uses ink-soft');
+}
+
