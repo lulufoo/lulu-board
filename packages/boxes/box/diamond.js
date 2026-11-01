@@ -16,8 +16,8 @@ import { get, ring } from '../../board-themes/index.js';
     ));
   }
 
-  // Rounded rhombus in pixel space. The rounded tips still touch the W x H box
-  // (the vertices are pushed out by the arc setback), so link ends stay flush.
+  // Rounded rhombus in pixel space. The rounded tips land exactly on the W x H box
+  // (rhombusHalfDiagonals pushes the vertices out), so link ends stay flush.
   const DIAMOND_RADIUS = 6;
   const HALO_GAP = ring.gap;
 
@@ -44,16 +44,22 @@ import { get, ring } from '../../board-themes/index.js';
   }
 
   // Half-diagonals so that, after rounding with radius r, the tips land on W/2 and H/2.
+  // Each corner is a quadratic curve whose control point is the vertex, so the
+  // curve tip sits r * cos(h)^2 / (2 * sin(h)) inside the vertex, where h is half
+  // the corner angle. The angles depend on the answer, so settle it by iteration.
   function rhombusHalfDiagonals(W, H, r) {
     const a0 = W / 2;
     const b0 = H / 2;
-    const side = Math.hypot(a0, b0);
-    const sinSide = b0 / side; // half-angle at the left/right tips
-    const sinTop = a0 / side;  // half-angle at the top/bottom tips
-    return {
-      a: a0 + r * (1 / sinSide - 1),
-      b: b0 + r * (1 / sinTop - 1),
-    };
+    let a = a0;
+    let b = b0;
+    for (let i = 0; i < 8; i++) {
+      const side = Math.hypot(a, b);
+      const sinSide = b / side; // half-angle at the left/right tips
+      const sinTop = a / side;  // half-angle at the top/bottom tips
+      a = a0 + r * (1 - sinSide * sinSide) / (2 * sinSide);
+      b = b0 + r * (1 - sinTop * sinTop) / (2 * sinTop);
+    }
+    return { a, b };
   }
 
   function applyDiamondShape(svg, W, H) {
@@ -394,4 +400,4 @@ import { get, ring } from '../../board-themes/index.js';
   View.decorateChipDiamond = decorateChipDiamond;
   View.measureChipDiamond = measureChipDiamond;
   View.fitChipDiamonds = fitChipDiamonds;
-export { isDiamondEl, decorateChipDiamond, measureChipDiamond, fitChipDiamonds, HALO_GAP };
+export { isDiamondEl, decorateChipDiamond, measureChipDiamond, fitChipDiamonds, roundedRhombusPath, rhombusHalfDiagonals, HALO_GAP };
