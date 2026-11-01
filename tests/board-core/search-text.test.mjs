@@ -37,9 +37,11 @@ assert.doesNotMatch(
 
 const template = readFileSync(path.join(root, 'packages/drawer-app/templates/sketch.skt'), 'utf8');
 const fromTemplate = searchTextFromBody(template);
-assert.match(fromTemplate, /A HTML board/);
-assert.match(fromTemplate, /Copy this link/);
+assert.match(fromTemplate, /A freedom board/);
+assert.match(fromTemplate, /Use the \/sketch skill in an AI agent to create this/);
 assert.match(fromTemplate, /Content is written by AI/);
+assert.doesNotMatch(fromTemplate, /A HTML board/);
+assert.doesNotMatch(fromTemplate, /Copy this link/);
 assert.doesNotMatch(fromTemplate, /box-sizing|sketch-board\{/);
 
 console.log('ok board-core search-text');
