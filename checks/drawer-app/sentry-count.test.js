@@ -34,10 +34,10 @@ assert.match(landing, /https:\/\/\*\.ingest\.sentry\.io/, 'landing CSP allows Se
 assert.match(appBuild, /LULU_BOARD_SENTRY_DSN/, 'build reads DSN from env');
 assert.match(
   appBuild,
-  /if \(dsn\) Sentry\.init\(\{ dsn: dsn, defaultIntegrations: false \}\)/,
-  'init disables automatic Browser integrations'
+  /if \(dsn\) Sentry\.init\(\{ dsn: dsn, defaultIntegrations: false, tracesSampleRate: 1 \}\)/,
+  'init keeps automatic Browser integrations off and samples manual spans'
 );
-assert.doesNotMatch(appBuild, /browserTracingIntegration|tracesSampleRate/, 'no automatic tracing');
+assert.doesNotMatch(appBuild, /browserTracingIntegration/, 'no automatic browser tracing');
 assert.doesNotMatch(appBuild, /ingest\.sentry\.io\/\d+/, 'DSN is not hardcoded');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/main.js')), 'drawer build reads the src entry');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/core/sentry-count.js')), 'drawer bundle includes the count helper');
@@ -51,7 +51,12 @@ assert.doesNotMatch(appBuild, /00-sentry-count\.js/, 'old helper is no longer a 
 assert.match(webBuild, /sentry-config\.js/, 'web build ships sentry-config');
 assert.match(webBuild, /sentry-client\.js/, 'web build ships sentry-client');
 
-assert.match(helper, /canvas\.view/, 'home open counts canvas.view');
+assert.match(helper, /diagram\.fetch\.id/, 'diagram fetch records our own id');
+assert.match(helper, /name: "diagram\.fetch"/, 'diagram fetch is one span');
+assert.doesNotMatch(helper, /spanContext/, 'diagram fetch does not read the Sentry trace id');
+assert.match(cloud, /recordDiagramFetch\(/, 'owned graph fetch records the span');
+assert.match(cloud, /crypto\.randomUUID\(\)/, 'owned graph fetch mints the id before the request');
+assert.doesNotMatch(cloud, /spanContext/, 'owned graph fetch does not read the Sentry trace id');
 assert.match(landingJs, /landing\.view/, 'landing open counts landing.view');
 assert.match(landing, /data-sentry-count="landing.start_free"/, 'nav Start free is tagged');
 assert.match(landing, /data-sentry-count="landing.github"/, 'hero GitHub is tagged');

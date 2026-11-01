@@ -44,6 +44,7 @@ try {
   assert.equal((await get('?diagram_id=nope')).status, 400);
   const ok = await get('?diagram_id=b_aabbccdd');
   assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('timing-allow-origin'), '*');
   assert.equal(ok.headers.get('content-encoding'), null);
   assert.equal((await ok.json()).group_id, 'g_11223344');
   const db = calls.find((call) => call.href.includes('/rest/v1/graphs'));
@@ -53,6 +54,7 @@ try {
   const packed = await get('?diagram_id=b_aabbccdd', { 'accept-encoding': 'gzip' });
   assert.equal(packed.status, 200);
   assert.equal(packed.headers.get('content-encoding'), 'gzip');
+  assert.equal(packed.headers.get('timing-allow-origin'), '*');
   const packedBytes = Buffer.from(await packed.clone().arrayBuffer());
   assert.ok(packedBytes.byteLength < JSON.stringify(row).length);
   assert.equal((await jsonFromGzip(packed)).group_id, 'g_11223344');
