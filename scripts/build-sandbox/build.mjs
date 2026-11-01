@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Sandbox runner build: packages/sandbox-app into .cache/sandbox/.
- * runner.html is served at /runner; runner-<hash>.js is the bundle (runner logic + SnapDOM).
+ * The runner page is written as index.html because the whole sandbox domain is the runner: it is served at /.
+ * runner-<hash>.js is the bundle (runner logic + SnapDOM).
  * _headers carries the CSP response header for a Workers static assets Worker.
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -36,6 +37,6 @@ writeFileSync(path.join(outDir, jsName), bytes);
 
 const html = readFileSync(path.join(srcDir, 'runner.html'), 'utf8');
 if (!html.includes('./runner.js')) throw new Error('runner.html missing ./runner.js');
-writeFileSync(path.join(outDir, 'runner.html'), html.replace('./runner.js', './' + jsName));
+writeFileSync(path.join(outDir, 'index.html'), html.replace('./runner.js', './' + jsName));
 writeFileSync(path.join(outDir, '_headers'), runnerHeadersFile());
 console.log('ok sandbox runner ' + jsName + ' (' + bytes.length + ' bytes)');

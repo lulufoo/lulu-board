@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Check a deployed runner against the header contract.
- *   node scripts/verify-sandbox/verify.mjs [url]     default https://sandbox.luluboard.app/runner
+ *   node scripts/verify-sandbox/verify.mjs [url]     default https://sandbox.luluboard.app/
  * Exits 1 when the response is not 200, has no CSP header, or the CSP differs from headers.js.
  */
 import { fileURLToPath } from 'node:url';
@@ -18,7 +18,7 @@ export async function verifyRunner(url, expectedCsp = runnerCsp(), fetchFn = fet
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const url = process.argv[2] || 'https://sandbox.luluboard.app/runner';
+  const url = process.argv[2] || 'https://sandbox.luluboard.app/';
   const problems = await verifyRunner(url);
   if (problems.length) {
     console.error('FAIL ' + url + '\n' + problems.join('\n'));
