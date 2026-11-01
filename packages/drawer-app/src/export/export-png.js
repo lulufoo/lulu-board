@@ -4,7 +4,6 @@ import { snapdom } from './snapdom.mjs';
 import Sketch from '../kinds/sketch.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { kindTemplateFileName } from '../core/kind-template.js';
-import { stripDocumentMeta } from '../core/document-meta.js';
 import { paintGround } from '../core/workspace-ground.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
@@ -214,12 +213,6 @@ async function saveExportBlob(blob, filename, mime, description) {
 const EXPORT_FILE_FALLBACK_SUFFIX = ".bmd";
 const EXPORT_FILE_LABELS = { ".bmd": "Board file", ".skt": "Sketch file", ".mmd": "Mermaid file" };
 
-function documentGroundId() {
-  if (!diagramSourceEl || !DrawerStyleLine) return 'paper';
-  const raw = stripDocumentMeta(diagramSourceEl.value);
-  return DrawerStyleLine.fieldsFromStyleToken(DrawerStyleLine.splitRendererStyle(raw).token).background;
-}
-
 function exportFileSuffix(kind) {
   if (kind === "mermaid-unsupported") return ".mmd";
   const file = kindTemplateFileName(kind);
@@ -334,7 +327,7 @@ export async function exportPng() {
     output.width = cropped.canvas.width;
     output.height = cropped.canvas.height;
     const context = output.getContext('2d');
-    paintGround(context, output, cropped.surfaceSize, documentGroundId());
+    paintGround(context, output, cropped.surfaceSize);
     context.drawImage(cropped.canvas, 0, 0);
 
     const result = await writePngExport(await canvasToPngBlob(output), exportDiagramStem());

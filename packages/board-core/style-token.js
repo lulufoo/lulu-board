@@ -4,13 +4,11 @@ import { ORDER, resolveId } from '../board-themes/index.js';
 
 export const THEMES = Object.fromEntries(ORDER.map((id) => [id, 1]));
 export const ROUTES = { trunk: 1, stagger: 1, straight: 1 };
-export const BACKGROUNDS = { paper: 1, mist: 1, sage: 1, dusk: 1 };
 export const DEFAULTS = {
-  theme: 'default',
+  palette: 'default',
   max_width: 0,
   link_route: 'stagger',
   font_size: 0,
-  background: 'paper',
   viewport: { scale: 1, cx: 0, cy: 0 },
 };
 export const STEP_MIN = -3;
@@ -19,8 +17,8 @@ export const FACTOR = 1.125;
 export const MIN_PX = 8;
 export const TYPE_STEP_MIN = STEP_MIN;
 export const TYPE_STEP_MAX = STEP_MAX;
-const FIELD_KEYS = { theme: 1, max_width: 1, link_route: 1, font_size: 1, background: 1, viewport: 1 };
-const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1 };
+const FIELD_KEYS = { palette: 1, max_width: 1, link_route: 1, font_size: 1, viewport: 1 };
+const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1, theme: 1, color: 1, background: 1 };
 
 export function clampStep(raw) {
   const n = Math.round(Number(raw));
@@ -63,11 +61,6 @@ export function resolveLinkRoute(value) {
   return ROUTES[raw] ? raw : DEFAULTS.link_route;
 }
 
-export function resolveBackground(id) {
-  const raw = String(id == null ? '' : id).trim();
-  return BACKGROUNDS[raw] ? raw : DEFAULTS.background;
-}
-
 export function authoredViewport(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const scale = Number(raw.scale);
@@ -88,8 +81,8 @@ function isDefaultViewport(raw) {
 export function authoredFields(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const out = {};
-  const theme = src.theme != null && src.theme !== '' ? resolveThemeId(src.theme) : '';
-  if (theme && theme !== DEFAULTS.theme) out.theme = theme;
+  const palette = src.palette != null && src.palette !== '' ? resolveThemeId(src.palette) : '';
+  if (palette && palette !== DEFAULTS.palette) out.palette = palette;
   if (src.max_width != null && src.max_width !== '') {
     const width = clampStep(src.max_width);
     if (width !== DEFAULTS.max_width) out.max_width = width;
@@ -102,10 +95,6 @@ export function authoredFields(raw) {
     const step = clampTypeStep(src.font_size);
     if (step !== DEFAULTS.font_size) out.font_size = step;
   }
-  if (src.background != null && src.background !== '') {
-    const background = resolveBackground(src.background);
-    if (background !== DEFAULTS.background) out.background = background;
-  }
   const viewport = authoredViewport(src.viewport || src.view);
   if (viewport && !isDefaultViewport(viewport)) out.viewport = viewport;
   return out;
@@ -115,11 +104,10 @@ export function resolveFields(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const viewport = authoredViewport(src.viewport || src.view);
   return {
-    theme: src.theme != null && src.theme !== '' ? resolveThemeId(src.theme) : DEFAULTS.theme,
+    palette: src.palette != null && src.palette !== '' ? resolveThemeId(src.palette) : DEFAULTS.palette,
     max_width: src.max_width == null || src.max_width === '' ? DEFAULTS.max_width : clampStep(src.max_width),
     link_route: src.link_route == null || src.link_route === '' ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
     font_size: src.font_size == null || src.font_size === '' ? DEFAULTS.font_size : clampTypeStep(src.font_size),
-    background: src.background == null || src.background === '' ? DEFAULTS.background : resolveBackground(src.background),
     viewport: viewport || {
       scale: DEFAULTS.viewport.scale,
       cx: DEFAULTS.viewport.cx,

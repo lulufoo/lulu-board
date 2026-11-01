@@ -1,4 +1,4 @@
-/* One dropdown (Theme, Background, Properties, Flowchart, Mindmap). A native <select>
+/* One dropdown (Palette, Properties, Flowchart, Mindmap). A native <select>
  * cannot draw icons and its popup is the system menu, so this is a small listbox.
  * Each option may carry an icon: { fill, glyph? }. fill is any CSS background value
  * for a 22px box. By default the box is a disc; glyph: true draws it with no disc. */

@@ -341,7 +341,7 @@ function applyKindTheme(theme, opts) {
   });
   applyPeleThemeVars(t);
   if (opts && opts.persist && typeof persistBoardStyle === 'function') {
-    persistBoardStyle({ theme: t });
+    persistBoardStyle({ palette: t });
   }
   if (opts && opts.skipRender) return;
   if (typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) renderDiagram({ fit: false });

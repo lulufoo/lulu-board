@@ -17,34 +17,30 @@ function persistKind(body, patch) {
 
 {
   const boxes = Render.updateStyle('boxes "Demo"\nitem HERO type text "Hi"\n', { background: 'dusk' });
-  const boxesNext = Render.updateStyle(boxes, { theme: 'classic' });
-  assert.deepStrictEqual(decodeToken(boxesNext), { theme: 'classic', background: 'dusk' });
-  assert.strictEqual(Style.fieldsFromStyleToken(Style.splitRendererStyle(boxesNext).token).background, 'dusk');
+  assert.ok(!/^style /m.test(boxes), boxes);
+  const boxesNext = Render.updateStyle(boxes, { palette: 'classic' });
+  assert.deepStrictEqual(decodeToken(boxesNext), { palette: 'classic' });
 }
 
 {
-  const sketch = persistKind('sketch ""\ncontent e30=\n', { background: 'sage' });
-  assert.match(sketch, /^style /);
-  const sketchNext = persistKind(sketch, { theme: 'pastel' });
-  assert.deepStrictEqual(decodeToken(sketchNext), { theme: 'pastel', background: 'sage' });
+  const sketch = persistKind('sketch ""\ncontent e30=\n', { background: 'sage', theme: 'pastel' });
+  assert.strictEqual(sketch, 'sketch ""\ncontent e30=\n');
+  const sketchNext = persistKind(sketch, { palette: 'pastel' });
+  assert.deepStrictEqual(decodeToken(sketchNext), { palette: 'pastel' });
   assert.strictEqual(Style.bodyKind(sketchNext), 'sketch');
-  assert.strictEqual(Style.fieldsFromStyleToken(Style.splitRendererStyle(sketchNext).token).background, 'sage');
 }
 
 {
-  const flow = persistKind('flowchart TD\nA-->B\n', { background: 'mist' });
-  assert.match(flow, /^%% style /);
-  const flowNext = persistKind(flow, { theme: 'classic' });
-  assert.deepStrictEqual(decodeToken(flowNext), { theme: 'classic', background: 'mist' });
+  const flow = persistKind('flowchart TD\nA-->B\n', { background: 'mist', color: 'classic' });
+  assert.strictEqual(flow, 'flowchart TD\nA-->B\n');
+  const flowNext = persistKind(flow, { palette: 'classic' });
+  assert.deepStrictEqual(decodeToken(flowNext), { palette: 'classic' });
   assert.strictEqual(Style.bodyKind(flowNext), 'flowchart');
-  assert.strictEqual(Style.fieldsFromStyleToken(Style.splitRendererStyle(flowNext).token).background, 'mist');
 }
 
 {
   const set = {};
   Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'sage');
-  assert.strictEqual(set['--ground-bg'], '#b4ccc3');
-  Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'paper');
   assert.strictEqual(set['--ground-bg'], '#fff');
 }
 

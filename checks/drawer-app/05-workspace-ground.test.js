@@ -39,7 +39,7 @@ assert.match(diagram, /import \{ applyGround \} from '\.\.\/core\/workspace-grou
 assert.match(
   diagram.slice(diagram.indexOf('function finishCanvasView')),
   /applyDocumentGround\(\)/,
-  'opening a document reapplies the ground from its style',
+  'opening a document reapplies the locked paper ground',
 );
 
 console.log('ok workspace-ground check');

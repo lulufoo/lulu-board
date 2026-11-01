@@ -71,10 +71,6 @@ import {
   boardAlignYEditor,
   boardAlignYLabel,
   boardAlignYTip,
-  boardOrderField,
-  boardOrderLabel,
-  boardOrderPrev,
-  boardOrderNext,
   boardArrowEditor,
   boardArrowLabel,
   boardArrowField,
@@ -399,27 +395,6 @@ function setBoardAlignXYFields(show, props, kind) {
   if (boardAlignYLabel) boardAlignYLabel.hidden = !show;
   setAuthoredTip(boardAlignYTip, show, authoredY);
 }
-function setBoardOrderField(show, info) {
-  if (boardOrderField) boardOrderField.hidden = !show;
-  if (boardOrderLabel) boardOrderLabel.hidden = !show;
-  var row = !!(show && info && info.direction === "row");
-  var atStart = !info || info.index <= 0;
-  var atEnd = !info || info.index >= info.count - 1 || info.count < 2;
-  if (boardOrderPrev) {
-    boardOrderPrev.hidden = !show;
-    boardOrderPrev.disabled = !show || atStart;
-    boardOrderPrev.textContent = row ? "Left" : "Up";
-    boardOrderPrev.title = row ? "Option+Left" : "Option+Up";
-    boardOrderPrev.setAttribute("aria-label", row ? "Move left" : "Move up");
-  }
-  if (boardOrderNext) {
-    boardOrderNext.hidden = !show;
-    boardOrderNext.disabled = !show || atEnd;
-    boardOrderNext.textContent = row ? "Right" : "Down";
-    boardOrderNext.title = row ? "Option+Right" : "Option+Down";
-    boardOrderNext.setAttribute("aria-label", row ? "Move right" : "Move down");
-  }
-}
 function hidePropsLinkOnlyChrome() {
   if (boardTypeEditor) { boardTypeEditor.hidden = false; boardTypeEditor.disabled = false; }
   if (boardTypeLabel) boardTypeLabel.hidden = false;
@@ -428,7 +403,6 @@ function hidePropsLinkOnlyChrome() {
   if (boardDirEditor) boardDirEditor.hidden = false;
   if (boardDirLabel) boardDirLabel.hidden = false;
   setBoardAlignXYFields(false);
-  setBoardOrderField(false);
   setBoardArrowField(false);
   setBoardShapeField(false);
   setBoardMaxWidthField(false);
@@ -899,11 +873,6 @@ function applyBoardSelection(root, board, restoreFromDataset) { applyBoardEdgeSe
     } else {
       setBoardAlignXYFields(false);
     }
-    var orderInfo = null;
-    if (!isTitle && typeof BoxesRender !== "undefined" && typeof BoxesRender.reorderInfo === "function") {
-      try { orderInfo = BoxesRender.reorderInfo(diagramSourceEl.value, selectedBoardNode); } catch (_) { orderInfo = null; }
-    }
-    setBoardOrderField(!!orderInfo, orderInfo);
     if (propsHint) propsHint.textContent = isTitle
       ? "Board document · edit text; Direction = top-level box flow (default row)"
       : (isItem
@@ -1245,7 +1214,7 @@ function syncBoardStyleChrome(board) {
   if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
   syncBoardLinkRouteButton();
   var themeSelect = document.getElementById("kindThemeSelect");
-  if (themeSelect && next.theme) themeSelect.value = next.theme;
+  if (themeSelect && next.palette) themeSelect.value = next.palette;
 }
 function commitBoardMaxWidth() {
   if (!boardMaxWidthInput || !selectedBoardNode) return;
@@ -1515,8 +1484,6 @@ function boardNudgeOrder(delta) {
   if (next < 0 || next >= info.count) return;
   boardEditAction(function() { return BoxesRender.reorderNode(diagramSourceEl.value, selectedBoardNode, next); });
 }
-if (boardOrderPrev) boardOrderPrev.onclick = function() { boardNudgeOrder(-1); };
-if (boardOrderNext) boardOrderNext.onclick = function() { boardNudgeOrder(1); };
 function boardNudgeSelection(delta) {
   var root = previewEl && previewEl.querySelector(".board-render");
   if (!root || !selectedBoardNode || selectedBoardNode.kind === "title") return false;

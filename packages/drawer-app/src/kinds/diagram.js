@@ -185,17 +185,7 @@ function previewHasPaint(root) {
 }
 
 function applyDocumentGround() {
-  if (typeof applyGround !== "function") return;
-  if (!DrawerStyleLine || !diagramSourceEl) {
-    applyGround(document.documentElement);
-    return;
-  }
-  var raw = typeof stripDocumentMeta === "function"
-    ? stripDocumentMeta(diagramSourceEl.value)
-    : diagramSourceEl.value;
-  var fields = DrawerStyleLine.fieldsFromStyleToken(DrawerStyleLine.splitRendererStyle(raw).token);
-  applyGround(document.documentElement, fields.background);
-  emit("applyDocumentGround", fields.background);
+  if (typeof applyGround === "function") applyGround(document.documentElement);
 }
 
 function finishCanvasView(opts) {
@@ -221,7 +211,7 @@ function finishCanvasView(opts) {
 function syncMermaidStyleChrome(body) {
   if (!DrawerStyleLine) return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = DrawerStyleLine.themeFromStyleToken(styled.token);
+  var theme = DrawerStyleLine.paletteFromStyleToken(styled.token);
   var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
   emit("applyKindTheme", theme, { persist: false, skipRender: true });
   emit("applyBoardTypeStep", step, false, false);
@@ -346,7 +336,7 @@ function renderMindmap(opts) {
   try {
     var theme = "default";
     if (DrawerStyleLine) {
-      theme = DrawerStyleLine.themeFromStyleToken(
+      theme = DrawerStyleLine.paletteFromStyleToken(
         DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token
       ) || "default";
     }

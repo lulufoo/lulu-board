@@ -21,11 +21,10 @@ boxes Demo
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'default',
+    palette: 'default',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
-    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   assert.ok(!/^style /m.test(Render.serialize(board)), Render.serialize(board));
@@ -39,18 +38,16 @@ style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'pastel',
+    palette: 'default',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
-    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
   const out = Render.serialize(board);
   assert.ok(out.startsWith('boxes "Demo"\nstyle '), out);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'pastel',
     item_cap: 24,
   });
 }
@@ -62,11 +59,10 @@ style not-valid-base64!!!
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'default',
+    palette: 'default',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
-    background: 'paper',
     viewport: { scale: 1, cx: 0, cy: 0 },
   });
 }
@@ -77,7 +73,6 @@ item HERO type text "Hi"
   const out = Render.serialize(board);
   const token = out.split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'pastel',
     extra: 'keep',
   });
 }
@@ -87,9 +82,9 @@ item HERO type text "Hi"
 boxes Demo
 item HERO type text "Hi"
 `);
-  const next = Render.updateStyle(source, { theme: 'pastel', max_width: 2, link_route: 'stagger' });
+  const next = Render.updateStyle(source, { palette: 'pastel', max_width: 2, link_route: 'stagger' });
   assert.ok(/^style /m.test(next), next);
-  const back = Render.updateStyle(next, { theme: 'default', max_width: 0, link_route: 'stagger' });
+  const back = Render.updateStyle(next, { palette: 'default', max_width: 0, link_route: 'stagger' });
   assert.ok(!/^style /m.test(back), back);
 }
 
@@ -141,23 +136,22 @@ item HERO type text "Hi"
 }
 
 {
-  const payload = b64({ theme: 'pastel', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
+  const payload = b64({ palette: 'pastel', viewport: { scale: 1.2, cx: 40.6, cy: 80 } });
   const board = Render.parse(src(`
 boxes Demo
 style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    theme: 'pastel',
+    palette: 'pastel',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
-    background: 'paper',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'pastel',
+    palette: 'pastel',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
 }
@@ -173,10 +167,10 @@ item HERO type text "Hi"
 
 {
   // Old pan-pixel viewports drop out of the style line: the app fits once instead.
-  const stale = b64({ theme: 'pastel', viewport: { scale: 0.8, x: 12, y: 24 } });
+  const stale = b64({ palette: 'pastel', viewport: { scale: 0.8, x: 12, y: 24 } });
   const board = Render.parse(`boxes Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { theme: 'pastel' });
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { palette: 'pastel' });
 }
 
 {
@@ -303,32 +297,32 @@ boxes Demo
 item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { background: 'dusk' });
-  const themed = Render.updateStyle(next, { theme: 'classic' });
+  assert.ok(!/^style /m.test(next), next);
+  const themed = Render.updateStyle(source, { palette: 'classic' });
   const token = themed.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'classic',
-    background: 'dusk',
+    palette: 'classic',
   });
-  const back = Render.updateStyle(themed, { background: 'paper' });
-  const backToken = back.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(backToken, 'base64').toString('utf8')), {
-    theme: 'classic',
+  const dead = Render.updateStyle(themed, { theme: 'pastel', color: 'classic', background: 'dusk' });
+  const deadToken = dead.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(deadToken, 'base64').toString('utf8')), {
+    palette: 'classic',
   });
 }
 
 {
-  const payload = b64({ theme: 'pastel', type_step: 3 });
+  const payload = b64({ palette: 'pastel', type_step: 3 });
   const board = Render.parse(`boxes Demo\nstyle ${payload}\nitem HERO type text "Hi"\n`);
   assert.strictEqual(Render.resolveStyle(board).font_size, 0);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    theme: 'pastel',
+    palette: 'pastel',
     type_step: 3,
   });
   const next = Render.updateStyle(Render.serialize(board), { font_size: 2 });
   const nextToken = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(nextToken, 'base64').toString('utf8')), {
-    theme: 'pastel',
+    palette: 'pastel',
     font_size: 2,
     type_step: 3,
   });
@@ -336,7 +330,7 @@ item HERO type text "Hi"
 
 {
   const Token = require('../../../packages/board-core/style-token.js');
-  const obj = { theme: 'classic', font_size: 2 };
+  const obj = { palette: 'classic', font_size: 2 };
   assert.strictEqual(Render.encodeStylePayload(obj), Token.encodeStylePayload(obj), 'Board uses the shared token encode');
   assert.deepStrictEqual(Render.decodeStylePayload(Token.encodeStylePayload(obj)), obj);
 }
