@@ -12,9 +12,8 @@ assert.deepStrictEqual(Themes.list().map((t) => t.id), ['default', 'classic', 'p
 assert.strictEqual(Themes.resolveId('a-theme-that-was-removed'), 'default');
 assert.strictEqual(Themes.get('a-theme-that-was-removed').id, 'default');
 
-// the theme menu offers the same three
 const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
 const sel = html.slice(html.indexOf('id="kindThemeSelect"'), html.indexOf('</select>', html.indexOf('id="kindThemeSelect"')));
 const menu = Array.from(sel.matchAll(/<option value="([a-z]+)">/g)).map((m) => m[1]);
-assert.deepStrictEqual(menu, ['default', 'classic', 'pastel']);
+assert.deepStrictEqual(menu, ['light', 'dark']);
 console.log('ok themes-list');

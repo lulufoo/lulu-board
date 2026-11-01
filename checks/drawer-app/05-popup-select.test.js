@@ -20,7 +20,7 @@ assert.match(html, /id="kindThemeSelect"[^>]*hidden/, 'native theme select stays
 assert.match(html, /id="themeSelectHost"/, 'theme listbox has a host');
 assert.match(main, /import '\.\/chrome\/theme-picker\.js'/, 'theme picker is booted from main');
 assert.match(picker, /import \{ mountPopupSelect \} from '\.\/popup-select\.js'/, 'theme picker reuses the listbox');
-assert.match(picker, /theme\.edgeStroke/, 'theme icon uses the theme link color');
+assert.match(picker, /table\.diagram\.edgeStroke/, 'theme icon uses the appearance edge color');
 assert.match(picker, /kindThemeSelect/, 'theme picker mirrors the native select');
 assert.match(popup, /openMenus/, 'opening one listbox closes the others');
 assert.match(popup, /export function bindNativeSelect/, 'native selects share the listbox binder');

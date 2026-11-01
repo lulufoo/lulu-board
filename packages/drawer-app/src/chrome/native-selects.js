@@ -1,4 +1,4 @@
-/* Bind remaining dock <select>s to popup-select. Palette keeps theme-picker.js. */
+/* Bind remaining dock <select>s to popup-select. Theme keeps theme-picker.js. */
 import { bindNativeSelect } from './popup-select.js';
 
 function shapeIcon(option) {

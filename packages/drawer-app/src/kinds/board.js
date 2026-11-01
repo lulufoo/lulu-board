@@ -1214,7 +1214,7 @@ function syncBoardStyleChrome(board) {
   if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
   syncBoardLinkRouteButton();
   var themeSelect = document.getElementById("kindThemeSelect");
-  if (themeSelect && next.palette) themeSelect.value = next.palette;
+  if (themeSelect) themeSelect.value = next.appearance || "light";
 }
 function commitBoardMaxWidth() {
   if (!boardMaxWidthInput || !selectedBoardNode) return;

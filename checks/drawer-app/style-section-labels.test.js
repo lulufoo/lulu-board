@@ -13,7 +13,7 @@ assert.ok(labelRule, 'style-section-label rule exists');
 assert.ok(!/text-transform:\s*uppercase/.test(labelRule[0]), 'Style section labels are not forced uppercase');
 
 const labels = [...html.matchAll(/<p class="style-section-label">([^<]+)<\/p>/g)].map((m) => m[1]);
-assert.deepStrictEqual(labels, ['Palette', 'Font Size', 'Max Width', 'Link']);
+assert.deepStrictEqual(labels, ['Theme', 'Font Size', 'Max Width', 'Link']);
 assert.ok(
   (html.match(/Middle is default · non-default saves in source/g) || []).length === 2,
   'Font Size and Max Width share the default-stage hint',

@@ -337,9 +337,7 @@ function applyKindTheme(theme, opts) {
     : (theme === 'dark' ? 'dark' : 'light');
   localStorage.setItem(KIND_THEME_KEY, t);
   const themeSelect = document.getElementById('kindThemeSelect');
-  if (themeSelect && (t === themeSelect.value || Array.from(themeSelect.options).some((opt) => opt.value === t))) {
-    themeSelect.value = t;
-  }
+  if (themeSelect) themeSelect.value = t;
   document.documentElement.dataset.kindTheme = t;
   if (typeof applyChrome === 'function') applyChrome(document.documentElement, t);
   document.querySelectorAll('.board-render').forEach((el) => {
