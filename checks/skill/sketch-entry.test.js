@@ -15,7 +15,14 @@ const script = path.join(root, 'skills/sketch/scripts/sketch_control.py');
 
 assert.match(pack, /`sketch\/`/, 'pack lists sketch/');
 assert.match(skill, /\$SKETCH_CTL preview --kind sketch/, 'preview kind is sketch');
-assert.match(skill, /does not run scripts/, 'skill states scripts are unsupported');
+assert.match(skill, /`sketch "[^"]+"`/, 'the source example carries a title');
+assert.doesNotMatch(skill, /sketch ""/, 'no example with an empty title');
+assert.match(skill, /Always write a short title/, 'skill asks for a title');
+assert.doesNotMatch(skill, /does not run scripts|The picture is static/, 'skill no longer says scripts are unsupported');
+assert.match(skill, /Scripts run when the sketch mounts/, 'skill says scripts run');
+assert.match(skill, /`fetch`, `XMLHttpRequest`, and `WebSocket` are blocked/, 'skill says script network is blocked');
+assert.match(skill, /Pointer and keyboard handlers never fire/, 'skill says input handlers never fire');
+assert.match(skill, /Excludes `<iframe>`, `<object>`, `<embed>`, and `<link>`/, 'skill lists the tags Board removes');
 assert.match(skill, /## Render Environment/, 'skill names the render environment');
 assert.match(skill, /sandboxed `iframe`/, 'skill says the fragment renders in a sandboxed iframe');
 assert.match(skill, /`:root`, `html`, and `body` selectors act on that document/, 'skill says root selectors act on the frame document');
