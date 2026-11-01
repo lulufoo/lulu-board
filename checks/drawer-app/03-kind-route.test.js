@@ -24,8 +24,9 @@ assert.match(boardJs, /kind === "sketch"/, 'renderDiagram dispatches sketch');
   const sketch = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/sketch.js'), 'utf8');
   const boot = fs.readFileSync(path.join(root, 'packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
   assert.doesNotMatch(sketch, /readyState/, 'the initial about:blank document is never measured as the sketch');
-  assert.match(sketch, /frame\.addEventListener\("load", onReady\)/, 'only the srcdoc load finishes the sketch');
-  assert.match(sketch, /var finished = false/, 'a repeated iframe load does not finish twice');
+  assert.match(sketch, /var finished = false/, 'a repeated size message does not finish twice');
+  assert.match(sketch, /applySize\(size\);\s*finish\(false\)/, 'the first runner size finishes the sketch');
+  assert.match(sketch, /setTimeout\(function \(\) \{ finish\(true\); \}, RUNNER_TIMEOUT_MS\)/, 'a silent runner cannot hold the canvas view');
   assert.match(boot, /previewHasPaint\(previewEl\)/, 'restore skip accepts sketch paint');
 }
 assert.match(boardJs, /isDesignKind\(kind\)/, 'renderDiagram dispatches Design through Pele');
