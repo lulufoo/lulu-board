@@ -261,9 +261,9 @@ function assertExportSurface(surfaceSize) {
   }
 }
 
-/* A sketch lives in its own sandboxed iframe, so there is no board canvas to clone.
- * The same-origin frame document is captured in place, then set inside a transparent
- * bleed so crop and grid treat it like a board capture. */
+/* A sketch lives in its own sandboxed iframe on another origin, so there is no board canvas to clone and
+ * its document cannot be read. The runner captures itself and sends back a transparent bitmap, which is
+ * then set inside a transparent bleed so crop and grid treat it like a board capture. */
 function getExportSketchFrame() {
   return previewEl && previewEl.querySelector('iframe.sketch-frame');
 }
@@ -271,25 +271,24 @@ function getExportSketchFrame() {
 async function captureSketchCanvas(frame) {
   const bounds = Sketch.sketchWorldBounds(frame);
   if (!bounds) throw new Error('Diagram has no exportable size');
-  const doc = frame.contentDocument;
-  if (!doc || !doc.documentElement) throw new Error('Sketch is not ready to export');
   const size = { width: Math.ceil(bounds.width), height: Math.ceil(bounds.height) };
   assertExportSurface({
     width: size.width + PNG_EXPORT_CAPTURE_BLEED * 2,
     height: size.height + PNG_EXPORT_CAPTURE_BLEED * 2,
   });
-  if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
-  const shot = await snapdom.toCanvas(doc.documentElement, {
-    backgroundColor: null,
-    dpr: 1,
-    scale: PNG_EXPORT_SCALE,
-  });
+  const shot = await Sketch.captureSketch(frame, PNG_EXPORT_SCALE);
+  // The runner's scripts are untrusted: a bitmap far larger than the sketch is refused before it is drawn.
+  const maxEdge = Math.min(PNG_EXPORT_MAX_EDGE, Math.max(size.width, size.height) * PNG_EXPORT_SCALE * 2);
+  if (!(shot.width > 0 && shot.height > 0) || Math.max(shot.width, shot.height) > maxEdge) {
+    throw new Error('Sketch capture came back at an unexpected size');
+  }
   const pixelRatio = shot.width / size.width;
   const bleed = Math.round(PNG_EXPORT_CAPTURE_BLEED * pixelRatio);
   const captured = document.createElement('canvas');
   captured.width = shot.width + bleed * 2;
   captured.height = shot.height + bleed * 2;
   captured.getContext('2d').drawImage(shot, bleed, bleed);
+  if (typeof shot.close === 'function') shot.close();
   return {
     captured,
     surfaceSize: { width: captured.width / pixelRatio, height: captured.height / pixelRatio },

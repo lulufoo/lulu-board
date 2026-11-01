@@ -30,6 +30,20 @@ module.exports = {
       to: { path: "^packages/", pathNot: "^packages/(mermaid-ext|board-themes)/" },
     },
     {
+      name: "sandbox-app-is-leaf",
+      comment: "sandbox-app imports nothing else in the repo; Board imports only its protocol module.",
+      severity: "error",
+      from: { path: "^packages/sandbox-app/" },
+      to: { path: "^packages/", pathNot: "^packages/sandbox-app/" },
+    },
+    {
+      name: "drawer-only-sandbox-protocol",
+      comment: "drawer-app may import the sandbox protocol only, never the runner.",
+      severity: "error",
+      from: { path: "^packages/drawer-app/" },
+      to: { path: "^packages/sandbox-app/", pathNot: "^packages/sandbox-app/src/protocol\\.js$" },
+    },
+    {
       name: "drawer-no-mcp",
       comment: "drawer-app does not import board-mcp.",
       severity: "error",

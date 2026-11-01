@@ -1,6 +1,7 @@
-/* Mount a sketch fragment. Scripts do not run. */
+/* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
+import { renderMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -19,7 +20,8 @@ function sketchWorldBounds(el) {
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
-  // Scripts are not filtered here. The sandboxed frame lets the browser refuse every script, handler, and javascript: URL.
+  // Scripts are not filtered here: they are meant to run, inside the runner's opaque origin. This removal is a content
+  // guard, not a boundary: a script can still create these elements, and the runner's CSP is what blocks them.
   var banned = tpl.content.querySelectorAll("iframe, object, embed, link");
   for (var i = banned.length - 1; i >= 0; i -= 1) banned[i].remove();
   return tpl.content;
@@ -29,8 +31,23 @@ function bindWorld(rootEl, boundsFn) {
   call("setWorld", rootEl || null, boundsFn || null);
 }
 
+/* The runner is a separate origin that only Board may frame. Its scripts run there, not here. */
+export const SKETCH_RUNNER_URL = "https://sandbox.luluboard.app/runner";
+// A runner that never reports a size (offline, blocked, not deployed) must not hold the canvas view forever.
+var RUNNER_TIMEOUT_MS = 10000;
+// A capture waits for the runner's screenshot; a stuck page must not freeze the export button.
+var CAPTURE_TIMEOUT_MS = 30000;
+var stopListening = null;
+// One channel per sketch frame: the captures it is still waiting for.
+var channels = new WeakMap();
+var captureSeq = 0;
+
 export function renderSketch(opts) {
   opts = opts || {};
+  if (stopListening) {
+    stopListening();
+    stopListening = null;
+  }
   if (!previewEl) {
     emit("finishCanvasView", opts);
     return;
@@ -50,43 +67,120 @@ export function renderSketch(opts) {
   }
   var holder = document.createElement("div");
   holder.appendChild(sketchFragmentRoot(fragment));
+  var html = holder.innerHTML;
   var frame = document.createElement("iframe");
   frame.className = "sketch-frame";
-  // The sandbox grants no script permission: the browser refuses every script, handler, and javascript: URL.
-  // same-origin only lets Board read the size; nothing in the frame can run.
-  frame.setAttribute("sandbox", "allow-same-origin");
+  // allow-scripts without allow-same-origin: the frame gets an opaque origin, so its scripts cannot reach Board's
+  // storage, cookies, or DOM. Never add allow-same-origin: on a page that can reach its own sandbox attribute it is
+  // an escape.
+  frame.setAttribute("sandbox", "allow-scripts");
   frame.setAttribute("scrolling", "no");
   // Width follows #preview exactly like the fragment did as a block, so layout and saved cameras match.
   frame.style.cssText = "display:block;border:0;width:100%;height:800px;background:transparent;pointer-events:none;";
-  frame.srcdoc = "<!doctype html><html><head><meta charset=\"utf-8\"><style>html,body{margin:0;padding:0;background:transparent}</style></head><body>" + holder.innerHTML + "</body></html>";
-  function fitHeight() {
-    var doc = frame.contentDocument;
-    if (!frame.isConnected || !doc || !doc.body) return;
-    // A root wider than the canvas widens the frame, so nothing is clipped.
-    var w = Math.ceil(doc.documentElement.scrollWidth);
-    if (w > frame.clientWidth) frame.style.minWidth = w + "px";
-    var h = Math.ceil(Math.max(doc.body.getBoundingClientRect().height, doc.body.scrollHeight));
-    if (h > 0 && h !== frame.offsetHeight) frame.style.height = h + "px";
-  }
+  frame.src = SKETCH_RUNNER_URL;
   var finished = false;
-  function onReady() {
+  var timer = 0;
+  function finish(failed) {
     if (finished || !frame.isConnected) return;
     finished = true;
-    fitHeight();
-    if (typeof ResizeObserver === "function") new ResizeObserver(fitHeight).observe(frame);
+    clearTimeout(timer);
     bindWorld(frame, function () { return sketchWorldBounds(frame); });
-    showDiagramError("");
-    setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
+    if (failed) {
+      showDiagramError("Sketch runner did not respond");
+      setStatus("Sketch runner did not respond", true);
+    } else {
+      showDiagramError("");
+      setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
+    }
     emit("finishCanvasView", opts);
   }
-  // Only the srcdoc load finishes the sketch. A new iframe first holds an empty about:blank document that already
-  // reports "complete" at 800px; measuring it would pin the frame there and skip the real load.
-  frame.addEventListener("load", onReady);
+  function applySize(size) {
+    // A root wider than the canvas widens the frame, so nothing is clipped.
+    if (size.width > frame.clientWidth) frame.style.minWidth = size.width + "px";
+    if (size.height !== frame.offsetHeight) frame.style.height = size.height + "px";
+  }
+  var sent = false;
+  var channel = { pending: new Map() };
+  channels.set(frame, channel);
+  function settle(id) {
+    var entry = channel.pending.get(id);
+    if (!entry) return null;
+    clearTimeout(entry.timer);
+    channel.pending.delete(id);
+    return entry;
+  }
+  function failCaptures(message) {
+    Array.from(channel.pending.keys()).forEach(function (id) {
+      var entry = settle(id);
+      if (entry) entry.reject(new Error(message));
+    });
+  }
+  function onMessage(event) {
+    // The runner has an opaque origin, so event.origin is the string "null" and proves nothing about who sent it.
+    // The sender is the frame we made; every field is untrusted and goes through the protocol parsers.
+    if (!frame.isConnected) {
+      stop();
+      return;
+    }
+    if (event.source !== frame.contentWindow || event.origin !== "null") return;
+    if (parseReady(event.data)) {
+      if (sent) return;
+      sent = true;
+      // An opaque origin cannot be named as a target; only the fragment travels this way.
+      frame.contentWindow.postMessage(renderMessage(html), "*");
+      return;
+    }
+    var size = parseSize(event.data);
+    if (size) {
+      applySize(size);
+      finish(false);
+      return;
+    }
+    var captured = parseCaptured(event.data);
+    if (captured) {
+      var done = settle(captured.id);
+      if (done) done.resolve(captured.bitmap);
+      return;
+    }
+    var failure = parseError(event.data);
+    if (failure && failure.id) {
+      var failed = settle(failure.id);
+      if (failed) failed.reject(new Error("Sketch capture failed: " + failure.message));
+    }
+  }
+  function stop() {
+    window.removeEventListener("message", onMessage);
+    clearTimeout(timer);
+    failCaptures("Sketch was replaced before the capture finished");
+  }
+  window.addEventListener("message", onMessage);
+  stopListening = stop;
+  timer = setTimeout(function () { finish(true); }, RUNNER_TIMEOUT_MS);
   previewEl.appendChild(frame);
+}
+
+/* Ask the runner for a transparent bitmap of the whole sketch document, scale times its CSS size.
+ * The bitmap is untrusted pixels from another origin: the caller bounds its size before using it. */
+export function captureSketch(frame, scale) {
+  var channel = frame && channels.get(frame);
+  if (!channel || !frame.isConnected || !frame.contentWindow) {
+    return Promise.reject(new Error("Sketch is not ready to export"));
+  }
+  captureSeq += 1;
+  var id = "capture-" + captureSeq;
+  return new Promise(function (resolve, reject) {
+    var timer = setTimeout(function () {
+      channel.pending.delete(id);
+      reject(new Error("Sketch capture timed out"));
+    }, CAPTURE_TIMEOUT_MS);
+    channel.pending.set(id, { resolve: resolve, reject: reject, timer: timer });
+    frame.contentWindow.postMessage(captureMessage(id, scale), "*");
+  });
 }
 
 const Sketch = {
   renderSketch: renderSketch,
+  captureSketch: captureSketch,
   sketchWorldBounds: sketchWorldBounds,
   sketchFragmentRoot: sketchFragmentRoot,
 };

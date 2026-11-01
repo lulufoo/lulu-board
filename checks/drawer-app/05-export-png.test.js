@@ -68,7 +68,7 @@ assert.match(exportPng, /call\("getDiagramTitle", call\("cloudOpenDiagramId"\)\)
 const shellJs = read('packages/drawer-app/src/state/shell-state.js');
 assert.doesNotMatch(shellJs, /liveBoardTitle/, 'liveBoardTitle copy is gone');
 
-// sketch export: the live iframe document is captured in place, never cloned
+// sketch export: the runner captures itself and sends a bitmap; Board never reads the frame or clones it
 assert.match(exportPng, /import Sketch from '\.\.\/kinds\/sketch\.js'/, 'export reuses the sketch frame bounds');
 {
   const exportBody = exportPng.slice(exportPng.indexOf('export async function exportPng'));
@@ -76,43 +76,59 @@ assert.match(exportPng, /import Sketch from '\.\.\/kinds\/sketch\.js'/, 'export 
   assert.match(exportBody, /showCopyTip\('Nothing to export'\)/, 'an empty export is shown to the user, not only written to the status line');
   const sketchSrc = exportPng.slice(exportPng.indexOf('async function captureSketchCanvas'), exportPng.indexOf('export async function exportPng'));
   assert.doesNotMatch(sketchSrc, /cloneNode|mountExportClone/, 'sketch is captured in place, not cloned');
-  assert.match(sketchSrc, /snapdom\.toCanvas\(doc\.documentElement,/, 'sketch captures the frame document');
+  assert.match(sketchSrc, /Sketch\.captureSketch\(frame, PNG_EXPORT_SCALE\)/, 'sketch asks the runner for a bitmap at export scale');
+  assert.doesNotMatch(sketchSrc, /contentDocument|snapdom/, 'Board neither reads the frame nor runs SnapDOM on a sketch');
+  assert.match(sketchSrc, /assertExportSurface\(/, 'the size guard stays in Board, before the request');
+  assert.match(exportBody, /cropExportCanvas\(captured, surfaceSize\)[\s\S]*paintGround\(context, output, cropped\.surfaceSize, documentGroundId\(\)\)/, 'crop and background stay in Board');
 }
 {
   const surfaceSrc = exportPng.slice(exportPng.indexOf('function assertExportSurface'), exportPng.indexOf('/* A sketch lives'));
   const sketchSrc = exportPng.slice(exportPng.indexOf('async function captureSketchCanvas'), exportPng.indexOf('export async function exportPng'));
   const calls = [];
   const draws = [];
-  const docEl = { tag: 'html' };
+  const closed = [];
+  let reply = { width: 1920, height: 1080, close: () => closed.push(true) };
   const env = {
-    Sketch: { sketchWorldBounds: (frame) => frame.bounds },
-    snapdom: { toCanvas: async (el, opts) => { calls.push({ el, opts }); return { width: 1920, height: 1080 }; } },
+    Sketch: {
+      sketchWorldBounds: (frame) => frame.bounds,
+      captureSketch: async (frame, scale) => {
+        calls.push({ frame, scale });
+        if (frame.notReady) throw new Error('Sketch is not ready to export');
+        return reply;
+      },
+    },
     document: {
       createElement: () => ({ width: 0, height: 0, getContext: () => ({ drawImage: (...args) => draws.push(args) }) }),
     },
   };
   const api = new Function('env', `
-    const { Sketch, snapdom, document } = env;
+    const { Sketch, document } = env;
     const PNG_EXPORT_SCALE = 2, PNG_EXPORT_CAPTURE_BLEED = 64, PNG_EXPORT_MAX_EDGE = 16384, PNG_EXPORT_MAX_PIXELS = 64000000;
     ${surfaceSrc}\n${sketchSrc}
     return { captureSketchCanvas };`)(env);
-  const frame = (bounds, contentDocument) => ({ bounds, contentDocument });
-  const ready = { documentElement: docEl, fonts: { ready: Promise.resolve() } };
+  const frame = (bounds, extra) => Object.assign({ bounds }, extra);
 
-  const out = await api.captureSketchCanvas(frame({ width: 960, height: 540 }, ready));
+  const shown = frame({ width: 960, height: 540 });
+  const out = await api.captureSketchCanvas(shown);
   assert.strictEqual(calls.length, 1, 'sketch is captured once');
-  assert.strictEqual(calls[0].el, docEl, 'snapdom receives the live frame document element');
-  assert.strictEqual(calls[0].opts.scale, 2, 'sketch is captured at 2x like a board');
-  assert.strictEqual(calls[0].opts.backgroundColor, null, 'sketch capture stays transparent for the grid');
+  assert.strictEqual(calls[0].frame, shown, 'the runner of the shown frame is asked');
+  assert.strictEqual(calls[0].scale, 2, 'sketch is captured at 2x like a board');
   assert.strictEqual(out.captured.width, 1920 + 64 * 2 * 2, 'bleed is added on both sides at pixel ratio');
   assert.strictEqual(out.captured.height, 1080 + 64 * 2 * 2, 'bleed is added on both sides at pixel ratio');
   assert.deepStrictEqual(out.surfaceSize, { width: 960 + 128, height: 540 + 128 }, 'surface size matches the padded capture');
   assert.deepStrictEqual(draws[0].slice(1), [128, 128], 'sketch is drawn inside the bleed');
+  assert.strictEqual(closed.length, 1, 'the transferred bitmap is released after drawing');
 
-  await assert.rejects(() => api.captureSketchCanvas(frame(null, ready)), /no exportable size/, 'an unmeasured sketch fails visibly');
-  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 960, height: 540 }, null)), /not ready to export/, 'a frame without a document fails visibly');
-  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 9000, height: 9000 }, ready)), /too large/, 'oversized sketch is refused before capture');
-  assert.strictEqual(calls.length, 1, 'failed exports never reach the capture');
+  await assert.rejects(() => api.captureSketchCanvas(frame(null)), /no exportable size/, 'an unmeasured sketch fails visibly');
+  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 960, height: 540 }, { notReady: true })), /not ready to export/, 'a frame without a runner fails visibly');
+  const before = calls.length;
+  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 9000, height: 9000 })), /too large/, 'oversized sketch is refused before capture');
+  assert.strictEqual(calls.length, before, 'an oversized sketch never reaches the runner');
+
+  reply = { width: 20000, height: 1080, close: () => {} };
+  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 960, height: 540 })), /unexpected size/, 'a bitmap larger than the sketch allows is refused');
+  reply = { width: 0, height: 0, close: () => {} };
+  await assert.rejects(() => api.captureSketchCanvas(frame({ width: 960, height: 540 })), /unexpected size/, 'an empty bitmap is refused');
 }
 
 // Export File: the suffix follows the source kind (.bmd Boxes, .skt Sketch, .mmd Mermaid)
