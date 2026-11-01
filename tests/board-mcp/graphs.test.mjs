@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import {
   boardTitleFromBody,
@@ -143,7 +144,18 @@ globalThis.fetch = async (url, init) => {
   }
   if (href.startsWith('https://api.luluboard.app/graphs?diagram_id=') && method === 'GET') {
     const id = decodeURIComponent(href.slice(href.indexOf('diagram_id=') + 'diagram_id='.length));
-    return { ok: true, status: 200, text: async () => JSON.stringify(rowForGraphId('graph_id=eq.' + id)) };
+    const json = JSON.stringify(rowForGraphId('graph_id=eq.' + id));
+    const requestHeaders = (init && init.headers) || {};
+    if (requestHeaders['Accept-Encoding'] !== 'gzip') {
+      return { ok: true, status: 200, headers: { get: () => null }, text: async () => json };
+    }
+    const packed = gzipSync(Buffer.from(json));
+    return {
+      ok: true,
+      status: 200,
+      headers: { get: (name) => String(name).toLowerCase() === 'content-encoding' ? 'gzip' : null },
+      arrayBuffer: async () => packed.buffer.slice(packed.byteOffset, packed.byteOffset + packed.byteLength),
+    };
   }
   if (href === 'https://api.luluboard.app/groups/shells' && method === 'POST') {
     const payload = JSON.parse(body);
@@ -261,7 +273,9 @@ try {
   assert.equal(got.version, 4);
   assert.equal(got.updated_at, latest.updated_at);
   assert.equal(got.group_id, 'g_99aabbcc');
-  assert.ok(calls.some((c) => c.url === 'https://api.luluboard.app/graphs?diagram_id=b_0fc10001'));
+  const readCall = calls.find((c) => c.url === 'https://api.luluboard.app/graphs?diagram_id=b_0fc10001' && c.method === 'GET');
+  assert.equal(readCall.headers['Accept-Encoding'], 'gzip');
+  assert.ok(!calls.some((c) => c.method === 'POST' && c.headers['Accept-Encoding']));
   assert.ok(!calls.some((c) => c.url.includes('group_members')));
 
   const fromArray = await getGraph(env, 'tok', 'b_0fc10002');
