@@ -199,13 +199,12 @@ import * as Token from '../../../board-core/style-token.js';
   function fieldsFromStyleToken(token) {
     var raw = String(token == null ? "" : token).trim();
     if (!raw) return Token.resolveFields({});
-    if (isShortStyleName(raw)) return Token.resolveFields({ palette: raw });
+    if (isShortStyleName(raw)) return Token.resolveFields({});
     return Token.resolveFields(Token.decodeStylePayload(raw));
   }
 
-  function mermaidStyleToken(theme, typeStep, viewport) {
+  function mermaidStyleToken(_theme, typeStep, viewport) {
     var data = Token.authoredFields({
-      palette: Token.resolveThemeId(theme),
       font_size: Token.clampTypeStep(typeStep),
       viewport: viewport,
     });
@@ -216,7 +215,7 @@ import * as Token from '../../../board-core/style-token.js';
   function rawStyleObject(token) {
     var raw = String(token == null ? "" : token).trim();
     if (!raw) return {};
-    if (isShortStyleName(raw)) return { palette: raw };
+    if (isShortStyleName(raw)) return {};
     return Token.decodeStylePayload(raw);
   }
 
@@ -226,8 +225,12 @@ import * as Token from '../../../board-core/style-token.js';
     return Object.keys(data).length ? Token.encodeStylePayload(data) : "";
   }
 
-  function paletteFromStyleToken(token) {
-    return fieldsFromStyleToken(token).palette;
+  function appearanceFromStyleToken(token) {
+    return fieldsFromStyleToken(token).appearance;
+  }
+
+  function paletteFromStyleToken(_token) {
+    return "default";
   }
 
   function typeStepFromStyleToken(token) {
@@ -296,6 +299,7 @@ const DrawerStyleLine = {
     persistStyleToken: persistStyleToken,
     fieldsFromStyleToken: fieldsFromStyleToken,
     decodeStyleTokenJson: decodeStyleTokenJson,
+    appearanceFromStyleToken: appearanceFromStyleToken,
     paletteFromStyleToken: paletteFromStyleToken,
     typeStepFromStyleToken: typeStepFromStyleToken,
     clampMermaidTypeStep: clampMermaidTypeStep,

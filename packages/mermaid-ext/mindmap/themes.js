@@ -1,10 +1,11 @@
 /** Map Board / Pele theme ids onto a mindmap palette. Does not load mermaid-themes. */
-import { edgeTint, get, resolveId } from '../../board-themes/index.js';
+import { APPEARANCES, edgeTint, get, resolveId } from '../../board-themes/index.js';
 
 const FALLBACK_FONT = '"SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif';
 
 export function normalizeTheme(id) {
-  const raw = String(id == null || id === '' ? 'default' : id).trim().toLowerCase();
+  const raw = String(id == null || id === '' ? 'light' : id).trim().toLowerCase();
+  if (APPEARANCES[raw]) return raw;
   return resolveId(raw);
 }
 

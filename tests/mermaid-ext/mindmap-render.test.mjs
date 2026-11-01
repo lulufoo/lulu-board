@@ -22,6 +22,8 @@ assert.equal(normalizeTheme('classic'), 'classic');
 assert.equal(normalizeTheme('minimal'), 'classic');
 assert.equal(normalizeTheme('slate'), 'pastel');
 assert.equal(normalizeTheme('kami'), 'default');
+assert.equal(normalizeTheme('dark'), 'dark');
+assert.equal(normalizeTheme('light'), 'light');
 
 const radial = render(source, { layout: 'radial', theme: 'default', id: 'mm-r' });
 const logic = render(source, { layout: 'logic', theme: 'default', id: 'mm-l' });
@@ -48,8 +50,11 @@ assert.notEqual(themePalette('default').root.stroke, themePalette('default').sec
 
 const classic = themePalette('classic');
 const pastel = themePalette('pastel');
+const dark = themePalette('dark');
 assert.notEqual(classic.root.fill, pastel.root.fill);
 assert.equal(classic.root.fill, get('classic').colors[0]);
+assert.equal(dark.root.fill, get('dark').colors[0]);
+assert.notEqual(dark.root.fill, themePalette('light').root.fill);
 assert.doesNotMatch(radial.svg, /2563eb/);
 
 assert.ok(!fs.existsSync(path.join(root, 'packages/mermaid-themes')));

@@ -1,14 +1,16 @@
-/* Shared palette pack: default. Box chrome lives in packages/boxes. */
+/* Shared palette pack: default. Colors come from the frozen Light table. */
+import light from '../appearance/light.js';
+
 export default {
   id: 'default',
   label: 'Default',
-  color: '#4a3524',
-  edgeStroke: '#7a5c3c',
-  edgeLabel: '#5a4330',
-  edgeEvidence: '#aaaaaa',
-  edgeFeedback: '#888888',
-  bandBg: '#f5f5f5',
-  bandBorder: '#bbb',
-  edgeRgb: '74, 53, 36',
-  colors: ['#fffdf9', '#f8efe0', '#fdeee3', '#f2f3e4', '#faebe6', '#ecf1e6', '#f3ece6', '#efe9d8'],
+  color: light.diagram.color,
+  edgeStroke: light.diagram.edgeStroke,
+  edgeLabel: light.diagram.edgeLabel,
+  edgeEvidence: light.diagram.edgeEvidence,
+  edgeFeedback: light.diagram.edgeFeedback,
+  bandBg: light.diagram.bandBg,
+  bandBorder: light.diagram.bandBorder,
+  edgeRgb: light.diagram.edgeRgb,
+  colors: light.diagram.colors,
 };

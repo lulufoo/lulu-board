@@ -46,6 +46,11 @@ assert.ok(!ids.includes('kami'));
   assert.strictEqual(mapped.css['--pele-radius'], BoxesThemes.BOX_RX + 'px', id + ' radius matches flowchart box');
 });
 
+const darkMapped = Pele.mapPack('dark');
+assert.strictEqual(darkMapped.css['--pele-fg'], BoxesThemes.get('dark').color);
+assert.strictEqual(darkMapped.css['--pele-surface'], BoxesThemes.get('dark').colors[0]);
+assert.strictEqual(darkMapped.css['--bf-rgb'], BoxesThemes.get('dark').edgeRgb);
+
 const defaultMapped = Pele.mapPack('default');
 assert.strictEqual(defaultMapped.css['--pele-border'], 'color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36)))');
 assert.strictEqual(defaultMapped.themeVariables.clusterBorder, 'color-mix(in srgb, var(--pele-surface) 90%, rgb(var(--bf-rgb, 74, 53, 36)))');

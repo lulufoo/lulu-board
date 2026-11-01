@@ -4,6 +4,8 @@ import MindmapEdit from '../../../mermaid-ext/mindmap/index.js';
 import { register, emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyGround } from '../core/workspace-ground.js';
+import { applyChrome } from '../core/appearance-chrome.js';
+import { getSessionAppearance } from '../core/session-appearance.js';
 import FlowchartTypeScale from '../core/flowchart-type-scale.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerEarlyHead from '../core/early-head.js';
@@ -184,8 +186,14 @@ function previewHasPaint(root) {
   return !!(root && root.querySelector(".board-render, iframe.sketch-frame, svg"));
 }
 
+function documentAppearance() {
+  return getSessionAppearance();
+}
+
 function applyDocumentGround() {
-  if (typeof applyGround === "function") applyGround(document.documentElement);
+  var appearance = documentAppearance();
+  if (typeof applyGround === "function") applyGround(document.documentElement, appearance);
+  if (typeof applyChrome === "function") applyChrome(document.documentElement, appearance);
 }
 
 function finishCanvasView(opts) {
@@ -211,9 +219,7 @@ function finishCanvasView(opts) {
 function syncMermaidStyleChrome(body) {
   if (!DrawerStyleLine) return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = DrawerStyleLine.paletteFromStyleToken(styled.token);
   var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  emit("applyKindTheme", theme, { persist: false, skipRender: true });
   emit("applyBoardTypeStep", step, false, false);
 }
 
@@ -334,12 +340,7 @@ function renderMindmap(opts) {
     return;
   }
   try {
-    var theme = "default";
-    if (DrawerStyleLine) {
-      theme = DrawerStyleLine.paletteFromStyleToken(
-        DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token
-      ) || "default";
-    }
+    var theme = getSessionAppearance();
     var layout = currentMindmapLayout();
     var result = MindmapEdit.render(body, { layout: layout, theme: theme, id: "mm" });
     if (result && result.errors && result.errors.length && !result.svg) {
@@ -398,6 +399,7 @@ function renderDiagram(opts) {
       // Repaint the live root after any mode/bootstrap render race.
       if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
       showDiagramError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);
+      applyDocumentGround();
       emit("syncBoardStyleChrome", rendered.board);
       emit("applyBoardThemeToPreview");
       if (opts.fit) {

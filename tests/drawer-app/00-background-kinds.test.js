@@ -19,14 +19,16 @@ function persistKind(body, patch) {
   const boxes = Render.updateStyle('boxes "Demo"\nitem HERO type text "Hi"\n', { background: 'dusk' });
   assert.ok(!/^style /m.test(boxes), boxes);
   const boxesNext = Render.updateStyle(boxes, { palette: 'classic' });
-  assert.deepStrictEqual(decodeToken(boxesNext), { palette: 'classic' });
+  assert.ok(!/^style /m.test(boxesNext), boxesNext);
+  assert.deepStrictEqual(decodeToken(boxesNext), {});
 }
 
 {
   const sketch = persistKind('sketch ""\ncontent e30=\n', { background: 'sage', theme: 'pastel' });
   assert.strictEqual(sketch, 'sketch ""\ncontent e30=\n');
   const sketchNext = persistKind(sketch, { palette: 'pastel' });
-  assert.deepStrictEqual(decodeToken(sketchNext), { palette: 'pastel' });
+  assert.strictEqual(sketchNext, sketch);
+  assert.deepStrictEqual(decodeToken(sketchNext), {});
   assert.strictEqual(Style.bodyKind(sketchNext), 'sketch');
 }
 
@@ -34,7 +36,8 @@ function persistKind(body, patch) {
   const flow = persistKind('flowchart TD\nA-->B\n', { background: 'mist', color: 'classic' });
   assert.strictEqual(flow, 'flowchart TD\nA-->B\n');
   const flowNext = persistKind(flow, { palette: 'classic' });
-  assert.deepStrictEqual(decodeToken(flowNext), { palette: 'classic' });
+  assert.strictEqual(flowNext, flow);
+  assert.deepStrictEqual(decodeToken(flowNext), {});
   assert.strictEqual(Style.bodyKind(flowNext), 'flowchart');
 }
 
@@ -42,6 +45,8 @@ function persistKind(body, patch) {
   const set = {};
   Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'sage');
   assert.strictEqual(set['--ground-bg'], '#fff');
+  Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'dark');
+  assert.strictEqual(set['--ground-bg'], '#14110e');
 }
 
 console.log('ok background-kinds');

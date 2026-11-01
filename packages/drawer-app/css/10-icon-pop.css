@@ -91,13 +91,13 @@ html[data-drawer-mode="diagram"] #board-icon-trigger {
   font-size: 14px;
 }
 html[data-drawer-mode="diagram"] #board-icon-trigger.is-open {
-  background-color: #fff;
+  background-color: var(--chip);
   box-shadow: 0 0 0 2px rgba(219, 76, 132, .32);
 }
 html[data-drawer-mode="diagram"] .props-icon-pop {
-  background: #fff;
-  color: #4a3524;
-  box-shadow: 0 0 0 1px rgba(120, 80, 40, .08), 0 16px 40px rgba(80, 55, 30, .14);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--paper-line), var(--shadow-soft);
 }
 html[data-drawer-mode="diagram"] .props-icon-current {
   background: rgba(219, 76, 132, .14);

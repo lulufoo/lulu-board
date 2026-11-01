@@ -5,8 +5,8 @@ import { resolveBackground } from '../../../board-core/style-token.js';
 const STEP = 24;
 const DOT_RADIUS = 1;
 
-export function resolveGround() {
-  const colors = resolveBackground();
+export function resolveGround(id) {
+  const colors = resolveBackground(id);
   return { background: colors.background, dot: colors.dot, dotRadius: DOT_RADIUS, step: STEP };
 }
 
@@ -17,16 +17,16 @@ function buildGroundImage(ground) {
   return 'url("data:image/svg+xml;utf8,' + svg.replace(/#/g, '%23') + '")';
 }
 
-export function applyGround(root) {
-  const ground = resolveGround();
+export function applyGround(root, id) {
+  const ground = resolveGround(id);
   root.style.setProperty('--ground-bg', ground.background);
   root.style.setProperty('--ground-image', buildGroundImage(ground));
   root.style.setProperty('--ground-size', ground.step + 'px ' + ground.step + 'px');
 }
 
 /* Dots sit at each cell's center, like the SVG tile. Edge pixels stay half transparent. */
-export function paintGround(ctx, canvas, surfaceSize) {
-  const ground = resolveGround();
+export function paintGround(ctx, canvas, surfaceSize, id) {
+  const ground = resolveGround(id);
   const pixelRatio = canvas.width / surfaceSize.width;
   const step = ground.step * pixelRatio;
   const radius = ground.dotRadius * pixelRatio;

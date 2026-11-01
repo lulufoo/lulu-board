@@ -17,13 +17,18 @@ const ground = read('packages/drawer-app/src/core/workspace-ground.js');
 const chrome = read(`${cssDir}/02-chrome.css`);
 
 assert.match(ground, /import \{ resolveBackground \} from '..\/..\/..\/board-core\/style-token\.js'/, 'ground colors come from resolveBackground');
-assert.match(ground, /resolveBackground\(\)/, 'apply and paint ask resolveBackground');
+assert.match(ground, /resolveBackground\(id\)/, 'apply and paint ask resolveBackground for the document appearance');
 assert.doesNotMatch(ground, /#dfe7ea|%23dfe7ea/, 'ground file holds no paper color of its own');
 
 assert.match(boot, /import \{ applyGround \} from '\.\/workspace-ground\.js'/, 'early head imports the ground');
+assert.match(boot, /import \{ applyChrome \} from '\.\/appearance-chrome\.js'/, 'early head imports dock chrome');
 assert.ok(
   boot.indexOf('dataset.drawerMode = "diagram"') < boot.indexOf('applyGround(doc)'),
   'ground is applied right after drawerMode, before first paint'
+);
+assert.ok(
+  boot.indexOf('applyGround(doc)') < boot.indexOf('applyChrome(doc)'),
+  'dock chrome is applied with the ground, before first paint'
 );
 
 const shell = chrome.match(/\n\.canvas-shell \{[^}]*\}/);
@@ -44,7 +49,14 @@ assert.match(diagram, /import \{ applyGround \} from '\.\.\/core\/workspace-grou
 assert.match(
   diagram.slice(diagram.indexOf('function finishCanvasView')),
   /applyDocumentGround\(\)/,
-  'opening a document reapplies the locked paper ground',
+  'opening a document reapplies the document appearance ground',
+);
+assert.match(diagram, /getSessionAppearance/, 'document ground reads the session appearance');
+assert.match(diagram, /applyChrome\(document\.documentElement, appearance\)/, 'opening a document reapplies dock chrome');
+assert.match(
+  diagram.slice(diagram.indexOf('BoxesRender.render')),
+  /applyDocumentGround\(\)/,
+  'Boxes paint reapplies the document appearance ground',
 );
 
 console.log('ok workspace-ground check');

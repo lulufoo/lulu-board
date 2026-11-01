@@ -1,14 +1,12 @@
-/* Palette dropdown in the Style panel. The native <select id="kindThemeSelect"> stays hidden
+/* Theme dropdown in the Style panel. The native <select id="kindThemeSelect"> stays hidden
  * as the one source of truth. Code that sets select.value or listens for "change" keeps working. */
-import { THEMES } from '../../../board-themes/index.js';
+import { getAppearance } from '../../../board-themes/appearance/index.js';
 import { mountPopupSelect } from './popup-select.js';
 
-/* One solid chip in the theme's link color. A pale card tint would vanish on the white panel. */
 function buildThemeIcon(id) {
-  const theme = THEMES[id];
-  if (!theme) return { fill: '#fff' };
+  const table = getAppearance(id);
   const svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'>"
-    + "<rect x='2' y='2' width='18' height='18' rx='5.5' fill='" + theme.edgeStroke + "'/>"
+    + "<rect x='2' y='2' width='18' height='18' rx='5.5' fill='" + table.diagram.colors[0] + "' stroke='" + table.diagram.edgeStroke + "' stroke-width='1.5'/>"
     + '</svg>';
   return { fill: 'url("data:image/svg+xml;utf8,' + svg.replace(/#/g, '%23') + '") center / contain no-repeat', glyph: true };
 }
@@ -17,7 +15,7 @@ const select = document.getElementById('kindThemeSelect');
 const host = document.getElementById('themeSelectHost');
 if (select && host) {
   const picker = mountPopupSelect(host, {
-    label: select.getAttribute('aria-label') || 'Palette',
+    label: select.getAttribute('aria-label') || 'Theme',
     value: select.value,
     options: Array.from(select.options).map((option) => ({
       value: option.value,

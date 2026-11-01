@@ -58,6 +58,8 @@ assert.match(saved, /cloudForgetDiagramCache\(\[diagramId\]\)/, 'cached row is d
 assert.match(sync.slice(sync.indexOf('async function deleteCloudGroup')), /Delete this group\?/, 'History x still deletes the whole group');
 // Source footer spacing: a hairline closes the editor, Delete has room, the char count lines up with it
 const srcCss = read('packages/drawer-app/css/09-source-style.css');
+assert.match(srcCss, /:root \{\s*--src-mono:/, 'mono font is not gated on Light');
+assert.match(srcCss, /background-size:\s*1px 100%/, 'indent guides cover wrapped lines');
 assert.match(srcCss, /\.dock-source-foot:has\(\.btn-delete:not\(\[hidden\]\)\) \{\s*margin: 0 14px;\s*padding: 0 2px;\s*border-top: 1px solid var\(--paper-line\);/, 'the hairline shows only with Delete, so no empty band without it');
 assert.match(srcCss, /\.dock-source-foot \.btn-delete \{ margin: 10px 0 16px; \}/, 'Delete keeps room above and below');
 assert.match(srcCss, /\.source-chars \{ right: 16px; bottom: 10px; \}/, 'the char count lines up with Delete');

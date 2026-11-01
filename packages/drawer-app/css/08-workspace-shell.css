@@ -87,7 +87,7 @@ html[data-drawer-mode="diagram"] .board-brand {
   border: 0;
   border-radius: 6px;
   color: var(--ink-soft);
-  background: rgba(80, 55, 30, .06);
+  background: var(--chip);
 }
 
 /* ---- left drawer: a floating card summoned from the brand mark ---- */
@@ -308,7 +308,6 @@ html[data-drawer-mode="diagram"] .board-brand-mark { width: 34px; height: 34px; 
 }
 .shell-search:hover { background: var(--fill-hover); }
 .shell-search svg { width: 16px; height: 16px; }
-.shell-search kbd { background: rgba(255, 255, 255, .7); }
 
 html[data-drawer-mode="diagram"] .zoom-float,
 html[data-drawer-mode="diagram"] .group-tab-float {
@@ -333,7 +332,7 @@ html[data-drawer-mode="diagram"] .zoom-float .zoom-type[hidden] { display: none 
 .shell-drawer { top: 64px; }
 
 /* ---- right dock in the same language: wider rail, borderless fills, bigger controls ---- */
-[data-theme="light"] { --rail-w: 56px; }
+:root { --rail-w: 56px; }
 html[data-drawer-mode="diagram"] .diagram-dock[data-open=""] { width: var(--rail-w); }
 html[data-drawer-mode="diagram"] .diagram-dock-rail {
   flex: 0 0 var(--rail-w);
@@ -422,7 +421,7 @@ html[data-drawer-mode="diagram"] .diagram-dock #boardTypeEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardTitleEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardDirEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #board-align-x-editor:focus,
-html[data-drawer-mode="diagram"] .diagram-dock #board-align-y-editor:focus
+html[data-drawer-mode="diagram"] .diagram-dock #board-align-y-editor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardArrowEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #boardIdEditor:focus,
@@ -434,7 +433,26 @@ html[data-drawer-mode="diagram"] .diagram-dock #flowchartDirEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapDocTitleEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapLayoutEditor:focus,
 html[data-drawer-mode="diagram"] .diagram-dock #mindmapTextEditor:focus,
-html[data-drawer-mode="diagram"] .diagram-dock #designDocTitleEditor:focus { background: #fff; box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="diagram"] .diagram-dock #designDocTitleEditor:focus { background: var(--chip); box-shadow: 0 0 0 2px rgba(219, 76, 132, .32); }
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input {
+  padding-right: 36px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'><path fill='none' stroke='%238b7358' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 6L6 3.2 9 6'/><path fill='none' stroke='%238b7358' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 10L6 12.8 9 10'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 16px;
+}
+html[data-theme="dark"][data-drawer-mode="diagram"] .diagram-dock #board-max-width-input {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'><path fill='none' stroke='%23b8a28a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 6L6 3.2 9 6'/><path fill='none' stroke='%23b8a28a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 10L6 12.8 9 10'/></svg>");
+}
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input::-webkit-inner-spin-button,
+html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-input::-webkit-outer-spin-button {
+  -webkit-appearance: inner-spin-button;
+  width: 22px;
+  height: 28px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
 html[data-drawer-mode="diagram"] .diagram-dock .props-arrow-reverse,
 html[data-drawer-mode="diagram"] .diagram-dock .props-id-copy,
 html[data-drawer-mode="diagram"] .diagram-dock #board-max-width-reset,
@@ -455,7 +473,7 @@ html[data-drawer-mode="diagram"] #stylePanel .props-seg-btn { height: 40px; bord
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg { padding: 4px; border-radius: 12px; background: var(--fill); box-shadow: none; }
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn { height: 32px; border-radius: 9px; background: transparent; font-size: 12.5px; box-shadow: none; }
 html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn + .props-seg-btn { box-shadow: none; }
-html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(80, 55, 30, .14); }
+html[data-drawer-mode="diagram"] #boardLayoutSection .props-route-seg .props-seg-btn[aria-pressed="true"] { background: var(--chip); color: var(--ink); box-shadow: var(--press); }
 html[data-drawer-mode="diagram"] .export-actions .btn { height: 40px; }
 html[data-drawer-mode="diagram"] .export-type-row { border: 0; border-radius: 12px; background: var(--fill); }
 html[data-drawer-mode="diagram"] .dock-source-actions .btn { height: 34px; min-height: 34px; border-radius: 10px; }

@@ -18,6 +18,7 @@ const Token = require('../../packages/board-core/style-token.js');
 const srcState = [
   'src/core/hooks.js',
   'src/core/sentry-count.js',
+  'src/core/session-appearance.js',
   'src/state/shell-state.js',
   'src/state/canvas-interaction.js',
   'src/kinds/sketch.js',
@@ -66,6 +67,8 @@ const script = [
   'function encodeDiagramHash() { return Promise.resolve("z:stub"); }',
   'function decodeDiagramHash() { return Promise.resolve({ bmd: "", version: 1 }); }',
   'var DrawerEarlyHead = { safeStorage: function () { return { getItem: function () { return null; }, setItem: function () {} }; }, isLegalHash: function () { return true; }, shouldBlankStart: function () { return false; }, isAuthReturn: function () { return false; } };',
+  'function resolveAppearance(id) { return id === "dark" ? "dark" : "light"; }',
+  'var DEFAULT_APPEARANCE = "light";',
   'var FlowchartTypeScale = { px: function () { return 16; }, applyToRoot: function () {} };',
   'var DrawerPeleTheme = { polishBoxes: function () {} };',
   srcState,

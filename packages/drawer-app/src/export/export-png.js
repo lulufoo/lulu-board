@@ -5,6 +5,7 @@ import Sketch from '../kinds/sketch.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { kindTemplateFileName } from '../core/kind-template.js';
 import { paintGround } from '../core/workspace-ground.js';
+import { getSessionAppearance } from '../core/session-appearance.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
 import {
@@ -288,6 +289,10 @@ async function captureSketchCanvas(frame) {
   };
 }
 
+function documentAppearance() {
+  return getSessionAppearance();
+}
+
 export async function exportPng() {
   const frame = getExportSketchFrame();
   const target = frame ? null : getExportContentTarget();
@@ -327,7 +332,7 @@ export async function exportPng() {
     output.width = cropped.canvas.width;
     output.height = cropped.canvas.height;
     const context = output.getContext('2d');
-    paintGround(context, output, cropped.surfaceSize);
+    paintGround(context, output, cropped.surfaceSize, documentAppearance());
     context.drawImage(cropped.canvas, 0, 0);
 
     const result = await writePngExport(await canvasToPngBlob(output), exportDiagramStem());

@@ -6,6 +6,9 @@ import { register } from '../core/hooks.js';
 import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerStyleLine from '../core/style-line.js';
+import { applyChrome } from '../core/appearance-chrome.js';
+import { getSessionAppearance, setSessionAppearance } from '../core/session-appearance.js';
+import { applyGround } from '../core/workspace-ground.js';
 import { persistBoardStyle } from '../kinds/board-style.js';
 import {
   pickBoardElement,
@@ -245,13 +248,8 @@ if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 
 // —— Canvas toolbar: diagram theme + export + UI theme ——
 
-const KIND_THEME_KEY = 'drawer.kindTheme';
 function currentKindTheme() {
-  const legacy = localStorage.getItem('drawer.diagramTheme') || localStorage.getItem('drawer.boardTheme');
-  const v = localStorage.getItem(KIND_THEME_KEY) || legacy || 'default';
-  if (BoxesThemes && typeof BoxesThemes.resolveId === 'function') return BoxesThemes.resolveId(v);
-  const allowed = ['default', 'classic', 'pastel'];
-  return allowed.includes(v) ? v : 'default';
+  return getSessionAppearance();
 }
 const MAX_WIDTH_KEY = 'drawer.boardMaxWidth';
 const MAX_WIDTH_DEFAULT = 0;
@@ -319,7 +317,7 @@ function applyPeleThemeVars(theme) {
   DrawerPeleTheme.applyTo([document.documentElement, document.getElementById("preview")], theme);
 }
 function applyBoardThemeToPreview() {
-  const t = (typeof currentKindTheme === 'function') ? currentKindTheme() : (localStorage.getItem('drawer.kindTheme') || 'default');
+  const t = document.documentElement.dataset.kindTheme || currentKindTheme();
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
@@ -327,22 +325,17 @@ function applyBoardThemeToPreview() {
   applyPeleThemeVars(t);
 }
 function applyKindTheme(theme, opts) {
-  const t = (BoxesThemes && typeof BoxesThemes.resolveId === 'function')
-    ? BoxesThemes.resolveId(theme)
-    : ((['default', 'classic', 'pastel'].includes(theme) ? theme : 'default'));
-  localStorage.setItem(KIND_THEME_KEY, t);
-  localStorage.setItem('drawer.boardTheme', t); // back-compat
+  const t = setSessionAppearance(theme);
   const themeSelect = document.getElementById('kindThemeSelect');
   if (themeSelect) themeSelect.value = t;
   document.documentElement.dataset.kindTheme = t;
+  if (typeof applyGround === 'function') applyGround(document.documentElement, t);
+  if (typeof applyChrome === 'function') applyChrome(document.documentElement, t);
   document.querySelectorAll('.board-render').forEach((el) => {
     if (BoxesThemes && typeof BoxesThemes.applyTo === 'function') BoxesThemes.applyTo(el, t);
     else el.dataset.boardTheme = t;
   });
   applyPeleThemeVars(t);
-  if (opts && opts.persist && typeof persistBoardStyle === 'function') {
-    persistBoardStyle({ palette: t });
-  }
   if (opts && opts.skipRender) return;
   if (typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) renderDiagram({ fit: false });
 }
@@ -379,10 +372,10 @@ try { syncStyleLayoutSections(); } catch (_e) {}
 
 const kindThemeSelect = $('#kindThemeSelect');
 if (kindThemeSelect) {
-  kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value, { persist: true }); });
+  kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value); });
 }
 const _themeMo = new MutationObserver(() => {
-  const t = currentKindTheme();
+  const t = document.documentElement.dataset.kindTheme || 'light';
   document.querySelectorAll('.board-render').forEach((el) => { el.dataset.boardTheme = t; });
 });
 const _themeStage = $('#preview');
