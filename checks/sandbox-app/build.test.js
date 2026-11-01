@@ -27,6 +27,8 @@ assert.doesNotMatch(html, /import\(/, 'no dynamic import: that would need CORS f
 
 const headersFile = readFileSync(path.join(out, '_headers'), 'utf8');
 assert.match(headersFile, /^\/\*\n  Content-Security-Policy: sandbox allow-scripts; /m, 'every path carries the CSP');
+assert.match(headersFile, /^\/\n  Cache-Control: public, max-age=60, stale-while-revalidate=86400$/m, 'the page is cached briefly');
+assert.match(headersFile, /^\/capture-\*\n  Cache-Control: public, max-age=31536000, immutable$/m, 'the hashed capture script never revalidates');
 
 const bundle = readFileSync(path.join(out, capture[0]), 'utf8');
 assert.doesNotMatch(bundle, /^\s*(import|export)\s/m, 'bundle has no module syntax');

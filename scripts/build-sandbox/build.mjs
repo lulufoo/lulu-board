@@ -3,7 +3,7 @@
  * Sandbox runner build: packages/sandbox-app into .cache/sandbox/.
  * The runner page is written as index.html because the whole sandbox domain is the runner: it is served at /.
  * The runner core is inlined into index.html. SnapDOM is capture-<hash>.js, loaded on demand when Board exports.
- * _headers carries the CSP response header for a Workers static assets Worker.
+ * _headers carries the CSP and cache response headers for a Workers static assets Worker.
  */
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
