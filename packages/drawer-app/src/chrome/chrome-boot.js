@@ -7,6 +7,7 @@ import { sentryCount } from '../core/sentry-count.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyChrome } from '../core/appearance-chrome.js';
+import { getSessionAppearance, setSessionAppearance } from '../core/session-appearance.js';
 import { applyGround } from '../core/workspace-ground.js';
 import { persistBoardStyle } from '../kinds/board-style.js';
 import {
@@ -247,17 +248,8 @@ if (zoomTypeFit) zoomTypeFit.onclick = fitView;
 
 // —— Canvas toolbar: diagram theme + export + UI theme ——
 
-const KIND_THEME_KEY = 'drawer.kindTheme';
 function currentKindTheme() {
-  if (diagramSourceEl && diagramSourceEl.value && DrawerStyleLine && typeof DrawerStyleLine.appearanceFromStyleToken === 'function') {
-    return DrawerStyleLine.appearanceFromStyleToken(
-      DrawerStyleLine.splitRendererStyle(diagramSourceEl.value).token
-    );
-  }
-  const v = localStorage.getItem(KIND_THEME_KEY) || '';
-  return BoxesThemes && typeof BoxesThemes.resolveAppearance === 'function'
-    ? BoxesThemes.resolveAppearance(v)
-    : (v === 'dark' ? 'dark' : 'light');
+  return getSessionAppearance();
 }
 const MAX_WIDTH_KEY = 'drawer.boardMaxWidth';
 const MAX_WIDTH_DEFAULT = 0;
@@ -333,10 +325,7 @@ function applyBoardThemeToPreview() {
   applyPeleThemeVars(t);
 }
 function applyKindTheme(theme, opts) {
-  const t = (BoxesThemes && typeof BoxesThemes.resolveAppearance === 'function')
-    ? BoxesThemes.resolveAppearance(theme)
-    : (theme === 'dark' ? 'dark' : 'light');
-  localStorage.setItem(KIND_THEME_KEY, t);
+  const t = setSessionAppearance(theme);
   const themeSelect = document.getElementById('kindThemeSelect');
   if (themeSelect) themeSelect.value = t;
   document.documentElement.dataset.kindTheme = t;
@@ -347,9 +336,6 @@ function applyKindTheme(theme, opts) {
     else el.dataset.boardTheme = t;
   });
   applyPeleThemeVars(t);
-  if (opts && opts.persist && typeof persistBoardStyle === 'function') {
-    persistBoardStyle({ appearance: t });
-  }
   if (opts && opts.skipRender) return;
   if (typeof renderDiagram === 'function' && diagramSourceEl && diagramSourceEl.value.trim()) renderDiagram({ fit: false });
 }
@@ -386,7 +372,7 @@ try { syncStyleLayoutSections(); } catch (_e) {}
 
 const kindThemeSelect = $('#kindThemeSelect');
 if (kindThemeSelect) {
-  kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value, { persist: true }); });
+  kindThemeSelect.addEventListener('change', () => { applyKindTheme(kindThemeSelect.value); });
 }
 const _themeMo = new MutationObserver(() => {
   const t = document.documentElement.dataset.kindTheme || 'light';

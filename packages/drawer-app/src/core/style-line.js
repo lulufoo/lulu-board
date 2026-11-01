@@ -203,9 +203,8 @@ import * as Token from '../../../board-core/style-token.js';
     return Token.resolveFields(Token.decodeStylePayload(raw));
   }
 
-  function mermaidStyleToken(theme, typeStep, viewport) {
+  function mermaidStyleToken(_theme, typeStep, viewport) {
     var data = Token.authoredFields({
-      appearance: theme,
       font_size: Token.clampTypeStep(typeStep),
       viewport: viewport,
     });

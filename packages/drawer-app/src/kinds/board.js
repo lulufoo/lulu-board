@@ -1213,8 +1213,6 @@ function syncBoardStyleChrome(board) {
   emit("applyBoardTypeStep", next.font_size, false, false);
   if (typeof BoxesRender.setLinkRouteStyle === "function") BoxesRender.setLinkRouteStyle(next.link_route);
   syncBoardLinkRouteButton();
-  var themeSelect = document.getElementById("kindThemeSelect");
-  if (themeSelect) themeSelect.value = next.appearance || "light";
 }
 function commitBoardMaxWidth() {
   if (!boardMaxWidthInput || !selectedBoardNode) return;

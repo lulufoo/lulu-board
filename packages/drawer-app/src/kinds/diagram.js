@@ -5,6 +5,7 @@ import { register, emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyGround } from '../core/workspace-ground.js';
 import { applyChrome } from '../core/appearance-chrome.js';
+import { getSessionAppearance } from '../core/session-appearance.js';
 import FlowchartTypeScale from '../core/flowchart-type-scale.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerEarlyHead from '../core/early-head.js';
@@ -186,8 +187,7 @@ function previewHasPaint(root) {
 }
 
 function documentAppearance() {
-  var token = DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token;
-  return DrawerStyleLine.appearanceFromStyleToken(token);
+  return getSessionAppearance();
 }
 
 function applyDocumentGround() {
@@ -219,9 +219,7 @@ function finishCanvasView(opts) {
 function syncMermaidStyleChrome(body) {
   if (!DrawerStyleLine) return;
   var styled = DrawerStyleLine.splitRendererStyle(body);
-  var theme = DrawerStyleLine.appearanceFromStyleToken(styled.token);
   var step = DrawerStyleLine.typeStepFromStyleToken(styled.token);
-  emit("applyKindTheme", theme, { persist: false, skipRender: true });
   emit("applyBoardTypeStep", step, false, false);
 }
 
@@ -342,12 +340,7 @@ function renderMindmap(opts) {
     return;
   }
   try {
-    var theme = "light";
-    if (DrawerStyleLine) {
-      theme = DrawerStyleLine.appearanceFromStyleToken(
-        DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token
-      ) || "light";
-    }
+    var theme = getSessionAppearance();
     var layout = currentMindmapLayout();
     var result = MindmapEdit.render(body, { layout: layout, theme: theme, id: "mm" });
     if (result && result.errors && result.errors.length && !result.svg) {

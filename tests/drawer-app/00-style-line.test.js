@@ -42,12 +42,12 @@ function b64(obj) {
   assert.strictEqual(Style.joinRendererStyle('classic', 'boxes "A"\n'), 'style classic\nboxes "A"\n');
   assert.strictEqual(Style.mermaidStyleToken('classic'), '');
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
-  assert.strictEqual(Style.mermaidStyleToken('dark'), b64({ appearance: 'dark' }));
+  assert.strictEqual(Style.mermaidStyleToken('dark'), '');
   assert.strictEqual(Style.appearanceFromStyleToken('pastel'), 'light');
   assert.strictEqual(Style.appearanceFromStyleToken('kami'), 'light');
   assert.strictEqual(Style.appearanceFromStyleToken(b64({ theme: 'pastel' })), 'light');
   assert.strictEqual(Style.appearanceFromStyleToken(b64({ color: 'classic' })), 'light');
-  assert.strictEqual(Style.appearanceFromStyleToken(b64({ appearance: 'dark' })), 'dark');
+  assert.strictEqual(Style.appearanceFromStyleToken(b64({ appearance: 'dark' })), 'light');
   assert.strictEqual(Style.paletteFromStyleToken('pastel'), 'default');
   assert.strictEqual(Style.mermaidStyleToken('classic', 0), '');
   assert.strictEqual(Style.mermaidStyleToken('default', 0), '');
@@ -146,9 +146,9 @@ function b64(obj) {
   const chrome = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
   const shell = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
-  assert.ok(/persistBoardStyle/.test(chrome), 'theme click can persist board style');
-  assert.match(chrome, /persistBoardStyle\(\{ appearance: t \}\)/, 'theme click persists appearance, not palette');
-  assert.match(chrome, /resolveAppearance/, 'kind theme resolves appearance ids');
+  assert.ok(/persistBoardStyle/.test(chrome), 'font size and max width still persist board style');
+  assert.doesNotMatch(chrome, /persistBoardStyle\(\{ appearance/, 'theme click does not write appearance into the document');
+  assert.match(chrome, /setSessionAppearance/, 'theme click keeps appearance in session memory');
   assert.match(chrome, /applyGround\(document\.documentElement, t\)/, 'theme click paints the canvas ground');
   const boardJs = ['board.js', 'board-style.js', 'diagram.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');
@@ -164,8 +164,8 @@ function b64(obj) {
   );
   assert.deepStrictEqual(
     Token.authoredFields({ appearance: 'dark', font_size: 0, max_width: 0 }),
-    { appearance: 'dark' },
-    'shared fields omit defaults',
+    {},
+    'shared fields omit appearance and defaults',
   );
   assert.deepStrictEqual(
     Token.authoredFields({ appearance: 'light', font_size: 2, max_width: 2 }),
@@ -216,14 +216,16 @@ function b64(obj) {
     {},
   );
   assert.strictEqual(Style.persistStyleToken('', { palette: 'classic' }), '');
-  assert.deepStrictEqual(
-    Token.decodeStylePayload(Style.persistStyleToken('', { appearance: 'dark' })),
-    { appearance: 'dark' },
+  assert.strictEqual(Style.persistStyleToken('', { appearance: 'dark' }), '');
+  assert.strictEqual(
+    Style.persistStyleToken(b64({ theme: 'pastel', background: 'dusk', color: 'classic', palette: 'classic' }), { appearance: 'dark' }),
+    '',
+    'write drops dead theme, color, background, palette, and appearance keys',
   );
   assert.deepStrictEqual(
-    Token.decodeStylePayload(Style.persistStyleToken(b64({ theme: 'pastel', background: 'dusk', color: 'classic', palette: 'classic' }), { appearance: 'dark' })),
-    { appearance: 'dark' },
-    'write drops dead theme, color, background, and palette keys',
+    Token.decodeStylePayload(Style.persistStyleToken(b64({ appearance: 'dark', font_size: 2 }), { font_size: 2 })),
+    { font_size: 2 },
+    'write strips leftover appearance',
   );
   assert.ok(!Object.prototype.hasOwnProperty.call(Style.fieldsFromStyleToken(''), 'background'));
   const stale = Style.persistStyleToken(b64({ theme: 'pastel', type_step: 3 }), { palette: 'classic' });

@@ -24,7 +24,7 @@ assert.match(build, /snapdom\.mjs/, 'build ships SnapDOM');
 assert.match(exportPng, /import\s*\{\s*snapdom\s*\}\s*from\s*['"]\.\/snapdom\.mjs['"]/, 'uses SnapDOM');
 assert.match(exportPng, /paintGround\(context, output, cropped\.surfaceSize, documentAppearance\(\)\)/, 'paints the document appearance ground offscreen');
 assert.doesNotMatch(exportPng, /documentGroundId/, 'export does not read a retired background id');
-assert.match(exportPng, /appearanceFromStyleToken/, 'export reads appearance from the style token');
+assert.match(exportPng, /getSessionAppearance/, 'export reads the session appearance');
 assert.match(exportPng, /function findExportInkBounds/, 'measures visible content before cropping');
 assert.match(exportPng, /cropExportCanvas\(captured, surfaceSize\)/, 'crops from visible content bounds');
 assert.match(exportPng, /function saveExportBlob/, 'File and PNG share one save helper');

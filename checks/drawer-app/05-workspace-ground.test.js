@@ -51,7 +51,7 @@ assert.match(
   /applyDocumentGround\(\)/,
   'opening a document reapplies the document appearance ground',
 );
-assert.match(diagram, /appearanceFromStyleToken/, 'document ground reads appearance from the style token');
+assert.match(diagram, /getSessionAppearance/, 'document ground reads the session appearance');
 assert.match(diagram, /applyChrome\(document\.documentElement, appearance\)/, 'opening a document reapplies dock chrome');
 assert.match(
   diagram.slice(diagram.indexOf('BoxesRender.render')),

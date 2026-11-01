@@ -5,6 +5,7 @@ import Sketch from '../kinds/sketch.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { kindTemplateFileName } from '../core/kind-template.js';
 import { paintGround } from '../core/workspace-ground.js';
+import { getSessionAppearance } from '../core/session-appearance.js';
 import { register, call } from '../core/hooks.js';
 import { exportStem, showCopyTip } from './render-io.js';
 import {
@@ -289,8 +290,7 @@ async function captureSketchCanvas(frame) {
 }
 
 function documentAppearance() {
-  const token = DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token;
-  return DrawerStyleLine.appearanceFromStyleToken(token);
+  return getSessionAppearance();
 }
 
 export async function exportPng() {
