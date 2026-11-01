@@ -9,16 +9,22 @@ assert.strictEqual(resolveAppearance(''), 'light');
 assert.strictEqual(resolveAppearance('dark'), 'dark');
 assert.strictEqual(resolveAppearance('light'), 'light');
 
-const table = getAppearance();
-assert.strictEqual(table.id, 'light');
-assert.strictEqual(getAppearance('nope').id, 'light');
-assert.deepStrictEqual(Object.keys(table).sort(), [
+const KEYS = [
   'chrome', 'diagram', 'dock', 'ground', 'halo', 'id', 'note', 'page', 'source',
-]);
-assert.deepStrictEqual(table.ground, { background: '#fff', dot: '#dfe7ea' });
-assert.deepStrictEqual(resolveBackground(), table.ground);
-assert.deepStrictEqual(resolveBackground('dark'), table.ground, 'Dark table is not hung yet');
-assert.strictEqual(get('default').colors[0], table.diagram.colors[0]);
-assert.strictEqual(get('default').color, table.diagram.color);
+];
+const light = getAppearance();
+const dark = getAppearance('dark');
+assert.strictEqual(light.id, 'light');
+assert.strictEqual(dark.id, 'dark');
+assert.strictEqual(getAppearance('nope').id, 'light');
+assert.deepStrictEqual(Object.keys(light).sort(), KEYS);
+assert.deepStrictEqual(Object.keys(dark).sort(), KEYS);
+assert.deepStrictEqual(light.ground, { background: '#fff', dot: '#dfe7ea' });
+assert.deepStrictEqual(dark.ground, { background: '#14110e', dot: '#3f3830' });
+assert.deepStrictEqual(resolveBackground(), light.ground);
+assert.deepStrictEqual(resolveBackground('dark'), dark.ground);
+assert.notDeepStrictEqual(dark.diagram.colors, light.diagram.colors);
+assert.strictEqual(get('default').colors[0], light.diagram.colors[0]);
+assert.strictEqual(get('default').color, light.diagram.color);
 
 console.log('ok board-themes appearance');
