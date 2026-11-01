@@ -21,7 +21,7 @@ boxes Demo
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    palette: 'default',
+    appearance: 'light',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
@@ -38,7 +38,7 @@ style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    palette: 'default',
+    appearance: 'light',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
@@ -59,7 +59,7 @@ style not-valid-base64!!!
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    palette: 'default',
+    appearance: 'light',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
@@ -84,6 +84,8 @@ item HERO type text "Hi"
 `);
   const next = Render.updateStyle(source, { palette: 'pastel', max_width: 2, link_route: 'stagger' });
   assert.ok(/^style /m.test(next), next);
+  const token = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
+  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { max_width: 2 });
   const back = Render.updateStyle(next, { palette: 'default', max_width: 0, link_route: 'stagger' });
   assert.ok(!/^style /m.test(back), back);
 }
@@ -143,7 +145,7 @@ style ${payload}
 item HERO type text "Hi"
 `));
   assert.deepStrictEqual(Render.resolveStyle(board), {
-    palette: 'pastel',
+    appearance: 'light',
     max_width: 0,
     link_route: 'stagger',
     font_size: 0,
@@ -151,7 +153,6 @@ item HERO type text "Hi"
   });
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    palette: 'pastel',
     viewport: { scale: 1.2, cx: 41, cy: 80 },
   });
 }
@@ -169,8 +170,7 @@ item HERO type text "Hi"
   // Old pan-pixel viewports drop out of the style line: the app fits once instead.
   const stale = b64({ palette: 'pastel', viewport: { scale: 0.8, x: 12, y: 24 } });
   const board = Render.parse(`boxes Demo\nstyle ${stale}\nitem HERO type text "Hi"\n`);
-  const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), { palette: 'pastel' });
+  assert.ok(!/^style /m.test(Render.serialize(board)), 'dropped palette leaves no style line');
 }
 
 {
@@ -299,15 +299,9 @@ item HERO type text "Hi"
   const next = Render.updateStyle(source, { background: 'dusk' });
   assert.ok(!/^style /m.test(next), next);
   const themed = Render.updateStyle(source, { palette: 'classic' });
-  const token = themed.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    palette: 'classic',
-  });
+  assert.ok(!/^style /m.test(themed), themed);
   const dead = Render.updateStyle(themed, { theme: 'pastel', color: 'classic', background: 'dusk' });
-  const deadToken = dead.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
-  assert.deepStrictEqual(JSON.parse(Buffer.from(deadToken, 'base64').toString('utf8')), {
-    palette: 'classic',
-  });
+  assert.ok(!/^style /m.test(dead), dead);
 }
 
 {
@@ -316,13 +310,11 @@ item HERO type text "Hi"
   assert.strictEqual(Render.resolveStyle(board).font_size, 0);
   const token = Render.serialize(board).split('\n')[1].replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(token, 'base64').toString('utf8')), {
-    palette: 'pastel',
     type_step: 3,
   });
   const next = Render.updateStyle(Render.serialize(board), { font_size: 2 });
   const nextToken = next.split('\n').find((line) => /^style /.test(line)).replace(/^style\s+/, '').trim();
   assert.deepStrictEqual(JSON.parse(Buffer.from(nextToken, 'base64').toString('utf8')), {
-    palette: 'pastel',
     font_size: 2,
     type_step: 3,
   });

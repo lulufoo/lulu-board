@@ -1,12 +1,12 @@
 /* Shared style token: field KV + JSON ↔ base64.
  * Board `style` and mermaid `%% style` both use these keys. */
 import { ORDER, resolveId } from '../board-themes/index.js';
-import { getAppearance } from '../board-themes/appearance/index.js';
+import { DEFAULT_APPEARANCE, getAppearance, resolveAppearance } from '../board-themes/appearance/index.js';
 
 export const THEMES = Object.fromEntries(ORDER.map((id) => [id, 1]));
 export const ROUTES = { trunk: 1, stagger: 1, straight: 1 };
 export const DEFAULTS = {
-  palette: 'default',
+  appearance: DEFAULT_APPEARANCE,
   max_width: 0,
   link_route: 'stagger',
   font_size: 0,
@@ -18,8 +18,8 @@ export const FACTOR = 1.125;
 export const MIN_PX = 8;
 export const TYPE_STEP_MIN = STEP_MIN;
 export const TYPE_STEP_MAX = STEP_MAX;
-const FIELD_KEYS = { palette: 1, max_width: 1, link_route: 1, font_size: 1, viewport: 1 };
-const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1, theme: 1, color: 1, background: 1 };
+const FIELD_KEYS = { appearance: 1, max_width: 1, link_route: 1, font_size: 1, viewport: 1 };
+const SKIP_LEFTOVER = { view: 1, viewport: 1, ids: 1, theme: 1, color: 1, background: 1, palette: 1 };
 
 export function clampStep(raw) {
   const n = Math.round(Number(raw));
@@ -87,8 +87,8 @@ function isDefaultViewport(raw) {
 export function authoredFields(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const out = {};
-  const palette = src.palette != null && src.palette !== '' ? resolveThemeId(src.palette) : '';
-  if (palette && palette !== DEFAULTS.palette) out.palette = palette;
+  const appearance = src.appearance != null && src.appearance !== '' ? resolveAppearance(src.appearance) : '';
+  if (appearance && appearance !== DEFAULTS.appearance) out.appearance = appearance;
   if (src.max_width != null && src.max_width !== '') {
     const width = clampStep(src.max_width);
     if (width !== DEFAULTS.max_width) out.max_width = width;
@@ -110,7 +110,7 @@ export function resolveFields(raw) {
   const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const viewport = authoredViewport(src.viewport || src.view);
   return {
-    palette: src.palette != null && src.palette !== '' ? resolveThemeId(src.palette) : DEFAULTS.palette,
+    appearance: src.appearance == null || src.appearance === '' ? DEFAULTS.appearance : resolveAppearance(src.appearance),
     max_width: src.max_width == null || src.max_width === '' ? DEFAULTS.max_width : clampStep(src.max_width),
     link_route: src.link_route == null || src.link_route === '' ? DEFAULTS.link_route : resolveLinkRoute(src.link_route),
     font_size: src.font_size == null || src.font_size === '' ? DEFAULTS.font_size : clampTypeStep(src.font_size),

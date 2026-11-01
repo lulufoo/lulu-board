@@ -20,7 +20,7 @@ Done when the returned short `url` is shown.
 Three lines. Payloads have no braces.
 
 1. First line is `sketch "<title>"`. The quotes hold the title. Always write a short title that names the diagram.
-2. `style`, then one base64 token, is the camera and palette. On an update, leave that line unchanged. Omit it when minting.
+2. `style`, then one base64 token, is the camera and appearance. On an update, leave that line unchanged. Omit it when minting.
 3. `content`, then one base64 token, is the fragment.
 
 ## Fragment

@@ -25,7 +25,7 @@ export function persistBoardStyle(patch) {
     if (kind === "sketch" || (DrawerStyleLine && DrawerStyleLine.isMermaidKind
       ? DrawerStyleLine.isMermaidKind(kind)
       : (kind === "flowchart" || kind === "mindmap" || kind === "mermaid-unsupported"))) {
-      if (!patch || (patch.palette == null && patch.font_size == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
+      if (!patch || (patch.appearance == null && patch.font_size == null && !Object.prototype.hasOwnProperty.call(patch, "viewport"))) return;
       nextBody = persistMermaidStyle(body, patch);
     } else {
       if (typeof BoxesRender === "undefined" || typeof BoxesRender.updateStyle !== "function") return;

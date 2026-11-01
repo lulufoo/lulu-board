@@ -40,20 +40,23 @@ function b64(obj) {
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).token, 'classic');
   assert.strictEqual(Style.splitRendererStyle('%% style classic\n' + flow).body, flow);
   assert.strictEqual(Style.joinRendererStyle('classic', 'boxes "A"\n'), 'style classic\nboxes "A"\n');
-  assert.strictEqual(Style.mermaidStyleToken('classic'), Token.encodeStylePayload({ palette: 'classic' }));
-  assert.strictEqual(Style.mermaidStyleToken('classic'), b64({ palette: 'classic' }));
+  assert.strictEqual(Style.mermaidStyleToken('classic'), '');
   assert.strictEqual(Style.mermaidStyleToken('default'), '');
-  assert.strictEqual(Style.paletteFromStyleToken('pastel'), 'pastel');
-  assert.strictEqual(Style.paletteFromStyleToken('kami'), 'default');
-  assert.strictEqual(Style.paletteFromStyleToken(b64({ theme: 'pastel' })), 'default');
-  assert.strictEqual(Style.paletteFromStyleToken(b64({ color: 'classic' })), 'default');
-  assert.strictEqual(Style.mermaidStyleToken('classic', 0), b64({ palette: 'classic' }));
+  assert.strictEqual(Style.mermaidStyleToken('dark'), b64({ appearance: 'dark' }));
+  assert.strictEqual(Style.appearanceFromStyleToken('pastel'), 'light');
+  assert.strictEqual(Style.appearanceFromStyleToken('kami'), 'light');
+  assert.strictEqual(Style.appearanceFromStyleToken(b64({ theme: 'pastel' })), 'light');
+  assert.strictEqual(Style.appearanceFromStyleToken(b64({ color: 'classic' })), 'light');
+  assert.strictEqual(Style.appearanceFromStyleToken(b64({ appearance: 'dark' })), 'dark');
+  assert.strictEqual(Style.paletteFromStyleToken('pastel'), 'default');
+  assert.strictEqual(Style.mermaidStyleToken('classic', 0), '');
   assert.strictEqual(Style.mermaidStyleToken('default', 0), '');
   assert.strictEqual(Style.typeStepFromStyleToken('classic'), 0);
   assert.strictEqual(Style.typeStepFromStyleToken(''), 0);
   const stepped = Style.mermaidStyleToken('classic', 2);
-  assert.strictEqual(stepped, b64({ palette: 'classic', font_size: 2 }));
-  assert.strictEqual(Style.paletteFromStyleToken(stepped), 'classic');
+  assert.strictEqual(stepped, b64({ font_size: 2 }));
+  assert.strictEqual(Style.appearanceFromStyleToken(stepped), 'light');
+  assert.strictEqual(Style.paletteFromStyleToken(stepped), 'default');
   assert.strictEqual(Style.typeStepFromStyleToken(stepped), 2);
   const defaultStepped = Style.mermaidStyleToken('default', -1);
   assert.ok(defaultStepped);
@@ -63,7 +66,7 @@ function b64(obj) {
   assert.match(written, /^%% style /);
   const split = Style.splitRendererStyle(written);
   assert.strictEqual(Style.typeStepFromStyleToken(split.token), 2);
-  assert.strictEqual(Style.paletteFromStyleToken(split.token), 'classic');
+  assert.strictEqual(Style.appearanceFromStyleToken(split.token), 'light');
 }
 
 {
@@ -152,17 +155,17 @@ function b64(obj) {
   assert.ok(/typeStepFromStyleToken/.test(boardJs), 'mermaid style chrome reads font_size');
   assert.ok(/persistStyleToken\(styled\.token, patch/.test(boardJs), 'mermaid persist merges the current token with the patch');
   assert.strictEqual(
-    Style.encodeStylePayload({ palette: 'classic' }),
-    Token.encodeStylePayload({ palette: 'classic' }),
+    Style.encodeStylePayload({ appearance: 'dark' }),
+    Token.encodeStylePayload({ appearance: 'dark' }),
     'mermaid encode is the shared token',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ palette: 'classic', font_size: 0, max_width: 0 }),
-    { palette: 'classic' },
+    Token.authoredFields({ appearance: 'dark', font_size: 0, max_width: 0 }),
+    { appearance: 'dark' },
     'shared fields omit defaults',
   );
   assert.deepStrictEqual(
-    Token.authoredFields({ palette: 'default', font_size: 2, max_width: 2 }),
+    Token.authoredFields({ appearance: 'light', font_size: 2, max_width: 2 }),
     { font_size: 2, max_width: 2 },
     'shared fields keep non-default width and step',
   );
@@ -185,7 +188,7 @@ function b64(obj) {
   assert.deepStrictEqual(Token.resolveFields({}).viewport, { scale: 1, cx: 0, cy: 0 });
   assert.strictEqual(
     Style.mermaidStyleToken('classic', 2),
-    Token.encodeStylePayload(Token.authoredFields({ palette: 'classic', font_size: 2 })),
+    Token.encodeStylePayload(Token.authoredFields({ appearance: 'classic', font_size: 2 })),
     'mermaid token is shared authored fields',
   );
   assert.ok(
@@ -195,10 +198,9 @@ function b64(obj) {
     ),
     'flowchart still does not write max_width',
   );
-  assert.ok(/patch\.palette == null && patch\.font_size == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts viewport without palette');
+  assert.ok(/patch\.appearance == null && patch\.font_size == null && !Object\.prototype\.hasOwnProperty\.call\(patch, "viewport"\)/.test(boardJs), 'flowchart persist accepts viewport without appearance');
   const withView = Style.mermaidStyleToken('classic', 2, { scale: 0.8, cx: 10, cy: 20 });
   assert.deepStrictEqual(Token.decodeStylePayload(withView), {
-    palette: 'classic',
     font_size: 2,
     viewport: { scale: 0.8, cx: 10, cy: 20 },
   });
@@ -208,23 +210,26 @@ function b64(obj) {
   assert.strictEqual(Style.persistStyleToken('', { color: 'pastel' }), '');
   assert.deepStrictEqual(
     Token.decodeStylePayload(Style.persistStyleToken('', { palette: 'classic' })),
-    { palette: 'classic' },
+    {},
+  );
+  assert.strictEqual(Style.persistStyleToken('', { palette: 'classic' }), '');
+  assert.deepStrictEqual(
+    Token.decodeStylePayload(Style.persistStyleToken('', { appearance: 'dark' })),
+    { appearance: 'dark' },
   );
   assert.deepStrictEqual(
-    Token.decodeStylePayload(Style.persistStyleToken(b64({ theme: 'pastel', background: 'dusk', color: 'classic' }), { palette: 'classic' })),
-    { palette: 'classic' },
-    'write drops dead theme, color, and background keys',
+    Token.decodeStylePayload(Style.persistStyleToken(b64({ theme: 'pastel', background: 'dusk', color: 'classic', palette: 'classic' }), { appearance: 'dark' })),
+    { appearance: 'dark' },
+    'write drops dead theme, color, background, and palette keys',
   );
   assert.ok(!Object.prototype.hasOwnProperty.call(Style.fieldsFromStyleToken(''), 'background'));
   const stale = Style.persistStyleToken(b64({ theme: 'pastel', type_step: 3 }), { palette: 'classic' });
   assert.deepStrictEqual(Token.decodeStylePayload(stale), {
-    palette: 'classic',
     type_step: 3,
   });
   assert.strictEqual(Style.typeStepFromStyleToken(stale), 0);
   const sized = Style.persistStyleToken(stale, { font_size: 2 });
   assert.deepStrictEqual(Token.decodeStylePayload(sized), {
-    palette: 'classic',
     font_size: 2,
     type_step: 3,
   });

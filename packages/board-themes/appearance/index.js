@@ -2,7 +2,7 @@
 import light from './light.js';
 
 export const DEFAULT_APPEARANCE = 'light';
-export const APPEARANCES = { light: 1 };
+export const APPEARANCES = { light: 1, dark: 1 };
 
 const TABLES = { light: light };
 
@@ -12,5 +12,5 @@ export function resolveAppearance(id) {
 }
 
 export function getAppearance(id) {
-  return TABLES[resolveAppearance(id)];
+  return TABLES[resolveAppearance(id)] || light;
 }
