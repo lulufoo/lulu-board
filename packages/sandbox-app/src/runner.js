@@ -1,0 +1,97 @@
+/* Runner page logic. Mounts one Sketch fragment, reports its size, and captures it on request.
+ * Everything the page touches is injected, so Node tests drive it with a fake window.
+ * Fragment scripts run in this same document and are untrusted: they can lie about size or
+ * send junk, so Board validates every message. Nothing here holds a secret. */
+import {
+  parseRender,
+  parseCapture,
+  readyMessage,
+  sizeMessage,
+  capturedMessage,
+  errorMessage,
+} from './protocol.js';
+
+export function createRunner(env) {
+  var win = env.window;
+  var doc = env.document;
+  var toCanvas = env.toCanvas;
+  var rendered = false;
+  var lastW = 0;
+  var lastH = 0;
+
+  function post(message, transfer) {
+    // The runner has an opaque origin and cannot name its parent's origin; frame-ancestors decides who may embed it.
+    win.parent.postMessage(message, '*', transfer || []);
+  }
+
+  function measure() {
+    var root = doc.documentElement;
+    var body = doc.body;
+    if (!root || !body) return null;
+    var w = Math.ceil(root.scrollWidth);
+    var h = Math.ceil(Math.max(body.getBoundingClientRect().height, body.scrollHeight));
+    return w > 0 && h > 0 ? { width: w, height: h } : null;
+  }
+
+  function reportSize() {
+    var size = measure();
+    if (!size || (size.width === lastW && size.height === lastH)) return;
+    lastW = size.width;
+    lastH = size.height;
+    post(sizeMessage(size.width, size.height));
+  }
+
+  function mount(html) {
+    var body = doc.body;
+    var range = doc.createRange();
+    range.selectNodeContents(body);
+    // createContextualFragment keeps scripts runnable on insertion, unlike innerHTML.
+    body.appendChild(range.createContextualFragment(html));
+    reportSize();
+    if (typeof env.ResizeObserver === 'function') {
+      var observer = new env.ResizeObserver(reportSize);
+      observer.observe(doc.documentElement);
+      observer.observe(body);
+    }
+    // Late images and fonts change the height without resizing an observed box in some engines.
+    body.addEventListener('load', reportSize, true);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(reportSize);
+  }
+
+  async function capture(request) {
+    try {
+      if (!rendered) throw new Error('nothing rendered');
+      if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
+      var canvas = await toCanvas(doc.documentElement, {
+        backgroundColor: null,
+        dpr: 1,
+        scale: request.scale,
+      });
+      var bitmap = await env.createImageBitmap(canvas);
+      post(capturedMessage(request.id, bitmap), [bitmap]);
+    } catch (err) {
+      post(errorMessage(request.id, err && err.message));
+    }
+  }
+
+  function onMessage(event) {
+    if (event.source !== win.parent) return;
+    var render = parseRender(event.data);
+    if (render) {
+      // One render per runner load: Board mounts a fresh frame for every sketch.
+      if (rendered) return;
+      rendered = true;
+      mount(render.html);
+      return;
+    }
+    var request = parseCapture(event.data);
+    if (request) capture(request);
+  }
+
+  function start() {
+    win.addEventListener('message', onMessage);
+    post(readyMessage());
+  }
+
+  return { start: start, onMessage: onMessage };
+}
