@@ -40,7 +40,7 @@ The viewer mounts the fragment in its own document. Write for this environment.
 3. Scripts run when the sketch mounts, inside the sandbox. They cannot reach Board's page, storage, or cookies. `fetch`, `XMLHttpRequest`, and `WebSocket` are blocked. Use a script to build the picture.
 4. The frame takes no pointer input. The canvas pans and zooms over it. Buttons, inputs, and links draw as pictures with no hover or click. Scripts get no pointer events, so click handlers and `:hover` do nothing.
 5. No network. Put every style, shape, glyph, and script in the fragment.
-6. The frame width follows the canvas. A root wider than the canvas widens the frame. The frame height fits the content. Give the root element an explicit width for a stable picture.
+6. The frame matches the picture on both axes, so the camera centers it. Give the root element an explicit width for a stable picture.
 
 ## Performance
 

@@ -75,7 +75,7 @@ export function renderSketch(opts) {
   // an escape.
   frame.setAttribute("sandbox", "allow-scripts");
   frame.setAttribute("scrolling", "no");
-  // Width follows #preview exactly like the fragment did as a block, so layout and saved cameras match.
+  // Width and height are replaced by the picture size. Until that arrives, a placeholder keeps the frame on screen.
   frame.style.cssText = "display:block;border:0;width:100%;height:800px;background:transparent;pointer-events:none;";
   frame.src = SKETCH_RUNNER_URL;
   var finished = false;
@@ -95,9 +95,9 @@ export function renderSketch(opts) {
     emit("finishCanvasView", opts);
   }
   function applySize(size) {
-    // A root wider than the canvas widens the frame, so nothing is clipped.
-    if (size.width > frame.clientWidth) frame.style.minWidth = size.width + "px";
-    if (size.height !== frame.offsetHeight) frame.style.height = size.height + "px";
+    // The frame is the picture. The camera then centers that box on the stage, on both axes.
+    if (size.width > 0) frame.style.width = size.width + "px";
+    if (size.height > 0) frame.style.height = size.height + "px";
   }
   var sent = false;
   var channel = { pending: new Map() };

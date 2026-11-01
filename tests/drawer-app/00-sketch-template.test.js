@@ -47,6 +47,9 @@ assert.match(mount, /parseCaptured\(event\.data\)/, 'A bitmap comes back through
 assert.match(mount, /failCaptures\("Sketch was replaced/, 'A replaced sketch fails its waiting captures');
 assert.match(mount, /CAPTURE_TIMEOUT_MS/, 'A silent runner cannot hold an export forever');
 assert.match(mount, /pointer-events:none/, 'Canvas keeps pan and zoom over the sketch');
+assert.match(mount, /frame\.style\.width = size\.width \+ "px"/, 'The frame width is the picture, so a narrower picture stays centered');
+assert.match(mount, /frame\.style\.height = size\.height \+ "px"/, 'The frame height is the picture, so the camera can center it vertically');
+assert.doesNotMatch(mount, /size\.width > frame\.clientWidth/, 'A narrower picture shrinks the frame instead of sticking to the left');
 assert.doesNotMatch(mount, /attachShadow/, 'Sketch does not share the Board document');
 assert.doesNotMatch(mount, /previewEl\.appendChild\(sketchFragmentRoot/, 'Fragment does not mount in the Board document');
 assert.match(html, /<link rel="preconnect" href="https:\/\/sandbox\.luluboard\.app">/, 'The runner connection is opened while the app loads');
