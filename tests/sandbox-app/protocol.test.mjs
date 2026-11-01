@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   SANDBOX_MSG,
   SANDBOX_MAX_EDGE,
+  SANDBOX_BLEED,
   renderMessage,
   captureMessage,
   readyMessage,
@@ -38,7 +39,15 @@ for (const bad of [
 assert.deepEqual(parseReady(readyMessage()), {});
 assert.equal(parseReady({ type: 'x' }), null);
 
-assert.deepEqual(parseSize(sizeMessage(100.2, 50)), { width: 101, height: 50 });
+assert.equal(SANDBOX_BLEED, 12, 'the runner keeps 12px on every side');
+assert.deepEqual(parseSize(sizeMessage(100.2, 50)), { width: 101, height: 50, bleed: 0 }, 'no bleed means the frame is the picture');
+assert.deepEqual(parseSize(sizeMessage(124, 74, 12)), { width: 124, height: 74, bleed: 12 });
+assert.deepEqual(parseSize({ type: SANDBOX_MSG.SIZE, width: 100, height: 50 }), { width: 100, height: 50, bleed: 0 }, 'an older runner sends no bleed');
+for (const badBleed of [-1, 0.5, 13, '12', NaN, Infinity, null, 25]) {
+  assert.equal(parseSize({ type: SANDBOX_MSG.SIZE, width: 200, height: 200, bleed: badBleed }).bleed, 0, `bleed ${String(badBleed)} is dropped`);
+}
+assert.equal(parseSize(sizeMessage(24, 100, 12)).bleed, 0, 'a bleed that leaves no picture is dropped');
+assert.equal(parseSize(sizeMessage(100, 24, 12)).bleed, 0, 'a bleed that leaves no picture is dropped');
 for (const bad of [
   sizeMessage(0, 10),
   sizeMessage(10, -1),

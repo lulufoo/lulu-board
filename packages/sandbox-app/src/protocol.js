@@ -16,6 +16,10 @@ export const SANDBOX_MAX_EDGE = 32768;
 export const SANDBOX_MAX_SCALE = 8;
 export const SANDBOX_MAX_ID_LENGTH = 64;
 
+/* Transparent room, in CSS px, the runner keeps on every side of a Sketch. A shadow, outline, or ring that spills
+ * past the picture is still drawn inside it; anything farther out is cut by the frame. */
+export const SANDBOX_BLEED = 12;
+
 function isObject(data) {
   return data !== null && typeof data === 'object';
 }
@@ -56,8 +60,10 @@ export function readyMessage() {
   return { type: SANDBOX_MSG.READY };
 }
 
-export function sizeMessage(width, height) {
-  return { type: SANDBOX_MSG.SIZE, width: width, height: height };
+/* width and height are the whole frame. bleed is the room on each side inside them, so the picture is
+ * (width - 2 * bleed) by (height - 2 * bleed). A runner that sends no bleed is a frame that is the picture. */
+export function sizeMessage(width, height, bleed) {
+  return { type: SANDBOX_MSG.SIZE, width: width, height: height, bleed: bleed || 0 };
 }
 
 export function capturedMessage(id, bitmap) {
@@ -72,10 +78,19 @@ export function parseReady(data) {
   return isObject(data) && data.type === SANDBOX_MSG.READY ? {} : null;
 }
 
+/* The bleed is untrusted too: anything but a whole-pixel room of at most SANDBOX_BLEED that still leaves a
+ * picture inside the frame is dropped to 0, which is the old frame-is-the-picture behavior. */
+function validBleed(bleed, width, height) {
+  return typeof bleed === 'number' && Number.isInteger(bleed) && bleed > 0 && bleed <= SANDBOX_BLEED
+    && width > bleed * 2 && height > bleed * 2;
+}
+
 export function parseSize(data) {
   if (!isObject(data) || data.type !== SANDBOX_MSG.SIZE) return null;
   if (!validEdge(data.width) || !validEdge(data.height)) return null;
-  return { width: Math.ceil(data.width), height: Math.ceil(data.height) };
+  var width = Math.ceil(data.width);
+  var height = Math.ceil(data.height);
+  return { width: width, height: height, bleed: validBleed(data.bleed, width, height) ? data.bleed : 0 };
 }
 
 /* The bitmap is only duck-typed here: ImageBitmap does not exist in Node. */

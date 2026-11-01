@@ -263,6 +263,8 @@ function getExportSketchFrame() {
 }
 
 async function captureSketchCanvas(frame) {
+  // The frame, not the picture: the runner captures its whole document, bleed included, so a shadow or ring that
+  // reaches past the picture edge is exported too.
   const bounds = Sketch.sketchWorldBounds(frame);
   if (!bounds) throw new Error('Diagram has no exportable size');
   const size = { width: Math.ceil(bounds.width), height: Math.ceil(bounds.height) };
