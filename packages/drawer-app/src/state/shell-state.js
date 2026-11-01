@@ -95,10 +95,6 @@ const boardAlignXTip = $("#board-align-x-tip");
 const boardAlignYEditor = $("#board-align-y-editor");
 const boardAlignYLabel = $("#board-align-y-label");
 const boardAlignYTip = $("#board-align-y-tip");
-const boardOrderField = $("#board-order-field");
-const boardOrderLabel = $("#board-order-label");
-const boardOrderPrev = $("#btn-board-order-prev");
-const boardOrderNext = $("#btn-board-order-next");
 const boardArrowEditor = $("#boardArrowEditor");
 const boardArrowLabel = $("#boardArrowLabel");
 const boardArrowField = $("#boardArrowField");
@@ -539,10 +535,6 @@ export {
   boardAlignYEditor,
   boardAlignYLabel,
   boardAlignYTip,
-  boardOrderField,
-  boardOrderLabel,
-  boardOrderPrev,
-  boardOrderNext,
   boardArrowEditor,
   boardArrowLabel,
   boardArrowField,

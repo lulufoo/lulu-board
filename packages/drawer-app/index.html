@@ -237,13 +237,6 @@
             <p class="props-hint props-hint-end" id="board-align-y-tip" hidden></p>
           </div>
         </div>
-        <div class="props-field" id="board-order-field" hidden>
-          <label class="props-label" id="board-order-label">Order</label>
-          <div class="props-seg" role="group" aria-labelledby="board-order-label">
-            <button type="button" class="props-seg-btn" id="btn-board-order-prev" title="Option+Up">Up</button>
-            <button type="button" class="props-seg-btn" id="btn-board-order-next" title="Option+Down">Down</button>
-          </div>
-        </div>
         <p class="props-hint" id="propsHint"></p>
         </div>
         <div id="props-you-panel" role="tabpanel" aria-labelledby="props-pane-you">
@@ -398,18 +391,14 @@
       <div class="props-head">
         <strong>Style</strong>
       </div>
-      <section class="style-block" aria-label="Theme">
-        <p class="style-section-label">Theme</p>
-        <select id="kindThemeSelect" aria-label="Diagram theme" hidden>
+      <section class="style-block" aria-label="Palette">
+        <p class="style-section-label">Palette</p>
+        <select id="kindThemeSelect" aria-label="Diagram palette" hidden>
           <option value="default">Default</option>
           <option value="classic">Classic</option>
           <option value="pastel">Pastel</option>
         </select>
         <div id="themeSelectHost"></div>
-      </section>
-      <section class="style-block" aria-label="Background">
-        <p class="style-section-label">Background</p>
-        <div id="groundSelectHost"></div>
       </section>
       <section class="style-block" id="boardFontSizeSection" hidden aria-label="Font size">
         <p class="style-section-label">Font Size</p>

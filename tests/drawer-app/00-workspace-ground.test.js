@@ -6,20 +6,8 @@ const Ground = require('../../packages/drawer-app/src/core/workspace-ground.js')
 {
   const spec = Ground.resolveGround();
   assert.deepStrictEqual(spec, { background: '#fff', dot: '#dfe7ea', dotRadius: 1, step: 24 });
-  assert.deepStrictEqual(Ground.resolveGround('paper'), spec);
   spec.step = 99;
   assert.strictEqual(Ground.resolveGround().step, 24, 'resolveGround hands out a copy');
-}
-
-{
-  assert.deepStrictEqual(Ground.resolveGround('dusk'), {
-    background: '#bbc7dc',
-    dot: '#9facc1',
-    dotRadius: 1,
-    step: 24,
-  });
-  assert.deepStrictEqual(Ground.resolveGround('nope'), Ground.resolveGround('paper'));
-  assert.deepStrictEqual(Ground.listGrounds().map((ground) => ground.id), ['paper', 'mist', 'sage', 'dusk']);
 }
 
 {

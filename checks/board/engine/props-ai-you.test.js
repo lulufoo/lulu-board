@@ -26,7 +26,7 @@ assert.ok(!/class="shell-tab"/.test(propsHtml), 'Properties tabs do not reuse Mi
 assert.ok(/data-props-pane="ai"/.test(propsHtml), 'default pane is AI');
 assert.ok(youAt > aiAt, 'You panel follows AI panel');
 
-['boardIdWrap', 'boardTypeField', 'boardShapeWrap', 'boardArrowWrap', 'boardIconField', 'boardTitleField', 'boardDirField', 'board-align-x-field', 'board-align-y-field', 'board-order-field'].forEach((id) => {
+['boardIdWrap', 'boardTypeField', 'boardShapeWrap', 'boardArrowWrap', 'boardIconField', 'boardTitleField', 'boardDirField', 'board-align-x-field', 'board-align-y-field'].forEach((id) => {
   assert.ok(aiHtml.includes('id="' + id + '"'), id + ' is on AI');
   assert.ok(!youHtml.includes('id="' + id + '"'), id + ' is not on You');
 });

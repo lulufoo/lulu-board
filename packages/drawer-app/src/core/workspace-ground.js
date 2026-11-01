@@ -1,26 +1,13 @@
-/* Workspace ground: the one spec for the canvas background.
- * The canvas CSS reads it through custom properties (applyGround); PNG export paints it (paintGround).
- * Preset ids come from the style token; this file owns the colors. */
+/* Workspace ground: the locked paper canvas.
+ * Colors come from resolveBackground; the canvas CSS reads them through custom properties (applyGround); PNG export paints them (paintGround). */
 import { resolveBackground } from '../../../board-core/style-token.js';
 
 const STEP = 24;
 const DOT_RADIUS = 1;
 
-const GROUNDS = [
-  { id: 'paper', name: 'Paper', background: '#fff', dot: '#dfe7ea' },
-  { id: 'mist', name: 'Mist', background: '#d6e8f2', dot: '#b9ccd6' },
-  { id: 'sage', name: 'Sage', background: '#b4ccc3', dot: '#98b1a8' },
-  { id: 'dusk', name: 'Dusk', background: '#bbc7dc', dot: '#9facc1' },
-];
-
-export function listGrounds() {
-  return GROUNDS.map((ground) => ({ ...ground }));
-}
-
-export function resolveGround(id) {
-  const resolved = resolveBackground(id);
-  const found = GROUNDS.find((ground) => ground.id === resolved);
-  return { background: found.background, dot: found.dot, dotRadius: DOT_RADIUS, step: STEP };
+export function resolveGround() {
+  const colors = resolveBackground();
+  return { background: colors.background, dot: colors.dot, dotRadius: DOT_RADIUS, step: STEP };
 }
 
 function buildGroundImage(ground) {
@@ -30,16 +17,16 @@ function buildGroundImage(ground) {
   return 'url("data:image/svg+xml;utf8,' + svg.replace(/#/g, '%23') + '")';
 }
 
-export function applyGround(root, id) {
-  const ground = resolveGround(id);
+export function applyGround(root) {
+  const ground = resolveGround();
   root.style.setProperty('--ground-bg', ground.background);
   root.style.setProperty('--ground-image', buildGroundImage(ground));
   root.style.setProperty('--ground-size', ground.step + 'px ' + ground.step + 'px');
 }
 
 /* Dots sit at each cell's center, like the SVG tile. Edge pixels stay half transparent. */
-export function paintGround(ctx, canvas, surfaceSize, id) {
-  const ground = resolveGround(id);
+export function paintGround(ctx, canvas, surfaceSize) {
+  const ground = resolveGround();
   const pixelRatio = canvas.width / surfaceSize.width;
   const step = ground.step * pixelRatio;
   const radius = ground.dotRadius * pixelRatio;
@@ -58,7 +45,6 @@ export function paintGround(ctx, canvas, surfaceSize, id) {
 }
 
 const DrawerWorkspaceGround = {
-  listGrounds: listGrounds,
   resolveGround: resolveGround,
   applyGround: applyGround,
   paintGround: paintGround,

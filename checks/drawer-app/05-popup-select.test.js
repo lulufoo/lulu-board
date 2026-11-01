@@ -29,8 +29,8 @@ assert.match(popup, /function setDisabled/, 'listbox can disable');
 assert.match(css, /\.ps-trigger/, 'listbox trigger is styled');
 assert.match(css, /\.ps-icon\.is-glyph/, 'theme chips are not dotted discs');
 assert.match(css, /select\.ps-bound/, 'bound native selects are visually hidden');
-assert.match(html, /id="groundSelectHost"/, 'background listbox has a host');
-assert.match(main, /import '\.\/chrome\/ground-picker\.js'/, 'background picker is booted from main');
+assert.doesNotMatch(html, /groundSelectHost/, 'background listbox is gone');
+assert.doesNotMatch(main, /ground-picker/, 'background picker is not booted');
 assert.match(main, /import '\.\/chrome\/native-selects\.js'/, 'remaining dock selects are bound');
 const natives = read('packages/drawer-app/src/chrome/native-selects.js');
 ['boardTypeEditor', 'boardArrowEditor', 'boardDirEditor', 'board-align-x-editor', 'board-align-y-editor', 'flowchartTypeEditor', 'flowchartDirEditor', 'mindmapLayoutEditor', 'boardShapeEditor'].forEach((id) => {
@@ -41,9 +41,6 @@ assert.match(html, /id="boardShapeHost"/, 'Shape has a listbox host');
 assert.doesNotMatch(html, /props-shape-btn/, 'Shape segment buttons are gone');
 assert.doesNotMatch(html, /id="boardCapEditor"/, 'Width Cap leftover select is gone');
 assert.doesNotMatch(html, /Width Cap/, 'Width Cap leftover label is gone');
-const ground = read('packages/drawer-app/src/chrome/ground-picker.js');
-assert.doesNotMatch(ground, /localStorage/, 'background is per document, not a chrome preference');
-assert.match(ground, /persistBoardStyle\(\{ background/, 'a pick writes the document style');
-assert.match(diagram, /emit\("applyDocumentGround"/, 'opening a document syncs the background picker');
+assert.doesNotMatch(diagram, /emit\("applyDocumentGround"/, 'opening a document does not sync a background picker');
 
 console.log('ok popup-select check');

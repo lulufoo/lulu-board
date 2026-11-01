@@ -1,4 +1,4 @@
-/* Theme dropdown in the Style panel. The native <select id="kindThemeSelect"> stays hidden
+/* Palette dropdown in the Style panel. The native <select id="kindThemeSelect"> stays hidden
  * as the one source of truth. Code that sets select.value or listens for "change" keeps working. */
 import { THEMES } from '../../../board-themes/index.js';
 import { mountPopupSelect } from './popup-select.js';
@@ -17,7 +17,7 @@ const select = document.getElementById('kindThemeSelect');
 const host = document.getElementById('themeSelectHost');
 if (select && host) {
   const picker = mountPopupSelect(host, {
-    label: select.getAttribute('aria-label') || 'Theme',
+    label: select.getAttribute('aria-label') || 'Palette',
     value: select.value,
     options: Array.from(select.options).map((option) => ({
       value: option.value,
