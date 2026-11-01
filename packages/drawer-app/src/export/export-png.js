@@ -288,6 +288,11 @@ async function captureSketchCanvas(frame) {
   };
 }
 
+function documentAppearance() {
+  const token = DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token;
+  return DrawerStyleLine.appearanceFromStyleToken(token);
+}
+
 export async function exportPng() {
   const frame = getExportSketchFrame();
   const target = frame ? null : getExportContentTarget();
@@ -327,7 +332,7 @@ export async function exportPng() {
     output.width = cropped.canvas.width;
     output.height = cropped.canvas.height;
     const context = output.getContext('2d');
-    paintGround(context, output, cropped.surfaceSize);
+    paintGround(context, output, cropped.surfaceSize, documentAppearance());
     context.drawImage(cropped.canvas, 0, 0);
 
     const result = await writePngExport(await canvasToPngBlob(output), exportDiagramStem());

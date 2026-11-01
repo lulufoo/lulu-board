@@ -45,6 +45,8 @@ function persistKind(body, patch) {
   const set = {};
   Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'sage');
   assert.strictEqual(set['--ground-bg'], '#fff');
+  Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'dark');
+  assert.strictEqual(set['--ground-bg'], '#14110e');
 }
 
 console.log('ok background-kinds');

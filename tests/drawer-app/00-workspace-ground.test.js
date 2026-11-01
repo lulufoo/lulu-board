@@ -8,6 +8,12 @@ const Ground = require('../../packages/drawer-app/src/core/workspace-ground.js')
   assert.deepStrictEqual(spec, { background: '#fff', dot: '#dfe7ea', dotRadius: 1, step: 24 });
   spec.step = 99;
   assert.strictEqual(Ground.resolveGround().step, 24, 'resolveGround hands out a copy');
+  assert.deepStrictEqual(Ground.resolveGround('dark'), {
+    background: '#14110e',
+    dot: '#3f3830',
+    dotRadius: 1,
+    step: 24,
+  });
 }
 
 {
@@ -21,6 +27,9 @@ const Ground = require('../../packages/drawer-app/src/core/workspace-ground.js')
   assert.match(image, /width='24' height='24'/);
   assert.match(image, /<circle cx='12' cy='12' r='1' fill='%23dfe7ea'\/>/);
   assert.doesNotMatch(image, /#/, 'a raw # would cut the data URI');
+  Ground.applyGround({ style: { setProperty: (name, value) => { set[name] = value; } } }, 'dark');
+  assert.strictEqual(set['--ground-bg'], '#14110e');
+  assert.match(set['--ground-image'], /fill='%233f3830'/);
 }
 
 {

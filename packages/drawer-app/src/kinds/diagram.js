@@ -184,8 +184,13 @@ function previewHasPaint(root) {
   return !!(root && root.querySelector(".board-render, iframe.sketch-frame, svg"));
 }
 
+function documentAppearance() {
+  var token = DrawerStyleLine.splitRendererStyle(diagramSourceEl ? diagramSourceEl.value : "").token;
+  return DrawerStyleLine.appearanceFromStyleToken(token);
+}
+
 function applyDocumentGround() {
-  if (typeof applyGround === "function") applyGround(document.documentElement);
+  if (typeof applyGround === "function") applyGround(document.documentElement, documentAppearance());
 }
 
 function finishCanvasView(opts) {
