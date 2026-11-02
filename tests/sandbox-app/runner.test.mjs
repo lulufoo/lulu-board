@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRunner } from '../../packages/sandbox-app/src/runner.js';
-import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
+import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, modeMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
 
 /* A fake window. `page` is the layout the runner reads and may be changed between reports; `fire()` runs the
  * ResizeObserver callback, which is what a layout change does in a browser. */
@@ -22,7 +22,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
       const top = rootStyle.padding === '0' || rootStyle.padding === undefined ? 0 : parseInt(rootStyle.padding, 10);
       return { top, bottom: top + page.bodyHeight, height: page.bodyHeight };
     },
-    appendChild: (node) => mounted.push({ node: node, appearance: documentElement.dataset.appearance }),
+    appendChild: (node) => mounted.push({ node: node, appearance: documentElement.dataset.appearance, mode: documentElement.dataset.sketchMode }),
     addEventListener: () => {},
   };
   const documentElement = {
@@ -103,7 +103,7 @@ const types = (posted) => posted.map((p) => p.msg.type);
   runner.onMessage({ source: {}, data: renderMessage('<p>evil</p>') });
   assert.equal(mounted.length, 0, 'messages from other windows are ignored');
   runner.onMessage({ source: parent, data: renderMessage('<p>ok</p>') });
-  assert.deepEqual(mounted, [{ node: { html: '<p>ok</p>' }, appearance: 'light' }], 'appearance is light before the fragment is inserted');
+  assert.deepEqual(mounted, [{ node: { html: '<p>ok</p>' }, appearance: 'light', mode: 'canvas' }], 'appearance is light and the mode is canvas before the fragment is inserted');
   const size = posted.find((p) => p.msg.type === SANDBOX_MSG.SIZE);
   assert.deepEqual(size.msg, { type: SANDBOX_MSG.SIZE, width: 300, height: 120 + SANDBOX_BLEED * 2, bleed: SANDBOX_BLEED },
     'the frame is the picture plus the bleed, and the message says how much');
@@ -116,7 +116,33 @@ const types = (posted) => posted.map((p) => p.msg.type);
   const { runner, parent, mounted } = makeEnv();
   runner.start();
   runner.onMessage({ source: parent, data: renderMessage('<p>night</p>', 'dark') });
-  assert.deepEqual(mounted, [{ node: { html: '<p>night</p>' }, appearance: 'dark' }], 'dark is stamped before the fragment is inserted');
+  assert.deepEqual(mounted, [{ node: { html: '<p>night</p>' }, appearance: 'dark', mode: 'canvas' }], 'dark is stamped before the fragment is inserted');
+}
+
+{
+  const { runner, parent, mounted } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: renderMessage('<p>live</p>', 'light', 'present') });
+  assert.deepEqual(mounted, [{ node: { html: '<p>live</p>' }, appearance: 'light', mode: 'present' }], 'the mode is stamped before the fragment is inserted, so its scripts read it at once');
+}
+
+{
+  const { runner, parent, mounted, root, events } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: modeMessage('present') });
+  assert.equal(root.dataset.sketchMode, undefined, 'a mode before render is ignored');
+  runner.onMessage({ source: parent, data: renderMessage('<p>stay</p>') });
+  assert.equal(root.dataset.sketchMode, 'canvas');
+  runner.onMessage({ source: parent, data: modeMessage('present') });
+  assert.equal(mounted.length, 1, 'a switch does not mount again');
+  assert.equal(root.dataset.sketchMode, 'present', 'the new mode is written for the fragment to read');
+  assert.deepEqual(events, ['lulu-sketch-mode'], 'the fragment hears about the switch');
+  runner.onMessage({ source: parent, data: { type: SANDBOX_MSG.MODE, mode: 'nope' } });
+  assert.equal(root.dataset.sketchMode, 'present', 'an invalid mode leaves the mode');
+  assert.deepEqual(events, ['lulu-sketch-mode'], 'an invalid mode fires nothing');
+  runner.onMessage({ source: parent, data: modeMessage('canvas') });
+  assert.equal(root.dataset.sketchMode, 'canvas', 'the way back is a message too');
+  assert.deepEqual(events, ['lulu-sketch-mode', 'lulu-sketch-mode']);
 }
 
 {

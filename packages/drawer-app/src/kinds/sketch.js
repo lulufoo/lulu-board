@@ -1,9 +1,9 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
+import { renderMessage, appearanceMessage, modeMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
-import { setSketchMode, bindSketchMode } from './sketch-mode.js';
+import { setSketchMode, getSketchMode, bindSketchMode } from './sketch-mode.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -47,7 +47,14 @@ var mountedSketch = null;
 // One channel per sketch frame: the captures it is still waiting for.
 var channels = new WeakMap();
 var captureSeq = 0;
-if (typeof document !== "undefined") bindSketchMode(document);
+// A switch after the frame is up tells the sketch the new mode; before that, the render carries it.
+function postSketchMode(mode) {
+  if (mountedSketch && mountedSketch.sent && mountedSketch.frame && mountedSketch.frame.isConnected
+    && mountedSketch.frame.contentWindow) {
+    mountedSketch.frame.contentWindow.postMessage(modeMessage(mode), "*");
+  }
+}
+if (typeof document !== "undefined") bindSketchMode(document, postSketchMode);
 
 export function renderSketch(opts) {
   opts = opts || {};
@@ -161,8 +168,8 @@ export function renderSketch(opts) {
       if (sent) return;
       sent = true;
       mountedSketch = { frame: frame, html: html, sent: true };
-      // An opaque origin cannot be named as a target; the fragment and its appearance travel this way.
-      frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance()), "*");
+      // An opaque origin cannot be named as a target; the fragment, its appearance, and its mode travel this way.
+      frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance(), getSketchMode(document)), "*");
       return;
     }
     var size = parseSize(event.data);

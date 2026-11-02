@@ -45,7 +45,7 @@ assert.doesNotMatch(mount, /srcdoc/, 'Fragment no longer shares an origin throug
 assert.doesNotMatch(mount, /contentDocument/, 'Board never reads into the frame');
 assert.match(mount, /event\.source !== frame\.contentWindow \|\| event\.origin !== "null"/, 'Messages must come from this frame, which has an opaque origin');
 assert.match(mount, /parseSize\(event\.data\)/, 'Size comes through the protocol parser');
-assert.match(mount, /renderMessage\(html, getSessionAppearance\(\)\)/, 'Fragment travels with the session appearance');
+assert.match(mount, /renderMessage\(html, getSessionAppearance\(\), getSketchMode\(document\)\)/, 'Fragment travels with the session appearance and the sketch mode');
 assert.match(mount, /appearanceMessage\(getSessionAppearance\(\)\)/, 'A theme change posts appearance on the frame already up');
 assert.match(mount, /mountedSketch\.html === html/, 'The same fragment keeps its frame');
 assert.match(mount, /export function captureSketch\(frame, scale\)/, 'Export asks the runner through one function');
