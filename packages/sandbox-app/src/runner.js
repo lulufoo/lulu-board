@@ -4,6 +4,7 @@
  * send junk, so Board validates every message. Nothing here holds a secret. */
 import {
   parseRender,
+  parseAppearance,
   parseCapture,
   readyMessage,
   sizeMessage,
@@ -86,7 +87,12 @@ export function createRunner(env) {
     post(sizeMessage(size.width, size.height, bleed));
   }
 
-  function mount(html) {
+  function mount(html, appearance) {
+    var root = doc.documentElement;
+    if (root) {
+      var data = root.dataset || (root.dataset = {});
+      data.appearance = appearance === 'dark' ? 'dark' : 'light';
+    }
     var body = doc.body;
     setBleed(SANDBOX_BLEED);
     var range = doc.createRange();
@@ -120,6 +126,16 @@ export function createRunner(env) {
     }
   }
 
+  function applyAppearance(appearance) {
+    var root = doc.documentElement;
+    if (!root) return;
+    var data = root.dataset || (root.dataset = {});
+    data.appearance = appearance;
+    var Ctor = win.Event;
+    if (!doc.dispatchEvent || typeof Ctor !== 'function') return;
+    doc.dispatchEvent(new Ctor('lulu-appearance'));
+  }
+
   function onMessage(event) {
     if (event.source !== win.parent) return;
     var render = parseRender(event.data);
@@ -127,7 +143,13 @@ export function createRunner(env) {
       // One render per runner load: Board mounts a fresh frame for every sketch.
       if (rendered) return;
       rendered = true;
-      mount(render.html);
+      mount(render.html, render.appearance);
+      return;
+    }
+    var theme = parseAppearance(event.data);
+    if (theme) {
+      if (!rendered) return;
+      applyAppearance(theme.appearance);
       return;
     }
     var request = parseCapture(event.data);

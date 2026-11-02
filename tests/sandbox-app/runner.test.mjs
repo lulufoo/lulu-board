@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRunner } from '../../packages/sandbox-app/src/runner.js';
-import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
+import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
 
 /* A fake window. `page` is the layout the runner reads and may be changed between reports; `fire()` runs the
  * ResizeObserver callback, which is what a layout change does in a browser. */
@@ -21,20 +21,25 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
       const top = rootStyle.padding === '0' || rootStyle.padding === undefined ? 0 : parseInt(rootStyle.padding, 10);
       return { top, bottom: top + page.bodyHeight, height: page.bodyHeight };
     },
-    appendChild: (node) => mounted.push(node),
+    appendChild: (node) => mounted.push({ node: node, appearance: documentElement.dataset.appearance }),
     addEventListener: () => {},
   };
+  const documentElement = {
+    dataset: {},
+    get scrollWidth() { return page.scrollWidth; },
+    get clientWidth() { return page.clientWidth; },
+    style: rootStyle,
+  };
+  const events = [];
   const doc = {
-    documentElement: {
-      get scrollWidth() { return page.scrollWidth; },
-      get clientWidth() { return page.clientWidth; },
-      style: rootStyle,
-    },
+    documentElement,
     body,
     createRange: () => ({ selectNodeContents() {}, createContextualFragment: (html) => ({ html }) }),
+    dispatchEvent: (ev) => { events.push(ev.type); },
   };
   const win = {
     parent,
+    Event: function (type) { this.type = type; },
     get innerWidth() { return page.innerWidth; },
     get innerHeight() { return page.innerHeight; },
     addEventListener: (type, fn) => { listeners[type] = fn; },
@@ -47,7 +52,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     createImageBitmap: async (canvas) => ({ width: canvas.width, height: canvas.height }),
     ResizeObserver: function (cb) { observe = cb; this.observe = () => {}; },
   });
-  return { runner, posted, listeners, parent, mounted, win, page, rootStyle, fire: () => observe() };
+  return { runner, posted, listeners, parent, mounted, win, page, rootStyle, root: documentElement, events, fire: () => observe() };
 }
 
 const types = (posted) => posted.map((p) => p.msg.type);
@@ -66,13 +71,34 @@ const types = (posted) => posted.map((p) => p.msg.type);
   runner.onMessage({ source: {}, data: renderMessage('<p>evil</p>') });
   assert.equal(mounted.length, 0, 'messages from other windows are ignored');
   runner.onMessage({ source: parent, data: renderMessage('<p>ok</p>') });
-  assert.deepEqual(mounted, [{ html: '<p>ok</p>' }]);
+  assert.deepEqual(mounted, [{ node: { html: '<p>ok</p>' }, appearance: 'light' }], 'appearance is light before the fragment is inserted');
   const size = posted.find((p) => p.msg.type === SANDBOX_MSG.SIZE);
   assert.deepEqual(size.msg, { type: SANDBOX_MSG.SIZE, width: 300, height: 120 + SANDBOX_BLEED * 2, bleed: SANDBOX_BLEED },
     'the frame is the picture plus the bleed, and the message says how much');
-  runner.onMessage({ source: parent, data: renderMessage('<p>second</p>') });
+  runner.onMessage({ source: parent, data: renderMessage('<p>second</p>', 'dark') });
   assert.equal(mounted.length, 1, 'a runner renders once');
   assert.equal(posted.filter((p) => p.msg.type === SANDBOX_MSG.SIZE).length, 1, 'size is sent when it changes');
+}
+
+{
+  const { runner, parent, mounted } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: renderMessage('<p>night</p>', 'dark') });
+  assert.deepEqual(mounted, [{ node: { html: '<p>night</p>' }, appearance: 'dark' }], 'dark is stamped before the fragment is inserted');
+}
+
+{
+  const { runner, parent, mounted, root, events } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: appearanceMessage('dark') });
+  assert.equal(root.dataset.appearance, undefined, 'appearance before render is ignored');
+  runner.onMessage({ source: parent, data: renderMessage('<p>stay</p>', 'light') });
+  runner.onMessage({ source: parent, data: appearanceMessage('dark') });
+  assert.equal(mounted.length, 1, 'a theme change does not mount again');
+  assert.equal(root.dataset.appearance, 'dark');
+  assert.deepEqual(events, ['lulu-appearance']);
+  runner.onMessage({ source: parent, data: { type: SANDBOX_MSG.APPEARANCE, appearance: 'nope' } });
+  assert.equal(root.dataset.appearance, 'dark', 'an invalid appearance leaves the theme');
 }
 
 {

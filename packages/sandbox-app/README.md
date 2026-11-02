@@ -69,7 +69,8 @@ Opaque-origin consequences, for both sides:
 | Direction | `type` | Fields | Meaning |
 |---|---|---|---|
 | runner to Board | `lulu-sandbox:ready` | none | Runner is loaded and listening. Board sends `render` after this. |
-| Board to runner | `lulu-sandbox:render` | `html: string` | Mount one fragment as the body. Scripts in it run. Only the first `render` per runner load is used; Board mounts a fresh frame per sketch. |
+| Board to runner | `lulu-sandbox:render` | `html: string`, `appearance: "light"` or `"dark"` | Mount one fragment as the body. Scripts in it run. The runner writes `appearance` onto `<html data-appearance>` before inserting the fragment. A missing or other value is `light`. Only the first `render` per runner load is used; Board mounts a fresh frame per sketch. |
+| Board to runner | `lulu-sandbox:appearance` | `appearance: "light"` or `"dark"` | Theme change on the frame already showing this fragment. The runner writes `data-appearance` and dispatches `lulu-appearance`. It does not insert HTML again. Any other value is ignored, and the current theme stays. A message before `render` is ignored. |
 | runner to Board | `lulu-sandbox:size` | `width, height` (CSS px), `bleed` (whole px, optional) | Frame size. Sent after mount and whenever it changes. `bleed` is the transparent room the runner keeps on every side inside the frame, so the picture is `(width - 2 * bleed)` by `(height - 2 * bleed)`. A message with no `bleed` means the frame is the picture. `width` and `height` outside `0 < n <= 32768` are rejected by `parseSize`. A `bleed` that is not a whole number from 1 to 12, or that leaves no picture, is read as 0. |
 | Board to runner | `lulu-sandbox:capture` | `id: string` (1 to 64 chars), `scale: number` (`0 < scale <= 8`) | Ask for a transparent bitmap of the whole document. |
 | runner to Board | `lulu-sandbox:captured` | `id`, `bitmap: ImageBitmap` | Reply to `capture`. The bitmap is transferred, not copied. |
