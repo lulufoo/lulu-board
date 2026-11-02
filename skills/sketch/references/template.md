@@ -1,8 +1,12 @@
 # Template
 
 ## Fragment
-Write the fragment from the reference.
-1. Load [template.md](./references/template.md) and write the fragment from it.
+
+The fragment is the diagram.
+
+1. Contains `<style>` and markup.
+2. Excludes `<!doctype>`, `<html>`, `<head>`, and `<body>`.
+3. Excludes `<iframe>`, `<object>`, `<embed>`, and `<link>`. Board removes them before mounting. Put CSS in `<style>`.
 
 ## Board
 

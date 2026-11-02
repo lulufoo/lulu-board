@@ -28,7 +28,6 @@ Three lines. Payloads have no braces.
 Write from the template.
 
 1. Load [template.md](./references/template.md) and write from it.
-2. Excludes `<iframe>`, `<object>`, `<embed>`, and `<link>`. Board removes them before mounting.
 
 ## Render Environment
 
