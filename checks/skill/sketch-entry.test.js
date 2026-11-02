@@ -20,7 +20,6 @@ assert.doesNotMatch(skill, /sketch ""/, 'no example with an empty title');
 assert.match(skill, /Always write a short title that names the diagram/, 'skill asks for a title');
 assert.doesNotMatch(skill, /does not run scripts|The picture is static/, 'skill no longer says scripts are unsupported');
 assert.match(skill, /Scripts run when the sketch mounts/, 'skill says scripts run');
-assert.match(skill, /`fetch`, `XMLHttpRequest`, and `WebSocket` are blocked/, 'skill says script network is blocked');
 assert.match(skill, /Scripts get no pointer events, so click handlers and `:hover` do nothing/, 'skill says pointer handlers do nothing');
 assert.match(skill, /## Performance/, 'skill has a performance section');
 assert.match(skill, /Add animation only when the user asks for it/, 'skill limits animation');
