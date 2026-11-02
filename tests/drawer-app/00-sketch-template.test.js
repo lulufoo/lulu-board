@@ -33,6 +33,8 @@ assert.match(html, /style-src 'self' 'unsafe-inline'/);
 assert.match(html, /script-src 'self'/);
 assert.doesNotMatch(html, /script-src 'self' 'unsafe-inline'/);
 assert.match(mount, /"iframe, object, embed, link"/, 'Nested documents and external links are still removed');
+assert.match(mount, /querySelectorAll\("a"\)[\s\S]*?unwrapElement\(links\[j\]\)/, 'Links lose their tag before mounting');
+assert.match(mount, /function unwrapElement\(el\)[\s\S]*?parent\.insertBefore\(el\.firstChild, el\)[\s\S]*?parent\.removeChild\(el\)/, 'A removed link keeps what it wraps');
 assert.doesNotMatch(mount, /querySelectorAll\("script/, 'Scripts run in the runner and are not filtered');
 assert.doesNotMatch(mount, /\^on\/i/, 'Event handler attributes run in the runner and are not filtered');
 assert.match(mount, /createElement\("iframe"\)/, 'Sketch mounts in its own document');
@@ -45,7 +47,7 @@ assert.doesNotMatch(mount, /srcdoc/, 'Fragment no longer shares an origin throug
 assert.doesNotMatch(mount, /contentDocument/, 'Board never reads into the frame');
 assert.match(mount, /event\.source !== frame\.contentWindow \|\| event\.origin !== "null"/, 'Messages must come from this frame, which has an opaque origin');
 assert.match(mount, /parseSize\(event\.data\)/, 'Size comes through the protocol parser');
-assert.match(mount, /renderMessage\(html, getSessionAppearance\(\), getSketchMode\(document\)\)/, 'Fragment travels with the session appearance and the sketch mode');
+assert.match(mount, /renderMessage\(html, getSessionAppearance\(\)\)/, 'Fragment travels with the session appearance');
 assert.match(mount, /appearanceMessage\(getSessionAppearance\(\)\)/, 'A theme change posts appearance on the frame already up');
 assert.match(mount, /mountedSketch\.html === html/, 'The same fragment keeps its frame');
 assert.match(mount, /export function captureSketch\(frame, scale\)/, 'Export asks the runner through one function');

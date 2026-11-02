@@ -6,7 +6,6 @@ export const SANDBOX_MSG = Object.freeze({
   READY: 'lulu-sandbox:ready',
   RENDER: 'lulu-sandbox:render',
   APPEARANCE: 'lulu-sandbox:appearance',
-  MODE: 'lulu-sandbox:mode',
   SIZE: 'lulu-sandbox:size',
   CAPTURE: 'lulu-sandbox:capture',
   CAPTURED: 'lulu-sandbox:captured',
@@ -39,19 +38,13 @@ function validAppearance(value) {
   return value === 'dark' ? 'dark' : 'light';
 }
 
-/* Canvas is the default: clicks reach the sketch only in Present. */
-function validMode(value) {
-  return value === 'present' ? 'present' : 'canvas';
-}
-
 /* Board -> runner */
 
-export function renderMessage(html, appearance, mode) {
+export function renderMessage(html, appearance) {
   return {
     type: SANDBOX_MSG.RENDER,
     html: String(html == null ? '' : html),
     appearance: validAppearance(appearance),
-    mode: validMode(mode),
   };
 }
 
@@ -66,24 +59,13 @@ export function parseAppearance(data) {
   return { appearance: data.appearance };
 }
 
-/* A later Canvas | Present switch. An invalid value is not a message: the runner keeps the mode it has. */
-export function modeMessage(mode) {
-  return { type: SANDBOX_MSG.MODE, mode: mode };
-}
-
-export function parseMode(data) {
-  if (!isObject(data) || data.type !== SANDBOX_MSG.MODE) return null;
-  if (data.mode !== 'canvas' && data.mode !== 'present') return null;
-  return { mode: data.mode };
-}
-
 export function captureMessage(id, scale) {
   return { type: SANDBOX_MSG.CAPTURE, id: id, scale: scale };
 }
 
 export function parseRender(data) {
   if (!isObject(data) || data.type !== SANDBOX_MSG.RENDER || typeof data.html !== 'string') return null;
-  return { html: data.html, appearance: validAppearance(data.appearance), mode: validMode(data.mode) };
+  return { html: data.html, appearance: validAppearance(data.appearance) };
 }
 
 export function parseCapture(data) {

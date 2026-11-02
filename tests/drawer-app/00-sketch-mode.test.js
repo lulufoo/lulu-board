@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { setSketchMode, getSketchMode, bindSketchMode } from '../../packages/drawer-app/src/kinds/sketch-mode.js';
+import { setSketchMode, bindSketchMode } from '../../packages/drawer-app/src/kinds/sketch-mode.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
@@ -49,30 +49,6 @@ function makeDoc() {
 }
 
 {
-  // The sketch is told about a switch, once, and never about the reset to Canvas a new frame does.
-  const { doc, buttons, click } = makeDoc();
-  const seen = [];
-  bindSketchMode(doc, (mode) => seen.push(mode));
-  assert.deepEqual(seen, [], 'the reset to Canvas at bind time tells nobody');
-  click(buttons.btnSketchPresent);
-  click(buttons.btnSketchPresent);
-  click(buttons.btnSketchCanvas);
-  assert.deepEqual(seen, ['present', 'canvas'], 'each switch is reported once, and a click on the mode already on is not a switch');
-  click({ closest: () => null });
-  assert.deepEqual(seen, ['present', 'canvas'], 'a click between the buttons reports nothing');
-}
-
-{
-  const { doc } = makeDoc();
-  assert.equal(getSketchMode(doc), 'canvas', 'a page that has not set a mode is in Canvas');
-  setSketchMode('present', doc);
-  assert.equal(getSketchMode(doc), 'present');
-  setSketchMode('canvas', doc);
-  assert.equal(getSketchMode(doc), 'canvas');
-  assert.equal(getSketchMode({ documentElement: null }), 'canvas', 'a page without a root is in Canvas');
-}
-
-{
   const { doc, html } = makeDoc();
   setSketchMode('present', doc);
   setSketchMode('canvas', doc);
@@ -91,11 +67,7 @@ function makeDoc() {
 
 {
   const mount = read('packages/drawer-app/src/kinds/sketch.js');
-  assert.match(mount, /bindSketchMode\(document, postSketchMode\)/, 'the switch is wired once, when the module loads');
-  assert.match(mount, /function postSketchMode[\s\S]*?mountedSketch\.sent[\s\S]*?postMessage\(modeMessage\(mode\), "\*"\)/,
-    'a switch reaches the frame already up, once it has its render');
-  assert.match(mount, /renderMessage\(html, getSessionAppearance\(\), getSketchMode\(document\)\)/,
-    'the render carries the mode the user is in, so the fragment reads it when it mounts');
+  assert.match(mount, /bindSketchMode\(document\)/, 'the switch is wired once, when the module loads');
   const themeChange = mount.indexOf('appearanceMessage(getSessionAppearance()), "*")');
   const reset = mount.indexOf('setSketchMode("canvas", document)');
   const newFrame = mount.indexOf('frame.src = SKETCH_RUNNER_URL');

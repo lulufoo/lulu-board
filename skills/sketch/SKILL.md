@@ -35,7 +35,7 @@ The viewer mounts the fragment in its own document. Write for this environment.
 
 1. The fragment renders in a sandboxed `iframe`. Board and the fragment cannot reach each other's CSS or scripts. Scripts run when the sketch mounts.
 2. `:root`, `html`, and `body` selectors act on that document (zero margin, transparent). A `body` background paints the diagram only; an `html` background is ignored.
-3. The frame takes no pointer input by default, so `:hover` does nothing. A sketch may use click handlers. The canvas pans and zooms over it.
+3. The frame takes no pointer input by default, so `:hover` and drag do nothing. A sketch may use click handlers. The canvas pans and zooms over it.
 4. No network. Put every style, shape, glyph, and script in the fragment.
 
 ## Performance

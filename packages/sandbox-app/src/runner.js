@@ -5,7 +5,6 @@
 import {
   parseRender,
   parseAppearance,
-  parseMode,
   parseCapture,
   readyMessage,
   sizeMessage,
@@ -88,12 +87,11 @@ export function createRunner(env) {
     post(sizeMessage(size.width, size.height, bleed));
   }
 
-  function mount(html, appearance, mode) {
+  function mount(html, appearance) {
     var root = doc.documentElement;
     if (root) {
       var data = root.dataset || (root.dataset = {});
       data.appearance = appearance === 'dark' ? 'dark' : 'light';
-      data.sketchMode = mode === 'present' ? 'present' : 'canvas';
     }
     var body = doc.body;
     setBleed(SANDBOX_BLEED);
@@ -138,16 +136,6 @@ export function createRunner(env) {
     doc.dispatchEvent(new Ctor('lulu-appearance'));
   }
 
-  function applyMode(mode) {
-    var root = doc.documentElement;
-    if (!root) return;
-    var data = root.dataset || (root.dataset = {});
-    data.sketchMode = mode;
-    var Ctor = win.Event;
-    if (!doc.dispatchEvent || typeof Ctor !== 'function') return;
-    doc.dispatchEvent(new Ctor('lulu-sketch-mode'));
-  }
-
   function onMessage(event) {
     if (event.source !== win.parent) return;
     var render = parseRender(event.data);
@@ -155,19 +143,13 @@ export function createRunner(env) {
       // One render per runner load: Board mounts a fresh frame for every sketch.
       if (rendered) return;
       rendered = true;
-      mount(render.html, render.appearance, render.mode);
+      mount(render.html, render.appearance);
       return;
     }
     var theme = parseAppearance(event.data);
     if (theme) {
       if (!rendered) return;
       applyAppearance(theme.appearance);
-      return;
-    }
-    var next = parseMode(event.data);
-    if (next) {
-      if (!rendered) return;
-      applyMode(next.mode);
       return;
     }
     var request = parseCapture(event.data);

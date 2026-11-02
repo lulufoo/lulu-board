@@ -5,7 +5,6 @@ import {
   SANDBOX_BLEED,
   renderMessage,
   appearanceMessage,
-  modeMessage,
   captureMessage,
   readyMessage,
   sizeMessage,
@@ -13,7 +12,6 @@ import {
   errorMessage,
   parseRender,
   parseAppearance,
-  parseMode,
   parseCapture,
   parseReady,
   parseSize,
@@ -21,26 +19,16 @@ import {
   parseError,
 } from '../../packages/sandbox-app/src/protocol.js';
 
-assert.deepEqual(parseRender(renderMessage('<p>x</p>')), { html: '<p>x</p>', appearance: 'light', mode: 'canvas' });
-assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'dark')), { html: '<p>x</p>', appearance: 'dark', mode: 'canvas' });
-assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'nope')), { html: '<p>x</p>', appearance: 'light', mode: 'canvas' }, 'unknown appearance is light');
-assert.deepEqual(parseRender({ type: SANDBOX_MSG.RENDER, html: '<p>x</p>' }), { html: '<p>x</p>', appearance: 'light', mode: 'canvas' }, 'a missing appearance is light, and a missing mode is canvas');
-assert.equal(parseRender(renderMessage('<p>x</p>', 'light', 'present')).mode, 'present', 'the render carries the mode the user is in');
-assert.equal(parseRender(renderMessage('<p>x</p>', 'light', 'nope')).mode, 'canvas', 'an unknown mode is canvas');
-assert.equal(parseRender({ type: SANDBOX_MSG.RENDER, html: '', mode: 1 }).mode, 'canvas', 'a mode that is not a string is canvas');
+assert.deepEqual(parseRender(renderMessage('<p>x</p>')), { html: '<p>x</p>', appearance: 'light' });
+assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'dark')), { html: '<p>x</p>', appearance: 'dark' });
+assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'nope')), { html: '<p>x</p>', appearance: 'light' }, 'unknown appearance is light');
+assert.deepEqual(parseRender({ type: SANDBOX_MSG.RENDER, html: '<p>x</p>' }), { html: '<p>x</p>', appearance: 'light' }, 'a missing appearance is light');
 assert.equal(parseRender({ type: SANDBOX_MSG.RENDER, html: 1 }), null, 'html must be a string');
 assert.equal(parseRender(null), null);
 assert.equal(parseRender({ type: 'other', html: '' }), null);
 assert.deepEqual(parseAppearance(appearanceMessage('dark')), { appearance: 'dark' });
 assert.equal(parseAppearance({ type: SANDBOX_MSG.APPEARANCE, appearance: 'nope' }), null, 'an invalid appearance is not a message');
 assert.equal(parseAppearance({ type: SANDBOX_MSG.APPEARANCE }), null);
-assert.equal(SANDBOX_MSG.MODE, 'lulu-sandbox:mode');
-assert.deepEqual(parseMode(modeMessage('present')), { mode: 'present' });
-assert.deepEqual(parseMode(modeMessage('canvas')), { mode: 'canvas' });
-assert.equal(parseMode({ type: SANDBOX_MSG.MODE, mode: 'nope' }), null, 'an invalid mode is not a message');
-assert.equal(parseMode({ type: SANDBOX_MSG.MODE }), null);
-assert.equal(parseMode({ type: SANDBOX_MSG.APPEARANCE, mode: 'present' }), null, 'only a mode message carries a mode');
-assert.equal(parseMode(null), null);
 
 assert.deepEqual(parseCapture(captureMessage('a1', 2)), { id: 'a1', scale: 2 });
 for (const bad of [

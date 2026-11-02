@@ -1,9 +1,9 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, appearanceMessage, modeMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
+import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
-import { setSketchMode, getSketchMode, bindSketchMode } from './sketch-mode.js';
+import { setSketchMode, bindSketchMode } from './sketch-mode.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -21,13 +21,24 @@ function sketchWorldBounds(el) {
   return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
 }
 
+// Drops the tag and keeps what it wraps, so a link's text stays.
+function unwrapElement(el) {
+  var parent = el.parentNode;
+  if (!parent) return;
+  while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  parent.removeChild(el);
+}
+
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
   // Scripts are not filtered here: they are meant to run, inside the runner's opaque origin. This removal is a content
   // guard, not a boundary: a script can still create these elements, and the runner's CSP is what blocks them.
+  // A script-made link is the runner's to stop: it ignores link clicks.
   var banned = tpl.content.querySelectorAll("iframe, object, embed, link");
   for (var i = banned.length - 1; i >= 0; i -= 1) banned[i].remove();
+  var links = tpl.content.querySelectorAll("a");
+  for (var j = links.length - 1; j >= 0; j -= 1) unwrapElement(links[j]);
   return tpl.content;
 }
 
@@ -47,14 +58,7 @@ var mountedSketch = null;
 // One channel per sketch frame: the captures it is still waiting for.
 var channels = new WeakMap();
 var captureSeq = 0;
-// A switch after the frame is up tells the sketch the new mode; before that, the render carries it.
-function postSketchMode(mode) {
-  if (mountedSketch && mountedSketch.sent && mountedSketch.frame && mountedSketch.frame.isConnected
-    && mountedSketch.frame.contentWindow) {
-    mountedSketch.frame.contentWindow.postMessage(modeMessage(mode), "*");
-  }
-}
-if (typeof document !== "undefined") bindSketchMode(document, postSketchMode);
+if (typeof document !== "undefined") bindSketchMode(document);
 
 export function renderSketch(opts) {
   opts = opts || {};
@@ -168,8 +172,8 @@ export function renderSketch(opts) {
       if (sent) return;
       sent = true;
       mountedSketch = { frame: frame, html: html, sent: true };
-      // An opaque origin cannot be named as a target; the fragment, its appearance, and its mode travel this way.
-      frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance(), getSketchMode(document)), "*");
+      // An opaque origin cannot be named as a target; the fragment and its appearance travel this way.
+      frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance()), "*");
       return;
     }
     var size = parseSize(event.data);
