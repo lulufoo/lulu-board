@@ -148,7 +148,10 @@ function b64(obj) {
   assert.ok(/Mint without style/.test(boardSkill), 'board SKILL names stash rule');
   assert.ok(/persistBoardStyle/.test(chrome), 'font size and max width still persist board style');
   assert.doesNotMatch(chrome, /persistBoardStyle\(\{ appearance/, 'theme click does not write appearance into the document');
-  assert.match(chrome, /setSessionAppearance/, 'theme click keeps appearance in session memory');
+  assert.match(chrome, /setSessionAppearance/, 'theme click keeps appearance in the session cookie');
+  const session = fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/core/session-appearance.js'), 'utf8');
+  assert.match(session, /writeAppearanceCookie/, 'theme click writes the host cookie');
+  assert.doesNotMatch(session, /localStorage/, 'theme click does not write localStorage');
   assert.match(chrome, /applyGround\(document\.documentElement, t\)/, 'theme click paints the canvas ground');
   const boardJs = ['board.js', 'board-style.js', 'diagram.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
   assert.ok(/updateNodeTypeStep/.test(boardJs), 'props can persist a node font step');

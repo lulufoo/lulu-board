@@ -186,7 +186,7 @@ let scale = 1, panX = 0, panY = 0;
  *   dockWidth        number   — open sidebar width (px)
  * Canvas zoom/pan is NOT stored here: it lives only in the board document's style.viewport.
  * Other already-persistent keys (unchanged): drawer.boardLinkRoute, drawer.boardMaxWidth
- * Theme (appearance) stays in session memory; it is not a style-token field.
+ * Theme (appearance) is the host cookie drawer.appearance; it is not a style-token field.
  */
 var DRAWER_UI_KEY = "drawer.ui";
 var DRAWER_UI_VERSION = 1;

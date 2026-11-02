@@ -2,6 +2,7 @@
 import * as api from './early-head.js';
 import { applyGround } from './workspace-ground.js';
 import { applyChrome } from './appearance-chrome.js';
+import { getSessionAppearance } from './session-appearance.js';
 
 export function bootEarlyHead(root) {
   var host = root || (typeof globalThis !== "undefined" ? globalThis : this);
@@ -20,8 +21,9 @@ export function bootEarlyHead(root) {
     return;
   }
   doc.dataset.drawerMode = "diagram";
-  applyGround(doc);
-  applyChrome(doc);
+  var appearance = getSessionAppearance();
+  applyGround(doc, appearance);
+  applyChrome(doc, appearance);
   doc.dataset.drawerBoot = "1";
   var plan = api.blankStartPlan(ctx);
   if (!plan) return;
