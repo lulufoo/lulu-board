@@ -12,5 +12,5 @@ Done when the chosen child skill completes.
 | Skill | Role |
 |---|---|
 | `boxes/` | Structured whiteboard on the public viewer |
-| `sketch/` | One Sketch picture on the public viewer |
+| `sketch/` | One Sketch diagram on the public viewer |
 | `mermaid/` | List Mermaid types, or draw one open type on the public viewer |

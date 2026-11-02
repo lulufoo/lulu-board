@@ -29,6 +29,10 @@ assert.match(skill, /Avoid `filter`, `backdrop-filter`/, 'skill avoids costly ef
 const template = fs.readFileSync(path.join(root, 'skills/sketch/references/template.md'), 'utf8');
 assert.match(skill, /\]\(\.\/references\/template\.md\)/, 'skill loads the template reference');
 assert.doesNotMatch(template, /\]\([^)]*template\.md\)/, 'template does not load itself');
+assert.match(template, /The fragment is the diagram\.\nThe diagram is one 16:9 slide\. Keep it landscape\./, 'template keeps the diagram as one 16:9 slide');
+assert.doesNotMatch(skill, /picture/, 'skill names the drawing a diagram');
+assert.match(pack, /One Sketch diagram/, 'pack names sketch a diagram');
+assert.doesNotMatch(pack, /picture/, 'pack no longer says picture');
 assert.match(template, /## Fragment[\s\S]*Excludes `<iframe>`, `<object>`, `<embed>`, and `<link>`[\s\S]*## Board/, 'template fragment lists the tags Board removes');
 assert.match(skill, /## Render Environment/, 'skill names the render environment');
 assert.match(skill, /sandboxed `iframe`/, 'skill says the fragment renders in a sandboxed iframe');
