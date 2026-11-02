@@ -3,7 +3,7 @@ import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
 import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
-import { setSketchMode, bindSketchMode } from './sketch-mode.js';
+import { setSketchMode, bindSketchMode, getSessionSketchMode } from './sketch-mode.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -97,8 +97,8 @@ export function renderSketch(opts) {
     stopListening();
     stopListening = null;
   }
-  // A new frame is a new open: it starts in Canvas, and a theme change above never reaches this line.
-  setSketchMode("canvas", document);
+  // A new frame keeps the mode the cookie already holds. A theme change above never reaches this line.
+  setSketchMode(getSessionSketchMode(), document);
   previewEl.innerHTML = "";
   // The picture box is what the canvas centers, zooms, and snaps. The frame hangs out of it by the bleed so a shadow,
   // outline, or ring at the picture edge is painted instead of cut off by the frame.
