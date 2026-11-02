@@ -5,6 +5,7 @@
 export const SANDBOX_MSG = Object.freeze({
   READY: 'lulu-sandbox:ready',
   RENDER: 'lulu-sandbox:render',
+  APPEARANCE: 'lulu-sandbox:appearance',
   SIZE: 'lulu-sandbox:size',
   CAPTURE: 'lulu-sandbox:capture',
   CAPTURED: 'lulu-sandbox:captured',
@@ -45,6 +46,17 @@ export function renderMessage(html, appearance) {
     html: String(html == null ? '' : html),
     appearance: validAppearance(appearance),
   };
+}
+
+/* A later theme change. An invalid value is not a message: the runner keeps the theme it has. */
+export function appearanceMessage(appearance) {
+  return { type: SANDBOX_MSG.APPEARANCE, appearance: appearance };
+}
+
+export function parseAppearance(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.APPEARANCE) return null;
+  if (data.appearance !== 'light' && data.appearance !== 'dark') return null;
+  return { appearance: data.appearance };
 }
 
 export function captureMessage(id, scale) {

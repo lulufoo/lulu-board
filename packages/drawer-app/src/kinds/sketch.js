@@ -1,7 +1,7 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
+import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
 import {
   previewEl,
@@ -41,16 +41,14 @@ var RUNNER_TIMEOUT_MS = 10000;
 // A capture waits for the runner's screenshot; a stuck page must not freeze the export button.
 var CAPTURE_TIMEOUT_MS = 30000;
 var stopListening = null;
+// The frame already showing this fragment. A theme change posts appearance instead of loading another runner.
+var mountedSketch = null;
 // One channel per sketch frame: the captures it is still waiting for.
 var channels = new WeakMap();
 var captureSeq = 0;
 
 export function renderSketch(opts) {
   opts = opts || {};
-  if (stopListening) {
-    stopListening();
-    stopListening = null;
-  }
   if (!previewEl) {
     emit("finishCanvasView", opts);
     return;
@@ -60,8 +58,13 @@ export function renderSketch(opts) {
   if (typeof DrawerStyleLine.decodeSketchContent === "function") {
     fragment = DrawerStyleLine.decodeSketchContent(diagramSourceEl ? diagramSourceEl.value : "");
   }
-  previewEl.innerHTML = "";
   if (!String(fragment || "").trim()) {
+    if (stopListening) {
+      stopListening();
+      stopListening = null;
+    }
+    mountedSketch = null;
+    previewEl.innerHTML = "";
     bindWorld(null, null);
     showDiagramError("Sketch content missing");
     setStatus("Sketch content missing", true);
@@ -71,6 +74,17 @@ export function renderSketch(opts) {
   var holder = document.createElement("div");
   holder.appendChild(sketchFragmentRoot(fragment));
   var html = holder.innerHTML;
+  if (mountedSketch && mountedSketch.sent && mountedSketch.html === html
+    && mountedSketch.frame && mountedSketch.frame.isConnected && mountedSketch.frame.contentWindow) {
+    mountedSketch.frame.contentWindow.postMessage(appearanceMessage(getSessionAppearance()), "*");
+    emit("finishCanvasView", opts);
+    return;
+  }
+  if (stopListening) {
+    stopListening();
+    stopListening = null;
+  }
+  previewEl.innerHTML = "";
   // The picture box is what the canvas centers, zooms, and snaps. The frame hangs out of it by the bleed so a shadow,
   // outline, or ring at the picture edge is painted instead of cut off by the frame.
   var picture = document.createElement("div");
@@ -142,6 +156,7 @@ export function renderSketch(opts) {
     if (parseReady(event.data)) {
       if (sent) return;
       sent = true;
+      mountedSketch = { frame: frame, html: html, sent: true };
       // An opaque origin cannot be named as a target; the fragment and its appearance travel this way.
       frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance()), "*");
       return;

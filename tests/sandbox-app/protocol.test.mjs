@@ -4,12 +4,14 @@ import {
   SANDBOX_MAX_EDGE,
   SANDBOX_BLEED,
   renderMessage,
+  appearanceMessage,
   captureMessage,
   readyMessage,
   sizeMessage,
   capturedMessage,
   errorMessage,
   parseRender,
+  parseAppearance,
   parseCapture,
   parseReady,
   parseSize,
@@ -24,6 +26,9 @@ assert.deepEqual(parseRender({ type: SANDBOX_MSG.RENDER, html: '<p>x</p>' }), { 
 assert.equal(parseRender({ type: SANDBOX_MSG.RENDER, html: 1 }), null, 'html must be a string');
 assert.equal(parseRender(null), null);
 assert.equal(parseRender({ type: 'other', html: '' }), null);
+assert.deepEqual(parseAppearance(appearanceMessage('dark')), { appearance: 'dark' });
+assert.equal(parseAppearance({ type: SANDBOX_MSG.APPEARANCE, appearance: 'nope' }), null, 'an invalid appearance is not a message');
+assert.equal(parseAppearance({ type: SANDBOX_MSG.APPEARANCE }), null);
 
 assert.deepEqual(parseCapture(captureMessage('a1', 2)), { id: 'a1', scale: 2 });
 for (const bad of [

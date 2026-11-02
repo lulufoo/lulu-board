@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createRunner } from '../../packages/sandbox-app/src/runner.js';
-import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
+import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
 
 /* A fake window. `page` is the layout the runner reads and may be changed between reports; `fire()` runs the
  * ResizeObserver callback, which is what a layout change does in a browser. */
@@ -30,13 +30,16 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     get clientWidth() { return page.clientWidth; },
     style: rootStyle,
   };
+  const events = [];
   const doc = {
     documentElement,
     body,
     createRange: () => ({ selectNodeContents() {}, createContextualFragment: (html) => ({ html }) }),
+    dispatchEvent: (ev) => { events.push(ev.type); },
   };
   const win = {
     parent,
+    Event: function (type) { this.type = type; },
     get innerWidth() { return page.innerWidth; },
     get innerHeight() { return page.innerHeight; },
     addEventListener: (type, fn) => { listeners[type] = fn; },
@@ -49,7 +52,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     createImageBitmap: async (canvas) => ({ width: canvas.width, height: canvas.height }),
     ResizeObserver: function (cb) { observe = cb; this.observe = () => {}; },
   });
-  return { runner, posted, listeners, parent, mounted, win, page, rootStyle, fire: () => observe() };
+  return { runner, posted, listeners, parent, mounted, win, page, rootStyle, root: documentElement, events, fire: () => observe() };
 }
 
 const types = (posted) => posted.map((p) => p.msg.type);
@@ -82,6 +85,20 @@ const types = (posted) => posted.map((p) => p.msg.type);
   runner.start();
   runner.onMessage({ source: parent, data: renderMessage('<p>night</p>', 'dark') });
   assert.deepEqual(mounted, [{ node: { html: '<p>night</p>' }, appearance: 'dark' }], 'dark is stamped before the fragment is inserted');
+}
+
+{
+  const { runner, parent, mounted, root, events } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: appearanceMessage('dark') });
+  assert.equal(root.dataset.appearance, undefined, 'appearance before render is ignored');
+  runner.onMessage({ source: parent, data: renderMessage('<p>stay</p>', 'light') });
+  runner.onMessage({ source: parent, data: appearanceMessage('dark') });
+  assert.equal(mounted.length, 1, 'a theme change does not mount again');
+  assert.equal(root.dataset.appearance, 'dark');
+  assert.deepEqual(events, ['lulu-appearance']);
+  runner.onMessage({ source: parent, data: { type: SANDBOX_MSG.APPEARANCE, appearance: 'nope' } });
+  assert.equal(root.dataset.appearance, 'dark', 'an invalid appearance leaves the theme');
 }
 
 {
