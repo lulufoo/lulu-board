@@ -22,12 +22,15 @@ assert.doesNotMatch(ground, /#dfe7ea|%23dfe7ea/, 'ground file holds no paper col
 
 assert.match(boot, /import \{ applyGround \} from '\.\/workspace-ground\.js'/, 'early head imports the ground');
 assert.match(boot, /import \{ applyChrome \} from '\.\/appearance-chrome\.js'/, 'early head imports dock chrome');
+assert.match(boot, /import \{ getSessionAppearance \} from '\.\/session-appearance\.js'/, 'early head reads the appearance cookie');
+assert.match(boot, /applyGround\(doc, appearance\)/, 'early head paints ground from the cookie');
+assert.match(boot, /applyChrome\(doc, appearance\)/, 'early head paints chrome from the cookie');
 assert.ok(
-  boot.indexOf('dataset.drawerMode = "diagram"') < boot.indexOf('applyGround(doc)'),
+  boot.indexOf('dataset.drawerMode = "diagram"') < boot.indexOf('applyGround(doc'),
   'ground is applied right after drawerMode, before first paint'
 );
 assert.ok(
-  boot.indexOf('applyGround(doc)') < boot.indexOf('applyChrome(doc)'),
+  boot.indexOf('applyGround(doc') < boot.indexOf('applyChrome(doc'),
   'dock chrome is applied with the ground, before first paint'
 );
 
