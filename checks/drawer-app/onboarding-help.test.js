@@ -17,8 +17,8 @@ const boot = read('packages/drawer-app/src/chrome/chrome-boot.js');
 const createKind = read('packages/drawer-app/src/chrome/create-kind-dialog.js');
 const src = read('packages/drawer-app/templates/welcome.bmd');
 
-assert.match(createKind, /kind: "welcome"/, 'Welcome is picked from New diagram');
-assert.match(html, /id="createKindDialog"/, 'New diagram hosts the welcome pick');
+assert.match(createKind, /kind: "welcome"/, 'Welcome is picked from New board');
+assert.match(html, /id="createKindDialog"/, 'New board hosts the welcome pick');
 assert.match(html, /diagram-dock-help/, 'shortcuts still sit on the dock rail');
 assert.doesNotMatch(appBuild, /onboarding\.bmd/, 'drawer app build no longer copies onboarding.bmd');
 assert.doesNotMatch(webBuild, /onboarding\.bmd/, 'web build no longer requires onboarding.bmd');
