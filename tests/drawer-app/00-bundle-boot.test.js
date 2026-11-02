@@ -21,6 +21,7 @@ const srcState = [
   'src/core/session-appearance.js',
   'src/state/shell-state.js',
   'src/state/canvas-interaction.js',
+  'src/kinds/sketch-mode.js',
   'src/kinds/sketch.js',
   'src/kinds/design.js',
   'src/kinds/mindmap.js',

@@ -33,6 +33,8 @@ assert.match(html, /style-src 'self' 'unsafe-inline'/);
 assert.match(html, /script-src 'self'/);
 assert.doesNotMatch(html, /script-src 'self' 'unsafe-inline'/);
 assert.match(mount, /"iframe, object, embed, link"/, 'Nested documents and external links are still removed');
+assert.match(mount, /querySelectorAll\("a"\)[\s\S]*?unwrapElement\(links\[j\]\)/, 'Links lose their tag before mounting');
+assert.match(mount, /function unwrapElement\(el\)[\s\S]*?parent\.insertBefore\(el\.firstChild, el\)[\s\S]*?parent\.removeChild\(el\)/, 'A removed link keeps what it wraps');
 assert.doesNotMatch(mount, /querySelectorAll\("script/, 'Scripts run in the runner and are not filtered');
 assert.doesNotMatch(mount, /\^on\/i/, 'Event handler attributes run in the runner and are not filtered');
 assert.match(mount, /createElement\("iframe"\)/, 'Sketch mounts in its own document');

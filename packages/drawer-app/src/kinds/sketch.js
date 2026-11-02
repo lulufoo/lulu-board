@@ -3,6 +3,7 @@ import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
 import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
+import { setSketchMode, bindSketchMode } from './sketch-mode.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -20,13 +21,24 @@ function sketchWorldBounds(el) {
   return { minX: 0, minY: 0, maxX: w, maxY: h, width: w, height: h, cx: w / 2, cy: h / 2 };
 }
 
+// Drops the tag and keeps what it wraps, so a link's text stays.
+function unwrapElement(el) {
+  var parent = el.parentNode;
+  if (!parent) return;
+  while (el.firstChild) parent.insertBefore(el.firstChild, el);
+  parent.removeChild(el);
+}
+
 function sketchFragmentRoot(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
   // Scripts are not filtered here: they are meant to run, inside the runner's opaque origin. This removal is a content
   // guard, not a boundary: a script can still create these elements, and the runner's CSP is what blocks them.
+  // A script-made link is the runner's to stop: it ignores link clicks.
   var banned = tpl.content.querySelectorAll("iframe, object, embed, link");
   for (var i = banned.length - 1; i >= 0; i -= 1) banned[i].remove();
+  var links = tpl.content.querySelectorAll("a");
+  for (var j = links.length - 1; j >= 0; j -= 1) unwrapElement(links[j]);
   return tpl.content;
 }
 
@@ -46,6 +58,7 @@ var mountedSketch = null;
 // One channel per sketch frame: the captures it is still waiting for.
 var channels = new WeakMap();
 var captureSeq = 0;
+if (typeof document !== "undefined") bindSketchMode(document);
 
 export function renderSketch(opts) {
   opts = opts || {};
@@ -84,6 +97,8 @@ export function renderSketch(opts) {
     stopListening();
     stopListening = null;
   }
+  // A new frame is a new open: it starts in Canvas, and a theme change above never reaches this line.
+  setSketchMode("canvas", document);
   previewEl.innerHTML = "";
   // The picture box is what the canvas centers, zooms, and snaps. The frame hangs out of it by the bleed so a shadow,
   // outline, or ring at the picture edge is painted instead of cut off by the frame.
