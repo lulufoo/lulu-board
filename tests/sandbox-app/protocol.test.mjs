@@ -17,7 +17,10 @@ import {
   parseError,
 } from '../../packages/sandbox-app/src/protocol.js';
 
-assert.deepEqual(parseRender(renderMessage('<p>x</p>')), { html: '<p>x</p>' });
+assert.deepEqual(parseRender(renderMessage('<p>x</p>')), { html: '<p>x</p>', appearance: 'light' });
+assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'dark')), { html: '<p>x</p>', appearance: 'dark' });
+assert.deepEqual(parseRender(renderMessage('<p>x</p>', 'nope')), { html: '<p>x</p>', appearance: 'light' }, 'unknown appearance is light');
+assert.deepEqual(parseRender({ type: SANDBOX_MSG.RENDER, html: '<p>x</p>' }), { html: '<p>x</p>', appearance: 'light' }, 'a missing appearance is light');
 assert.equal(parseRender({ type: SANDBOX_MSG.RENDER, html: 1 }), null, 'html must be a string');
 assert.equal(parseRender(null), null);
 assert.equal(parseRender({ type: 'other', html: '' }), null);

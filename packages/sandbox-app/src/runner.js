@@ -86,7 +86,12 @@ export function createRunner(env) {
     post(sizeMessage(size.width, size.height, bleed));
   }
 
-  function mount(html) {
+  function mount(html, appearance) {
+    var root = doc.documentElement;
+    if (root) {
+      var data = root.dataset || (root.dataset = {});
+      data.appearance = appearance === 'dark' ? 'dark' : 'light';
+    }
     var body = doc.body;
     setBleed(SANDBOX_BLEED);
     var range = doc.createRange();
@@ -127,7 +132,7 @@ export function createRunner(env) {
       // One render per runner load: Board mounts a fresh frame for every sketch.
       if (rendered) return;
       rendered = true;
-      mount(render.html);
+      mount(render.html, render.appearance);
       return;
     }
     var request = parseCapture(event.data);

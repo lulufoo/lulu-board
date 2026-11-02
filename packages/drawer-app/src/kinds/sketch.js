@@ -2,6 +2,7 @@
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
 import { renderMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
+import { getSessionAppearance } from '../core/session-appearance.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -141,8 +142,8 @@ export function renderSketch(opts) {
     if (parseReady(event.data)) {
       if (sent) return;
       sent = true;
-      // An opaque origin cannot be named as a target; only the fragment travels this way.
-      frame.contentWindow.postMessage(renderMessage(html), "*");
+      // An opaque origin cannot be named as a target; the fragment and its appearance travel this way.
+      frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance()), "*");
       return;
     }
     var size = parseSize(event.data);

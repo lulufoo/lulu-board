@@ -32,10 +32,19 @@ function validId(id) {
   return typeof id === 'string' && id.length > 0 && id.length <= SANDBOX_MAX_ID_LENGTH;
 }
 
+/* Light is the default. Anything else is not a theme the runner can stamp. */
+function validAppearance(value) {
+  return value === 'dark' ? 'dark' : 'light';
+}
+
 /* Board -> runner */
 
-export function renderMessage(html) {
-  return { type: SANDBOX_MSG.RENDER, html: String(html == null ? '' : html) };
+export function renderMessage(html, appearance) {
+  return {
+    type: SANDBOX_MSG.RENDER,
+    html: String(html == null ? '' : html),
+    appearance: validAppearance(appearance),
+  };
 }
 
 export function captureMessage(id, scale) {
@@ -44,7 +53,7 @@ export function captureMessage(id, scale) {
 
 export function parseRender(data) {
   if (!isObject(data) || data.type !== SANDBOX_MSG.RENDER || typeof data.html !== 'string') return null;
-  return { html: data.html };
+  return { html: data.html, appearance: validAppearance(data.appearance) };
 }
 
 export function parseCapture(data) {

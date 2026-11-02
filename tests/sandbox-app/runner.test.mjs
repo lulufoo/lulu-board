@@ -21,15 +21,17 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
       const top = rootStyle.padding === '0' || rootStyle.padding === undefined ? 0 : parseInt(rootStyle.padding, 10);
       return { top, bottom: top + page.bodyHeight, height: page.bodyHeight };
     },
-    appendChild: (node) => mounted.push(node),
+    appendChild: (node) => mounted.push({ node: node, appearance: documentElement.dataset.appearance }),
     addEventListener: () => {},
   };
+  const documentElement = {
+    dataset: {},
+    get scrollWidth() { return page.scrollWidth; },
+    get clientWidth() { return page.clientWidth; },
+    style: rootStyle,
+  };
   const doc = {
-    documentElement: {
-      get scrollWidth() { return page.scrollWidth; },
-      get clientWidth() { return page.clientWidth; },
-      style: rootStyle,
-    },
+    documentElement,
     body,
     createRange: () => ({ selectNodeContents() {}, createContextualFragment: (html) => ({ html }) }),
   };
@@ -66,13 +68,20 @@ const types = (posted) => posted.map((p) => p.msg.type);
   runner.onMessage({ source: {}, data: renderMessage('<p>evil</p>') });
   assert.equal(mounted.length, 0, 'messages from other windows are ignored');
   runner.onMessage({ source: parent, data: renderMessage('<p>ok</p>') });
-  assert.deepEqual(mounted, [{ html: '<p>ok</p>' }]);
+  assert.deepEqual(mounted, [{ node: { html: '<p>ok</p>' }, appearance: 'light' }], 'appearance is light before the fragment is inserted');
   const size = posted.find((p) => p.msg.type === SANDBOX_MSG.SIZE);
   assert.deepEqual(size.msg, { type: SANDBOX_MSG.SIZE, width: 300, height: 120 + SANDBOX_BLEED * 2, bleed: SANDBOX_BLEED },
     'the frame is the picture plus the bleed, and the message says how much');
-  runner.onMessage({ source: parent, data: renderMessage('<p>second</p>') });
+  runner.onMessage({ source: parent, data: renderMessage('<p>second</p>', 'dark') });
   assert.equal(mounted.length, 1, 'a runner renders once');
   assert.equal(posted.filter((p) => p.msg.type === SANDBOX_MSG.SIZE).length, 1, 'size is sent when it changes');
+}
+
+{
+  const { runner, parent, mounted } = makeEnv();
+  runner.start();
+  runner.onMessage({ source: parent, data: renderMessage('<p>night</p>', 'dark') });
+  assert.deepEqual(mounted, [{ node: { html: '<p>night</p>' }, appearance: 'dark' }], 'dark is stamped before the fragment is inserted');
 }
 
 {
