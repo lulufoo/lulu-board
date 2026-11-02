@@ -33,8 +33,8 @@ Write from the template.
 
 The viewer mounts the fragment in its own document. Write for this environment.
 
-1. The fragment renders in a sandboxed `iframe`. Board and the fragment cannot reach each other's CSS or scripts. Scripts run when the sketch mounts. `fetch`, `XMLHttpRequest`, and `WebSocket` are blocked.
-2. Board supplies `html` and `body` with zero margin and a transparent background. `:root`, `html`, and `body` selectors act on that document. A background on `body` paints the diagram only, and a background on `html` is ignored. To color the diagram, set the background on `body` or on the root element.
+1. The fragment renders in a sandboxed `iframe`. Board and the fragment cannot reach each other's CSS or scripts. Scripts run when the sketch mounts.
+2. `:root`, `html`, and `body` selectors act on that document (zero margin, transparent). A `body` background paints the diagram only; an `html` background is ignored.
 3. The frame takes no pointer input. Scripts get no pointer events, so click handlers and `:hover` do nothing. The canvas pans and zooms over it.
 4. No network. Put every style, shape, glyph, and script in the fragment.
 
