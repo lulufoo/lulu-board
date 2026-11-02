@@ -156,10 +156,22 @@ export function createRunner(env) {
     if (request) capture(request);
   }
 
+  /* A click on a link would navigate this frame away from the sketch, and Present mode lets clicks reach it.
+   * preventDefault only: the event keeps running, so the fragment's own click handlers still fire.
+   * Click events only: a script can still set location.href, so this guards the picture, not the sandbox. */
+  function blockLinkClick(event) {
+    var target = event.target;
+    if (target && typeof target.closest === 'function' && target.closest('a[*|href], area[href]')) {
+      event.preventDefault();
+    }
+  }
+
   function start() {
     win.addEventListener('message', onMessage);
+    // Capture phase on the window, registered before any fragment mounts, so it runs ahead of fragment listeners.
+    win.addEventListener('click', blockLinkClick, true);
     post(readyMessage());
   }
 
-  return { start: start, onMessage: onMessage };
+  return { start: start, onMessage: onMessage, blockLinkClick: blockLinkClick };
 }

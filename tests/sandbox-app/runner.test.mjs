@@ -7,6 +7,7 @@ import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, captureMe
 function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
   const posted = [];
   const listeners = {};
+  const captures = {};
   const mounted = [];
   const parent = { postMessage: (msg, target, transfer) => posted.push({ msg, target, transfer }) };
   const page = { scrollWidth: width, clientWidth: undefined, bodyHeight: height, innerWidth: undefined, innerHeight: undefined };
@@ -42,7 +43,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     Event: function (type) { this.type = type; },
     get innerWidth() { return page.innerWidth; },
     get innerHeight() { return page.innerHeight; },
-    addEventListener: (type, fn) => { listeners[type] = fn; },
+    addEventListener: (type, fn, capture) => { listeners[type] = fn; captures[type] = capture; },
   };
   let observe = null;
   const runner = createRunner({
@@ -52,7 +53,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     createImageBitmap: async (canvas) => ({ width: canvas.width, height: canvas.height }),
     ResizeObserver: function (cb) { observe = cb; this.observe = () => {}; },
   });
-  return { runner, posted, listeners, parent, mounted, win, page, rootStyle, root: documentElement, events, fire: () => observe() };
+  return { runner, posted, listeners, captures, parent, mounted, win, page, rootStyle, root: documentElement, events, fire: () => observe() };
 }
 
 const types = (posted) => posted.map((p) => p.msg.type);
@@ -63,6 +64,37 @@ const types = (posted) => posted.map((p) => p.msg.type);
   assert.deepEqual(types(posted), [SANDBOX_MSG.READY], 'announces itself once started');
   assert.equal(posted[0].target, '*', 'opaque origin cannot name the parent origin');
   assert.equal(typeof listeners.message, 'function');
+}
+
+{
+  const { runner, listeners, captures } = makeEnv();
+  runner.start();
+  assert.equal(typeof listeners.click, 'function', 'the runner watches clicks from the start, before any fragment mounts');
+  assert.equal(captures.click, true, 'the click guard runs in the capture phase, ahead of fragment listeners');
+}
+
+{
+  // A click on a link would navigate the frame away. The guard cancels the default and leaves the event running.
+  const { runner, listeners } = makeEnv();
+  runner.start();
+  const asked = [];
+  const click = (target) => {
+    const event = {
+      target, prevented: false, stopped: false,
+      preventDefault() { this.prevented = true; },
+      stopPropagation() { this.stopped = true; },
+      stopImmediatePropagation() { this.stopped = true; },
+    };
+    listeners.click(event);
+    return event;
+  };
+  const onLink = click({ closest: (selector) => { asked.push(selector); return {}; } });
+  assert.equal(onLink.prevented, true, 'a click on a link does not navigate');
+  assert.equal(onLink.stopped, false, "the fragment's own click handlers still run");
+  assert.equal(asked[0], 'a[*|href], area[href]', 'HTML anchors, SVG anchors, and image-map areas are all links');
+  assert.equal(click({ closest: () => null }).prevented, false, 'a click elsewhere is left alone');
+  assert.equal(click({}).prevented, false, 'a target that cannot be searched is left alone');
+  assert.equal(click(null).prevented, false, 'an event without a target is left alone');
 }
 
 {

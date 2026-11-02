@@ -49,6 +49,10 @@ After deploying, check the live page with
 Known gap: `connect-src` does not cover images. A fragment can still send data out with an
 `<img>` GET. `script-src`, `img-src`, and `style-src` stay open on purpose.
 
+Link clicks: the runner cancels the default action of a click on `<a href>` and `<area href>`, so a click cannot
+navigate the frame away. The click still reaches the fragment's own handlers. This guards the picture, not the
+sandbox: a script can still set `location.href`.
+
 ## Message contract
 
 Source of truth: `src/protocol.js`. Board imports the same module, so names and validators

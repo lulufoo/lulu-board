@@ -21,6 +21,7 @@ assert.match(skill, /Always write a short title that names the diagram/, 'skill 
 assert.doesNotMatch(skill, /does not run scripts|The picture is static/, 'skill no longer says scripts are unsupported');
 assert.match(skill, /Scripts run when the sketch mounts/, 'skill says scripts run');
 assert.match(skill, /Scripts get no pointer events, so click handlers and `:hover` do nothing/, 'skill says pointer handlers do nothing');
+assert.match(skill, /Present mode turns on clicks only/, 'skill says Present mode turns on clicks only');
 assert.match(skill, /## Performance/, 'skill has a performance section');
 assert.match(skill, /Add animation only when the user asks for it/, 'skill limits animation');
 assert.match(skill, /Animate only `transform` and `opacity`/, 'skill limits what may animate');

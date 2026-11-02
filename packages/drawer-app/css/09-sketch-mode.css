@@ -1,0 +1,26 @@
+/* drawer-app/09-sketch-mode.css — the Canvas | Present switch in the top toolbar, and what each mode does to the sketch frame. */
+.sketch-mode-tools {
+  display: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--fill, var(--panel-solid));
+}
+html[data-kind="sketch"] .sketch-mode-tools { display: inline-flex; }
+.sketch-mode-btn {
+  height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink, var(--text));
+  font: 600 13px var(--font);
+  cursor: pointer;
+}
+.sketch-mode-btn:hover { background: var(--wash); }
+.sketch-mode-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--brand, var(--accent)); }
+.sketch-mode-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* Canvas leaves the frame inert (inline pointer-events:none), so the canvas pans and zooms over it.
+   Present gives the frame its pointer input, and the canvas stops panning and zooming over the sketch. */
+html[data-sketch-mode="present"] .sketch-frame { pointer-events: auto !important; }
