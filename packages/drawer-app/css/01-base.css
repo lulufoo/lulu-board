@@ -61,6 +61,18 @@ input[type="range"],
 select {
   caret-color: transparent;
 }
+/* The chrome is not a text surface. A click on it must not leave a selection: Chrome with
+   caret browsing on paints a caret at that selection. Text entry and Source errors stay selectable. */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+input,
+textarea,
+#diagramError {
+  user-select: text;
+  -webkit-user-select: text;
+}
 .app {
   position: relative;
   height: 100%;
