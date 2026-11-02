@@ -55,6 +55,11 @@ const { getAppearance } = require('../../packages/board-themes/appearance/index.
   const css = fs.readFileSync(path.join(here, '../../packages/drawer-app/css/01-base.css'), 'utf8');
   assert.match(css, /html\[data-theme="dark"\]\s*\{\s*color-scheme:\s*dark;?\s*\}/, 'Dark page scheme');
   assert.match(css, /iframe\.sketch-frame\s*\{\s*color-scheme:\s*light;?\s*\}/, 'Sketch frame stays light');
+  assert.match(
+    css,
+    /button,\s*\[role="button"\],\s*input\[type="range"\],\s*select\s*\{\s*caret-color:\s*transparent;?\s*\}/,
+    'chrome controls are not caret hosts',
+  );
 }
 
 console.log('ok appearance-chrome');

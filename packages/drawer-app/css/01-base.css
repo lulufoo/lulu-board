@@ -55,6 +55,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 button { font: inherit; color: inherit; }
+button,
+[role="button"],
+input[type="range"],
+select {
+  caret-color: transparent;
+}
 .app {
   position: relative;
   height: 100%;
