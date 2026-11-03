@@ -52,7 +52,7 @@
   border: 0;
   border-radius: 6px;
   color: var(--ink-soft, #8b7358);
-  background: rgba(255, 255, 255, .7);
+  background: var(--chip);
 }
 .create-kind-list {
   max-height: min(420px, 60vh);

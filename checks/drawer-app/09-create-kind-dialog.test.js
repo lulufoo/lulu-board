@@ -20,6 +20,8 @@ assert.match(sheet, /class="create-kind-pop"/, 'search-style pop, not the sign-i
 assert.doesNotMatch(sheet, /shell-dialog-sheet/, 'create dialog does not reuse the small sign-in sheet');
 assert.match(sheet, /id="createKindFilter"/, 'filter field');
 assert.match(sheet, /<kbd>ESC<\/kbd>/, 'escape keycap is uppercase');
+assert.match(css, /\.create-kind-box kbd\s*\{[^}]*background:\s*var\(--chip\)/, 'ESC chip follows appearance');
+assert.doesNotMatch(css, /\.create-kind-box kbd\s*\{[^}]*rgba\(255,\s*255,\s*255/, 'ESC chip is not a fixed white');
 assert.match(sheet, /id="createKindList"/, 'type list');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/chrome/confirm.js')), 'dialog is in the drawer bundle');
 assert.ok(fs.existsSync(path.join(root, 'packages/drawer-app/src/chrome/create-kind-dialog.js')), 'dialog is in the drawer bundle');
