@@ -107,15 +107,39 @@ export async function getGroup(env, token, graphId) {
   return groupFromShells(id, body);
 }
 
+function isGzip(bytes) {
+  return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+}
+
+function diagramDecodeError(error, fallback) {
+  var detail = error && error.message ? String(error.message).trim() : "";
+  if (!detail && error && error.cause != null) {
+    detail = error.cause && error.cause.message
+      ? String(error.cause.message).trim()
+      : String(error.cause).trim();
+  }
+  if (!detail) detail = fallback || "Decompression failed";
+  return new Error("could not decode diagram body: " + detail);
+}
+
+// Workers fetch often inflates gzip before the body is read, leaving plain
+// UTF-8 while the encoding header still says gzip. A second inflate throws
+// "Decompression failed". Sniff the gzip magic instead of that header.
 async function responseText(res) {
-  var header = res.headers && typeof res.headers.get === "function"
-    ? res.headers.get("content-encoding")
-    : "";
-  if (String(header || "").toLowerCase() !== "gzip") return res.text();
-  var packed = new Uint8Array(await res.arrayBuffer());
-  var stream = new Blob([packed]).stream().pipeThrough(new DecompressionStream("gzip"));
-  var bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-  return new TextDecoder().decode(bytes);
+  var bytes;
+  try {
+    bytes = new Uint8Array(await res.arrayBuffer());
+  } catch (error) {
+    throw diagramDecodeError(error, "response body unreadable");
+  }
+  if (!isGzip(bytes)) return new TextDecoder().decode(bytes);
+  try {
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+    var inflated = new Uint8Array(await new Response(stream).arrayBuffer());
+    return new TextDecoder().decode(inflated);
+  } catch (error) {
+    throw diagramDecodeError(error, "gzip decompression failed");
+  }
 }
 
 export async function getGraph(env, token, graphId) {

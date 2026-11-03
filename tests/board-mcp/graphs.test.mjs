@@ -82,13 +82,35 @@ const missingEmbed = {
   version: 1,
   updated_at: '2026-09-19T00:00:00Z',
 };
+const inflatedRow = {
+  graph_id: 'b_0fc10004',
+  title: 'Inflated',
+  bmd: 'board "Inflated"\n',
+  version: 2,
+  updated_at: '2026-09-19T00:00:00Z',
+  group_id: 'g_99aabbcc',
+};
+const rawRow = {
+  graph_id: 'b_0fc10006',
+  title: 'Raw',
+  bmd: 'board "Raw"\n',
+  version: 1,
+  updated_at: '2026-09-19T00:00:00Z',
+  group_id: 'g_99aabbcc',
+};
 const ownedGroupId = 'g_abcdef01';
 const missingGroupId = 'g_ffffffff';
 
 function rowForGraphId(href) {
   if (href.includes('graph_id=eq.b_0fc10002')) return arrayEmbed;
   if (href.includes('graph_id=eq.b_0fc10003')) return missingEmbed;
+  if (href.includes('graph_id=eq.b_0fc10004')) return inflatedRow;
+  if (href.includes('graph_id=eq.b_0fc10006')) return rawRow;
   return latest;
+}
+
+function bodyBytes(buf) {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
 function isGraphsInsert(call) {
@@ -149,12 +171,32 @@ globalThis.fetch = async (url, init) => {
     if (requestHeaders['Accept-Encoding'] !== 'gzip') {
       return { ok: true, status: 200, headers: { get: () => null }, text: async () => json };
     }
+    // Already inflated, but the header still claims gzip. This is the Workers fetch case.
+    if (id === 'b_0fc10004' || id === 'b_0fc10006') {
+      const plain = Buffer.from(json);
+      const encoding = id === 'b_0fc10004' ? 'gzip' : null;
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: (name) => String(name).toLowerCase() === 'content-encoding' ? encoding : null },
+        arrayBuffer: async () => bodyBytes(plain),
+      };
+    }
+    if (id === 'b_0fc10005') {
+      const broken = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0xff]);
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: (name) => String(name).toLowerCase() === 'content-encoding' ? 'gzip' : null },
+        arrayBuffer: async () => bodyBytes(broken),
+      };
+    }
     const packed = gzipSync(Buffer.from(json));
     return {
       ok: true,
       status: 200,
       headers: { get: (name) => String(name).toLowerCase() === 'content-encoding' ? 'gzip' : null },
-      arrayBuffer: async () => packed.buffer.slice(packed.byteOffset, packed.byteOffset + packed.byteLength),
+      arrayBuffer: async () => bodyBytes(packed),
     };
   }
   if (href === 'https://api.luluboard.app/groups/shells' && method === 'POST') {
@@ -280,6 +322,27 @@ try {
 
   const fromArray = await getGraph(env, 'tok', 'b_0fc10002');
   assert.equal(fromArray.group_id, 'g_99aabbcc');
+
+  const inflated = await getGraph(env, 'tok', 'b_0fc10004');
+  assert.equal(inflated.graph_id, 'b_0fc10004');
+  assert.equal(inflated.title, 'Inflated');
+  assert.equal(inflated.bmd, 'board "Inflated"\n');
+  assert.equal(inflated.version, 2);
+  assert.equal(inflated.updated_at, inflatedRow.updated_at);
+  assert.equal(inflated.group_id, 'g_99aabbcc');
+
+  const rawBody = await getGraph(env, 'tok', 'b_0fc10006');
+  assert.equal(rawBody.graph_id, 'b_0fc10006');
+  assert.equal(rawBody.bmd, 'board "Raw"\n');
+  assert.equal(rawBody.group_id, 'g_99aabbcc');
+
+  await assert.rejects(
+    () => getGraph(env, 'tok', 'b_0fc10005'),
+    (error) => {
+      assert.match(error.message, /^could not decode diagram body: .+/);
+      return true;
+    }
+  );
 
   await assert.rejects(() => getGraph(env, 'tok', 'b_0fc10003'), /missing group id/);
 
