@@ -18,6 +18,10 @@ The sketch follows the Board theme.
 3. `diagram` has two themes, selected with `html[data-appearance="dark"]`.
 4. The runner sets `data-appearance` on `<html>` before inserting the fragment. When it is absent, the variables are Light. A script reads `document.documentElement.dataset.appearance`.
 
+## Built-in content templates
+
+For content controlled by playback progress, use [player.md](./player.md) inside `.diagram`. The content itself is unrestricted. Otherwise, write the content freely.
+
 ## Board
 
 Write from this block. Replace the part between the markers.
