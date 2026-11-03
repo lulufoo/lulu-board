@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { gzipSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import {
   boardTitleFromBody,
@@ -149,13 +148,8 @@ globalThis.fetch = async (url, init) => {
     if (requestHeaders['Accept-Encoding'] !== 'gzip') {
       return { ok: true, status: 200, headers: { get: () => null }, text: async () => json };
     }
-    const packed = gzipSync(Buffer.from(json));
-    return {
-      ok: true,
-      status: 200,
-      headers: { get: (name) => String(name).toLowerCase() === 'content-encoding' ? 'gzip' : null },
-      arrayBuffer: async () => packed.buffer.slice(packed.byteOffset, packed.byteOffset + packed.byteLength),
-    };
+    // Workers fetch() decodes the gzip body on read and keeps the content-encoding header.
+    return new Response(json, { status: 200, headers: { 'content-encoding': 'gzip' } });
   }
   if (href === 'https://api.luluboard.app/groups/shells' && method === 'POST') {
     const payload = JSON.parse(body);

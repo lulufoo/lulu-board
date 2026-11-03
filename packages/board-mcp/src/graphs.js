@@ -107,17 +107,6 @@ export async function getGroup(env, token, graphId) {
   return groupFromShells(id, body);
 }
 
-async function responseText(res) {
-  var header = res.headers && typeof res.headers.get === "function"
-    ? res.headers.get("content-encoding")
-    : "";
-  if (String(header || "").toLowerCase() !== "gzip") return res.text();
-  var packed = new Uint8Array(await res.arrayBuffer());
-  var stream = new Blob([packed]).stream().pipeThrough(new DecompressionStream("gzip"));
-  var bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-  return new TextDecoder().decode(bytes);
-}
-
 export async function getGraph(env, token, graphId) {
   var id = assertGraphId(graphId);
   var res = await fetch("https://api.luluboard.app/graphs?diagram_id=" + encodeURIComponent(id), {
@@ -126,7 +115,8 @@ export async function getGraph(env, token, graphId) {
       "Accept-Encoding": "gzip",
     },
   });
-  var text = await responseText(res);
+  // Workers fetch() decodes the gzip body on read and keeps the content-encoding header.
+  var text = await res.text();
   var body = text ? JSON.parse(text) : null;
   if (res.status === 404 || !body) throw new Error("Cloud board not found");
   if (!res.ok) {
