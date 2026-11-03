@@ -22,5 +22,7 @@ html[data-kind="sketch"] .sketch-mode-tools { display: inline-flex; }
 .sketch-mode-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 
 /* Canvas leaves the frame inert (inline pointer-events:none), so the canvas pans and zooms over it.
-   Present gives the frame its pointer input, and the canvas stops panning and zooming over the sketch. */
+   Present gives the frame its pointer input. The host ground drops grab: blank pan, wheel zoom,
+   and blank dblclick are locked in canvas-interaction.js. */
 html[data-sketch-mode="present"] .sketch-frame { pointer-events: auto !important; }
+html[data-kind="sketch"][data-sketch-mode="present"] #preview-stage { cursor: default; }

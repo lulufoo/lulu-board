@@ -120,6 +120,7 @@ function makeDoc() {
   assert.match(css, /\.sketch-mode-tools \{\s*display: none;/, 'the switch is hidden unless the kind asks for it');
   assert.match(css, /html\[data-kind="sketch"\] \.sketch-mode-tools \{ display: inline-flex; \}/, 'only Sketch shows it');
   assert.match(css, /html\[data-sketch-mode="present"\] \.sketch-frame \{ pointer-events: auto !important; \}/, 'Present opens the frame');
+  assert.match(css, /html\[data-kind="sketch"\]\[data-sketch-mode="present"\] #preview-stage \{ cursor: default; \}/, 'Present drops grab on the ground');
   assert.doesNotMatch(css, /data-sketch-mode="canvas"/, 'Canvas needs no rule: the frame is inert by default');
 }
 

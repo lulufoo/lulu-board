@@ -67,6 +67,18 @@ export function isBlockedTarget(target) {
   return kindHit(target);
 }
 
+/* Present locks the host ground: no blank pan, wheel zoom, or blank dblclick.
+   The live switch is html[data-kind][data-sketch-mode]; this file does not import kinds. */
+export function isSketchPresent(doc) {
+  var root = doc;
+  if (!root) {
+    if (typeof document === "undefined") return false;
+    root = document;
+  }
+  var data = root.documentElement && root.documentElement.dataset;
+  return !!(data && data.kind === "sketch" && data.sketchMode === "present");
+}
+
 export function wheelFactor(deltaY, deltaMode) {
   var unit = deltaMode === 1 ? 16 : deltaMode === 2 ? 400 : 1;
   return Math.exp(-(Number(deltaY) * unit) * 0.0012);
@@ -88,11 +100,13 @@ export function openBlankProps() {
 
 function onDblClick(event) {
   if (isBlockedTarget(event.target)) return;
+  if (isSketchPresent()) return;
   openBlankProps();
 }
 
 function onWheel(event) {
   event.preventDefault();
+  if (isSketchPresent()) return;
   var factor = wheelFactor(event.deltaY, event.deltaMode);
   setCanvasZoom(scale * factor);
   emit("noteUserCanvasView");
@@ -102,6 +116,7 @@ function onWheel(event) {
 function onPointerDown(event) {
   if (event.button !== 0) return;
   if (isBlockedTarget(event.target)) return;
+  if (isSketchPresent()) return;
   event.preventDefault();
   try {
     var sel = window.getSelection && window.getSelection();
@@ -176,6 +191,7 @@ export const Canvas = {
   registerKind: registerKind,
   activeKindId: activeKindId,
   isBlockedTarget: isBlockedTarget,
+  isSketchPresent: isSketchPresent,
   wheelFactor: wheelFactor,
   leaveBlank: leaveBlank,
   openBlankProps: openBlankProps,

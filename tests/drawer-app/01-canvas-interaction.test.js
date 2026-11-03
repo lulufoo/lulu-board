@@ -16,6 +16,12 @@ assert.ok(Interaction.isBlockedTarget({ closest: (sel) => sel.indexOf('.diagram-
 assert.ok(!Interaction.isBlockedTarget({ closest: () => null }), 'blank stage is not a hit');
 assert.ok(!Interaction.isBlockedTarget(null), 'missing target is blank');
 
+assert.ok(Interaction.isSketchPresent({ documentElement: { dataset: { kind: 'sketch', sketchMode: 'present' } } }), 'Sketch Present locks the host ground');
+assert.ok(!Interaction.isSketchPresent({ documentElement: { dataset: { kind: 'sketch', sketchMode: 'canvas' } } }), 'Sketch Canvas does not lock the ground');
+assert.ok(!Interaction.isSketchPresent({ documentElement: { dataset: { kind: 'flowchart', sketchMode: 'present' } } }), 'Present on another kind does not lock');
+assert.ok(!Interaction.isSketchPresent({ documentElement: { dataset: {} } }), 'an empty root is not Present');
+assert.ok(!Interaction.isSketchPresent(null), 'a missing document is not Present');
+
 let boardClear = 0;
 let flowClear = 0;
 Interaction.registerKind('board', {
@@ -53,6 +59,10 @@ assert.match(src, /\.diagram-dock-resize/, 'dock resize is chrome, not a blank l
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
 assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
 assert.match(src, /openBlankProps/, 'blank dblclick opens Props');
+assert.match(src.slice(src.indexOf('function onPointerDown'), src.indexOf('function onPointerMove')), /if \(isSketchPresent\(\)\) return;/, 'Present does not start blank pan');
+assert.match(src.slice(src.indexOf('function onWheel'), src.indexOf('function onPointerDown')), /if \(isSketchPresent\(\)\) return;/, 'Present does not wheel-zoom the ground');
+assert.match(src.slice(src.indexOf('function onDblClick'), src.indexOf('function onWheel')), /if \(isSketchPresent\(\)\) return;/, 'Present does not open Props on blank dblclick');
+assert.doesNotMatch(src, /from '\.\/.*sketch-mode/, 'the ground lock reads the live html attributes');
 assert.strictEqual(typeof Interaction.openBlankProps, 'function', 'blank dblclick opens Props');
 Interaction.openBlankProps();
 
