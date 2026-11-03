@@ -35,6 +35,7 @@ let boundStage = null;
 let panning = false;
 let panOrigin = null;
 let panMoved = false;
+let presentDismiss = false;
 
 export function registerKind(id, rec) {
   var key = String(id || "").trim();
@@ -68,7 +69,8 @@ export function isBlockedTarget(target) {
 }
 
 /* Present locks the host ground: no blank pan, wheel zoom, or blank dblclick.
-   The live switch is html[data-kind][data-sketch-mode]; this file does not import kinds. */
+   A click on that ground still closes the dock. The live switch is
+   html[data-kind][data-sketch-mode]; this file does not import kinds. */
 export function isSketchPresent(doc) {
   var root = doc;
   if (!root) {
@@ -116,7 +118,11 @@ function onWheel(event) {
 function onPointerDown(event) {
   if (event.button !== 0) return;
   if (isBlockedTarget(event.target)) return;
-  if (isSketchPresent()) return;
+  if (isSketchPresent()) {
+    presentDismiss = true;
+    return;
+  }
+  presentDismiss = false;
   event.preventDefault();
   try {
     var sel = window.getSelection && window.getSelection();
@@ -163,10 +169,16 @@ function endPan(leaveIfStill) {
 }
 
 function onPointerUp() {
+  if (presentDismiss) {
+    presentDismiss = false;
+    leaveBlank();
+    return;
+  }
   endPan(true);
 }
 
 function onPointerCancel() {
+  presentDismiss = false;
   endPan(false);
 }
 

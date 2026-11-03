@@ -59,9 +59,18 @@ assert.match(src, /\.diagram-dock-resize/, 'dock resize is chrome, not a blank l
 assert.doesNotMatch(src, /let scale|var scale =|function applyTransform/, 'no second camera stack');
 assert.match(src, /addEventListener\("dblclick", onDblClick\)/, 'blank dblclick is on the shared module');
 assert.match(src, /openBlankProps/, 'blank dblclick opens Props');
-assert.match(src.slice(src.indexOf('function onPointerDown'), src.indexOf('function onPointerMove')), /if \(isSketchPresent\(\)\) return;/, 'Present does not start blank pan');
+const downFn = src.slice(src.indexOf('function onPointerDown'), src.indexOf('function onPointerMove'));
+const presentAt = downFn.indexOf('if (isSketchPresent())');
+const panAt = downFn.indexOf('panning = true');
+const armed = downFn.indexOf('presentDismiss = true');
+const presentReturn = downFn.indexOf('return;', armed);
+assert.ok(presentAt >= 0 && armed > presentAt && presentReturn > armed && presentReturn < panAt, 'Present press returns before pan starts');
 assert.match(src.slice(src.indexOf('function onWheel'), src.indexOf('function onPointerDown')), /if \(isSketchPresent\(\)\) return;/, 'Present does not wheel-zoom the ground');
 assert.match(src.slice(src.indexOf('function onDblClick'), src.indexOf('function onWheel')), /if \(isSketchPresent\(\)\) return;/, 'Present does not open Props on blank dblclick');
+const upFn = src.slice(src.indexOf('function onPointerUp'), src.indexOf('function onPointerCancel'));
+assert.match(upFn, /if \(presentDismiss\)/, 'Present click is handled on release');
+assert.match(upFn, /leaveBlank\(\)/, 'Present blank click closes the dock');
+assert.match(src.slice(src.indexOf('function onPointerCancel'), src.indexOf('function onSelectStart')), /presentDismiss = false/, 'a cancelled Present press does not stay armed');
 assert.doesNotMatch(src, /from '\.\/.*sketch-mode/, 'the ground lock reads the live html attributes');
 assert.strictEqual(typeof Interaction.openBlankProps, 'function', 'blank dblclick opens Props');
 Interaction.openBlankProps();
@@ -84,5 +93,70 @@ assert.doesNotMatch(flow, /openBlankProps/, 'flowchart does not own blank props'
 assert.doesNotMatch(flow, /closePropsPanel/, 'flowchart clear does not hide Properties');
 assert.doesNotMatch(board, /closePropsPanel/, 'Board clear does not hide Properties');
 assert.doesNotMatch(flow, /\.top-float, \.diagram-dock, \.zoom-float/, 'dock resize is not a flowchart leave');
+
+{
+  const previousDocument = globalThis.document;
+  const blank = { closest() { return null; } };
+  const chrome = { closest() { return true; } };
+  let prevented = 0;
+  let captured = 0;
+  const classes = new Set();
+  const stage = {
+    classList: {
+      add(name) { classes.add(name); },
+      remove(name) { classes.delete(name); },
+    },
+    setPointerCapture() { captured += 1; },
+    addEventListener(type, fn) { this.on[type] = fn; },
+    on: {},
+  };
+  function press(target) {
+    prevented = 0;
+    stage.on.pointerdown({
+      button: 0,
+      target,
+      clientX: 4,
+      clientY: 5,
+      pointerId: 1,
+      preventDefault() { prevented += 1; },
+    });
+  }
+  Interaction.bind(stage);
+  try {
+    globalThis.document = { documentElement: { dataset: { kind: 'sketch', sketchMode: 'present' } } };
+    const base = boardClear;
+    press(blank);
+    assert.equal(prevented, 0, 'Present blank press does not pan');
+    assert.equal(captured, 0, 'Present blank press does not capture the pointer');
+    assert.equal(classes.has('panning'), false, 'Present blank press does not mark panning');
+    assert.equal(boardClear, base, 'Present press waits for release');
+    stage.on.pointercancel({});
+    stage.on.pointerup({});
+    assert.equal(boardClear, base, 'a cancelled Present press does not close the dock');
+    press(blank);
+    stage.on.pointerup({});
+    assert.equal(boardClear, base + 1, 'Present blank click runs the same leave as Canvas');
+    stage.on.dblclick({ target: blank });
+    assert.equal(boardClear, base + 1, 'Present blank dblclick does not leave again');
+    press(chrome);
+    stage.on.pointerup({});
+    assert.equal(boardClear, base + 1, 'a click on chrome does not close the dock');
+    globalThis.document = { documentElement: { dataset: { kind: 'sketch', sketchMode: 'canvas' } } };
+    press(blank);
+    assert.equal(prevented, 1, 'Canvas blank press still pans');
+    assert.equal(captured, 1, 'Canvas blank press still captures the pointer');
+    assert.equal(classes.has('panning'), true, 'Canvas blank press marks panning');
+    stage.on.pointerup({});
+    assert.equal(boardClear, base + 2, 'Canvas blank click still leaves');
+    assert.equal(classes.has('panning'), false, 'Canvas release clears panning');
+    press(blank);
+    stage.on.pointermove({ clientX: 40, clientY: 40 });
+    stage.on.pointerup({});
+    assert.equal(boardClear, base + 2, 'a Canvas drag does not leave');
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+  }
+}
 
 console.log('ok canvas-interaction');
