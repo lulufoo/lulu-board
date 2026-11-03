@@ -69,7 +69,9 @@ export function isBlockedTarget(target) {
 }
 
 /* Present locks the host ground: no blank pan, wheel zoom, or blank dblclick.
-   A click on that ground still closes the dock. The live switch is
+   A click on that ground still closes the dock. While the dock is open,
+   09-sketch-mode.css makes the sketch frame transparent to hits, so a click
+   on the drawing lands here too. The live switch is
    html[data-kind][data-sketch-mode]; this file does not import kinds. */
 export function isSketchPresent(doc) {
   var root = doc;
