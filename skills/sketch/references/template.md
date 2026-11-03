@@ -5,7 +5,7 @@
 The fragment is the diagram.
 The diagram is one 16:9 slide. Keep it landscape.
 
-1. Contains `<style>` and markup.
+1. Contains `<style>` and markup. A 分步演示 also contains one `<script>`, which runs on mount.
 2. Excludes `<!doctype>`, `<html>`, `<head>`, and `<body>`.
 3. Excludes `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<a>`. Board removes them before mounting. Put CSS in `<style>`.
 
