@@ -1,6 +1,7 @@
 /* The Canvas | Present switch of a Sketch.
    The live mode sits on <html data-sketch-mode>. 09-sketch-mode.css turns it into the frame's pointer input:
-   Canvas leaves the frame inert so the canvas pans and zooms over it, Present lets clicks reach the sketch.
+   Canvas leaves the frame inert so the canvas pans and zooms over it. Present lets clicks reach the
+   sketch and locks blank pan, wheel zoom, and blank dblclick on the host ground.
    The choice is the host cookie drawer.sketchMode, the same kind of store as theme, so a new sketch keeps it.
    Both DOM functions take the document, so Node tests can drive them with a fake one. */
 
