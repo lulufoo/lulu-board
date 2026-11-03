@@ -1,12 +1,28 @@
 /* drawer-app/09-sketch-mode.css — the Canvas | Present switch in the top toolbar, and what each mode does to the sketch frame. */
 .sketch-mode-tools {
   display: none;
+  position: relative;
   gap: 2px;
   padding: 3px;
   border-radius: 12px;
   background: var(--fill, var(--panel-solid));
 }
-html[data-kind="sketch"] .sketch-mode-tools { display: inline-flex; }
+html[data-kind="sketch"] .sketch-mode-tools { display: inline-grid; grid-template-columns: 1fr 1fr; }
+.sketch-mode-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc((100% - 8px) / 2);
+  height: calc(100% - 6px);
+  border-radius: 9px;
+  background: var(--accent-soft);
+  pointer-events: none;
+  transition: transform .22s cubic-bezier(.3, .8, .2, 1);
+}
+html[data-sketch-mode="present"] .sketch-mode-thumb { transform: translateX(calc(100% + 2px)); }
+@media (prefers-reduced-motion: reduce) {
+  .sketch-mode-thumb { transition: none; }
+}
 .sketch-mode-btn {
   height: 34px;
   padding: 0 14px;
@@ -18,7 +34,7 @@ html[data-kind="sketch"] .sketch-mode-tools { display: inline-flex; }
   cursor: pointer;
 }
 .sketch-mode-btn:hover { background: var(--wash); }
-.sketch-mode-btn[aria-pressed="true"] { background: var(--accent-soft); color: var(--brand, var(--accent)); }
+.sketch-mode-btn[aria-pressed="true"] { background: transparent; color: var(--brand, var(--accent)); }
 .sketch-mode-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
 
 /* Canvas leaves the frame inert (inline pointer-events:none), so the canvas pans and zooms over it.
