@@ -109,6 +109,7 @@ function makeDoc() {
   const group = html.match(/<div class="sketch-mode-tools" id="sketchModeTools"[\s\S]*?<\/div>/);
   assert.ok(group, 'the switch is in the page');
   assert.match(group[0], /role="group"/);
+  assert.match(group[0], /class="sketch-mode-thumb"/, 'one sliding block sits in the group');
   assert.match(group[0], /id="btnSketchCanvas"[^>]*data-mode="canvas"[^>]*aria-pressed="true"/, 'Canvas is pressed by default');
   assert.match(group[0], /id="btnSketchPresent"[^>]*data-mode="present"[^>]*aria-pressed="false"/, 'Present is not');
   assert.ok(html.indexOf('id="sketchModeTools"') > html.indexOf('class="float top-float"'), 'the switch is in the top-left toolbar');
@@ -118,7 +119,11 @@ function makeDoc() {
 {
   const css = read('packages/drawer-app/css/09-sketch-mode.css');
   assert.match(css, /\.sketch-mode-tools \{\s*display: none;/, 'the switch is hidden unless the kind asks for it');
-  assert.match(css, /html\[data-kind="sketch"\] \.sketch-mode-tools \{ display: inline-flex; \}/, 'only Sketch shows it');
+  assert.match(css, /html\[data-kind="sketch"\] \.sketch-mode-tools \{ display: inline-grid;/, 'only Sketch shows it');
+  assert.match(css, /\.sketch-mode-thumb \{/, 'the selected tint is one block');
+  assert.match(css, /html\[data-sketch-mode="present"\] \.sketch-mode-thumb \{ transform: translateX/, 'Present slides the block');
+  assert.match(css, /\.sketch-mode-btn:hover \{ background: var\(--wash\); \}/, 'hover keeps the wash');
+  assert.match(css, /\.sketch-mode-btn\[aria-pressed="true"\] \{ background: transparent;/, 'the pressed button does not paint its own tint');
   assert.match(css, /html\[data-sketch-mode="present"\] \.sketch-frame \{ pointer-events: auto !important; \}/, 'Present opens the frame');
   assert.match(css, /html\[data-kind="sketch"\]\[data-sketch-mode="present"\] #preview-stage \{ cursor: default; \}/, 'Present drops grab on the ground');
   assert.doesNotMatch(css, /data-sketch-mode="canvas"/, 'Canvas needs no rule: the frame is inert by default');
