@@ -125,6 +125,7 @@ function makeDoc() {
   assert.match(css, /\.sketch-mode-btn:hover \{ background: var\(--wash\); \}/, 'hover keeps the wash');
   assert.match(css, /\.sketch-mode-btn\[aria-pressed="true"\] \{ background: transparent;/, 'the pressed button does not paint its own tint');
   assert.match(css, /html\[data-sketch-mode="present"\] \.sketch-frame \{ pointer-events: auto !important; \}/, 'Present opens the frame');
+  assert.match(css, /html\[data-sketch-mode="present"\]:has\(\.diagram-dock:not\(\[data-open=""\]\)\) \.sketch-frame \{ pointer-events: none !important; \}/, 'an open dock lets a click on the Present drawing close it');
   assert.match(css, /html\[data-kind="sketch"\]\[data-sketch-mode="present"\] #preview-stage \{ cursor: default; \}/, 'Present drops grab on the ground');
   assert.doesNotMatch(css, /data-sketch-mode="canvas"/, 'Canvas needs no rule: the frame is inert by default');
 }

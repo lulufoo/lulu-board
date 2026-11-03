@@ -2,7 +2,8 @@
    The live mode sits on <html data-sketch-mode>. 09-sketch-mode.css turns it into the frame's pointer input:
    Canvas leaves the frame inert so the canvas pans and zooms over it. Present lets clicks reach the
    sketch and locks blank pan, wheel zoom, and blank dblclick on the host ground. A click on that
-   ground still closes the open dock.
+   ground still closes the open dock. While the dock is open the frame yields, so a click on the
+   drawing closes it too; the frame takes clicks again once the dock is shut.
    The choice is the host cookie drawer.sketchMode, the same kind of store as theme, so a new sketch keeps it.
    Both DOM functions take the document, so Node tests can drive them with a fake one. */
 
