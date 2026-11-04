@@ -1,6 +1,6 @@
 # Pointers
 
-Shared viewer-link grammar for Board and Mermaid. Load when a pasted link
+Shared viewer-link grammar for Boxes, Mermaid, and Sketch. Load when a pasted link
 must be read, or when pointer kind changes the next action.
 
 | Prefix | Meaning | Who assembles |
@@ -10,7 +10,7 @@ must be read, or when pointer kind changes the next action.
 | `#b:` | Owned cloud row | MCP return `url` |
 | `#s:` | Share pointer | Browser share; MCP does not write it this round |
 
-CLI `preview` calls the public create RPC and prints only the returned `url`.
+CLI `preview` calls the public create RPC and returns the `url`.
 It does not encode `#z:`. It never mints `#b:`.
 
 ## `#p:`
