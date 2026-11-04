@@ -1,6 +1,6 @@
 # Cloud
 
-Shared MCP flow for Board and Mermaid. Load when `whoami` is listed.
+Shared MCP flow for Boxes, Mermaid, and Sketch. Load when `whoami` is listed.
 
 `diagram_id` is only the bare id (`b_` plus 8 lowercase hex). Diagram tools
 return `diagram_id` and `url`. `get_group` returns `group_id` and `members`.
