@@ -1,6 +1,37 @@
 import assert from 'node:assert/strict';
 import { createRunner } from '../../packages/sandbox-app/src/runner.js';
-import { SANDBOX_MSG, SANDBOX_BLEED, renderMessage, appearanceMessage, captureMessage } from '../../packages/sandbox-app/src/protocol.js';
+import {
+  SANDBOX_MSG,
+  SANDBOX_BLEED,
+  renderMessage,
+  appearanceMessage,
+  captureMessage,
+  pickMessage,
+  selectMessage,
+  textMessage,
+} from '../../packages/sandbox-app/src/protocol.js';
+
+/* A fake element for the picking tests: attributes, a parent, and the few methods the runner calls. A target id
+ * stamps it the way Board does. */
+function fakeElement(target, parent) {
+  const attrs = {};
+  if (target) attrs['data-lulu-id'] = target;
+  const el = {
+    attrs,
+    parent,
+    kids: null,
+    setAttribute: (key, value) => { attrs[key] = value; },
+    removeAttribute: (key) => { delete attrs[key]; },
+    getAttribute: (key) => (key in attrs ? attrs[key] : null),
+    replaceChildren: (fragment) => { el.kids = fragment.kids; },
+    closest: (selector) => {
+      const key = /^\[([a-z-]+)\]$/.exec(selector)[1];
+      for (let node = el; node; node = node.parent) if (key in node.attrs) return node;
+      return null;
+    },
+  };
+  return el;
+}
 
 /* A fake window. `page` is the layout the runner reads and may be changed between reports; `fire()` runs the
  * ResizeObserver callback, which is what a layout change does in a browser. */
@@ -32,11 +63,24 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     style: rootStyle,
   };
   const events = [];
+  // What the picking tests drive: the stack elementsFromPoint answers, the elements Board stamped, and the head.
+  const stack = { list: [], asked: [] };
+  const byTarget = {};
+  const head = { kids: [], appendChild(node) { this.kids.push(node); } };
   const doc = {
     documentElement,
     body,
+    head,
     createRange: () => ({ selectNodeContents() {}, createContextualFragment: (html) => ({ html }) }),
     dispatchEvent: (ev) => { events.push(ev.type); },
+    elementsFromPoint: (x, y) => { stack.asked.push([x, y]); return stack.list; },
+    querySelector: (selector) => {
+      const hit = /^\[data-lulu-id="([^"]*)"\]$/.exec(selector);
+      return hit ? byTarget[hit[1]] || null : null;
+    },
+    createElement: (name) => Object.assign(fakeElement(null, null), { name, textContent: '' }),
+    createTextNode: (text) => ({ text }),
+    createDocumentFragment: () => ({ kids: [], appendChild(node) { this.kids.push(node); } }),
   };
   const win = {
     parent,
@@ -53,7 +97,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     createImageBitmap: async (canvas) => ({ width: canvas.width, height: canvas.height }),
     ResizeObserver: function (cb) { observe = cb; this.observe = () => {}; },
   });
-  return { runner, posted, listeners, captures, parent, mounted, win, page, rootStyle, root: documentElement, events, fire: () => observe() };
+  return { runner, posted, listeners, captures, parent, mounted, win, page, rootStyle, root: documentElement, events, stack, byTarget, head, fire: () => observe() };
 }
 
 const types = (posted) => posted.map((p) => p.msg.type);
@@ -263,6 +307,137 @@ const sizes = (posted) => posted.filter((p) => p.msg.type === SANDBOX_MSG.SIZE).
   const all = sizes(posted);
   assert.equal(all.length, 2);
   assert.equal(all[1].bleed, 0, 'a viewport-wide page loses the bleed too');
+}
+
+const RING = { color: '#db4c84', width: 2, offset: 2 };
+const picked = (posted) => posted.filter((p) => p.msg.type === SANDBOX_MSG.PICKED).map((p) => p.msg);
+const mountedEnv = () => {
+  const env = makeEnv();
+  env.runner.start();
+  env.runner.onMessage({ source: env.parent, data: renderMessage('<p>x</p>') });
+  return env;
+};
+
+{
+  // Pick: the first stamped element from the top of the stack down, so a transparent layer over the text does not hide it.
+  const { runner, posted, parent, stack } = mountedEnv();
+  const title = fakeElement('1.0', null);
+  const overlay = fakeElement(null, null);
+  const lineBreak = fakeElement(null, title);
+  stack.list = [overlay, lineBreak, title];
+  runner.onMessage({ source: parent, data: pickMessage('p1', 40, 30) });
+  assert.deepEqual(stack.asked, [[40, 30]], 'the point goes to elementsFromPoint unchanged');
+  assert.deepEqual(picked(posted), [{ type: SANDBOX_MSG.PICKED, id: 'p1', target: '1.0' }], 'a <br> inside the text finds the text');
+  stack.list = [overlay, fakeElement('2', null), title];
+  runner.onMessage({ source: parent, data: pickMessage('p2', 1, 1) });
+  assert.equal(picked(posted)[1].target, '2', 'the topmost stamped element wins');
+  stack.list = [overlay, fakeElement(null, null)];
+  runner.onMessage({ source: parent, data: pickMessage('p3', 1, 1) });
+  assert.equal(picked(posted)[2].target, null, 'nothing stamped under the point is no hit');
+  stack.list = [fakeElement('1" x', null)];
+  runner.onMessage({ source: parent, data: pickMessage('p4', 1, 1) });
+  assert.equal(picked(posted)[3].target, null, 'an id a fragment forged is not passed on');
+  stack.list = [null, {}, title];
+  runner.onMessage({ source: parent, data: pickMessage('p5', 1, 1) });
+  assert.equal(picked(posted)[4].target, '1.0', 'entries that cannot be searched are skipped');
+}
+
+{
+  // Messages before render, from another window, or malformed do nothing.
+  const env = makeEnv();
+  env.runner.start();
+  env.runner.onMessage({ source: env.parent, data: pickMessage('p1', 1, 1) });
+  env.runner.onMessage({ source: env.parent, data: selectMessage('1.0', RING) });
+  env.runner.onMessage({ source: env.parent, data: textMessage('1.0', 'x') });
+  env.runner.onMessage({ source: env.parent, data: renderMessage('<p>x</p>') });
+  env.runner.onMessage({ source: {}, data: pickMessage('p2', 1, 1) });
+  env.runner.onMessage({ source: env.parent, data: pickMessage('p3', NaN, 1) });
+  assert.deepEqual(picked(env.posted), [], 'nothing answered');
+  assert.equal(env.stack.asked.length, 0);
+  assert.equal(env.head.kids.length, 0, 'no ring rule was written');
+}
+
+{
+  // Select: one marker attribute on the element and one injected rule. The fragment's own markup is not touched.
+  const { runner, parent, byTarget, head } = mountedEnv();
+  byTarget['1.0'] = fakeElement('1.0', null);
+  byTarget['2'] = fakeElement('2', null);
+  runner.onMessage({ source: parent, data: selectMessage('1.0', RING) });
+  assert.equal('data-lulu-selected' in byTarget['1.0'].attrs, true, 'the element carries the marker');
+  assert.equal(head.kids.length, 1, 'one rule in the head');
+  const rule = head.kids[0].textContent;
+  assert.match(rule, /\[data-lulu-selected\]\[data-lulu-selected\]/, 'the doubled attribute outranks a rule of the fragment');
+  assert.match(rule, /outline:2px solid #db4c84 !important/);
+  assert.match(rule, /outline-offset:2px !important/);
+  runner.onMessage({ source: parent, data: selectMessage('2', { color: '#112233', width: 3, offset: 4 }) });
+  assert.equal('data-lulu-selected' in byTarget['1.0'].attrs, false, 'the marker moves');
+  assert.equal('data-lulu-selected' in byTarget['2'].attrs, true);
+  assert.equal(head.kids.length, 1, 'the same rule is rewritten, not stacked');
+  assert.match(head.kids[0].textContent, /outline:3px solid #112233 !important;outline-offset:4px !important/, 'the look comes with the message');
+  runner.onMessage({ source: parent, data: selectMessage('9.9', RING) });
+  assert.equal('data-lulu-selected' in byTarget['2'].attrs, false, 'a target that is not there clears the old one');
+  runner.onMessage({ source: parent, data: selectMessage('1.0', RING) });
+  runner.onMessage({ source: parent, data: selectMessage(null, null) });
+  assert.equal('data-lulu-selected' in byTarget['1.0'].attrs, false, 'null clears');
+  runner.onMessage({ source: parent, data: selectMessage('1.0', RING) });
+  runner.onMessage({ source: parent, data: selectMessage('1.0', { color: 'red', width: 2, offset: 2 }) });
+  assert.equal('data-lulu-selected' in byTarget['1.0'].attrs, true, 'an invalid ring is not a message, so the selection stays');
+}
+
+{
+  // Text: built from text nodes and <br> only, so it can never become markup. The size is reported again.
+  const { runner, posted, parent, byTarget, page } = mountedEnv();
+  byTarget['1.0'] = fakeElement('1.0', null);
+  page.bodyHeight = 200;
+  runner.onMessage({ source: parent, data: textMessage('1.0', 'New\n<b>Title</b>\r\n') });
+  const kids = byTarget['1.0'].kids;
+  assert.deepEqual(kids.map((k) => (k.text !== undefined ? k.text : 'br')), ['New', 'br', '<b>Title</b>', 'br'], 'a text node per line, a <br> between');
+  assert.equal(sizes(posted).at(-1).height, 200 + SANDBOX_BLEED * 2, 'the frame follows the new height');
+  runner.onMessage({ source: parent, data: textMessage('1.0', '') });
+  assert.deepEqual(byTarget['1.0'].kids, [], 'empty text empties the element');
+  const before = posted.length;
+  runner.onMessage({ source: parent, data: textMessage('9.9', 'x') });
+  assert.equal(posted.length, before, 'a target that is not there is ignored');
+  runner.onMessage({ source: {}, data: textMessage('1.0', 'forged') });
+  assert.deepEqual(byTarget['1.0'].kids, [], 'another window cannot edit');
+}
+
+{
+  // The ring is for the screen: export takes it off while it captures, and puts it back after.
+  const seen = [];
+  let selectedEl = null;
+  const env = makeEnv({
+    toCanvas: async () => {
+      seen.push('data-lulu-selected' in selectedEl.attrs);
+      env.runner.onMessage({ source: env.parent, data: selectMessage('1.0', RING) });
+      seen.push('data-lulu-selected' in selectedEl.attrs);
+      return { width: 600, height: 240 };
+    },
+  });
+  env.runner.start();
+  env.runner.onMessage({ source: env.parent, data: renderMessage('<p>x</p>') });
+  selectedEl = fakeElement('1.0', null);
+  env.byTarget['1.0'] = selectedEl;
+  env.runner.onMessage({ source: env.parent, data: selectMessage('1.0', RING) });
+  assert.equal('data-lulu-selected' in selectedEl.attrs, true);
+  env.runner.onMessage({ source: env.parent, data: captureMessage('c9', 1) });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.deepEqual(seen, [false, false], 'the picture is taken without the ring, even if a select arrives meanwhile');
+  assert.equal('data-lulu-selected' in selectedEl.attrs, true, 'the ring is back when the capture is over');
+  assert.equal(env.posted.some((p) => p.msg.type === SANDBOX_MSG.CAPTURED), true);
+}
+
+{
+  // A failed capture puts the ring back too.
+  const env = makeEnv({ toCanvas: async () => { throw new Error('boom'); } });
+  env.runner.start();
+  env.runner.onMessage({ source: env.parent, data: renderMessage('<p>x</p>') });
+  const el = fakeElement('1.0', null);
+  env.byTarget['1.0'] = el;
+  env.runner.onMessage({ source: env.parent, data: selectMessage('1.0', RING) });
+  env.runner.onMessage({ source: env.parent, data: captureMessage('c8', 1) });
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal('data-lulu-selected' in el.attrs, true, 'the ring comes back after a failed capture');
 }
 
 console.log('ok sandbox runner');

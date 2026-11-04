@@ -1944,6 +1944,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #mindmapDocTitleField[hidden],
 #mindmapLayoutField[hidden],
 #designDocTitleField[hidden],
+#sketch-props-fields[hidden],
 #propsEmpty[hidden] { display: none !important; }
 
 .props-field {
@@ -1986,6 +1987,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #mindmapDocTitleEditor,
 #mindmapLayoutEditor,
 #mindmapTextEditor,
+#sketch-text-editor,
 #designDocTitleEditor {
   width: 100%; box-sizing: border-box; border: 1px solid var(--stroke); border-radius: 8px;
   padding: 8px 10px; min-height: 34px; background: var(--panel-solid); color: var(--text); font: 13px var(--sans); outline: none;
@@ -2030,7 +2032,8 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 }
 #boardTitleEditor,
 #flowchartTitleEditor,
-#mindmapTextEditor {
+#mindmapTextEditor,
+#sketch-text-editor {
   resize: vertical;
   min-height: 38px;
   line-height: 1.4;
@@ -2058,6 +2061,7 @@ html[data-drawer-mode="diagram"] .diagram-dock { display: flex; }
 #mindmapDocTitleEditor:focus,
 #mindmapLayoutEditor:focus,
 #mindmapTextEditor:focus,
+#sketch-text-editor:focus,
 #designDocTitleEditor:focus {
   border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 22%, transparent);
 }
