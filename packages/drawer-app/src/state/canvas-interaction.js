@@ -43,12 +43,16 @@ export function registerKind(id, rec) {
   kinds[key] = {
     isHit: typeof rec.isHit === "function" ? rec.isHit : null,
     clear: typeof rec.clear === "function" ? rec.clear : null,
+    // For a kind whose hits cannot be told at pointerdown (Sketch: the picture is another origin). It gets the
+    // point of a click that moved nothing, and answers true when it will decide what that click meant.
+    probe: typeof rec.probe === "function" ? rec.probe : null,
   };
 }
 
 export function activeKindId() {
   var html = typeof document !== "undefined" ? document.documentElement : null;
   var kind = html && html.dataset ? html.dataset.kind : "";
+  if (kind === "sketch") return "sketch";
   if (kind === "mindmap") return "mindmap";
   if (kind === "flowchart" || kind === "mermaid-unsupported") return "flowchart";
   if (DrawerStyleLine.isDesignKind && DrawerStyleLine.isDesignKind(kind)) {
@@ -92,9 +96,12 @@ function hideBlankProps() {
   closePropsPanel();
 }
 
-export function leaveBlank() {
-  hideBlankProps();
+/* A click on blank ground. Pass the pointer event of a click that landed here and the kind may take it first:
+ * it looks under the pointer, then selects or calls this again without the event. */
+export function leaveBlank(click) {
   var rec = kinds[activeKindId()];
+  if (click && rec && rec.probe && rec.probe(click.clientX, click.clientY)) return;
+  hideBlankProps();
   if (rec && rec.clear) rec.clear();
 }
 
@@ -155,7 +162,7 @@ function onPointerMove(event) {
     applyTransform();
 }
 
-function endPan(leaveIfStill) {
+function endPan(leaveIfStill, click) {
   var wasPanning = panning;
   var moved = panMoved;
   panning = false;
@@ -167,16 +174,16 @@ function endPan(leaveIfStill) {
     if (sel && sel.removeAllRanges) sel.removeAllRanges();
   } catch (_e) {}
   if (wasPanning && moved) emit("noteUserCanvasView");
-  if (wasPanning && !moved && leaveIfStill) leaveBlank();
+  if (wasPanning && !moved && leaveIfStill) leaveBlank(click);
 }
 
-function onPointerUp() {
+function onPointerUp(event) {
   if (presentDismiss) {
     presentDismiss = false;
     leaveBlank();
     return;
   }
-  endPan(true);
+  endPan(true, event);
 }
 
 function onPointerCancel() {

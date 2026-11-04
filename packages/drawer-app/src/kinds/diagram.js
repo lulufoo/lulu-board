@@ -134,8 +134,10 @@ function applyDrawerKind(kind) {
   if (propsEmpty) {
     propsEmpty.textContent = kind === "flowchart"
       ? "Select a group, node, or link"
-      : (kind === "mindmap" ? "Select a topic" : (kind === "sketch" ? "Sketch" : "Select a title, box, or item"));
+      : (kind === "mindmap" ? "Select a topic" : (kind === "sketch" ? "Select a text" : "Select a title, box, or item"));
   }
+  var sketchProps = document.getElementById("sketch-props-fields");
+  if (sketchProps && kind !== "sketch") sketchProps.hidden = true;
   var flowProps = document.getElementById("flowchartPropsFields");
   if (flowProps && kind !== "flowchart") flowProps.hidden = true;
   var flowDir = document.getElementById("flowchartDirField");

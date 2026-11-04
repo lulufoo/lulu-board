@@ -9,6 +9,10 @@ export const SANDBOX_MSG = Object.freeze({
   SIZE: 'lulu-sandbox:size',
   CAPTURE: 'lulu-sandbox:capture',
   CAPTURED: 'lulu-sandbox:captured',
+  PICK: 'lulu-sandbox:pick',
+  PICKED: 'lulu-sandbox:picked',
+  SELECT: 'lulu-sandbox:select',
+  TEXT: 'lulu-sandbox:text',
   ERROR: 'lulu-sandbox:error',
 });
 
@@ -16,6 +20,12 @@ export const SANDBOX_MSG = Object.freeze({
 export const SANDBOX_MAX_EDGE = 32768;
 export const SANDBOX_MAX_SCALE = 8;
 export const SANDBOX_MAX_ID_LENGTH = 64;
+/* Longest text one `text` message may carry, in UTF-16 units. */
+export const SANDBOX_MAX_TEXT = 100000;
+/* Board stamps a target id on each piece of pickable text before it sends the fragment. The runner marks the
+ * selected one with the second attribute. Both names live here so the two sides cannot drift. */
+export const SANDBOX_TARGET_ATTR = 'data-lulu-id';
+export const SANDBOX_SELECTED_ATTR = 'data-lulu-selected';
 
 /* Transparent room, in CSS px, the runner keeps on every side of a Sketch. A shadow, outline, or ring that spills
  * past the picture is still drawn inside it; anything farther out is cut by the frame. */
@@ -36,6 +46,31 @@ function validId(id) {
 /* Light is the default. Anything else is not a theme the runner can stamp. */
 function validAppearance(value) {
   return value === 'dark' ? 'dark' : 'light';
+}
+
+/* A target id is an element-index path such as "1.0.3". The runner puts it into a selector, so nothing else passes. */
+export function isSketchTarget(target) {
+  return typeof target === 'string' && target.length <= SANDBOX_MAX_ID_LENGTH && /^\d{1,6}(?:\.\d{1,6})*$/.test(target);
+}
+
+function validPoint(n) {
+  return typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= SANDBOX_MAX_EDGE;
+}
+
+function validRingPx(n) {
+  return typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 16;
+}
+
+/* The selection ring is data from Board, so the runner never builds CSS from a string it did not check. */
+function validRing(ring) {
+  if (!isObject(ring) || typeof ring.color !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(ring.color)) return null;
+  if (!validRingPx(ring.width) || !validRingPx(ring.offset)) return null;
+  return { color: ring.color, width: ring.width, offset: ring.offset };
+}
+
+/* A line break in the text box is a <br> in the picture. */
+export function splitSketchText(text) {
+  return String(text == null ? '' : text).split(/\r\n|\r|\n/);
 }
 
 /* Board -> runner */
@@ -61,6 +96,40 @@ export function parseAppearance(data) {
 
 export function captureMessage(id, scale) {
   return { type: SANDBOX_MSG.CAPTURE, id: id, scale: scale };
+}
+
+/* Which piece of text is under this point? x and y are CSS px in the frame, bleed included. */
+export function pickMessage(id, x, y) {
+  return { type: SANDBOX_MSG.PICK, id: id, x: x, y: y };
+}
+
+export function parsePick(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.PICK || !validId(data.id)) return null;
+  if (!validPoint(data.x) || !validPoint(data.y)) return null;
+  return { id: data.id, x: data.x, y: data.y };
+}
+
+/* Mark one piece of text as selected, or none (target null). The ring comes with it: Board owns the look. */
+export function selectMessage(target, ring) {
+  return { type: SANDBOX_MSG.SELECT, target: target, ring: ring };
+}
+
+export function parseSelect(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.SELECT) return null;
+  if (data.target === null) return { target: null, ring: null };
+  var ring = validRing(data.ring);
+  return isSketchTarget(data.target) && ring ? { target: data.target, ring: ring } : null;
+}
+
+/* Show new text in a piece of text without mounting again. Lines are separated by \n. */
+export function textMessage(target, text) {
+  return { type: SANDBOX_MSG.TEXT, target: target, text: text };
+}
+
+export function parseText(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.TEXT || !isSketchTarget(data.target)) return null;
+  if (typeof data.text !== 'string' || data.text.length > SANDBOX_MAX_TEXT) return null;
+  return { target: data.target, text: data.text };
 }
 
 export function parseRender(data) {
@@ -93,6 +162,17 @@ export function capturedMessage(id, bitmap) {
 
 export function errorMessage(id, message) {
   return { type: SANDBOX_MSG.ERROR, id: id, message: String(message || 'error').slice(0, 200) };
+}
+
+/* The answer to `pick`: the target id under the point, or null. A fragment script can say anything, so an id that is
+ * not a valid target is read as no hit. */
+export function pickedMessage(id, target) {
+  return { type: SANDBOX_MSG.PICKED, id: id, target: isSketchTarget(target) ? target : null };
+}
+
+export function parsePicked(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.PICKED || !validId(data.id)) return null;
+  return { id: data.id, target: isSketchTarget(data.target) ? data.target : null };
 }
 
 export function parseReady(data) {

@@ -6,11 +6,18 @@ import {
   parseRender,
   parseAppearance,
   parseCapture,
+  parsePick,
+  parseSelect,
+  parseText,
   readyMessage,
   sizeMessage,
   capturedMessage,
   errorMessage,
+  pickedMessage,
+  splitSketchText,
   SANDBOX_BLEED,
+  SANDBOX_TARGET_ATTR,
+  SANDBOX_SELECTED_ATTR,
 } from './protocol.js';
 
 export function createRunner(env) {
@@ -22,6 +29,10 @@ export function createRunner(env) {
   var lastH = 0;
   var bleed = SANDBOX_BLEED;
   var lastBleed = -1;
+  // The element Board selected, the rule that paints its ring, and how many captures are running right now.
+  var selected = null;
+  var ringStyle = null;
+  var capturing = 0;
 
   function post(message, transfer) {
     // The runner has an opaque origin and cannot name its parent's origin; frame-ancestors decides who may embed it.
@@ -110,7 +121,67 @@ export function createRunner(env) {
     if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(reportSize);
   }
 
+  function markSelected(on) {
+    if (!selected) return;
+    if (on) selected.setAttribute(SANDBOX_SELECTED_ATTR, '');
+    else selected.removeAttribute(SANDBOX_SELECTED_ATTR);
+  }
+
+  function findTarget(target) {
+    // The target is a validated element-index path, so it is safe inside a selector.
+    return doc.querySelector('[' + SANDBOX_TARGET_ATTR + '="' + target + '"]');
+  }
+
+  /* The ring is an outline from one injected rule that keys on the marker attribute. It sits where the browser
+   * put the element, follows its transforms, and leaves the fragment's own markup and styles alone. The doubled
+   * attribute outranks a fragment rule of its own that also says !important. */
+  function writeRing(ring) {
+    if (!ringStyle) {
+      ringStyle = doc.createElement('style');
+      (doc.head || doc.documentElement).appendChild(ringStyle);
+    }
+    var attr = '[' + SANDBOX_SELECTED_ATTR + ']';
+    ringStyle.textContent = 'html ' + attr + attr + '{outline:' + ring.width + 'px solid ' + ring.color
+      + ' !important;outline-offset:' + ring.offset + 'px !important}';
+  }
+
+  function select(request) {
+    markSelected(false);
+    selected = request.target ? findTarget(request.target) : null;
+    if (!selected) return;
+    writeRing(request.ring);
+    if (!capturing) markSelected(true);
+  }
+
+  /* The first piece of text, from the top of the stack down, that Board stamped. Going down the stack lets a
+   * transparent layer over the text still let the text be picked. */
+  function pick(request) {
+    var stack = typeof doc.elementsFromPoint === 'function' ? doc.elementsFromPoint(request.x, request.y) : [];
+    var target = null;
+    for (var i = 0; i < stack.length && !target; i += 1) {
+      var host = stack[i] && typeof stack[i].closest === 'function' ? stack[i].closest('[' + SANDBOX_TARGET_ATTR + ']') : null;
+      if (host) target = host.getAttribute(SANDBOX_TARGET_ATTR);
+    }
+    post(pickedMessage(request.id, target));
+  }
+
+  /* Only text nodes and <br> are built, so the text can never become markup. */
+  function writeText(request) {
+    var el = findTarget(request.target);
+    if (!el) return;
+    var fragment = doc.createDocumentFragment();
+    splitSketchText(request.text).forEach(function (line, index) {
+      if (index) fragment.appendChild(doc.createElement('br'));
+      if (line) fragment.appendChild(doc.createTextNode(line));
+    });
+    el.replaceChildren(fragment);
+    reportSize();
+  }
+
   async function capture(request) {
+    // The ring is for the screen. The picture that leaves Board must not carry it.
+    capturing += 1;
+    markSelected(false);
     try {
       if (!rendered) throw new Error('nothing rendered');
       if (doc.fonts && doc.fonts.ready) await doc.fonts.ready;
@@ -123,6 +194,9 @@ export function createRunner(env) {
       post(capturedMessage(request.id, bitmap), [bitmap]);
     } catch (err) {
       post(errorMessage(request.id, err && err.message));
+    } finally {
+      capturing -= 1;
+      if (!capturing) markSelected(true);
     }
   }
 
@@ -153,7 +227,24 @@ export function createRunner(env) {
       return;
     }
     var request = parseCapture(event.data);
-    if (request) capture(request);
+    if (request) {
+      capture(request);
+      return;
+    }
+    // Everything below acts on the mounted fragment.
+    if (!rendered) return;
+    var probe = parsePick(event.data);
+    if (probe) {
+      pick(probe);
+      return;
+    }
+    var choice = parseSelect(event.data);
+    if (choice) {
+      select(choice);
+      return;
+    }
+    var edit = parseText(event.data);
+    if (edit) writeText(edit);
   }
 
   /* A click on a link would navigate this frame away from the sketch, and Present mode lets clicks reach it.

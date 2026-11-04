@@ -121,38 +121,61 @@ assert.doesNotMatch(flow, /\.top-float, \.diagram-dock, \.zoom-float/, 'dock res
       preventDefault() { prevented += 1; },
     });
   }
+  // Sketch is its own kind: Present and Canvas both clear through it, and Canvas lets it probe the click first.
+  let sketchClear = 0;
+  const probes = [];
+  let probeTakesClick = false;
+  Interaction.registerKind('sketch', {
+    clear() { sketchClear += 1; },
+    probe(x, y) { probes.push([x, y]); return probeTakesClick; },
+  });
   Interaction.bind(stage);
   try {
     globalThis.document = { documentElement: { dataset: { kind: 'sketch', sketchMode: 'present' } } };
-    const base = boardClear;
+    assert.equal(Interaction.activeKindId(), 'sketch', 'a Sketch is its own kind, not the Boxes one');
+    const base = sketchClear;
+    const boardBase = boardClear;
     press(blank);
     assert.equal(prevented, 0, 'Present blank press does not pan');
     assert.equal(captured, 0, 'Present blank press does not capture the pointer');
     assert.equal(classes.has('panning'), false, 'Present blank press does not mark panning');
-    assert.equal(boardClear, base, 'Present press waits for release');
+    assert.equal(sketchClear, base, 'Present press waits for release');
     stage.on.pointercancel({});
     stage.on.pointerup({});
-    assert.equal(boardClear, base, 'a cancelled Present press does not close the dock');
+    assert.equal(sketchClear, base, 'a cancelled Present press does not close the dock');
     press(blank);
-    stage.on.pointerup({});
-    assert.equal(boardClear, base + 1, 'Present blank click runs the same leave as Canvas');
+    stage.on.pointerup({ clientX: 4, clientY: 5 });
+    assert.equal(sketchClear, base + 1, 'Present blank click runs the same leave as Canvas');
+    assert.equal(probes.length, 0, 'Present never probes: the picture takes its own clicks');
     stage.on.dblclick({ target: blank });
-    assert.equal(boardClear, base + 1, 'Present blank dblclick does not leave again');
+    assert.equal(sketchClear, base + 1, 'Present blank dblclick does not leave again');
     press(chrome);
     stage.on.pointerup({});
-    assert.equal(boardClear, base + 1, 'a click on chrome does not close the dock');
+    assert.equal(sketchClear, base + 1, 'a click on chrome does not close the dock');
     globalThis.document = { documentElement: { dataset: { kind: 'sketch', sketchMode: 'canvas' } } };
     press(blank);
     assert.equal(prevented, 1, 'Canvas blank press still pans');
     assert.equal(captured, 1, 'Canvas blank press still captures the pointer');
     assert.equal(classes.has('panning'), true, 'Canvas blank press marks panning');
-    stage.on.pointerup({});
-    assert.equal(boardClear, base + 2, 'Canvas blank click still leaves');
+    stage.on.pointerup({ clientX: 4, clientY: 5 });
+    assert.deepEqual(probes, [[4, 5]], 'a Canvas click that moved nothing is probed at its point');
+    assert.equal(sketchClear, base + 2, 'a probe that declines leaves as before');
     assert.equal(classes.has('panning'), false, 'Canvas release clears panning');
+    probeTakesClick = true;
+    press(blank);
+    stage.on.pointerup({ clientX: 4, clientY: 5 });
+    assert.equal(probes.length, 2);
+    assert.equal(sketchClear, base + 2, 'a probe that takes the click decides it later, so nothing leaves now');
+    probeTakesClick = false;
     press(blank);
     stage.on.pointermove({ clientX: 40, clientY: 40 });
-    stage.on.pointerup({});
-    assert.equal(boardClear, base + 2, 'a Canvas drag does not leave');
+    stage.on.pointerup({ clientX: 40, clientY: 40 });
+    assert.equal(sketchClear, base + 2, 'a Canvas drag does not leave');
+    assert.equal(probes.length, 2, 'a Canvas drag is not probed');
+    assert.equal(boardClear, boardBase, 'a Sketch never reaches the Boxes clear');
+    Interaction.leaveBlank();
+    assert.equal(probes.length, 2, 'leaving without a click never probes');
+    assert.equal(sketchClear, base + 3);
   } finally {
     if (previousDocument === undefined) delete globalThis.document;
     else globalThis.document = previousDocument;

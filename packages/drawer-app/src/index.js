@@ -37,6 +37,8 @@ export * from './state/shell-state.js';
 export * from './state/props-panes.js';
 export * from './state/canvas-interaction.js';
 export * from './kinds/sketch.js';
+export * from './kinds/sketch-bridge.js';
+export * from './kinds/sketch-select.js';
 export * from './kinds/design.js';
 export * from './kinds/mindmap.js';
 export * from './kinds/mindmap-select.js';

@@ -1,7 +1,9 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parseError } from '../../../sandbox-app/src/protocol.js';
+import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parsePicked, parseError } from '../../../sandbox-app/src/protocol.js';
+import { stampSketchLeaves } from '../core/sketch-source.js';
+import { openSketchChannel, getSketchChannel, settleSketchPick, failSketchPicks } from './sketch-bridge.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
 import { setSketchMode, bindSketchMode, getSessionSketchMode } from './sketch-mode.js';
 import {
@@ -29,9 +31,17 @@ function unwrapElement(el) {
   parent.removeChild(el);
 }
 
-function sketchFragmentRoot(html) {
+// The fragment parsed in an inert template: nothing in it runs and nothing loads.
+export function sketchTemplate(html) {
   var tpl = document.createElement("template");
   tpl.innerHTML = String(html || "");
+  return tpl;
+}
+
+function sketchFragmentRoot(html) {
+  var tpl = sketchTemplate(html);
+  // Target ids first, over the tree as the source parses. The removals below must not move any path.
+  stampSketchLeaves(tpl.content);
   // Scripts are not filtered here: they are meant to run, inside the runner's opaque origin. This removal is a content
   // guard, not a boundary: a script can still create these elements, and the runner's CSP is what blocks them.
   // A script-made link is the runner's to stop: it ignores link clicks.
@@ -55,10 +65,28 @@ var CAPTURE_TIMEOUT_MS = 30000;
 var stopListening = null;
 // The frame already showing this fragment. A theme change posts appearance instead of loading another runner.
 var mountedSketch = null;
-// One channel per sketch frame: the captures it is still waiting for.
-var channels = new WeakMap();
 var captureSeq = 0;
 if (typeof document !== "undefined") bindSketchMode(document);
+
+// What the runner is sent for a source fragment: links unwrapped, nested documents removed, text stamped with ids.
+function sketchMountHtml(fragment) {
+  var holder = document.createElement("div");
+  holder.appendChild(sketchFragmentRoot(fragment));
+  return holder.innerHTML;
+}
+
+// The frame that is mounted and has been sent its fragment, or null.
+export function getSketchFrame() {
+  var shown = mountedSketch;
+  return shown && shown.sent && shown.frame && shown.frame.isConnected ? shown.frame : null;
+}
+
+// A text edit is written into the source and sent to the frame in place. The frame already shows what the source
+// now says, so renderSketch must see the two as equal and not mount again.
+export function syncMountedSketch() {
+  if (!mountedSketch || !diagramSourceEl) return;
+  mountedSketch.html = sketchMountHtml(DrawerStyleLine.decodeSketchContent(diagramSourceEl.value));
+}
 
 export function renderSketch(opts) {
   opts = opts || {};
@@ -77,6 +105,7 @@ export function renderSketch(opts) {
       stopListening = null;
     }
     mountedSketch = null;
+    emit("clearSketchSelection");
     previewEl.innerHTML = "";
     bindWorld(null, null);
     showDiagramError("Sketch content missing");
@@ -84,9 +113,7 @@ export function renderSketch(opts) {
     emit("finishCanvasView", opts);
     return;
   }
-  var holder = document.createElement("div");
-  holder.appendChild(sketchFragmentRoot(fragment));
-  var html = holder.innerHTML;
+  var html = sketchMountHtml(fragment);
   if (mountedSketch && mountedSketch.sent && mountedSketch.html === html
     && mountedSketch.frame && mountedSketch.frame.isConnected && mountedSketch.frame.contentWindow) {
     mountedSketch.frame.contentWindow.postMessage(appearanceMessage(getSessionAppearance()), "*");
@@ -99,6 +126,8 @@ export function renderSketch(opts) {
   }
   // A new frame keeps the mode the cookie already holds. A theme change above never reaches this line.
   setSketchMode(getSessionSketchMode(), document);
+  // The ids a selection holds belong to the frame that is going away.
+  emit("clearSketchSelection");
   previewEl.innerHTML = "";
   // The picture box is what the canvas centers, zooms, and snaps. The frame hangs out of it by the bleed so a shadow,
   // outline, or ring at the picture edge is painted instead of cut off by the frame.
@@ -136,6 +165,7 @@ export function renderSketch(opts) {
     // The runner reports the whole frame. The picture is the frame less the bleed on each side, and the camera
     // centers that box on the stage on both axes; the frame is moved out by the bleed so it still covers it.
     var bleed = size.bleed || 0;
+    channel.bleed = bleed;
     picture.style.width = (size.width - bleed * 2) + "px";
     picture.style.height = (size.height - bleed * 2) + "px";
     frame.style.position = "absolute";
@@ -145,8 +175,7 @@ export function renderSketch(opts) {
     frame.style.height = size.height + "px";
   }
   var sent = false;
-  var channel = { pending: new Map() };
-  channels.set(frame, channel);
+  var channel = openSketchChannel(frame);
   function settle(id) {
     var entry = channel.pending.get(id);
     if (!entry) return null;
@@ -182,6 +211,11 @@ export function renderSketch(opts) {
       finish(false);
       return;
     }
+    var picked = parsePicked(event.data);
+    if (picked) {
+      settleSketchPick(channel, picked.id, picked.target);
+      return;
+    }
     var captured = parseCaptured(event.data);
     if (captured) {
       var done = settle(captured.id);
@@ -198,6 +232,7 @@ export function renderSketch(opts) {
     window.removeEventListener("message", onMessage);
     clearTimeout(timer);
     failCaptures("Sketch was replaced before the capture finished");
+    failSketchPicks(channel);
   }
   window.addEventListener("message", onMessage);
   stopListening = stop;
@@ -208,7 +243,7 @@ export function renderSketch(opts) {
 /* Ask the runner for a transparent bitmap of the whole sketch document, scale times its CSS size.
  * The bitmap is untrusted pixels from another origin: the caller bounds its size before using it. */
 export function captureSketch(frame, scale) {
-  var channel = frame && channels.get(frame);
+  var channel = getSketchChannel(frame);
   if (!channel || !frame.isConnected || !frame.contentWindow) {
     return Promise.reject(new Error("Sketch is not ready to export"));
   }
@@ -229,6 +264,9 @@ const Sketch = {
   captureSketch: captureSketch,
   sketchWorldBounds: sketchWorldBounds,
   sketchFragmentRoot: sketchFragmentRoot,
+  sketchTemplate: sketchTemplate,
+  getSketchFrame: getSketchFrame,
+  syncMountedSketch: syncMountedSketch,
 };
 
 export default Sketch;
