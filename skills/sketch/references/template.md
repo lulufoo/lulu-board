@@ -17,6 +17,7 @@ The sketch follows the Board theme.
 2. The variables are Board's Light and Dark, in the block below.
 3. `diagram` has two themes, selected with `html[data-appearance="dark"]`.
 4. The runner sets `data-appearance` on `<html>` before inserting the fragment. When it is absent, the variables are Light. A script reads `document.documentElement.dataset.appearance`.
+5. The diagram canvas must be transparent by default; do not add any background unless the user explicitly requests one.
 
 ## Built-in content templates
 
