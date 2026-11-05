@@ -7,13 +7,25 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const STUB = 'https://luluboard.app/#p:p_' + 'd'.repeat(64);
 
 const root = path.join(__dirname, '../..');
+const cliDir = path.join(root, 'packages/board-cli');
 const pack = fs.readFileSync(path.join(root, 'skills/SKILL.md'), 'utf8');
 const skill = fs.readFileSync(path.join(root, 'skills/sketch/SKILL.md'), 'utf8');
 const template = fs.readFileSync(path.join(root, 'skills/sketch/references/template.md'), 'utf8');
-const script = path.join(root, 'skills/sketch/scripts/sketch_control.py');
+const cloudFlow = fs.readFileSync(path.join(root, 'skills/sketch/references/cloud-flow.md'), 'utf8');
+const sharedCloud = fs.readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
+const cliVersion = fs.readFileSync(path.join(cliDir, 'board_cli/version.py'), 'utf8').match(/VERSION = "(\d+(?:\.\d+)*)"/)[1];
+
+const asNumbers = (version) => version.split('.').map(Number);
+const isAtMost = (a, b) => {
+  const [left, right] = [asNumbers(a), asNumbers(b)];
+  for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
+    const [x, y] = [left[i] || 0, right[i] || 0];
+    if (x !== y) return x < y;
+  }
+  return true;
+};
 
 // The entry
 assert.match(pack, /`sketch\/`/, 'pack lists sketch/');
@@ -21,9 +33,26 @@ assert.match(pack, /One Sketch diagram/, 'pack names sketch a diagram');
 assert.doesNotMatch(pack, /picture/, 'pack no longer says picture');
 assert.doesNotMatch(skill, /picture/, 'skill names the drawing a diagram');
 assert.match(skill, /Done when a tool `url` is shown/, 'done is a tool url');
-assert.match(skill, /\| `\$SKETCH_CTL` \| `python3 scripts\/sketch_control\.py` \|/, 'one macro row');
-assert.match(skill, /CLI contract: `\$SKETCH_CTL --help`/, 'the CLI contract lives in --help');
-assert.doesNotMatch(skill, /docs\//, 'an installed skill cites no repo docs');
+assert.doesNotMatch(skill + cloudFlow, /docs\//, 'an installed skill cites no repo docs');
+
+// The program macro and its install
+assert.match(skill, /\| `\$BOARD_CLI` \| `~\/\.local\/bin\/board-cli` \|/, 'one macro row for the installed program');
+assert.match(skill, /CLI contract: `\$BOARD_CLI --help`/, 'the CLI contract lives in --help');
+const minimum = skill.match(/Minimum version: `(\d+(?:\.\d+)*)`/);
+assert.ok(minimum, 'skill declares a minimum version');
+const install = skill.match(/\| `\$INSTALL_BOARD_CLI` \| `([^`]+)` \|/);
+assert.ok(install, 'one macro row installs the program');
+assert.ok(
+  install[1].includes('/releases/download/board-cli-v' + minimum[1] + '/board-cli.pyz'),
+  'install downloads the release of the minimum version',
+);
+assert.match(install[1], /-o ~\/\.local\/bin\/board-cli && chmod \+x ~\/\.local\/bin\/board-cli$/, 'install puts the program where the macro points and makes it executable');
+assert.ok(isAtMost(minimum[1], cliVersion), 'the minimum version is not newer than the package version');
+assert.match(skill, /Before the first `\$BOARD_CLI` call of a session, run `\$BOARD_CLI --version`/, 'the version is checked before the first call');
+assert.match(skill, /is missing or its `version` is below the minimum, run `\$INSTALL_BOARD_CLI`/, 'a missing or old program is installed');
+assert.ok(!fs.existsSync(path.join(root, 'skills/sketch/scripts/sketch_control.py')), 'the old entry is gone');
+assert.ok(!fs.existsSync(path.join(root, 'skills/scripts/sketch_schema.py')), 'the old schema copy is gone');
+assert.doesNotMatch(skill + cloudFlow, /SKETCH_CTL|sketch_control|\b(?:create|get|save|search)_diagram|MCP/, 'sketch no longer names the old entry or the MCP tools');
 
 // Writing the HTML
 assert.match(skill, /`:root`, `html`, and `body` selectors act on that document/, 'root selectors act on the frame document');
@@ -47,66 +76,65 @@ assert.match(template, /## Fragment[\s\S]*\n3\. Excludes `<iframe>`, `<object>`,
 
 // Mode
 assert.match(skill, /## Mode\n\nPick short link or cloud\. Short link is the default\./, 'short link is the default');
-assert.match(skill, /Use \*\*cloud mode\*\* only when the `whoami` MCP tool is listed and one of these holds/, 'cloud needs whoami and a reason');
+assert.match(skill, /Use \*\*cloud mode\*\* only when one of these holds/, 'cloud needs a reason');
 assert.match(skill, /the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams/, 'cloud on explicit intent');
 assert.match(skill, /the user pastes a `#b:` link/, 'a pasted #b: link means cloud');
 assert.match(skill, /this session already created the diagram in cloud mode/, 'cloud sticks within a session');
-assert.match(skill, /listed but a tool call fails, use \*\*short-link mode\*\*/, 'failed MCP falls back to short link');
-assert.match(skill, /Load \[cloud\]\(\.\.\/references\/cloud\.md\)/, 'cloud mode loads cloud.md');
+assert.match(skill, /Run `\$BOARD_CLI whoami`\. When `logged_in` is false, run `\$BOARD_CLI login`/, 'cloud mode checks the login and logs in');
+assert.match(skill, /If `login` fails or times out, use \*\*short-link mode\*\* and tell the user why/, 'a failed login falls back to short link');
+assert.match(skill, /Load \[cloud flow\]\(\.\/references\/cloud-flow\.md\)/, 'cloud mode loads the sketch cloud flow');
 assert.match(skill, /load \[pointers\]\(\.\.\/references\/pointers\.md\)/, 'a pasted viewer URL loads pointers.md');
-assert.ok(fs.existsSync(path.join(root, 'skills/references/cloud.md')), 'cloud.md ships in the install root');
 assert.ok(fs.existsSync(path.join(root, 'skills/references/pointers.md')), 'pointers.md ships in the install root');
+assert.match(sharedCloud, /Shared MCP flow for Boxes and Mermaid\./, 'the shared cloud file serves Boxes and Mermaid');
+assert.doesNotMatch(sharedCloud, /Sketch/, 'the shared cloud file no longer names Sketch');
 
 // Short link flow
 assert.match(skill, /## Short link flow/, 'skill has the short link flow');
 assert.match(skill, /`\.cache\/sketch\/<name>\.html`/, 'the fragment goes to a named html file');
-assert.match(skill, /\$SKETCH_CTL preview --html <file> --title <title>/, 'preview takes the html file and a title');
+assert.match(skill, /\$BOARD_CLI encode-source --file <file> --out \.cache\/sketch --title <title>/, 'encode the html file into .cache/sketch');
+assert.match(skill, /\$BOARD_CLI preview-diagram --file <skt>/, 'publish the skt file');
 assert.match(skill, /Always write a short title that names the diagram/, 'skill asks for a title');
 assert.match(skill, /Show only the `url` field and stop/, 'show uses the url field');
 assert.match(skill, /creates a new short url/, 'change mints a new short url');
 assert.match(skill, /To keep, use cloud mode \(`#b:`\)/, 'keep uses cloud mode');
 
 // Cloud flow
-assert.match(skill, /## Cloud flow/, 'skill has the cloud flow');
-assert.match(skill, /`sketch "<title>"`, `style`, and `content`/, 'skill names the three lines');
-assert.match(skill, /`content` is the encoded HTML\. Only `\$SKETCH_CTL encode` writes it and `\$SKETCH_CTL decode` reads it/, 'content goes through encode and decode only');
-for (const tool of ['create_diagram', 'get_diagram', 'save_diagram']) {
-  assert.match(skill, new RegExp('`' + tool + '`'), 'cloud flow uses ' + tool);
+assert.match(cloudFlow, /SKT Source in a `\.skt` file/, 'cloud flow names the file it works with');
+for (const command of ['create-diagram', 'get-diagram', 'save-diagram', 'get-group', 'search-diagrams', 'encode-source', 'decode-source']) {
+  assert.match(cloudFlow, new RegExp('\\$BOARD_CLI ' + command + ' '), 'cloud flow runs ' + command);
 }
-assert.match(skill, /\$SKETCH_CTL encode --html <file> --title <title>/, 'new: encode the html file');
-assert.match(skill, /\$SKETCH_CTL decode --skt <file>/, 'read: decode the skt file');
-assert.match(skill, /--style "<style>"/, 'save: the style from decode goes back');
-assert.match(skill, /When `decode` returns an empty `title`, write a short title/, 'an empty decoded title is named before encode');
-assert.doesNotMatch(skill, /base64/i, 'skill does not say how content is encoded');
-assert.doesNotMatch(skill, /--kind|--file/, 'skill uses only the current flags');
-assert.doesNotMatch(skill, /edit token|edit_token/, 'no edit token');
-assert.doesNotMatch(skill, /sketch ""/, 'no example with an empty title');
+assert.match(cloudFlow, /--expected-version <version>/, 'save gives back the version that was read');
+assert.match(cloudFlow, /--style <style>/, 'save: the style from decode-source goes back');
+assert.match(cloudFlow, /When `decode-source` returned an empty `title`, write a short title/, 'an empty decoded title is named before encode');
+assert.match(cloudFlow, /A command that exits 4 needs a login: run `\$BOARD_CLI login`, then repeat that command once/, 'exit 4 means login and one retry');
+assert.match(cloudFlow, /When `login` fails or times out, use short-link mode/, 'a failed login falls back to short link');
+assert.match(cloudFlow, /Exit 3 means the cloud holds a newer `latest_version`/, 'exit 3 is the version conflict');
+assert.match(cloudFlow, /does not end in `\.skt`, the diagram is not a Sketch/, 'a diagram of another type is left to its own skill');
+assert.match(cloudFlow, /\(\.\.\/\.\.\/references\/pointers\.md\)/, 'cloud flow reaches the shared pointers file');
+assert.ok(fs.existsSync(path.resolve(root, 'skills/sketch/references', '../../references/pointers.md')), 'that pointers path resolves');
+assert.doesNotMatch(skill + cloudFlow, /base64/i, 'skill does not say how content is encoded');
+assert.doesNotMatch(skill + cloudFlow, /--kind|--html/, 'skill uses only the current flags');
+assert.doesNotMatch(skill + cloudFlow, /edit token|edit_token/, 'no edit token');
+assert.doesNotMatch(skill + cloudFlow, /sketch ""/, 'no example with an empty title');
 
-// The CLI
+// The CLI writes what the viewer reads
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'sketch-entry-'));
-const realDir = fs.realpathSync(dir);
 const html = '<style>.d{color:red}</style><div class="d">你好 "world"</div>\n';
 const htmlFile = path.join(dir, 'demo.html');
 fs.writeFileSync(htmlFile, html);
-const runCli = (args, env) => execFileSync('python3', [script, ...args], {
+const runCli = (args) => JSON.parse(execFileSync('python3', ['-m', 'board_cli', ...args], {
+  cwd: cliDir,
   encoding: 'utf8',
-  env: Object.assign({}, process.env, env || {}),
-});
-
-const help = runCli(['--help']);
-for (const word of ['preview', 'encode', 'decode', '{"url"', '{"skt"', '{"title"']) {
-  assert.ok(help.includes(word), '--help states ' + word);
-}
-
-const previewed = JSON.parse(runCli(['preview', '--html', htmlFile, '--title', 'A quiet board'], { LULU_BOARD_SHORT_LINK_STUB: STUB }));
-assert.deepStrictEqual(previewed, { url: STUB }, 'preview prints the returned short url as json');
+  env: Object.assign({}, process.env, { PYTHONDONTWRITEBYTECODE: '1' }),
+}));
 
 const style = 'eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX19';
-const encoded = JSON.parse(runCli(['encode', '--html', htmlFile, '--title', 'A "quoted" 标题', '--style', style]));
-assert.strictEqual(encoded.skt, realDir + '/demo.skt', 'encode writes the skt file beside the html');
+const encoded = runCli(['encode-source', '--file', htmlFile, '--out', dir, '--title', 'A "quoted" 标题', '--style', style]);
+assert.strictEqual(path.dirname(encoded.file), fs.realpathSync(dir), 'encode-source writes into --out');
+assert.match(path.basename(encoded.file), /^\d{8}-\d{6}-\d{3}\.skt$/, 'encode-source names the file by time');
+assert.deepStrictEqual([encoded.title, encoded.style], ["A 'quoted' 标题", style], 'encode-source returns the cleaned title and the style');
 
-// The viewer's own parsers read what the CLI wrote.
-const text = fs.readFileSync(encoded.skt, 'utf8');
+const text = fs.readFileSync(encoded.file, 'utf8');
 const StyleLine = (await import(pathToFileURL(path.join(root, 'packages/drawer-app/src/core/style-line.js')).href)).default;
 const { diagramTitleFromBody } = await import(pathToFileURL(path.join(root, 'packages/board-core/document-format.js')).href);
 assert.strictEqual(StyleLine.bodyKind(text), 'sketch', 'the viewer reads the file as a sketch');
@@ -114,15 +142,10 @@ assert.strictEqual(diagramTitleFromBody(text), "A 'quoted' 标题", 'the viewer 
 assert.strictEqual(StyleLine.decodeSketchContent(text), html, 'the viewer decodes the fragment');
 assert.strictEqual(StyleLine.splitRendererStyle(text).token, style, 'the viewer reads the style token');
 
-// decode brings the html back unchanged.
-fs.unlinkSync(htmlFile);
-const decoded = JSON.parse(runCli(['decode', '--skt', encoded.skt]));
-assert.deepStrictEqual(
-  decoded,
-  { title: "A 'quoted' 标题", style: style, html: realDir + '/demo.html' },
-  'decode returns title, style, and the html path',
-);
-assert.strictEqual(fs.readFileSync(decoded.html, 'utf8'), html, 'decode restores the html unchanged');
+const decoded = runCli(['decode-source', '--file', encoded.file, '--out', dir]);
+assert.deepStrictEqual([decoded.title, decoded.style], ["A 'quoted' 标题", style], 'decode-source returns title and style');
+assert.match(path.basename(decoded.file), /^\d{8}-\d{6}-\d{3}\.html$/, 'decode-source names the file by time');
+assert.strictEqual(fs.readFileSync(decoded.file, 'utf8'), html, 'decode-source restores the html unchanged');
 fs.rmSync(dir, { recursive: true, force: true });
 
 console.log('ok sketch-entry skill');

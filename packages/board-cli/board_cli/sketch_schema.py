@@ -8,17 +8,14 @@ SKT Source is the text the viewer and the cloud tools store for one Sketch:
   content <token>      the HTML fragment, encoded
 
 This module owns that format. It builds and parses the source, cleans titles,
-and reads and writes the HTML and SKT files. Only the control scripts call it:
-sketch_control.py and board_control.py.
-sketch_control.py keeps the files side by side under one name: <name>.html and
-<name>.skt. board_control.py creates each file new, at a path it chooses.
+and reads and writes the HTML and SKT files. Only board_control.py's commands
+call it. They create each file new, at a path they choose.
 """
 from __future__ import annotations
 
 import base64
 import re
 from pathlib import Path
-from typing import Any
 
 STYLE_LINE = re.compile(r"^(?:%%\s*)?style\s+(\S+)\s*$", re.IGNORECASE)
 TITLE_LINE = re.compile(r'^\s*sketch\s+"([^"]*)"')
@@ -133,32 +130,17 @@ def create_file(path: Path, text: str) -> None:
         raise SketchError(f"cannot write {path}: {err}") from err
 
 
-def read_html(path: str, flag: str = "--html") -> str:
+def read_html(path: str) -> str:
     """Read an HTML fragment file. SKT Source in its place is refused."""
     html = read_file(path, "HTML")
     if is_sketch_source(html):
-        raise SketchError(f"{flag} holds Sketch source; give the HTML fragment")
+        raise SketchError("--file holds Sketch source; give the HTML fragment")
     return html
-
-
-def build_file_source(html_path: str, title: str) -> str:
-    """SKT Source for an HTML file; no file is written."""
-    return build_source(read_html(html_path), title)
-
-
-def encode_file(html_path: str, title: str, style: str = "") -> Path:
-    """Write <name>.skt beside <name>.html and return its path."""
-    source = build_source(read_html(html_path), title, style)
-    out = Path(html_path).resolve().with_suffix(".skt")
-    if out == Path(html_path).resolve():
-        raise SketchError("the SKT file would overwrite its HTML input: " + html_path)
-    write_file(out, source)
-    return out
 
 
 def encode_to(html_path: str, title: str, style: str, out_path: Path) -> dict[str, str]:
     """Create the SKT file at out_path for an HTML file; return title, style, and file."""
-    source = build_source(read_html(html_path, "--file"), title, style)
+    source = build_source(read_html(html_path), title, style)
     create_file(out_path, source)
     return {"title": clean_title(title), "style": clean_style(style), "file": str(out_path)}
 
@@ -168,11 +150,3 @@ def decode_to(skt_path: str, out_path: Path) -> dict[str, str]:
     parsed = parse_source(read_file(skt_path, "SKT"))
     create_file(out_path, parsed["html"])
     return {"title": parsed["title"], "style": parsed["style"], "file": str(out_path)}
-
-
-def decode_file(skt_path: str) -> dict[str, Any]:
-    """Write <name>.html beside <name>.skt; return title, style, and the html path."""
-    parsed = parse_source(read_file(skt_path, "SKT"))
-    out = Path(skt_path).resolve().with_suffix(".html")
-    write_file(out, parsed["html"])
-    return {"title": parsed["title"], "style": parsed["style"], "html": str(out)}
