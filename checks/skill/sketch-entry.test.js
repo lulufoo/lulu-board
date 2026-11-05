@@ -85,7 +85,7 @@ assert.match(skill, /If `login` fails or times out, use \*\*short-link mode\*\* 
 assert.match(skill, /Load \[cloud flow\]\(\.\/references\/cloud-flow\.md\)/, 'cloud mode loads the sketch cloud flow');
 assert.match(skill, /load \[pointers\]\(\.\.\/references\/pointers\.md\)/, 'a pasted viewer URL loads pointers.md');
 assert.ok(fs.existsSync(path.join(root, 'skills/references/pointers.md')), 'pointers.md ships in the install root');
-assert.match(sharedCloud, /Shared MCP flow for Boxes and Mermaid\./, 'the shared cloud file serves Boxes and Mermaid');
+assert.match(sharedCloud, /Shared cloud flow for Boxes and Mermaid\./, 'the shared cloud file serves Boxes and Mermaid');
 assert.doesNotMatch(sharedCloud, /Sketch/, 'the shared cloud file no longer names Sketch');
 
 // Short link flow

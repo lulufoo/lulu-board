@@ -1,7 +1,8 @@
 """Lulu Board CLI.
 
-Sketch source files and short links for now. Python 3.9 or newer, standard
-library only.
+Cloud diagrams and short links for Sketch, Boxes, and Mermaid, Sketch source
+files, and the Boxes vocabulary assets. Python 3.9 or newer, standard library
+only.
 
   --version
       stdout: {"version": "X.Y.Z"}. Dotted integers, so a caller can compare it
@@ -86,6 +87,21 @@ library only.
       Unpack SKT Source into its HTML fragment.
       stdout: {"title": "...", "style": "...", "file": "<path of the new .html file>"}
 
+  assets
+      No login. Keep vocab.md and icons.json, the Boxes vocabulary and icon table,
+      in ~/.cache/board/assets. Each run compares the md5 of the local copies with
+      the manifest at https://luluboard.app/skill-assets/manifest.json. A copy that
+      is missing or differs is deleted, downloaded, and checked against the
+      manifest. BOARD_ASSETS_BASE_URL replaces that address.
+      stdout: {"ok": true, "online": true or false, "dir": "<cache directory>",
+               "files": {"<name>": {"path": "<local path>", "status": "<status>"}}}
+      status: fresh (the md5 matches; nothing was downloaded), updated (downloaded
+      and checked), offline (the manifest could not be read; the local copy is used
+      as it is, and "online" is false).
+      Fails (exit 1, stdout empty) when a file cannot be had: the download fails or
+      its md5 does not match the manifest, or the manifest cannot be read and there
+      is no local copy.
+
 encode-source and decode-source serve Sketch only. Each creates one new file in
 DIR (made when missing) and leaves FILE alone. The file name is the local time
 down to the millisecond, YYYYMMDD-HHMMSS-mmm, plus .skt or .html. It does not
@@ -135,7 +151,7 @@ from board_cli.cloud import read_commands, write_commands
 from board_cli.core.cli_errors import SpecialExit
 from board_cli.core.cli_output import emit
 from board_cli.core.version import VersionAction
-from board_cli.source import preview_commands, source_commands
+from board_cli.source import assets_commands, preview_commands, source_commands
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -152,6 +168,7 @@ def build_parser() -> argparse.ArgumentParser:
     write_commands.register_commands(sub)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
+    assets_commands.register_commands(sub)
     return parser
 
 

@@ -87,9 +87,11 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 
 <p align="center"><strong>Diagram · Android MVI</strong> — ask in chat, see it in Drawer, edit on canvas or in Source</p>
 
-## MCP configuration
+## Cloud and MCP
 
-`/boxes` works without MCP: the agent opens an unsigned `#z:` link. To create and update the latest cloud diagram for your account, add the hosted MCP and Connect.
+`/boxes`, `/mermaid`, and `/sketch` publish an unsigned `#p:` short link by default, through `board-cli`. A skill installs `board-cli` the first time it is missing. To keep a diagram in your account, ask the agent to save it: `board-cli` opens a Lulu Board sign-in in the browser once, then the diagram gets a `#b:` link.
+
+MCP clients can read and write the same cloud diagrams through the hosted MCP. The skills do not use it.
 
 ```json
 {
@@ -101,9 +103,9 @@ A signed-in owner can share a saved cloud diagram from the Share dock. The first
 }
 ```
 
-In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in. After `whoami` returns an account, `/boxes` writes `https://preview.luluboard.app/#b:…` instead of `#z:`. If `whoami` is listed but the call fails, `/boxes` still writes `#z:`.
+In Cursor, open **Settings → Tools & MCP**. Add that URL if `lulu-board` is not listed, then **Connect** and approve sign-in.
 
-Other MCP clients use the same URL — for Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
+For Claude Code: `claude mcp add --transport http lulu-board https://mcp.luluboard.app/mcp`. The first call opens a Lulu Board sign-in and consent page.
 
 ## Examples
 
@@ -131,9 +133,7 @@ Chat entry is `/boxes`.
 
 ```text
 skills/
-  scripts/   # short_link
-  test/
-  boxes/     # SKILL.md, scripts/, templates/
+  boxes/     # SKILL.md, templates/
   sketch/
   mermaid/
 ```
