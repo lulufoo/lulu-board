@@ -41,6 +41,32 @@
    </div>
   </section>
 
+  <section class="sketch-showcase" id="sketch-showcase-title" aria-label="Sketch showcase">
+    <figure class="sketch-promo-frame">
+      <iframe class="sketch-promo" src="./sketch-promo.html" title="Lulu Board Sketch animation: an idea becomes a visual story" width="720" height="405" loading="eager" scrolling="no" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe>
+    </figure>
+    <p class="shot-caption">A free-form board — written by AI with <code>/sketch</code>.</p>
+  </section>
+
+  <section class="shot" aria-label="Ask your agent, see the diagram">
+    <figure class="shot-frame">
+        <img src="./agent-chat.webp" width="1600" height="873" alt="An agent chat on the left: /boxes, draw an Android MVI architecture diagram. On the right, the generated diagram with View, Presentation and Model layers.">
+    </figure>
+    <p class="shot-caption">Ask your agent with <code>/boxes</code> — the diagram opens right next to the chat.</p>
+  </section>
+
+  <section class="feature" id="features">
+    <div class="feature-copy">
+      <h2>Edit on the canvas</h2>
+      <p>A diagram is not a picture. Drag boxes, edit text and link them — then hand it back to your agent.</p>
+    </div>
+    <div class="feature-art">
+      <figure class="shot-frame">
+        <img src="./board-shot.webp" width="1600" height="1488" alt="The Lulu Board canvas with its properties panel: a boxes diagram with layered cards, items and labelled links on a grid canvas.">
+      </figure>
+    </div>
+  </section>
+
   <section class="kinds" aria-label="What each one is for">
     <h2>What each one is for.</h2>
     <p class="kinds-lead">The AI agent writes it. You keep the diagram.</p>
@@ -88,53 +114,6 @@ B --&gt; C</pre>
         <p>Add this MCP URL in your agent — Cursor, Claude Code or any MCP client. First use opens a Lulu Board sign-in; no API key.</p>
       </li>
     </ol>
-  </section>
-
-  <section class="shot" aria-label="Ask your agent, see the diagram">
-    <figure class="shot-frame">
-        <img src="./agent-chat.webp" width="1600" height="873" alt="An agent chat on the left: /boxes, draw an Android MVI architecture diagram. On the right, the generated diagram with View, Presentation and Model layers.">
-    </figure>
-    <p class="shot-caption">Ask your agent with <code>/boxes</code> — the diagram opens right next to the chat.</p>
-  </section>
-
-  <section class="feature" id="features">
-    <div class="feature-copy">
-      <h2>Edit on the canvas</h2>
-      <p>A diagram is not a picture. Drag boxes, edit text and link them — then hand it back to your agent.</p>
-    </div>
-    <div class="feature-art">
-      <figure class="shot-frame">
-        <img src="./board-shot.webp" width="1600" height="1488" alt="The Lulu Board canvas with its properties panel: a boxes diagram with layered cards, items and labelled links on a grid canvas.">
-      </figure>
-    </div>
-  </section>
-
-  <section class="feature feature-flip">
-    <div class="feature-copy">
-      <h2>A compact text protocol</h2>
-      <p>Your agent writes a few readable lines. Lulu Board draws them.</p>
-      <ul class="legend">
-        <li><code>boxes</code><span>the diagram title</span></li>
-        <li><code>box</code><span>a card</span></li>
-        <li><code>item</code><span>a leaf inside a card</span></li>
-        <li><code>-&gt;</code><span>a link between them</span></li>
-      </ul>
-    </div>
-    <div class="feature-art">
-      <pre class="code-card" aria-label="Protocol example"><span class="code-kw">boxes</span> "Android MVI Architecture"
-<span class="code-kw">box</span> VIEW 205 "View"
-  <span class="code-kw">item</span> Render "Collect `State` and render"
-<span class="code-kw">box</span> PRES type container "Presentation"
-  <span class="code-kw">box</span> INTENT 104 "MVI Intent"
-    <span class="code-kw">item</span> type note "Not `android.content.Intent`"
-  <span class="code-kw">box</span> STORE 405 "ViewModel"
-    <span class="code-kw">item</span> Reduce "Reduce → new `State`"
-  <span class="code-kw">box</span> STATE 309 "State"
-VIEW <span class="code-kw">-&gt;</span> INTENT title "emit"
-INTENT <span class="code-kw">-&gt;</span> STORE title "handle"
-STORE <span class="code-kw">-&gt;</span> STATE title "reduce"
-STATE <span class="code-kw">-&gt;</span> VIEW title "render"</pre>
-    </div>
   </section>
 
   <section class="faq" id="faq">

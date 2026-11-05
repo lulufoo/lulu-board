@@ -8,6 +8,10 @@
 .shot-caption { margin-top: 20px; text-align: center; color: var(--muted); font-size: 16px; line-height: 24px; }
 .shot-caption code { padding: 1px 6px; border-radius: 5px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 
+.sketch-showcase { max-width: var(--page); margin: 0 auto; padding: 72px 24px 24px; }
+.sketch-promo-frame { min-width: 0; aspect-ratio: 16 / 9; margin: 0; overflow: hidden; border: 1px solid rgba(40, 30, 20, .12); border-radius: 20px; background: #fff; box-shadow: 0 12px 28px rgba(40, 30, 20, .14); }
+.sketch-promo { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
+
 .feature {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
@@ -17,26 +21,10 @@
   margin: 0 auto;
   padding: 72px 24px;
 }
-.feature-flip { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
-.feature-flip .feature-copy { order: 2; }
 .feature h2, .faq h2, .final-cta h2 { font: 400 36px / 36px var(--serif); letter-spacing: -0.01em; }
 .feature-copy p { margin-top: 16px; color: var(--muted); font-size: 18px; line-height: 1.5; }
 .feature-art { min-width: 0; }
 
-.legend { margin-top: 24px; display: grid; gap: 10px; }
-.legend li { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 15px; }
-.legend code { min-width: 52px; padding: 2px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-weight: 600; text-align: center; }
-
-.code-card {
-  margin: 0;
-  padding: 28px 30px;
-  overflow-x: auto;
-  border-radius: 20px;
-  background: #f4e8d6;
-  color: var(--text);
-  font: 14px/1.7 var(--mono);
-  box-shadow: 0 12px 32px rgba(120, 80, 40, 0.1);
-}
 .kinds { max-width: var(--page); margin: 0 auto; padding: 64px 56px 56px; }
 .kinds h2 { font: 400 56px / 1.1 var(--serif); letter-spacing: -0.03em; white-space: nowrap; }
 .kinds-lead { margin-top: 16px; color: var(--muted); font-size: 20px; line-height: 1.45; }
@@ -63,7 +51,6 @@
 .copy-btn { flex: none; padding: 5px 10px; border: 0; border-radius: 7px; background: var(--accent-soft); color: var(--accent); font: 600 13px/1.4 inherit; cursor: pointer; }
 .copy-btn:hover { background: var(--accent); color: #fff; }
 .copy-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-.code-kw { color: #bd3a6f; font-weight: 600; }
 
 .faq { max-width: 760px; margin: 0 auto; padding: 72px 24px 24px; }
 .faq h2 { text-align: center; }
@@ -88,8 +75,9 @@
 .foot-legal { color: var(--faint); font-size: 13px; }
 
 @media (max-width: 860px) {
-  .feature, .feature-flip { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 40px 24px; }
-  .feature-flip .feature-copy { order: 0; }
+  .feature { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 40px 24px; }
+  .sketch-showcase { padding: 40px 24px 16px; }
+  .sketch-promo-frame { border-radius: 16px; }
   .steps { grid-template-columns: minmax(0, 1fr); }
   .kinds { padding: 40px 24px; }
   .kinds h2 { font-size: 40px; line-height: 1.1; white-space: normal; }

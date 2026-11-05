@@ -149,6 +149,7 @@ const headerBlocks = [
   '/index.html\n  Cache-Control: no-cache',
   '/landing/\n  Cache-Control: no-cache',
   '/landing/index.html\n  Cache-Control: no-cache',
+  '/landing/sketch-promo.html\n  Cache-Control: no-cache',
   '/oauth/consent/\n  Cache-Control: no-cache',
   '/oauth/consent/index.html\n  Cache-Control: no-cache',
   '/vendor/supabase-config.js\n  Cache-Control: no-cache',
