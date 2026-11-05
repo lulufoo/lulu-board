@@ -15,8 +15,8 @@ const mount = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/ske
 assert.strictEqual(Style.bodyKind(src), 'sketch');
 assert.doesNotMatch(src, /(?:style|content)\s+\{/);
 const fragment = Style.decodeSketchContent(src);
-assert.match(src, /sketch "A freedom board"/);
-assert.match(fragment, /A freedom<br>board/);
+assert.match(src, /sketch "A free-form board"/);
+assert.match(fragment, /A free-form<br>board/);
 assert.match(fragment, /Use the <b class="m p">\/sketch<\/b> skill in an AI agent to create this\./);
 assert.match(fragment, /Content is written by AI/);
 assert.match(fragment, />Sketch</);
