@@ -1,12 +1,16 @@
 """Shared helpers for the board_control.py tests. The test runner skips this file."""
 from __future__ import annotations
 
+import base64
 import contextlib
 import io
+import json
+import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PACKAGE_ROOT))
@@ -38,3 +42,27 @@ class TempDirCase(unittest.TestCase):
         with open(path, "w", encoding="utf-8", newline="") as handle:
             handle.write(text)
         return path
+
+
+class HomeCase(TempDirCase):
+    """TempDirCase with HOME pointed at self.home, so ~/.config/lulu-board lands in the temp dir."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.home = self.dir / "home"
+        self.home.mkdir()
+        patcher = patch.dict(os.environ, {"HOME": str(self.home)})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def env_with_home(self) -> dict:
+        """The environment for a subprocess that must see this HOME."""
+        return {**os.environ, "HOME": str(self.home)}
+
+
+def make_token(claims: dict) -> str:
+    """A JWT-shaped string whose payload is claims. The signature is not real."""
+    def encode(part: dict) -> str:
+        raw = json.dumps(part).encode("utf-8")
+        return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    return ".".join((encode({"alg": "none"}), encode(claims), "sig"))

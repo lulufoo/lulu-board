@@ -7,6 +7,15 @@ library only.
       stdout: {"version": "X.Y.Z"}. Dotted integers, so a caller can compare it
       with a minimum version.
 
+  whoami
+      Report the login state from the local credential file. No network, no login.
+      stdout: {"logged_in": false} or
+              {"logged_in": true, "email": "...", "user_id": "..."}
+      email and user_id come from the stored access token and are left out when
+      it holds none. A stored refresh token counts as logged in even after the
+      access token has expired; a file that holds only the client_id does not.
+      Both results exit 0. A damaged credential file is an ordinary error.
+
   preview-diagram --file FILE
       Publish the source in FILE as an anonymous short link. No login.
       The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
@@ -35,6 +44,10 @@ style, and file that decode-source returns fit encode-source's --title, --style,
 and --file. A title that decodes empty needs a new one before encode-source.
 decode-source fails when the content is damaged.
 
+Credentials
+  ~/.config/lulu-board/credentials.json (directory 0700, file 0600): the access
+  token, the refresh token, and the OAuth client_id. Commands never print them.
+
 Output
   stdout is one JSON object and never holds source text.
   exit 0  success
@@ -46,7 +59,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from board_cli import preview_commands, source_commands
+from board_cli import account_commands, preview_commands, source_commands
 from board_cli.version import VersionAction
 
 
@@ -58,6 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action=VersionAction, help="print the version as JSON and exit")
     sub = parser.add_subparsers(dest="command", required=True)
+    account_commands.register_commands(sub)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
     return parser
