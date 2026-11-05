@@ -13,7 +13,15 @@ Done when a tool `url` is shown.
 
 | Macro | CLI |
 |---|---|
-| `$SKETCH_CTL` | `python3 scripts/sketch_control.py` |
+| `$BOARD_CLI` | `~/.local/bin/board-cli` |
+| `$INSTALL_BOARD_CLI` | `mkdir -p ~/.local/bin && curl -fsSL https://github.com/lulufoo/lulu-board/releases/download/board-cli-v0.1.0/board-cli.pyz -o ~/.local/bin/board-cli && chmod +x ~/.local/bin/board-cli` |
+
+## CLI
+
+`$BOARD_CLI` is the installed `board-cli` program. Minimum version: `0.1.0`.
+
+1. Before the first `$BOARD_CLI` call of a session, run `$BOARD_CLI --version`.
+2. When the command is missing or its `version` is below the minimum, run `$INSTALL_BOARD_CLI`, then continue.
 
 ## Template
 
@@ -44,9 +52,9 @@ The frame is resized by its content and exported as one still image. Write for t
 
 Pick short link or cloud. Short link is the default.
 
-1. Use **cloud mode** only when the `whoami` MCP tool is listed and one of these holds: the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams; the user pastes a `#b:` link; this session already created the diagram in cloud mode. Load [cloud](../references/cloud.md).
+1. Use **cloud mode** only when one of these holds: the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams; the user pastes a `#b:` link; this session already created the diagram in cloud mode. Run `$BOARD_CLI whoami`. When `logged_in` is false, run `$BOARD_CLI login`: the user approves in the browser. Load [cloud flow](./references/cloud-flow.md).
 2. Otherwise use **short-link mode**.
-3. If `whoami` is listed but a tool call fails, use **short-link mode**.
+3. If `login` fails or times out, use **short-link mode** and tell the user why.
 4. If the user pastes a viewer URL, load [pointers](../references/pointers.md).
 
 ## Short link flow
@@ -54,21 +62,12 @@ Pick short link or cloud. Short link is the default.
 Publish unsigned.
 
 1. Write the fragment to `.cache/sketch/<name>.html`. `<name>` is a short English name for the diagram.
-2. Run `$SKETCH_CTL preview --html <file> --title <title>`. Always write a short title that names the diagram.
-3. Show only the `url` field and stop.
-4. To change, edit the HTML file and preview again. That creates a new short url.
-5. To keep, use cloud mode (`#b:`).
-
-## Cloud flow
-
-Read and write cloud diagrams as SKT Source.
-
-1. SKT Source has three lines: `sketch "<title>"`, `style`, and `content`. `content` is the encoded HTML. Only `$SKETCH_CTL encode` writes it and `$SKETCH_CTL decode` reads it.
-2. New: write the HTML file as in the short link flow, run `$SKETCH_CTL encode --html <file> --title <title>`, and pass the text of the `skt` file it returns unchanged as `bmd` to `create_diagram`.
-3. Read: `get_diagram`, write the returned `bmd` unchanged to `.cache/sketch/<name>.skt`, run `$SKETCH_CTL decode --skt <file>`, and edit the `html` file it returns.
-4. Save: run `$SKETCH_CTL encode --html <html> --title <title> --style "<style>"` with the `title` and `style` that `decode` returned, and pass the text of the `skt` file it returns unchanged as `bmd` to `save_diagram`.
-5. When `decode` returns an empty `title`, write a short title that names the diagram before `encode`.
+2. Run `$BOARD_CLI encode-source --file <file> --out .cache/sketch --title <title>`. Always write a short title that names the diagram.
+3. Run `$BOARD_CLI preview-diagram --file <skt>`, where `<skt>` is the `file` that `encode-source` returned.
+4. Show only the `url` field and stop.
+5. To change, edit the HTML file and publish again. That creates a new short url.
+6. To keep, use cloud mode (`#b:`).
 
 ## Boundaries
 
-1. CLI contract: `$SKETCH_CTL --help`.
+1. CLI contract: `$BOARD_CLI --help`.

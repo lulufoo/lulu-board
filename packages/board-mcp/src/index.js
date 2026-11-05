@@ -65,7 +65,7 @@ function createServer(env, identity, token) {
     toolText({ email: identity.email, user_id: identity.user_id })
   ));
   server.registerTool("get_diagram", {
-    description: "Load one owned diagram by id. Returns url plus diagram_id. group_id is the group this diagram_id belongs to.",
+    description: "Load one owned diagram by id. Returns url plus diagram_id. group_id is the group this diagram_id belongs to. A Sketch (source starts with `sketch`) is read with the board-cli program, not this tool.",
     inputSchema: { diagram_id: DIAGRAM_ID },
   }, async ({ diagram_id }) => {
     try { return toolText(mcpDoc(await getGraph(env, token, diagram_id))); }
@@ -86,7 +86,7 @@ function createServer(env, identity, token) {
     catch (error) { return toolError(error); }
   });
   server.registerTool("create_diagram", {
-    description: "Insert a new owned diagram and return url plus diagram_id. group_id is the group this diagram_id belongs to. Optional group_id joins that group on the current account so this diagram is classified with other diagrams that share it. Omit group_id to create a new group.",
+    description: "Insert a new owned diagram and return url plus diagram_id. group_id is the group this diagram_id belongs to. Optional group_id joins that group on the current account so this diagram is classified with other diagrams that share it. Omit group_id to create a new group. For Boxes and Mermaid sources; a Sketch goes through the board-cli program, not this tool.",
     inputSchema: {
       bmd: z.string(),
       diagram_id: DIAGRAM_ID.optional(),
@@ -99,7 +99,7 @@ function createServer(env, identity, token) {
     catch (error) { return toolError(error); }
   });
   server.registerTool("save_diagram", {
-    description: "Update an owned diagram when expected_version still matches. row includes url and diagram_id. row.group_id is the group this diagram_id belongs to.",
+    description: "Update an owned diagram when expected_version still matches. row includes url and diagram_id. row.group_id is the group this diagram_id belongs to. For Boxes and Mermaid sources; a Sketch goes through the board-cli program, not this tool.",
     inputSchema: { diagram_id: DIAGRAM_ID, bmd: z.string(), expected_version: z.number() },
   }, async ({ diagram_id, bmd, expected_version }) => {
     try {
