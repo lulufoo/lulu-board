@@ -392,10 +392,8 @@ assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const toolDescription = (name) => worker.split('registerTool("' + name + '"')[1].match(/description: "([^"]*)"/)[1];
 for (const name of ['get_diagram', 'create_diagram', 'save_diagram']) {
-  assert.match(toolDescription(name), /a Sketch (?:\(source starts with `sketch`\) is read with|goes through) the board-cli program, not this tool/i, name + ' sends Sketch to the board-cli program');
-}
-for (const name of ['create_diagram', 'save_diagram']) {
-  assert.match(toolDescription(name), /For Boxes and Mermaid sources/, name + ' names the sources it is for');
+  assert.match(toolDescription(name), /Use the board-cli program to (?:read|create|save) any diagram when the client can run it/, name + ' sends every diagram type to the board-cli program');
+  assert.match(toolDescription(name), /a Sketch (?:\(source starts with `sketch`\) )?is always (?:read|created|saved) with board-cli, not this tool/i, name + ' keeps a Sketch off this tool');
 }
 for (const name of ['whoami', 'get_group', 'search_diagrams']) {
   assert.doesNotMatch(toolDescription(name), /board-cli/, name + ' does not mention the CLI');
