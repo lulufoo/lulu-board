@@ -11,9 +11,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import sketch_schema as schema
-from cli_output import emit
-from short_link import create_short_url
+from board_cli import sketch_schema as schema
+from board_cli.cli_output import emit
+from board_cli.short_link import create_short_url
 
 SKETCH_EXTENSION = ".skt"
 SOURCE_EXTENSIONS = (SKETCH_EXTENSION, ".bmd", ".mmd")

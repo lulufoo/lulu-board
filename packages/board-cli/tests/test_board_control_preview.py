@@ -9,9 +9,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from board_cli_support import SCRIPTS, TempDirCase, run_cli
-import preview_commands
-import sketch_schema as schema
+from board_cli_support import PACKAGE_ROOT, TempDirCase, run_cli
+from board_cli import preview_commands
+from board_cli import sketch_schema as schema
 
 HTML = '<div class="d">你好</div>\n'
 STUB = "https://luluboard.app/#p:p_" + "d" * 64
@@ -116,8 +116,8 @@ class ProcessTest(PreviewCase):
         env.pop("LULU_BOARD_SHORT_LINK_STUB", None)
         if stub:
             env["LULU_BOARD_SHORT_LINK_STUB"] = STUB
-        script = str(SCRIPTS / "board_control.py")
-        return subprocess.run([sys.executable, script, *argv], capture_output=True, text=True, env=env)
+        command = [sys.executable, "-m", "board_cli", *argv]
+        return subprocess.run(command, capture_output=True, text=True, env=env, cwd=PACKAGE_ROOT)
 
     def test_a_run_prints_one_json_line_and_exits_0(self) -> None:
         path = self.put("a.bmd", BOXES)

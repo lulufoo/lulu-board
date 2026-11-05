@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Lulu Board CLI.
 
 Sketch source files and short links for now. Python 3.9 or newer, standard
@@ -43,8 +42,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-import preview_commands
-import source_commands
+from board_cli import preview_commands, source_commands
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -67,7 +65,3 @@ def main(argv: list[str] | None = None) -> int:
         print(str(err), file=sys.stderr)
         return 1
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

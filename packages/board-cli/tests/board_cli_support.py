@@ -8,10 +8,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
-sys.path.insert(0, str(SCRIPTS))
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PACKAGE_ROOT))
 
-import board_control
+from board_cli import board_control
 
 
 def run_cli(*argv: str) -> tuple[int, str, str]:

@@ -4,7 +4,11 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const roots = [path.join(repo, 'tests'), path.join(repo, 'skills', 'test')];
+const roots = [
+  path.join(repo, 'tests'),
+  path.join(repo, 'skills', 'test'),
+  path.join(repo, 'packages', 'board-cli', 'tests'),
+];
 
 function listTests(dir, out) {
   for (const name of readdirSync(dir).sort()) {

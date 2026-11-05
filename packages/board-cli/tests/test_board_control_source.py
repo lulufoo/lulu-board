@@ -10,9 +10,9 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
-from board_cli_support import SCRIPTS, TempDirCase, run_cli
-import sketch_schema as schema
-import source_commands
+from board_cli_support import PACKAGE_ROOT, TempDirCase, run_cli
+from board_cli import sketch_schema as schema
+from board_cli import source_commands
 
 HTML = '<style>.d{color:red}</style><div class="d">你好 "world"</div>\n'
 NAME = re.compile(r"^\d{8}-\d{6}-\d{3}\.(skt|html)$")
@@ -191,8 +191,8 @@ class DecodeSourceTest(SourceCase):
 
 class ProcessTest(SourceCase):
     def run_script(self, *argv: str) -> subprocess.CompletedProcess:
-        script = str(SCRIPTS / "board_control.py")
-        return subprocess.run([sys.executable, script, *argv], capture_output=True, text=True)
+        command = [sys.executable, "-m", "board_cli", *argv]
+        return subprocess.run(command, capture_output=True, text=True, cwd=PACKAGE_ROOT)
 
     def test_a_run_prints_one_json_line_and_exits_0(self) -> None:
         html = self.put("demo.html", HTML)
