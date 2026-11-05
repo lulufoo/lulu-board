@@ -9,18 +9,11 @@ const { spawnSync } = require('child_process');
 
 const root = path.join(__dirname, '../..');
 const ctl = path.join(root, 'skills/mermaid/scripts/drawer_control.py');
-const viewer = fs.readFileSync(path.join(root, 'skills/mermaid/references/viewer.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
-const skill = fs.readFileSync(path.join(root, 'skills/mermaid/SKILL.md'), 'utf8');
 
 assert.match(pointers, /\| `#p:` \|/, 'pointers table has #p:');
 assert.match(pointers, /It does not encode `#z:`/, 'CLI does not encode #z:');
 assert.match(pointers, /It never mints `#b:`/, 'preview stays unsigned');
-assert.match(viewer, /`--kind flowchart`, `--kind mindmap`, or a Design kind/, 'viewer pins open kinds');
-assert.match(viewer, /does not write `history\/`/, 'preview does not write history');
-assert.match(skill, /\$DRAWER_CTL preview --kind/, 'skill still calls preview --kind');
-assert.match(skill, /one Open kind/, 'empty preview picks one Open kind');
-assert.match(skill, /with the Route/, 'mint uses the Route kind');
 
 const STUB = 'https://luluboard.app/#p:p_' + 'a'.repeat(64);
 

@@ -7,10 +7,10 @@ must be read, or when pointer kind changes the next action.
 |---|---|---|
 | `#p:` | Anonymous short pointer | Public create RPC; CLI prints the returned `url` |
 | `#z:` | Unsigned source envelope | Browser after a `#p:` fetch |
-| `#b:` | Owned cloud row | MCP return `url` |
-| `#s:` | Share pointer | Browser share; MCP does not write it this round |
+| `#b:` | Owned cloud row | CLI return `url` |
+| `#s:` | Share pointer | Browser share; the CLI does not write it |
 
-CLI `preview` calls the public create RPC and returns the `url`.
+CLI `preview-diagram` calls the public create RPC and returns the `url`.
 It does not encode `#z:`. It never mints `#b:`.
 
 ## `#p:`
@@ -28,14 +28,14 @@ the new `url`. To keep, use `#b:`.
 
 Shape: `https://<host>/#b:<diagram_id>`.
 
-`<diagram_id>` is `b_` plus 8 lowercase hex. That token is MCP `diagram_id`.
+`<diagram_id>` is `b_` plus 8 lowercase hex.
 
-From a pasted cloud link: take the token after `#b:`. Pass it as `diagram_id`.
+From a pasted cloud link: take the token after `#b:`. Pass it as `--diagram-id`.
 
 ## `#z:`
 
 Leftover envelope after a `#p:` jump. The page can still open it.
-Do not `create_diagram` or `save_diagram`.
+Do not create or save a diagram from it.
 
 ## `#s:`
 

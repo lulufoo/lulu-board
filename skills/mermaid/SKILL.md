@@ -18,7 +18,15 @@ and mindmap with a custom SVG pipeline, not Mermaid.js.
 
 | Macro | CLI |
 |---|---|
-| `$DRAWER_CTL` | `python3 scripts/drawer_control.py` |
+| `$BOARD_CLI` | `~/.local/bin/board-cli` |
+| `$INSTALL_BOARD_CLI` | `mkdir -p ~/.local/bin && curl -fsSL https://github.com/lulufoo/lulu-board/releases/download/board-cli-v0.2.0/board-cli.pyz -o ~/.local/bin/board-cli && chmod +x ~/.local/bin/board-cli` |
+
+## CLI
+
+`$BOARD_CLI` is the installed `board-cli` program. Minimum version: `0.2.0`.
+
+1. Before the first `$BOARD_CLI` call of a session, run `$BOARD_CLI --version`.
+2. When the command is missing or its `version` is below the minimum, run `$INSTALL_BOARD_CLI`, then continue.
 
 ## References
 
@@ -26,7 +34,6 @@ Load only what the current interface needs.
 
 1. **list** — load [catalog](./references/catalog.md) only.
 2. **route** — after an **open** type is chosen, load that one file from catalog.
-3. Load [viewer](./references/viewer.md) for CLI `status` or preview kind.
 
 ## Interfaces
 
@@ -50,7 +57,7 @@ The catalog is the type boundary. **Open** is `flowchart` (`flowchart` /
 3. Two fit → pick one; do not stop to ask.
 4. None fit → ask one line, then stop.
 5. A closed type → say it is not open, then stop. Do not author.
-6. Source already in hand and the ask is preview → drawer only.
+6. Source already in hand and the ask is to publish it → skip Author; run the Short link flow.
 
 ## Author
 
@@ -65,34 +72,31 @@ What to write, after the open type file is loaded.
 
 ## Mode
 
-Pick short link or cloud.
+Pick short link or cloud. Short link is the default.
 
-1. If the `whoami` MCP tool is listed, use **cloud mode**. Load [cloud](../references/cloud.md).
-2. If it is missing, use **short-link mode**. Do not mention MCP.
-3. If `whoami` is listed but a tool call fails, use **short-link mode**.
-4. If the user pastes a viewer URL in short-link mode, load [pointers](../references/pointers.md).
+1. Use **cloud mode** only when one of these holds: the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams; the user pastes a `#b:` link; this session already created the diagram in cloud mode. Run `$BOARD_CLI whoami`. When `logged_in` is false, run `$BOARD_CLI login`: the user approves in the browser. Load [cloud](../references/cloud.md).
+2. Otherwise use **short-link mode**.
+3. If `login` fails or times out, use **short-link mode** and tell the user why.
+4. If the user pastes a viewer URL, load [pointers](../references/pointers.md).
 
 ## Short link flow
 
 Publish unsigned.
 
-1. After any preview, show only the CLI stdout `url` and stop.
-2. No scene to draw (and not an update): run `$DRAWER_CTL preview --kind`
-   with one Open kind, no `--file`, and no stdin body.
-3. Run `$DRAWER_CTL preview --kind` with the Route
-   kind and stdin or `--file`. If it reports a DSL error, correct the Source
-   and rerun.
-4. To change, edit this session’s last Source text and preview again. That
-   creates a new short url. If none yet, run step 3 first.
-5. To keep, use cloud mode (`#b:`).
+1. No scene to draw (and not an update): show `https://luluboard.app/` and stop.
+2. Write the Source to `.cache/mermaid/<name>.mmd`. `<name>` is a short English name for the diagram.
+3. Run `$BOARD_CLI preview-diagram --file <file>`.
+4. Show only the `url` field and stop.
+5. To change, edit the file and publish again. That creates a new short url.
+6. To keep, use cloud mode (`#b:`).
 
 ## Open wording
 
-Show the CLI stdout `url` or MCP `url`. One line.
+Show the `url`. One line.
 
 ## Boundaries
 
-1. CLI stdout contract: `$DRAWER_CTL --help`.
-2. CLI success or MCP write completes the skill; do not open the URL, drive
-   the viewer, or screenshot the layout unless the user explicitly requests
-   visual verification.
+1. CLI contract: `$BOARD_CLI --help`.
+2. CLI success completes the skill; do not open the URL, drive the viewer, or
+   screenshot the layout unless the user explicitly requests visual
+   verification.

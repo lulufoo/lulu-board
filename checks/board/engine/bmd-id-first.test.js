@@ -12,7 +12,6 @@ const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/c
 const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
 const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
 const board = fs.readFileSync(path.join(root, 'skills/boxes/SKILL.md'), 'utf8');
-const viewer = fs.readFileSync(path.join(root, 'skills/boxes/references/viewer.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'packages/boxes/skill-assets/vocab.md'), 'utf8');
 const themes = fs.readFileSync(path.join(root, 'packages/boxes/themes/index.js'), 'utf8');
@@ -38,9 +37,8 @@ assert.ok(/btnSourceCopyId/.test(boot), 'Copy ID is wired');
 assert.ok(fs.existsSync(path.join(root, 'skills/SKILL.md')), 'pack SKILL at skill root');
 assert.ok(/\*\*BMD Source\*\*/.test(board), 'board SKILL defines BMD Source');
 assert.ok(/diagram_id/.test(pointers), 'pointers name diagram_id');
-assert.ok(/show only the CLI stdout `url`/.test(board), 'board flow shows only the returned url');
+assert.ok(/Show only the `url` field and stop/.test(board), 'board flow shows only the returned url');
 assert.ok(/It does not encode `#z:`/.test(pointers), 'CLI does not encode #z:');
-assert.ok(/`--id` \| leftover; ignored/.test(viewer), 'viewer ignores leftover --id');
 assert.ok(!/mermaid:\s*'default'/.test(themes), 'theme map drops mermaid alias');
 assert.ok(/They are not the Drawer BMD ID/.test(vocab), 'vocab node IDs are not BMD ID');
 assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');

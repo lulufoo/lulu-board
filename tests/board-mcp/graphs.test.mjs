@@ -22,8 +22,6 @@ import { brandResponse, FAVICON_PNG_BASE64, FAVICON_SVG, PUBLIC_WEB_ORIGIN, serv
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const graphsSrc = readFileSync(path.join(root, 'packages/board-mcp/src/graphs.js'), 'utf8');
 const worker = readFileSync(path.join(root, 'packages/board-mcp/src/index.js'), 'utf8');
-const skill = readFileSync(path.join(root, 'skills/boxes/SKILL.md'), 'utf8');
-const cloud = readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
 
 assert.equal(boardTitleFromBody('boxes "Onboarding"\nbox A\n'), 'Onboarding');
 assert.equal(boardTitleFromBody('board "Onboarding"\nbox A\n'), '');
@@ -413,15 +411,6 @@ assert.equal(decodePayload('hdr.' + payload + '.sig').sub, 'user-1');
 assert.throws(() => decodePayload('not-a-jwt'), /invalid token/);
 assert.doesNotMatch(worker, /list_recent/, 'list_recent stays out of v1');
 assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no service key');
-assert.match(skill, /If the `whoami` MCP tool is listed/, 'skill gates on whoami');
-assert.match(skill, /listed but a tool call fails, use \*\*short-link mode\*\*/, 'failed MCP falls back to #z:');
-assert.doesNotMatch(skill, /Do not fall back/, 'failed MCP no longer blocks');
-assert.match(cloud, /[Oo]ptional\s+`group_id`/, 'cloud create can join a group');
-assert.match(cloud, /group this `diagram_id` belongs to/, 'cloud says group_id is the diagram group');
-assert.match(cloud, /current account/, 'cloud joins on the current account');
-assert.match(cloud, /Omit `group_id` to create a new group/, 'cloud says omit mints a group');
-assert.match(cloud, /`get_group` with that `diagram_id`/, 'cloud joins a pasted #b: group via get_group');
-assert.match(cloud, /Do not `get_diagram` only to join a\n   group/, 'cloud does not load bmd to join a group');
 
 const brandDir = path.join(root, 'packages/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
