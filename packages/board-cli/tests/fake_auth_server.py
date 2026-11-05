@@ -75,6 +75,11 @@ class FakeAuthServer:
         self.refuse_token = False
         self.omit_refresh_token = False
         self.force_authorize_status: int | None = None
+        self.valid_access_tokens: set[str] = set()   # what the fake API accepts, while unexpired
+        self.live_refresh: set[str] = set()          # refresh tokens the server still honors
+        self.refresh_status: int | None = None       # force this status on every refresh
+        self.omit_new_refresh = False                # a refresh reply without a rotated token
+        self.refreshes = 0
         self.issued = 0
         self.http = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         self.http.fake = self
@@ -130,8 +135,28 @@ class FakeAuthServer:
                             "challenge": query["code_challenge"]}
         return code
 
+    def reply_refresh(self, form: dict) -> tuple:
+        """Rotate like the real server: the old refresh token dies, a new one is issued."""
+        if self.refresh_status:
+            return self.refresh_status, {"msg": "boom"}
+        old = form.get("refresh_token", "")
+        if old not in self.live_refresh or form.get("client_id") not in self.clients:
+            return 400, {"error": "invalid_grant",
+                         "error_description": "Invalid Refresh Token: Refresh Token Not Found"}
+        self.refreshes += 1
+        access = make_token({**self.access_claims, "jti": f"refreshed-{self.refreshes}"})
+        self.valid_access_tokens.add(access)
+        body = {"access_token": access, "expires_in": 3600, "token_type": "bearer"}
+        if not self.omit_new_refresh:
+            self.live_refresh.discard(old)
+            body["refresh_token"] = f"refresh-rotated-{self.refreshes}"
+            self.live_refresh.add(body["refresh_token"])
+        return 200, body
+
     def reply_token(self, form: dict) -> tuple:
         self.token_forms.append(form)
+        if form.get("grant_type") == "refresh_token":
+            return self.reply_refresh(form)
         issued = self.codes.get(form.get("code", ""))
         digest = hashlib.sha256(form.get("code_verifier", "").encode()).digest()
         challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
@@ -142,8 +167,10 @@ class FakeAuthServer:
         if self.refuse_token or not valid:
             return 400, {"error": "invalid_grant", "error_description": "code or verifier does not match"}
         body = {"access_token": make_token(self.access_claims), "expires_in": 3600, "token_type": "bearer"}
+        self.valid_access_tokens.add(body["access_token"])
         if not self.omit_refresh_token:
             body["refresh_token"] = f"refresh-{len(self.token_forms)}"
+            self.live_refresh.add(body["refresh_token"])
         return 200, body
 
 

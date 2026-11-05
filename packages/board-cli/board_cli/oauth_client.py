@@ -26,6 +26,10 @@ class ClientRejected(RuntimeError):
     """The server does not accept this client_id or redirect address. Registering again can fix it."""
 
 
+class RefreshRejected(RuntimeError):
+    """The server refuses this refresh token. Only a new login can fix it."""
+
+
 def describe_failure(reply: Response) -> str:
     """HTTP status plus the server's short reason when the body gives one."""
     body = reply.read_json() or {}
@@ -113,4 +117,27 @@ def exchange_code(metadata: dict, client_id: str, redirect_uri: str, code: str, 
     for name in ("access_token", "refresh_token"):
         if not isinstance(tokens.get(name), str) or not tokens[name]:
             raise RuntimeError(f"token exchange gave no {name.replace('_', ' ')}")
+    return tokens
+
+
+def refresh_tokens(metadata: dict, client_id: str, refresh_token: str) -> dict:
+    """Trade a refresh token for a new access token.
+
+    The server rotates refresh tokens, so the reply usually holds a new one that
+    must replace the old one. A 400 or 401 means this refresh token is refused
+    (RefreshRejected). Any other failure is an ordinary error: the token may be fine.
+    """
+    form = urllib.parse.urlencode({
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+        "client_id": client_id,
+    }).encode()
+    reply = send_request("POST", metadata["token_endpoint"], FORM_HEADERS, form)
+    if reply.status in (400, 401):
+        raise RefreshRejected(f"the server refused the refresh token: {describe_failure(reply)}")
+    tokens = reply.read_json() if reply.status == 200 else None
+    if tokens is None:
+        raise RuntimeError(f"token refresh failed: {describe_failure(reply)}")
+    if not isinstance(tokens.get("access_token"), str) or not tokens["access_token"]:
+        raise RuntimeError("token refresh gave no access token")
     return tokens

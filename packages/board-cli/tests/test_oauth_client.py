@@ -71,13 +71,16 @@ class OneServerCase(unittest.TestCase):
                 pass
 
             def do_GET(self) -> None:
-                case.seen = {"path": self.path, "agent": self.headers.get("User-Agent")}
+                sent = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+                case.seen = {"path": self.path, "agent": self.headers.get("User-Agent"), "body": sent}
                 self.send_response(case.status)
                 for name, value in case.headers.items():
                     self.send_header(name, value)
                 self.send_header("Content-Length", str(len(case.body)))
                 self.end_headers()
                 self.wfile.write(case.body)
+
+            do_POST = do_GET
 
         self.server = HTTPServer(("127.0.0.1", 0), Handler)
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}/x"
@@ -127,6 +130,48 @@ class HttpJsonTest(OneServerCase):
     def test_read_json_gives_none_for_anything_but_an_object(self) -> None:
         for text in ("", "not json", "[1]", "3", '"s"'):
             self.assertIsNone(http_json.Response(200, {}, text).read_json(), text)
+
+
+class RefreshTokensTest(OneServerCase):
+    def refresh(self) -> dict:
+        return oauth_client.refresh_tokens({"token_endpoint": self.url}, "cid", "old-refresh")
+
+    def test_it_posts_the_refresh_grant_as_a_form(self) -> None:
+        self.body = json.dumps({"access_token": "a", "refresh_token": "r"}).encode()
+        self.assertEqual(self.refresh(), {"access_token": "a", "refresh_token": "r"})
+        self.assertEqual(urllib.parse.parse_qs(self.seen["body"].decode()),
+                         {"grant_type": ["refresh_token"], "refresh_token": ["old-refresh"], "client_id": ["cid"]})
+        self.assertEqual(self.seen["agent"], http_json.USER_AGENT)
+
+    def test_a_reply_without_a_refresh_token_is_fine(self) -> None:
+        self.body = b'{"access_token": "a"}'
+        self.assertEqual(self.refresh()["access_token"], "a")
+
+    def test_400_and_401_are_a_refusal_of_the_refresh_token(self) -> None:
+        for status in (400, 401):
+            self.status, self.body = status, b'{"error": "invalid_grant", "error_description": "Refresh Token Not Found"}'
+            with self.assertRaisesRegex(oauth_client.RefreshRejected,
+                                        rf"^the server refused the refresh token: HTTP {status}: Refresh Token Not Found$"):
+                self.refresh()
+
+    def test_other_failures_are_not_a_refusal(self) -> None:
+        for status in (403, 429, 500, 503):
+            self.status, self.body = status, b'{"msg": "later"}'
+            with self.assertRaises(RuntimeError) as caught:
+                self.refresh()
+            self.assertNotIsInstance(caught.exception, oauth_client.RefreshRejected, status)
+            self.assertEqual(str(caught.exception), f"token refresh failed: HTTP {status}: later")
+
+    def test_a_200_that_is_not_a_json_object_fails(self) -> None:
+        self.body = b"<html>"
+        with self.assertRaisesRegex(RuntimeError, r"^token refresh failed: HTTP 200$"):
+            self.refresh()
+
+    def test_a_200_without_an_access_token_fails(self) -> None:
+        for body in (b"{}", b'{"access_token": ""}', b'{"access_token": 7}'):
+            self.body = body
+            with self.assertRaisesRegex(RuntimeError, r"^token refresh gave no access token$"):
+                self.refresh()
 
 
 if __name__ == "__main__":

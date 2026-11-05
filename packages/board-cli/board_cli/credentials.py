@@ -76,11 +76,17 @@ def update_credentials(fields: dict) -> None:
     write_atomically(merged)
 
 
-def write_atomically(data: dict) -> None:
-    """Write data to a temporary file next to the credential file, then replace it."""
+def ensure_config_dir() -> Path:
+    """The config directory, made when missing and set to 0700 in code, not by the umask."""
     directory = locate_config_dir()
     directory.mkdir(parents=True, exist_ok=True, mode=DIR_MODE)
     os.chmod(directory, DIR_MODE)
+    return directory
+
+
+def write_atomically(data: dict) -> None:
+    """Write data to a temporary file next to the credential file, then replace it."""
+    directory = ensure_config_dir()
     handle, temp_name = tempfile.mkstemp(dir=directory, prefix=".credentials-", suffix=".tmp")
     try:
         with os.fdopen(handle, "w", encoding="utf-8") as out:

@@ -24,9 +24,12 @@ def read_claims(token: str) -> dict:
     return claims if isinstance(claims, dict) else {}
 
 
-def has_expired(claims: dict) -> bool:
-    """True when exp is a number in the past. A token with no readable exp counts as live."""
+def has_expired(claims: dict, margin_seconds: float = 0) -> bool:
+    """True when exp is a number that is past, or within margin_seconds of now.
+
+    A token with no readable exp counts as live: only the server can say otherwise.
+    """
     expiry = claims.get("exp")
     if isinstance(expiry, bool) or not isinstance(expiry, (int, float)):
         return False
-    return expiry <= time.time()
+    return expiry <= time.time() + margin_seconds

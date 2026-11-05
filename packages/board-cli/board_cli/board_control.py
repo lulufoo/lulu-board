@@ -58,11 +58,24 @@ Credentials
   ~/.config/lulu-board/credentials.json (directory 0700, file 0600): the access
   token, the refresh token, and the OAuth client_id. Commands never print them.
 
+Cloud commands
+  A command that calls the Lulu Board API uses the stored login. An access token
+  that has expired, or ends within 60 seconds, is refreshed before the call, and
+  the new refresh token is stored at once. A 401 from the server causes one
+  refresh and one retry. Processes refresh one at a time (a lock on
+  credentials.lock beside the credential file); a process that waited reuses the
+  token the other one stored. A refresh the server refuses keeps the stored tokens.
+  A login is needed when there is no credential file or token, the refresh token
+  is missing or refused, or the retry gets 401 again: that is exit 4.
+  A refresh that fails for another reason (no network, a 5xx) is an ordinary error.
+
 Output
   stdout is one JSON object and never holds source text.
   exit 0  success
   exit 1  ordinary error: one line on stderr, stdout empty
   exit 2  command-line usage error: usage on stderr, stdout empty
+  exit 4  login required: stdout {"login_required": true}, one line on stderr
+          telling the user to run login. Only commands that call the API give it.
 """
 from __future__ import annotations
 
@@ -70,6 +83,8 @@ import argparse
 import sys
 
 from board_cli import account_commands, login_commands, preview_commands, source_commands
+from board_cli.cli_errors import LoginRequired
+from board_cli.cli_output import emit
 from board_cli.version import VersionAction
 
 
@@ -92,6 +107,10 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         args.run(args)
+    except LoginRequired as err:
+        emit({"login_required": True})
+        print(str(err), file=sys.stderr)
+        return 4
     except (RuntimeError, OSError) as err:
         print(str(err), file=sys.stderr)
         return 1
