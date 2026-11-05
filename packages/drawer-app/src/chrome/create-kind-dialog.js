@@ -4,7 +4,7 @@ import { sentryCount } from '../core/sentry-count.js';
 
 var CREATE_KIND_ITEMS = [
   { cls: "Welcome", name: "Welcome", note: "Onboarding board", ready: true, kind: "welcome" },
-  { cls: "Sketch", name: "Sketch", note: "Figurative board", ready: true, kind: "sketch" },
+  { cls: "Sketch", name: "Sketch", note: "Free-form board", ready: true, kind: "sketch" },
   { cls: "Boxes", name: "Boxes", note: "Structured whiteboard", ready: true, kind: "boxes" },
   { cls: "Mermaid", name: "Flowchart", note: "flow", ready: true, kind: "flowchart" },
   { cls: "Mermaid", name: "Block", note: "flow", ready: false, kind: "block-beta" },
