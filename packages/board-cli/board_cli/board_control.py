@@ -26,6 +26,30 @@ library only.
       server no longer knows is registered again. Authorization code with PKCE.
       stdout: the same object as whoami reports once logged in.
 
+  get-diagram --diagram-id ID --out DIR
+      Login needed. Write the source of one cloud diagram, exactly as the server
+      holds it, to DIR/<diagram_id>.<extension>; DIR is made when missing, and
+      getting the same diagram again overwrites the earlier file. The extension
+      comes from the first statement of the source, skipping blank lines, comments
+      (#, //, %%), meta and style lines: "boxes " gives .bmd, "sketch" gives .skt,
+      anything else gives .mmd. A diagram id is b_ and 8 lowercase hex digits.
+      stdout: {"diagram_id", "title", "version", "updated_at", "group_id", "url",
+               "file": "<path of the source file>"}
+      There is no type field: read the type from the extension of file. The source
+      is in the file and never in the output. version is the number to give back to
+      save-diagram.
+
+  get-group --diagram-id ID
+      Login needed. The group the diagram belongs to, and its members in display
+      order. The API wants a diagram id; a group id does not work.
+      stdout: {"group_id", "members": [{"diagram_id", "title", "sort_order", "url"}]}
+      A member whose sort_order is missing comes last, with sort_order 9007199254740991.
+
+  search-diagrams --query TEXT
+      Login needed. Search your own diagrams; other people's are left out. TEXT is
+      trimmed and must not be empty.
+      stdout: {"results": [{"diagram_id", "title", "url"}]}
+
   preview-diagram --file FILE
       Publish the source in FILE as an anonymous short link. No login.
       The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
@@ -59,10 +83,11 @@ Credentials
   token, the refresh token, and the OAuth client_id. Commands never print them.
 
 Cloud commands
-  A command that calls the Lulu Board API uses the stored login. An access token
-  that has expired, or ends within 60 seconds, is refreshed before the call, and
-  the new refresh token is stored at once. A 401 from the server causes one
-  refresh and one retry. Processes refresh one at a time (a lock on
+  get-diagram, get-group, and search-diagrams call the Lulu Board API with the
+  stored login. An access token that has expired, or ends within 60 seconds, is
+  refreshed before the call, and the new refresh token is stored at once. A 401
+  from the server causes one refresh and one retry. Processes refresh one at a
+  time (a lock on
   credentials.lock beside the credential file); a process that waited reuses the
   token the other one stored. A refresh the server refuses keeps the stored tokens.
   A login is needed when there is no credential file or token, the refresh token
@@ -82,7 +107,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from board_cli import account_commands, login_commands, preview_commands, source_commands
+from board_cli import account_commands, login_commands, preview_commands, read_commands, source_commands
 from board_cli.cli_errors import LoginRequired
 from board_cli.cli_output import emit
 from board_cli.version import VersionAction
@@ -98,6 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     account_commands.register_commands(sub)
     login_commands.register_commands(sub)
+    read_commands.register_commands(sub)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
     return parser

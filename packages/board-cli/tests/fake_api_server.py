@@ -25,9 +25,12 @@ class ApiHandler(BaseHTTPRequestHandler):
             "user_agent": self.headers.get("User-Agent"), "accept": self.headers.get("Accept"),
             "content_type": self.headers.get("Content-Type"), "body": raw,
         })
-        status, body = (200, fake.body) if fake.accepts(authorization.removeprefix("Bearer ")) else (401, {"error": "unauthorized"})
-        if status == 200:
-            status = fake.status
+        if fake.accepts(authorization.removeprefix("Bearer ")):
+            path = self.path.split("?", 1)[0]
+            status, body = fake.routes.get((self.command, self.path)) or fake.routes.get(
+                (self.command, path), (fake.status, fake.body))
+        else:
+            status, body = 401, {"error": "unauthorized"}
         payload = json.dumps(body).encode()
         self.send_response(status)
         self.send_header("Content-Length", str(len(payload)))
@@ -44,6 +47,7 @@ class FakeApiServer:
         self.status = 200               # the status for a request that carries an accepted token
         self.body: dict = {"ok": True}
         self.reject_all = False
+        self.routes: dict[tuple, tuple] = {}  # (method, path or path?query) -> (status, JSON value)
         self.http = ThreadingHTTPServer(("127.0.0.1", 0), ApiHandler)
         self.http.fake = self
         self.base = f"http://127.0.0.1:{self.http.server_address[1]}"
@@ -57,6 +61,10 @@ class FakeApiServer:
         self.http.shutdown()
         self.http.server_close()
         self.thread.join(timeout=5)
+
+    def route(self, method: str, path: str, status: int, body) -> None:
+        """Answer a request with an accepted token. path may carry the query, which then must match."""
+        self.routes[(method, path)] = (status, body)
 
     def accepts(self, token: str) -> bool:
         if self.reject_all or token not in self.auth.valid_access_tokens:
