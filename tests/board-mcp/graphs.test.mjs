@@ -392,6 +392,17 @@ assert.doesNotMatch(worker, /create_mermaid/, 'MCP stays one persist set');
 assert.doesNotMatch(worker, /registerTool\("get_vela"|registerTool\("create_vela"|registerTool\("save_vela"/, 'no vela method aliases');
 assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
+const toolDescription = (name) => worker.split('registerTool("' + name + '"')[1].match(/description: "([^"]*)"/)[1];
+for (const name of ['get_diagram', 'create_diagram', 'save_diagram']) {
+  assert.match(toolDescription(name), /a Sketch (?:\(source starts with `sketch`\) is read with|goes through) the board-cli program, not this tool/i, name + ' sends Sketch to the board-cli program');
+}
+for (const name of ['create_diagram', 'save_diagram']) {
+  assert.match(toolDescription(name), /For Boxes and Mermaid sources/, name + ' names the sources it is for');
+}
+for (const name of ['whoami', 'get_group', 'search_diagrams']) {
+  assert.doesNotMatch(toolDescription(name), /board-cli/, name + ' does not mention the CLI');
+}
+assert.doesNotMatch(worker.replace(/description: "[^"]*"/g, ''), /sketch/i, 'the Worker only describes Sketch; it never inspects a source for it');
 const payload = Buffer.from(JSON.stringify({
   iss: 'https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1',
   sub: 'user-1',
