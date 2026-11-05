@@ -14,7 +14,7 @@ from pathlib import Path
 
 from board_cli_support import TempDirCase
 import pyz_builder
-from board_cli.version import VERSION
+from board_cli.core.version import VERSION
 
 STUB = "https://luluboard.app/#p:p_" + "d" * 64
 BOXES = 'boxes "T"\nbox A\n'
@@ -48,7 +48,7 @@ class ArchiveTest(BuildCase):
     def test_the_archive_holds_the_package_sources_only(self) -> None:
         names = zipfile.ZipFile(self.built).namelist()
         self.assertIn("board_cli/board_control.py", names)
-        self.assertIn("board_cli/version.py", names)
+        self.assertIn("board_cli/core/version.py", names)
         for name in names:
             with self.subTest(name=name):
                 self.assertTrue(name == "__main__.py" or name.startswith("board_cli/"), name)

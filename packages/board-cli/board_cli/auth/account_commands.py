@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import argparse
 
-from board_cli import credentials
-from board_cli.cli_output import emit
-from board_cli.token_claims import has_expired, read_claims
+from board_cli.auth import credentials
+from board_cli.auth.token_claims import has_expired, read_claims
+from board_cli.core.cli_output import emit
 
 
 def check_login(stored: dict | None) -> bool:

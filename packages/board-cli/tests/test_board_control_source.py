@@ -11,8 +11,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from board_cli_support import PACKAGE_ROOT, TempDirCase, run_cli
-from board_cli import sketch_schema as schema
-from board_cli import source_commands
+from board_cli.source import sketch_schema as schema
+from board_cli.source import source_commands
 
 HTML = '<style>.d{color:red}</style><div class="d">你好 "world"</div>\n'
 NAME = re.compile(r"^\d{8}-\d{6}-\d{3}\.(skt|html)$")

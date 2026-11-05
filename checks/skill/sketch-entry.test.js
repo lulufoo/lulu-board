@@ -15,7 +15,7 @@ const skill = fs.readFileSync(path.join(root, 'skills/sketch/SKILL.md'), 'utf8')
 const template = fs.readFileSync(path.join(root, 'skills/sketch/references/template.md'), 'utf8');
 const cloudFlow = fs.readFileSync(path.join(root, 'skills/sketch/references/cloud-flow.md'), 'utf8');
 const sharedCloud = fs.readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
-const cliVersion = fs.readFileSync(path.join(cliDir, 'board_cli/version.py'), 'utf8').match(/VERSION = "(\d+(?:\.\d+)*)"/)[1];
+const cliVersion = fs.readFileSync(path.join(cliDir, 'board_cli/core/version.py'), 'utf8').match(/VERSION = "(\d+(?:\.\d+)*)"/)[1];
 
 const asNumbers = (version) => version.split('.').map(Number);
 const isAtMost = (a, b) => {

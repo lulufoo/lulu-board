@@ -11,14 +11,14 @@ import json
 import math
 from pathlib import Path
 
-from board_cli import sketch_schema as schema
-from board_cli.api_client import call_api
-from board_cli.cli_output import emit
-from board_cli.diagram_model import (
+from board_cli.cloud.api_client import call_api
+from board_cli.cloud.diagram_model import (
     DIAGRAM_ID, check_diagram_id, check_group_id, check_reply, diagram_info, diagram_url,
 )
-from board_cli.http_json import Response
-from board_cli.source_kind import detect_extension
+from board_cli.core.cli_output import emit
+from board_cli.core.http_json import Response
+from board_cli.source import sketch_schema as schema
+from board_cli.source.source_kind import detect_extension
 
 # A member with no usable sort_order goes last, as in the MCP server (JavaScript's MAX_SAFE_INTEGER).
 LAST_RANK = 9007199254740991

@@ -5,7 +5,7 @@ import base64
 import unittest
 
 from board_cli_support import TempDirCase
-from board_cli import sketch_schema as schema
+from board_cli.source import sketch_schema as schema
 
 HTML = '<style>.d{color:red}</style><div class="d">你好 "world"</div>\n'
 

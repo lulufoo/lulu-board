@@ -10,9 +10,9 @@ from __future__ import annotations
 import json
 import urllib.parse
 
-from board_cli import token_manager
-from board_cli.cli_errors import LoginRequired
-from board_cli.http_json import Response, send_request
+from board_cli.auth import token_manager
+from board_cli.core.cli_errors import LoginRequired
+from board_cli.core.http_json import Response, send_request
 
 API_HOST = "https://api.luluboard.app"
 

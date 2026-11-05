@@ -11,7 +11,7 @@ from board_cli_support import PACKAGE_ROOT
 
 REPO = PACKAGE_ROOT.parents[1]
 SKILLS_COPY = REPO / "skills" / "scripts" / "short_link.py"
-PACKAGE_COPY = PACKAGE_ROOT / "board_cli" / "short_link.py"
+PACKAGE_COPY = PACKAGE_ROOT / "board_cli" / "source" / "short_link.py"
 CONSTANTS = ("PUBLIC_WEB_ORIGIN", "SUPABASE_URL", "SUPABASE_PUBLISHABLE_KEY", "_RPC")
 
 

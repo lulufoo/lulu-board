@@ -4,7 +4,7 @@ from __future__ import annotations
 import unittest
 
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
-from board_cli.source_kind import detect_extension, first_statement
+from board_cli.source.source_kind import detect_extension, first_statement
 
 
 class DetectExtensionTest(unittest.TestCase):

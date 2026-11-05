@@ -11,15 +11,15 @@ from __future__ import annotations
 import argparse
 import re
 
-from board_cli.api_client import call_api
-from board_cli.cli_errors import LoginRequired, VersionConflict
-from board_cli.cli_output import emit
-from board_cli.diagram_model import (
+from board_cli.cloud.api_client import call_api
+from board_cli.cloud.diagram_model import (
     check_diagram_id, check_group_argument, check_reply, coerce_version, diagram_info,
 )
-from board_cli.http_json import Response
-from board_cli.read_commands import fetch_row, valid_diagram_id
-from board_cli.source_files import read_checked_source
+from board_cli.cloud.read_commands import fetch_row, valid_diagram_id
+from board_cli.core.cli_errors import LoginRequired, VersionConflict
+from board_cli.core.cli_output import emit
+from board_cli.core.http_json import Response
+from board_cli.source.source_files import read_checked_source
 
 WHOLE_NUMBER = re.compile(r"[0-9]+")
 # Past this a number no longer survives the server's JSON reading unchanged.

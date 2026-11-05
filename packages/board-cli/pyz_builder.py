@@ -17,7 +17,7 @@ import sys
 import zipapp
 from pathlib import Path
 
-from board_cli.version import VERSION
+from board_cli.core.version import VERSION
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 ARCHIVE_NAME = "board-cli.pyz"

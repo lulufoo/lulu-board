@@ -11,7 +11,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest.mock import patch
 
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
-from board_cli import http_json, oauth_client
+from board_cli.auth import oauth_client
+from board_cli.core import http_json
 
 METADATA = {"authorization_endpoint": "https://auth.example/authorize"}
 

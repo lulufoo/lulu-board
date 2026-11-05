@@ -10,8 +10,8 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
-from board_cli import sketch_schema as schema
-from board_cli.cli_output import emit
+from board_cli.core.cli_output import emit
+from board_cli.source import sketch_schema as schema
 
 
 def read_clock() -> datetime:

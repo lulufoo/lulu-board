@@ -8,7 +8,7 @@ import socket
 from unittest.mock import patch
 
 from board_cli_support import HomeCase
-from board_cli import login_commands, oauth_client
+from board_cli.auth import login_commands, oauth_client
 from fake_auth_server import METADATA_PATH, FakeAuthServer, FakeBrowser
 
 

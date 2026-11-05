@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from board_cli import sketch_schema as schema
-from board_cli.source_kind import BOXES_EXTENSION, MERMAID_EXTENSION, SKETCH_EXTENSION
+from board_cli.source import sketch_schema as schema
+from board_cli.source.source_kind import BOXES_EXTENSION, MERMAID_EXTENSION, SKETCH_EXTENSION
 
 SOURCE_EXTENSIONS = (SKETCH_EXTENSION, BOXES_EXTENSION, MERMAID_EXTENSION)
 

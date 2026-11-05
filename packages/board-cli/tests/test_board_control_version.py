@@ -8,7 +8,7 @@ import sys
 import unittest
 
 from board_cli_support import PACKAGE_ROOT, run_cli
-from board_cli.version import VERSION
+from board_cli.core.version import VERSION
 
 
 class VersionTest(unittest.TestCase):

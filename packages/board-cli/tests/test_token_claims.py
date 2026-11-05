@@ -5,14 +5,14 @@ import unittest
 from unittest.mock import patch
 
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
-from board_cli.token_claims import has_expired
+from board_cli.auth.token_claims import has_expired
 
 NOW = 1_800_000_000
 
 
 class HasExpiredTest(unittest.TestCase):
     def check(self, claims: dict, margin: float = 0) -> bool:
-        with patch("board_cli.token_claims.time.time", return_value=NOW):
+        with patch("board_cli.auth.token_claims.time.time", return_value=NOW):
             return has_expired(claims, margin)
 
     def test_a_past_expiry_is_expired(self) -> None:

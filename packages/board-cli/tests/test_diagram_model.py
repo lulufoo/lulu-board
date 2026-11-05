@@ -4,8 +4,8 @@ from __future__ import annotations
 import unittest
 
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
-from board_cli import diagram_model as model
-from board_cli.http_json import Response
+from board_cli.cloud import diagram_model as model
+from board_cli.core.http_json import Response
 
 
 class DiagramIdTest(unittest.TestCase):

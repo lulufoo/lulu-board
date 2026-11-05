@@ -11,7 +11,7 @@ import json
 import secrets
 import urllib.parse
 
-from board_cli.http_json import Response, send_request
+from board_cli.core.http_json import Response, send_request
 
 AUTH_HOST = "https://xjwlxxuafhsfzksxxmtu.supabase.co"
 METADATA_URL = AUTH_HOST + "/.well-known/oauth-authorization-server/auth/v1"

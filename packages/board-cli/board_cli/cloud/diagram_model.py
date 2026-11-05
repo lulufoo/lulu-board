@@ -8,7 +8,7 @@ from __future__ import annotations
 import math
 import re
 
-from board_cli.http_json import Response
+from board_cli.core.http_json import Response
 
 WEB_ORIGIN = "https://luluboard.app"
 DIAGRAM_ID = re.compile(r"b_[0-9a-f]{8}")

@@ -7,8 +7,10 @@ import unittest
 import urllib.parse
 
 from cloud_support import CloudCase
-from board_cli import api_client, credentials, http_json, token_manager
-from board_cli.cli_errors import LoginRequired
+from board_cli.auth import credentials, token_manager
+from board_cli.cloud import api_client
+from board_cli.core import http_json
+from board_cli.core.cli_errors import LoginRequired
 
 
 class RequestShapeTest(CloudCase):

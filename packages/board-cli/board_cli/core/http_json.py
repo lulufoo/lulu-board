@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 from typing import NamedTuple
 
-from board_cli.version import VERSION
+from board_cli.core.version import VERSION
 
 USER_AGENT = f"lulu-board-cli/{VERSION} (+https://luluboard.app)"
 TIMEOUT_SECONDS = 20

@@ -7,9 +7,9 @@ from __future__ import annotations
 
 import argparse
 
-from board_cli.cli_output import emit
-from board_cli.short_link import create_short_url
-from board_cli.source_files import read_checked_source
+from board_cli.core.cli_output import emit
+from board_cli.source.short_link import create_short_url
+from board_cli.source.source_files import read_checked_source
 
 
 def run_preview_diagram(args: argparse.Namespace) -> None:

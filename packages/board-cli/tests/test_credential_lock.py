@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 from board_cli_support import HomeCase
-from board_cli import credential_lock, credentials
+from board_cli.auth import credential_lock, credentials
 
 
 class LockTest(HomeCase):
@@ -89,7 +89,7 @@ class LockTest(HomeCase):
 HOLDER = """
 import sys, time
 sys.path.insert(0, {root!r})
-from board_cli import credential_lock
+from board_cli.auth import credential_lock
 with credential_lock.hold_lock(30):
     with open({log!r}, "a") as log:
         log.write("start\\n"); log.flush()

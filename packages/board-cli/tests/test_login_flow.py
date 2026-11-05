@@ -10,7 +10,8 @@ import unittest
 import urllib.parse
 
 from board_cli_support import make_token, run_cli
-from board_cli import credentials, http_json, login_commands
+from board_cli.auth import credentials, login_commands
+from board_cli.core import http_json
 from login_support import LoginCase, find_free_port
 
 FUTURE = 4102444800

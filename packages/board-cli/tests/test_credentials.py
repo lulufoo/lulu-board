@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from board_cli_support import HomeCase
-from board_cli import credentials
+from board_cli.auth import credentials
 
 
 def mode_of(path) -> int:

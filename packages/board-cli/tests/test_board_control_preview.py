@@ -10,8 +10,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from board_cli_support import PACKAGE_ROOT, TempDirCase, run_cli
-from board_cli import preview_commands
-from board_cli import sketch_schema as schema
+from board_cli.source import preview_commands
+from board_cli.source import sketch_schema as schema
 
 HTML = '<div class="d">你好</div>\n'
 STUB = "https://luluboard.app/#p:p_" + "d" * 64

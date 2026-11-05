@@ -13,7 +13,7 @@ import os
 import time
 from typing import Iterator
 
-from board_cli import credentials
+from board_cli.auth import credentials
 
 LOCK_NAME = "credentials.lock"
 POLL_SECONDS = 0.05

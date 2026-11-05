@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import argparse
 
-from board_cli.cli_output import emit
+from board_cli.core.cli_output import emit
 
 VERSION = "0.1.0"
 

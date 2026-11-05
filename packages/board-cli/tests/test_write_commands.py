@@ -6,7 +6,8 @@ import unittest
 
 from board_cli_support import run_cli
 from cloud_support import CloudCase
-from board_cli import credentials, sketch_schema as schema, token_manager
+from board_cli.auth import credentials, token_manager
+from board_cli.source import sketch_schema as schema
 
 ID = "b_0fc10001"
 GROUP = "g_99aabbcc"

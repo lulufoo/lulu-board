@@ -9,7 +9,7 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from board_cli.token_claims import has_expired, read_claims
+from board_cli.auth.token_claims import has_expired, read_claims
 
 
 class ApiHandler(BaseHTTPRequestHandler):

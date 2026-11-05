@@ -1,7 +1,7 @@
 name: release-board-cli
 
 # Push a tag board-cli-v<version> to publish packages/board-cli as board-cli.pyz.
-# The build fails when the tag and board_cli/version.py disagree.
+# The build fails when the tag and board_cli/core/version.py disagree.
 on:
   push:
     tags:

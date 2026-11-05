@@ -130,12 +130,12 @@ from __future__ import annotations
 import argparse
 import sys
 
-from board_cli import (
-    account_commands, login_commands, preview_commands, read_commands, source_commands, write_commands,
-)
-from board_cli.cli_errors import SpecialExit
-from board_cli.cli_output import emit
-from board_cli.version import VersionAction
+from board_cli.auth import account_commands, login_commands
+from board_cli.cloud import read_commands, write_commands
+from board_cli.core.cli_errors import SpecialExit
+from board_cli.core.cli_output import emit
+from board_cli.core.version import VersionAction
+from board_cli.source import preview_commands, source_commands
 
 
 def build_parser() -> argparse.ArgumentParser:

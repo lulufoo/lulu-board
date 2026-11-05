@@ -10,7 +10,7 @@ import urllib.request
 from unittest.mock import patch
 
 from board_cli_support import PACKAGE_ROOT, HomeCase, make_token, run_cli
-from board_cli import credentials
+from board_cli.auth import credentials
 
 FUTURE = 4102444800  # 2100-01-01
 PAST = 1

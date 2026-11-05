@@ -6,8 +6,8 @@ import time
 import unittest
 
 from cloud_support import CloudCase
-from board_cli import credential_lock, credentials, token_manager
-from board_cli.cli_errors import LoginRequired
+from board_cli.auth import credential_lock, credentials, token_manager
+from board_cli.core.cli_errors import LoginRequired
 
 
 class UseStoredTokenTest(CloudCase):
@@ -77,7 +77,7 @@ class RefreshTest(CloudCase):
         self.assertEqual(stat.S_IMODE(os.stat(credentials.locate_credentials()).st_mode), 0o600)
 
     def test_a_refresh_uses_the_cli_user_agent(self) -> None:
-        from board_cli import http_json
+        from board_cli.core import http_json
         self.store_login(exp=self.expired())
         token_manager.get_access_token()
         self.assertEqual({agent for _, _, agent in self.auth.requests}, {http_json.USER_AGENT})
@@ -218,7 +218,7 @@ class ConcurrencyTest(CloudCase):
         self.assertEqual(self.auth.refreshes, 0)
 
     def test_the_lock_wait_is_longer_than_two_requests(self) -> None:
-        from board_cli import http_json
+        from board_cli.core import http_json
         self.assertGreaterEqual(token_manager.LOCK_WAIT_SECONDS, 2 * http_json.TIMEOUT_SECONDS)
 
 

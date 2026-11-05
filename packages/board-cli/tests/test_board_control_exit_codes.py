@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from board_cli_support import HomeCase, run_cli
 from board_cli import board_control
-from board_cli.cli_errors import LoginRequired, SpecialExit, VersionConflict
+from board_cli.core.cli_errors import LoginRequired, SpecialExit, VersionConflict
 
 
 def parser_whose_command_raises(error: BaseException):

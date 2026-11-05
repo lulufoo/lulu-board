@@ -10,10 +10,10 @@ import secrets
 import sys
 import webbrowser
 
-from board_cli import credentials, oauth_client
-from board_cli.account_commands import pick_identity
-from board_cli.cli_output import emit
-from board_cli.login_callback import CALLBACK_PATH, CallbackServer
+from board_cli.auth import credentials, oauth_client
+from board_cli.auth.account_commands import pick_identity
+from board_cli.auth.login_callback import CALLBACK_PATH, CallbackServer
+from board_cli.core.cli_output import emit
 
 CALLBACK_PORT = 48621
 WAIT_SECONDS = 300

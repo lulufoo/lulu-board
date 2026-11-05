@@ -13,9 +13,9 @@ come from a request fault, and a login replaces them anyway.
 """
 from __future__ import annotations
 
-from board_cli import credential_lock, credentials, oauth_client
-from board_cli.cli_errors import LoginRequired
-from board_cli.token_claims import has_expired, read_claims
+from board_cli.auth import credential_lock, credentials, oauth_client
+from board_cli.auth.token_claims import has_expired, read_claims
+from board_cli.core.cli_errors import LoginRequired
 
 # A call can take TIMEOUT_SECONDS (20) and the clocks of two machines differ a little.
 REFRESH_MARGIN_SECONDS = 60

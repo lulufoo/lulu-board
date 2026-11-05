@@ -8,7 +8,8 @@ import time
 from unittest.mock import patch
 
 from board_cli_support import HomeCase, make_token
-from board_cli import api_client, credentials, oauth_client
+from board_cli.auth import credentials, oauth_client
+from board_cli.cloud import api_client
 from fake_api_server import FakeApiServer
 from fake_auth_server import FUTURE, METADATA_PATH, FakeAuthServer
 

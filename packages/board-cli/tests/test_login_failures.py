@@ -7,7 +7,7 @@ import time
 import unittest
 
 from board_cli_support import run_cli
-from board_cli import credentials, oauth_client
+from board_cli.auth import credentials, oauth_client
 from login_support import LoginCase, find_free_port
 
 
