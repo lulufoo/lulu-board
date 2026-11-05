@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lulu Board Sketch — Shape the story</title>
+<style>
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    place-items: center;
+  }
+</style>
+<style>
+:root {
+    --board-bg: #ffffff;
+    --board-dot: #dbe3e5;
+    --panel: #f5f0e8;
+    --ink: #30313a;
+    --muted: #747580;
+    --soft-ink: #84715e;
+    --brand: #db4c84;
+    --brand-soft: rgba(219, 76, 132, .16);
+    --stage: #f5f0e8;
+    --stage-ink: #44333e;
+    --stage-muted: #896f7b;
+    --sun: #ffd166;
+  }
+
+  :root, html, body {
+    margin: 0;
+    background: transparent;
+  }
+
+
+  .diagram {
+    position: relative;
+    width: 720px;
+    height: 405px;
+    overflow: hidden;
+    font-family: "SF Pro Display", "SF Pro Text", Inter, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    transform: scale(var(--embed-scale, 1));
+    transform-origin: center;
+  }
+
+  .scene {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 1280px;
+    height: 720px;
+    overflow: hidden;
+    transform: scale(.5625);
+    transform-origin: 0 0;
+    border-radius: 18px;
+    color: var(--ink);
+    background-color: var(--board-bg);
+    background-image: radial-gradient(circle, var(--board-dot) 1px, transparent 1.5px);
+    background-size: 24px 24px;
+    background-position: 12px 12px;
+    animation: scene-in .46s cubic-bezier(.2, .8, .2, 1) both;
+  }
+
+  @keyframes scene-in {
+    from { opacity: 0; transform: scale(.535); }
+    to { opacity: 1; transform: scale(.5625); }
+  }
+
+  /* Real Board workspace chrome */
+  .top-left {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .brand-mark {
+    display: block;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .mode-switch {
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--panel);
+  }
+
+  .mode-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc((100% - 8px) / 2);
+    height: calc(100% - 6px);
+    border-radius: 9px;
+    background: var(--brand-soft);
+    transform: translateX(calc(100% + 2px));
+  }
+
+  .mode {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 9px;
+    color: #513d2d;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .mode.is-active { color: var(--brand); }
+
+  .search {
+    position: absolute;
+    top: 12px;
+    right: 76px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 240px;
+    height: 40px;
+    padding: 0 8px 0 14px;
+    border-radius: 12px;
+    color: var(--muted);
+    background: var(--panel);
+    font-size: 14px;
+  }
+
+  .search span:nth-child(2) { flex: 1; }
+
+  .key {
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: #858084;
+    background: #ece5d9;
+    font-size: 11px;
+    font-weight: 650;
+  }
+
+  .dock {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 56px;
+    padding: 12px 0;
+    border-left: 1px solid rgba(54, 48, 55, .10);
+    background: #fdfaf4;
+  }
+
+  .dock-button {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 12px;
+    color: var(--soft-ink);
+    background: var(--panel);
+  }
+
+  .dock-button svg { display: block; }
+
+  .dock-help {
+    color: var(--soft-ink);
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  /* The centered virtual Sketch — intentionally colored, never white */
+  .stage {
+    position: absolute;
+    top: 108px;
+    left: 170px;
+    width: 884px;
+    height: 497px;
+    overflow: hidden;
+    border-radius: 20px;
+    color: var(--stage-ink);
+    background: var(--stage);
+    box-shadow: 0 9px 22px rgba(52, 47, 61, .14);
+    animation: stage-enter .5s cubic-bezier(.2, .9, .3, 1.14) .22s both;
+  }
+
+  @keyframes stage-enter {
+    from { opacity: 0; transform: translateY(12px) scale(.965); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .stage-top {
+    position: absolute;
+    inset: 0 0 auto 0;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(97, 59, 78, .10);
+    color: var(--stage-muted);
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: .04em;
+  }
+
+  .mini-dots {
+    display: flex;
+    gap: 6px;
+    margin-right: 12px;
+  }
+
+  .mini-dots b {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dfb7c7;
+  }
+
+  .mini-dots b:nth-child(2) { background: #f0cc8c; }
+  .mini-dots b:nth-child(3) { background: #9fcfc6; }
+
+  .stage-rule {
+    position: absolute;
+    top: 52px;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    opacity: .36;
+    background: rgba(128, 93, 111, .19);
+  }
+
+  .stage-orbit {
+    position: absolute;
+    left: 50%;
+    top: 56px;
+    width: 540px;
+    height: 390px;
+    border: 1px solid rgba(219, 76, 132, .12);
+    border-radius: 50%;
+    transform: translateX(-50%) rotate(-12deg);
+  }
+
+  .stage-orbit::after {
+    position: absolute;
+    inset: 31px;
+    border: 1px solid rgba(131, 200, 189, .20);
+    border-radius: 50%;
+    content: "";
+  }
+
+  .beat {
+    position: absolute;
+    inset: 52px 0 0;
+    pointer-events: none;
+  }
+
+  /* Beat one: an intent appears */
+  .eyebrow {
+    position: absolute;
+    top: 74px;
+    left: 0;
+    right: 0;
+    color: var(--brand);
+    text-align: center;
+    font-size: 13px;
+    font-weight: 750;
+    letter-spacing: .16em;
+  }
+
+  .prompt-title {
+    position: absolute;
+    top: 111px;
+    left: 0;
+    right: 0;
+    color: var(--stage-ink);
+    text-align: center;
+    font-size: 42px;
+    font-weight: 760;
+    letter-spacing: -.025em;
+  }
+
+  .underlines {
+    position: absolute;
+    top: 306px;
+    left: 338px;
+    display: flex;
+    gap: 7px;
+  }
+
+  .underlines b {
+    display: block;
+    width: 68px;
+    height: 7px;
+    border-radius: 99px;
+    background: #e6c4d2;
+    transform-origin: left center;
+  }
+
+  .underlines b:nth-child(2) { width: 45px; background: #f0cf90; }
+  .underlines b:nth-child(3) { width: 80px; background: #a7d5cb; }
+
+  /* Beat two: the Board takes shape */
+  .board-copy {
+    position: absolute;
+    top: 76px;
+    left: 0;
+    right: 0;
+    color: var(--stage-ink);
+    text-align: center;
+    font-size: 35px;
+    font-weight: 750;
+    letter-spacing: -.025em;
+  }
+
+  .diagram-map {
+    position: absolute;
+    top: 154px;
+    left: 174px;
+    width: 536px;
+    height: 205px;
+  }
+
+  .connections { position: absolute; inset: 0; width: 536px; height: 205px; overflow: visible; }
+  .link {
+    fill: none;
+    stroke: var(--brand);
+    stroke-width: 2;
+    opacity: 0;
+    animation: carousel-link 9.6s ease both infinite;
+  }
+
+  .node {
+    position: absolute;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 58px;
+    width: 118px;
+    padding: 0 17px;
+    border: 1px solid rgba(107, 76, 92, .12);
+    border-radius: 16px;
+    color: var(--stage-ink);
+    background: #fbeef3;
+    box-shadow: 0 3px 8px rgba(89, 58, 72, .07);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .node.center {
+    top: 73px;
+    left: 213px;
+    width: 110px;
+    color: #fff8fb;
+    border-color: transparent;
+    background: var(--brand);
+  }
+
+  .node.one { top: 0; left: 0; background: #f7edd2; }
+  .node.two { bottom: 0; left: 0; background: #dcefe9; }
+  .node.three { top: 0; right: 0; background: #e7e0f5; }
+  .node.four { bottom: 0; right: 0; background: #f9dfe9; }
+
+  /* Beat three: a finished visual gets ready to present */
+  .present-grid {
+    position: absolute;
+    top: 88px;
+    left: 140px;
+    display: grid;
+    grid-template-columns: 242px 330px;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .present-copy h2 {
+    margin: 0 0 12px;
+    color: var(--stage-ink);
+    font-size: 36px;
+    font-weight: 760;
+    letter-spacing: -.03em;
+    line-height: 1.04;
+  }
+
+  .present-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 22px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: #6d4558;
+    background: #f8dbe7;
+    font-size: 13px;
+    font-weight: 720;
+  }
+
+  .present-tag b {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand);
+  }
+
+  .poster {
+    position: relative;
+    height: 266px;
+    overflow: hidden;
+    border: 1px solid rgba(110, 74, 93, .14);
+    border-radius: 18px;
+    background: #f9dbe6;
+  }
+
+  .poster-line {
+    position: absolute;
+    height: 10px;
+    border-radius: 99px;
+    background: #dc6f9a;
+  }
+
+  .poster-line.a { top: 48px; left: 39px; width: 162px; }
+  .poster-line.b { top: 70px; left: 39px; width: 99px; opacity: .58; }
+  .poster-arc {
+    position: absolute;
+    right: -56px;
+    bottom: -86px;
+    width: 254px;
+    height: 254px;
+    border: 28px solid #f0bece;
+    border-radius: 50%;
+  }
+
+  .poster-card {
+    position: absolute;
+    bottom: 36px;
+    left: 39px;
+    width: 212px;
+    height: 76px;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f6e7ee;
+  }
+
+  .poster-card::before,
+  .poster-card::after {
+    position: absolute;
+    border-radius: 99px;
+    background: #cdb9d8;
+    content: "";
+  }
+
+  .poster-card::before { top: 18px; left: 19px; width: 88px; height: 9px; }
+  .poster-card::after { top: 37px; left: 19px; width: 144px; height: 7px; opacity: .7; }
+
+  .poster-spark {
+    position: absolute;
+    right: 31px;
+    top: 39px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--sun);
+  }
+
+  /* Three scenes share one timeline so the carousel can repeat. */
+  .prompt-beat { animation: carousel-first 9.6s ease-in-out infinite; }
+  .board-beat { animation: carousel-second 9.6s ease-in-out infinite; }
+  .present-beat { animation: carousel-third 9.6s ease-in-out infinite; }
+  .prompt-beat .eyebrow { top: 138px; }
+  .prompt-beat .prompt-title { top: 183px; }
+  .prompt-beat .underlines b { animation: carousel-dash 9.6s ease both infinite; }
+  .prompt-beat .underlines b:nth-child(2) { animation-delay: .12s; }
+  .prompt-beat .underlines b:nth-child(3) { animation-delay: .24s; }
+  .node { animation: carousel-node 9.6s ease both infinite; }
+  .node.center { animation-delay: 0s; }
+  .node.one, .link.a { animation-delay: .1s; }
+  .node.two, .link.b { animation-delay: .22s; }
+  .node.three, .link.c { animation-delay: .34s; }
+  .node.four, .link.d { animation-delay: .46s; }
+  .node.one { --origin-x: 209px; --origin-y: 73px; }
+  .node.two { --origin-x: 209px; --origin-y: -74px; }
+  .node.three { --origin-x: -209px; --origin-y: 73px; }
+  .node.four { --origin-x: -209px; --origin-y: -74px; }
+  .poster { animation: carousel-poster 9.6s ease both infinite; }
+  @keyframes carousel-first {
+    0% { opacity: 0; transform: translateY(10px); }
+    4%, 29% { opacity: 1; transform: translateY(0); }
+    33%, 100% { opacity: 0; transform: translateY(-10px); }
+  }
+  @keyframes carousel-dash {
+    0%, 3% { opacity: 0; transform: scaleX(0); }
+    8%, 29% { opacity: 1; transform: scaleX(1); }
+    33%, 100% { opacity: 0; transform: scaleX(1); }
+  }
+  @keyframes carousel-second {
+    0%, 32% { opacity: 0; transform: translateY(10px); }
+    36%, 62% { opacity: 1; transform: translateY(0); }
+    66%, 100% { opacity: 0; transform: translateY(-10px); }
+  }
+  @keyframes carousel-third {
+    0%, 65% { opacity: 0; transform: translateY(10px); }
+    69%, 95% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+  }
+  @keyframes carousel-node {
+    0%, 32% { opacity: 0; transform: translate(var(--origin-x, 0px), var(--origin-y, 0px)) scale(.4); }
+    37%, 62% { opacity: 1; transform: translate(0, 0) scale(1); }
+    66%, 100% { opacity: 0; transform: translate(0, 0) scale(.96); }
+  }
+  @keyframes carousel-link {
+    0%, 33% { opacity: 0; }
+    38%, 62% { opacity: .75; }
+    66%, 100% { opacity: 0; }
+  }
+  @keyframes carousel-poster {
+    0%, 66% { opacity: 0; transform: translateY(12px) scale(.97); }
+    72%, 96% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-8px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene,
+    .stage,
+    .prompt-beat,
+    .board-beat,
+    .present-beat,
+    .underlines b,
+    .link,
+    .node,
+    .poster {
+      animation: none !important;
+    }
+
+    .scene { opacity: 1; transform: scale(.5625); }
+    .stage,
+    .present-beat,
+    .poster { opacity: 1; transform: none; }
+    .prompt-beat,
+    .board-beat { opacity: 0; }
+    .link,
+    .node { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="diagram" role="img" aria-label="A light Lulu Board workspace with an animated colored Sketch at its center">
+  <div class="scene">
+    <div class="top-left">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="8" fill="#db4c84"/>
+        <path d="M8 8h7v9h9v7H8z" fill="#f5f5f7"/>
+        <rect x="18" y="8" width="6" height="6" rx="1.5" fill="#ffd166"/>
+      </svg>
+      <span class="mode-switch">
+        <i class="mode-thumb"></i>
+        <b class="mode">Canvas</b>
+        <b class="mode is-active">Present</b>
+      </span>
+    </div>
+
+    <div class="search">
+      <span aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7.1" cy="7.1" r="4.4" stroke="currentColor" stroke-width="1.5"/><path d="m10.4 10.4 3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      <span>Search</span>
+      <b class="key">⌘K</b>
+    </div>
+
+    <aside class="dock" aria-hidden="true">
+      <span class="dock-button">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><rect x="2.75" y="2.5" width="10.5" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5.25 6h5.5M5.25 8.25h5.5M5.25 10.5h3.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="dock-button">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M8 2.35c3.25 0 5.65 2.4 5.65 5.35 0 1.5-1.15 2.2-2.3 2.2h-.7c-.75 0-1.2.5-1.2 1.2 0 .35.1.75.1 1.15 0 1.2-1.15 1.75-2.25 1.75C4.4 14 2.35 11.55 2.35 8.15 2.35 5.1 4.8 2.35 8 2.35Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="6.05" cy="7.2" r=".95" fill="currentColor"/><circle cx="8.35" cy="5.55" r=".95" fill="currentColor"/><circle cx="10.85" cy="7.4" r=".95" fill="currentColor"/></svg>
+      </span>
+      <span class="dock-button">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M5.25 4.5 1.75 8l3.5 3.5M10.75 4.5 14.25 8l-3.5 3.5M9 3 7 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="dock-button">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M8 2.6v7.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M5.15 7.2 8 10 10.85 7.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.4 11.2v1.45A1.6 1.6 0 0 0 5 14.25h6a1.6 1.6 0 0 0 1.6-1.6V11.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="dock-button dock-help">?</span>
+    </aside>
+
+    <section class="stage" aria-hidden="true">
+      <div class="stage-top"><span class="mini-dots"><b></b><b></b><b></b></span>SHAPE THE STORY</div>
+      <span class="stage-rule"></span>
+      <span class="stage-orbit"></span>
+
+      <div class="beat prompt-beat">
+        <div class="eyebrow">START WITH AN IDEA</div>
+        <div class="prompt-title">An idea begins.</div>
+        <div class="underlines"><b></b><b></b><b></b></div>
+      </div>
+
+      <div class="beat board-beat">
+        <div class="board-copy">Find the shape in the thought.</div>
+        <div class="diagram-map">
+          <svg class="connections" viewBox="0 0 536 205" aria-hidden="true">
+            <path class="link a" d="M213 90 L118 29"/>
+            <path class="link b" d="M213 114 L118 176"/>
+            <path class="link c" d="M323 90 L418 29"/>
+            <path class="link d" d="M323 114 L418 176"/>
+          </svg>
+          <span class="node one">Audience</span>
+          <span class="node two">Message</span>
+          <span class="node center">Idea</span>
+          <span class="node three">Flow</span>
+          <span class="node four">Next step</span>
+        </div>
+      </div>
+
+      <div class="beat present-beat">
+        <div class="present-grid">
+          <div class="present-copy">
+            <h2>A thought, now in motion.</h2>
+            <span class="present-tag"><b></b>Ready to present</span>
+          </div>
+          <div class="poster">
+            <i class="poster-line a"></i><i class="poster-line b"></i>
+            <i class="poster-arc"></i>
+            <i class="poster-card"></i>
+            <i class="poster-spark"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+<script>
+  const diagram = document.querySelector(".diagram");
+
+  function fitDiagram() {
+    const scale = Math.min(window.innerWidth / 720, window.innerHeight / 405);
+    diagram.style.setProperty("--embed-scale", String(scale));
+  }
+
+  window.addEventListener("resize", fitDiagram, { passive: true });
+  fitDiagram();
+</script>
+</body>
+</html>

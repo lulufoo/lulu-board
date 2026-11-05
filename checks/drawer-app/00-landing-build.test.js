@@ -20,7 +20,7 @@ for (const m of block.matchAll(/'([^'\n]+\.[a-z0-9]+)'/g)) {
   if (name.startsWith('examples/')) continue; // source half of a [from, to] pair
   shipped.add(name);
 }
-for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.webp', 'agent-chat.webp', 'board-shot.webp']) {
+for (const required of ['index.html', 'landing-base.css', 'landing-sections.css', 'landing.js', 'hero-art.webp', 'agent-chat.webp', 'board-shot.webp', 'sketch-promo.html']) {
   assert.ok(shipped.has(required), 'build ships ' + required);
 }
 
@@ -48,6 +48,17 @@ collect(read(landingRel + '/index.html'), '');
 for (const css of ['landing-base.css', 'landing-sections.css']) collect(read(landingRel + '/' + css), '');
 assert.ok(referenced.size >= 8, 'the page references local assets');
 for (const name of referenced) assert.ok(shipped.has(name), 'referenced asset is shipped: ' + name);
+
+const landing = read(landingRel + '/index.html');
+assert.match(landing, /<iframe class="sketch-promo"[^>]*src="\.\/sketch-promo\.html"/, 'landing embeds the Sketch promo asset');
+assert.match(landing, /<iframe class="sketch-promo"[^>]*title="[^"]+"/, 'Sketch iframe has an accessible name');
+assert.match(landing, /<iframe class="sketch-promo"[^>]*loading="lazy"/, 'Sketch iframe is lazy loaded');
+assert.match(landing, /<iframe class="sketch-promo"[^>]*sandbox="allow-scripts"/, 'Sketch iframe is sandboxed');
+
+const sketchPromo = read(landingRel + '/sketch-promo.html');
+assert.match(sketchPromo, /carousel-first/, 'Sketch promo retains the looping animation');
+assert.match(sketchPromo, /prefers-reduced-motion/, 'Sketch promo retains reduced-motion support');
+assert.doesNotMatch(sketchPromo, /\.progress\b/, 'Sketch promo has no obsolete progress bar styles');
 
 // /landing redirects to /landing/ only with this html handling; do not rely on the default
 assert.match(read('wrangler.toml'), /^html_handling\s*=\s*"auto-trailing-slash"$/m, 'wrangler pins html_handling');
