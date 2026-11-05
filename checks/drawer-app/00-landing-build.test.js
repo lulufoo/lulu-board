@@ -52,7 +52,7 @@ for (const name of referenced) assert.ok(shipped.has(name), 'referenced asset is
 const landing = read(landingRel + '/index.html');
 assert.match(landing, /<iframe class="sketch-promo"[^>]*src="\.\/sketch-promo\.html"/, 'landing embeds the Sketch promo asset');
 assert.match(landing, /<iframe class="sketch-promo"[^>]*title="[^"]+"/, 'Sketch iframe has an accessible name');
-assert.match(landing, /<iframe class="sketch-promo"[^>]*loading="lazy"/, 'Sketch iframe is lazy loaded');
+assert.match(landing, /<iframe class="sketch-promo"[^>]*loading="eager"/, 'Sketch iframe loads with the page');
 assert.match(landing, /<iframe class="sketch-promo"[^>]*sandbox="allow-scripts"/, 'Sketch iframe is sandboxed');
 
 const sketchPromo = read(landingRel + '/sketch-promo.html');
