@@ -3,6 +3,10 @@
 Sketch source files and short links for now. Python 3.9 or newer, standard
 library only.
 
+  --version
+      stdout: {"version": "X.Y.Z"}. Dotted integers, so a caller can compare it
+      with a minimum version.
+
   preview-diagram --file FILE
       Publish the source in FILE as an anonymous short link. No login.
       The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
@@ -43,14 +47,16 @@ import argparse
 import sys
 
 from board_cli import preview_commands, source_commands
+from board_cli.version import VersionAction
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="board_control",
+        prog="board-cli",
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument("--version", action=VersionAction, help="print the version as JSON and exit")
     sub = parser.add_subparsers(dest="command", required=True)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
@@ -65,3 +71,8 @@ def main(argv: list[str] | None = None) -> int:
         print(str(err), file=sys.stderr)
         return 1
     return 0
+
+
+def run() -> None:
+    """Entry for python3 -m board_cli and the .pyz: exit with main()'s code."""
+    raise SystemExit(main())

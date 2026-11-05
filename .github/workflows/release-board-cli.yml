@@ -1,0 +1,31 @@
+name: release-board-cli
+
+# Push a tag board-cli-v<version> to publish packages/board-cli as board-cli.pyz.
+# The build fails when the tag and board_cli/version.py disagree.
+on:
+  push:
+    tags:
+      - 'board-cli-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - name: Test the package
+        run: |
+          for file in packages/board-cli/tests/test_*.py; do
+            python3 "$file"
+          done
+      - name: Build board-cli.pyz
+        run: python3 packages/board-cli/pyz_builder.py --out dist --tag "$GITHUB_REF_NAME"
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/board-cli.pyz --title "$GITHUB_REF_NAME" --generate-notes

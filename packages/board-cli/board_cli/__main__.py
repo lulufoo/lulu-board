@@ -1,4 +1,4 @@
 """python3 -m board_cli: run the CLI."""
-from board_cli.board_control import main
+from board_cli.board_control import run
 
-raise SystemExit(main())
+run()
