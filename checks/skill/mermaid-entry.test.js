@@ -87,6 +87,5 @@ assert.doesNotMatch(pointers + skill, /edit token|edit_token/, 'no edit token');
 
 assert.doesNotMatch(skill, /MMD ID/, 'does not keep local MMD ID');
 assert.doesNotMatch(skill, /history\/\*\.mmd/, 'does not use local mermaid history');
-assert.doesNotMatch(skill, /\$DRAWER_CTL mount/, 'does not mount a local drawer');
 
 console.log('ok mermaid-entry skill');

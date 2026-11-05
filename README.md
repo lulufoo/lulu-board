@@ -133,9 +133,7 @@ Chat entry is `/boxes`.
 
 ```text
 skills/
-  scripts/   # short_link
-  test/
-  boxes/     # SKILL.md, scripts/, templates/
+  boxes/     # SKILL.md, templates/
   sketch/
   mermaid/
 ```

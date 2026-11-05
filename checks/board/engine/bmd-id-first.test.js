@@ -50,8 +50,5 @@ assert.ok(/function liveKindLabel/.test(shell) && /title.textContent !== label/.
 assert.ok(/function setCharsLabel/.test(shell), 'chars use a formatted count');
 assert.ok(/stripDocumentMeta/.test(shell), 'API wrap strips leftover meta');
 assert.ok(!/joinDocument/.test(shell), 'API wrap does not rejoin');
-const persist = fs.readFileSync(path.join(__dirname, '../../../skills/boxes/scripts/drawer_ctl/document.py'), 'utf8');
-assert.ok(!/document meta required/.test(persist), 'persist does not require envelope');
-assert.ok(!/join_document/.test(persist), 'persist does not join envelope');
 
 console.log('ok bmd-id-first');
