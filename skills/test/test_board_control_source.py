@@ -1,22 +1,16 @@
 """board_control.py: encode-source and decode-source."""
 from __future__ import annotations
 
-import contextlib
-import io
 import json
 import re
 import subprocess
 import sys
-import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
-_scripts = Path(__file__).resolve().parents[1] / "scripts"
-sys.path.insert(0, str(_scripts))
-
-import board_control
+from board_cli_support import SCRIPTS, TempDirCase, run_cli
 import sketch_schema as schema
 import source_commands
 
@@ -25,28 +19,10 @@ NAME = re.compile(r"^\d{8}-\d{6}-\d{3}\.(skt|html)$")
 MOMENT = datetime(2026, 11, 5, 18, 22, 1, 123456)
 
 
-def run_cli(*argv: str) -> tuple[int, str, str]:
-    out, err = io.StringIO(), io.StringIO()
-    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
-        try:
-            code = board_control.main(list(argv))
-        except SystemExit as stop:
-            code = stop.code
-    return code, out.getvalue(), err.getvalue()
-
-
-class TempDirCase(unittest.TestCase):
+class SourceCase(TempDirCase):
     def setUp(self) -> None:
-        holder = tempfile.TemporaryDirectory()
-        self.addCleanup(holder.cleanup)
-        self.dir = Path(holder.name).resolve()
+        super().setUp()
         self.out = self.dir / "out"
-
-    def put(self, name: str, text: str) -> Path:
-        path = self.dir / name
-        with open(path, "w", encoding="utf-8", newline="") as handle:
-            handle.write(text)
-        return path
 
     def encode(self, *extra: str) -> tuple[int, str, str]:
         html = self.put("demo.html", HTML)
@@ -56,7 +32,7 @@ class TempDirCase(unittest.TestCase):
         return patch.object(source_commands, "read_clock", return_value=MOMENT)
 
 
-class EncodeSourceTest(TempDirCase):
+class EncodeSourceTest(SourceCase):
     def test_creates_a_skt_file_and_prints_title_style_file(self) -> None:
         code, out, err = self.encode("--title", "T", "--style", "tok")
         payload = json.loads(out)
@@ -147,7 +123,7 @@ class EncodeSourceTest(TempDirCase):
             self.assertEqual((code, out), (2, ""))
 
 
-class DecodeSourceTest(TempDirCase):
+class DecodeSourceTest(SourceCase):
     def decode(self, text: str, name: str = "demo.skt") -> tuple[int, str, str]:
         skt = self.put(name, text)
         return run_cli("decode-source", "--file", str(skt), "--out", str(self.out))
@@ -213,9 +189,9 @@ class DecodeSourceTest(TempDirCase):
         self.assertEqual((code, out), (2, ""))
 
 
-class ProcessTest(TempDirCase):
+class ProcessTest(SourceCase):
     def run_script(self, *argv: str) -> subprocess.CompletedProcess:
-        script = str(_scripts / "board_control.py")
+        script = str(SCRIPTS / "board_control.py")
         return subprocess.run([sys.executable, script, *argv], capture_output=True, text=True)
 
     def test_a_run_prints_one_json_line_and_exits_0(self) -> None:

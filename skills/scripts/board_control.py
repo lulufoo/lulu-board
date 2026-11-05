@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """Lulu Board CLI.
 
-Sketch source files for now. Python 3.9 or newer, standard library only.
+Sketch source files and short links for now. Python 3.9 or newer, standard
+library only.
+
+  preview-diagram --file FILE
+      Publish the source in FILE as an anonymous short link. No login.
+      The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
+      Any other extension fails, including .html: run encode-source first.
+      A .skt file must parse as SKT Source; .bmd and .mmd go up as written.
+      stdout: {"url": "<short link>"}
 
   encode-source --file FILE.html --out DIR --title TEXT [--style TOKEN]
       Pack the Sketch HTML fragment in FILE into SKT Source.
@@ -35,6 +43,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+import preview_commands
 import source_commands
 
 
@@ -45,6 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
     return parser
 
