@@ -8,7 +8,7 @@ import argparse
 
 from board_cli.core.cli_output import emit
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 
 class VersionAction(argparse.Action):

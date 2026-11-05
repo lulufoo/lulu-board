@@ -76,6 +76,11 @@ class RunTest(BuildCase):
         self.assertEqual(done.returncode, 0)
         self.assertEqual(json.loads(done.stdout), {"url": STUB})
 
+    def test_the_assets_command_is_in_the_archive(self) -> None:
+        done = self.run_pyz("assets", "--help")
+        self.assertEqual(done.returncode, 0)
+        self.assertIn("usage: board-cli assets", done.stdout)
+
     def test_exit_codes_come_through(self) -> None:
         """zipapp's own main= entry drops the return value; the build must not."""
         failed = self.run_pyz("preview-diagram", "--file", str(self.home / "none.bmd"))
