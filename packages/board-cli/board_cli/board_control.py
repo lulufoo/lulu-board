@@ -16,6 +16,16 @@ library only.
       access token has expired; a file that holds only the client_id does not.
       Both results exit 0. A damaged credential file is an ordinary error.
 
+  login
+      Approve the CLI on the Lulu Board consent page in the browser, then store
+      the tokens. The link is also printed on stderr, in case the browser does not
+      open. It waits 300 seconds for the approval and then fails (exit 1).
+      The callback port is fixed, 127.0.0.1:48621; when another program holds it,
+      login fails before it registers anything. The client is registered once per
+      machine and its client_id is kept in the credential file; a client the
+      server no longer knows is registered again. Authorization code with PKCE.
+      stdout: the same object as whoami reports once logged in.
+
   preview-diagram --file FILE
       Publish the source in FILE as an anonymous short link. No login.
       The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
@@ -59,7 +69,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from board_cli import account_commands, preview_commands, source_commands
+from board_cli import account_commands, login_commands, preview_commands, source_commands
 from board_cli.version import VersionAction
 
 
@@ -72,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action=VersionAction, help="print the version as JSON and exit")
     sub = parser.add_subparsers(dest="command", required=True)
     account_commands.register_commands(sub)
+    login_commands.register_commands(sub)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
     return parser
