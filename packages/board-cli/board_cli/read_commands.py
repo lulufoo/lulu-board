@@ -49,13 +49,19 @@ def rank_of(raw: object) -> float:
     return raw
 
 
-def run_get_diagram(args: argparse.Namespace) -> None:
-    diagram_id = check_diagram_id(args.diagram_id)
+def fetch_row(diagram_id: str) -> dict:
+    """The cloud row of a diagram, source included. A missing diagram is an ordinary error."""
     reply = call_api("GET", "/graphs", query={"diagram_id": diagram_id})
     check_reply(reply, not_found=f"cloud diagram not found: {diagram_id}")
     row = reply.read_json()
     if row is None:
         raise RuntimeError("the API answered the diagram with something other than an object")
+    return row
+
+
+def run_get_diagram(args: argparse.Namespace) -> None:
+    diagram_id = check_diagram_id(args.diagram_id)
+    row = fetch_row(diagram_id)
     source = row.get("bmd")
     if not isinstance(source, str):
         raise RuntimeError(f"the API returned no source for {diagram_id}")

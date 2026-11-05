@@ -22,6 +22,16 @@ class DiagramIdTest(unittest.TestCase):
         self.assertEqual(model.diagram_url("b_0fc10001"), "https://luluboard.app/#b:b_0fc10001")
 
 
+class GroupArgumentTest(unittest.TestCase):
+    def test_a_good_group_id_passes_and_outer_spaces_go(self) -> None:
+        self.assertEqual(model.check_group_argument(" g_99aabbcc\n"), "g_99aabbcc")
+
+    def test_a_bad_one_is_refused_with_the_rule_in_the_message(self) -> None:
+        for raw in ("", "  ", "b_99aabbcc", "g_99AABBCC", "g_99aabb", "g_99aabbccdd", "g_99aabbcc\nx", "../g_99aabbcc"):
+            with self.assertRaisesRegex(RuntimeError, r"^invalid group id .*: expected g_ and 8 lowercase hex digits$"):
+                model.check_group_argument(raw)
+
+
 class GroupIdTest(unittest.TestCase):
     def test_a_good_group_id_passes(self) -> None:
         self.assertEqual(model.check_group_id("g_99aabbcc"), "g_99aabbcc")

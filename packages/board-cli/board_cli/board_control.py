@@ -50,6 +50,27 @@ library only.
       trimmed and must not be empty.
       stdout: {"results": [{"diagram_id", "title", "url"}]}
 
+  create-diagram --file FILE [--diagram-id ID] [--group-id ID]
+      Login needed. Upload FILE as a new cloud diagram. FILE is .skt, .bmd, or
+      .mmd and goes up exactly as written; .html fails (run encode-source first),
+      and a .skt file must parse as SKT Source. There is no title argument: the
+      server takes the title from the source, and uses Untitled when it finds none.
+      Without --diagram-id the server picks the id. --group-id puts the diagram in
+      a group of yours (g_ and 8 lowercase hex digits); without it the server picks.
+      stdout: {"diagram_id", "title", "version", "updated_at", "group_id", "url"}
+      A refusal from the server (an id already taken, a group that is not yours)
+      is an ordinary error with the server's reason.
+
+  save-diagram --diagram-id ID --file FILE --expected-version N
+      Login needed. Replace the source of a cloud diagram; FILE is checked and sent
+      as create-diagram does. N is the version you last read: the version from
+      get-diagram, or from the last create or save. It must be a whole number from
+      1 up; 0, negatives, fractions, and words fail, and nothing is rounded to 1.
+      stdout: the same object as create-diagram; version is the new version.
+      When the cloud holds another version, nothing is saved: exit 3, stdout
+      {"conflict": true, "diagram_id", "latest_version": N}, one line on stderr.
+      The source is not in the output; run get-diagram for it, then save again.
+
   preview-diagram --file FILE
       Publish the source in FILE as an anonymous short link. No login.
       The extension names the type: .skt (Sketch), .bmd (Boxes), .mmd (Mermaid).
@@ -83,8 +104,8 @@ Credentials
   token, the refresh token, and the OAuth client_id. Commands never print them.
 
 Cloud commands
-  get-diagram, get-group, and search-diagrams call the Lulu Board API with the
-  stored login. An access token that has expired, or ends within 60 seconds, is
+  get-diagram, get-group, search-diagrams, create-diagram, and save-diagram call
+  the Lulu Board API with the stored login. An access token that has expired, or ends within 60 seconds, is
   refreshed before the call, and the new refresh token is stored at once. A 401
   from the server causes one refresh and one retry. Processes refresh one at a
   time (a lock on
@@ -99,6 +120,8 @@ Output
   exit 0  success
   exit 1  ordinary error: one line on stderr, stdout empty
   exit 2  command-line usage error: usage on stderr, stdout empty
+  exit 3  version conflict, from save-diagram only: stdout {"conflict": true,
+          "diagram_id", "latest_version"}, one line on stderr. Nothing was saved.
   exit 4  login required: stdout {"login_required": true}, one line on stderr
           telling the user to run login. Only commands that call the API give it.
 """
@@ -107,8 +130,10 @@ from __future__ import annotations
 import argparse
 import sys
 
-from board_cli import account_commands, login_commands, preview_commands, read_commands, source_commands
-from board_cli.cli_errors import LoginRequired
+from board_cli import (
+    account_commands, login_commands, preview_commands, read_commands, source_commands, write_commands,
+)
+from board_cli.cli_errors import SpecialExit
 from board_cli.cli_output import emit
 from board_cli.version import VersionAction
 
@@ -124,6 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
     account_commands.register_commands(sub)
     login_commands.register_commands(sub)
     read_commands.register_commands(sub)
+    write_commands.register_commands(sub)
     preview_commands.register_commands(sub)
     source_commands.register_commands(sub)
     return parser
@@ -133,10 +159,10 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         args.run(args)
-    except LoginRequired as err:
-        emit({"login_required": True})
+    except SpecialExit as err:
+        emit(err.payload)
         print(str(err), file=sys.stderr)
-        return 4
+        return err.code
     except (RuntimeError, OSError) as err:
         print(str(err), file=sys.stderr)
         return 1

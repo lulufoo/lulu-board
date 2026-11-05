@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import unittest
 from unittest.mock import patch
 
 from board_cli_support import HomeCase, run_cli
 from board_cli import board_control
-from board_cli.cli_errors import LoginRequired
+from board_cli.cli_errors import LoginRequired, SpecialExit, VersionConflict
 
 
 def parser_whose_command_raises(error: BaseException):
@@ -32,6 +33,17 @@ class ExitCodeTest(HomeCase):
         code, out, err = self.run_failing(LoginRequired("not logged in; run login first"))
         self.assertEqual((code, out), (4, '{"login_required": true}\n'))
         self.assertEqual(err, "not logged in; run login first\n")
+
+    def test_a_version_conflict_is_exit_3_with_the_conflict_object_on_stdout(self) -> None:
+        code, out, err = self.run_failing(VersionConflict("version conflict: b_00000001 is at version 7, not 3", "b_00000001", 7))
+        self.assertEqual(code, 3)
+        self.assertEqual(json.loads(out), {"conflict": True, "diagram_id": "b_00000001", "latest_version": 7})
+        self.assertEqual(err, "version conflict: b_00000001 is at version 7, not 3\n")
+
+    def test_every_special_exit_is_a_runtime_error_with_its_own_code(self) -> None:
+        self.assertEqual((VersionConflict.code, LoginRequired.code, SpecialExit.code), (3, 4, 1))
+        for kind in (VersionConflict, LoginRequired):
+            self.assertTrue(issubclass(kind, SpecialExit) and issubclass(kind, RuntimeError))
 
     def test_an_ordinary_runtime_error_is_exit_1_with_nothing_on_stdout(self) -> None:
         code, out, err = self.run_failing(RuntimeError("cannot reach somewhere"))

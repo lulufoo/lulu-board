@@ -24,6 +24,14 @@ def check_diagram_id(raw: str) -> str:
     return diagram_id
 
 
+def check_group_argument(raw: str) -> str:
+    """A group id the caller typed: g_ and 8 lowercase hex digits, outer spaces removed."""
+    group_id = str(raw or "").strip()
+    if not GROUP_ID.fullmatch(group_id):
+        raise RuntimeError(f"invalid group id {raw!r}: expected g_ and 8 lowercase hex digits")
+    return group_id
+
+
 def check_group_id(raw: object) -> str:
     """A group id from the server: g_ and 8 lowercase hex digits."""
     group_id = str(raw or "").strip()
