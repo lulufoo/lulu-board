@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Public site build: app + site into .cache/web/. Does not copy skills/.
+ * Public site build: shared + app + site into .cache/web/. Does not copy skills/.
  */
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -20,6 +20,7 @@ function runBuild(rel) {
 }
 
 rmSync(webDir, { recursive: true, force: true });
+runBuild('scripts/build-shared/build.mjs');
 runBuild('scripts/build-app/build.mjs');
 runBuild('scripts/build-site/build.mjs');
 

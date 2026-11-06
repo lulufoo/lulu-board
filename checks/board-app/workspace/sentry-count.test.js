@@ -13,6 +13,8 @@ const html = read('packages/board-app/workspace/index.html');
 const landing = read('packages/board-app/landing/index.html');
 const landingJs = read('packages/board-app/landing/landing.js');
 const appBuild = read('scripts/build-app/drawer.mjs');
+const sharedBuild = read('scripts/build-shared/build.mjs');
+const sentryClient = read('packages/board-app/shared/vendor/sentry-client.js');
 const webBuild = read('scripts/build-web/build.mjs');
 const helper = read('packages/board-app/workspace/src/core/sentry-count.js');
 const entry = read('packages/board-app/workspace/src/index.js');
@@ -31,14 +33,14 @@ assert.match(html, /https:\/\/\*\.ingest\.us\.sentry\.io/, 'home CSP allows US i
 assert.match(landing, /sentry-config\.js/, 'landing loads sentry-config');
 assert.match(landing, /sentry-client\.js/, 'landing loads sentry-client');
 assert.match(landing, /https:\/\/\*\.ingest\.sentry\.io/, 'landing CSP allows Sentry ingest');
-assert.match(appBuild, /LULU_BOARD_SENTRY_DSN/, 'build reads DSN from env');
+assert.match(sharedBuild, /LULU_BOARD_SENTRY_DSN/, 'build reads DSN from env');
 assert.match(
-  appBuild,
+  sentryClient,
   /if \(dsn\) Sentry\.init\(\{ dsn: dsn, defaultIntegrations: false, tracesSampleRate: 1 \}\)/,
   'init keeps automatic Browser integrations off and samples manual spans'
 );
-assert.doesNotMatch(appBuild, /browserTracingIntegration/, 'no automatic browser tracing');
-assert.doesNotMatch(appBuild, /ingest\.sentry\.io\/\d+/, 'DSN is not hardcoded');
+assert.doesNotMatch(sentryClient + sharedBuild, /browserTracingIntegration/, 'no automatic browser tracing');
+assert.doesNotMatch(sentryClient + sharedBuild, /ingest\.sentry\.io\/\d+/, 'DSN is not hardcoded');
 assert.ok(fs.existsSync(path.join(root, 'packages/board-app/workspace/src/main.js')), 'drawer build reads the src entry');
 assert.ok(fs.existsSync(path.join(root, 'packages/board-app/workspace/src/core/sentry-count.js')), 'drawer bundle includes the count helper');
 assert.match(entry, /import \{ sentryCount \} from '\.\/core\/sentry-count\.js'/, 'entry imports the helper');

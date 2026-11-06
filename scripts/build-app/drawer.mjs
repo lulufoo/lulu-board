@@ -82,60 +82,6 @@ const mod = [
 writeFileSync(path.join(vendorOut, 'drawer-app.js'), mod);
 console.log(`ok drawer-app.js (${mod.split('\n').length} lines, from src/main.js)`);
 
-const config = {
-  url: String(process.env.LULU_BOARD_SUPABASE_URL || 'https://xjwlxxuafhsfzksxxmtu.supabase.co').trim(),
-  publishableKey: String(process.env.LULU_BOARD_SUPABASE_PUBLISHABLE_KEY || '').trim(),
-};
-writeFileSync(
-  path.join(vendorOut, 'supabase-config.js'),
-  'window.LuluBoardSupabaseConfig = Object.freeze(' + JSON.stringify(config) + ');\n'
-);
-const supabaseBundle = await esbuild.build({
-  stdin: {
-    contents: 'import { createClient } from "@supabase/supabase-js"; window.LuluBoardSupabase = Object.freeze({ createClient });',
-    resolveDir: repo,
-    sourcefile: 'lulu-board-supabase-client.js',
-    loader: 'js',
-  },
-  bundle: true,
-  format: 'iife',
-  platform: 'browser',
-  target: 'es2020',
-  minify: true,
-  write: false,
-});
-writeFileSync(path.join(vendorOut, 'supabase-client.js'), supabaseBundle.outputFiles[0].text);
-console.log(`ok supabase-client.js (${supabaseBundle.outputFiles[0].text.length} bytes)`);
-
-const sentry = {
-  dsn: String(process.env.LULU_BOARD_SENTRY_DSN || '').trim(),
-};
-writeFileSync(
-  path.join(vendorOut, 'sentry-config.js'),
-  'window.LuluBoardSentryConfig = Object.freeze(' + JSON.stringify(sentry) + ');\n'
-);
-const sentryBundle = await esbuild.build({
-  stdin: {
-    contents: [
-      'import * as Sentry from "@sentry/browser";',
-      'var dsn = window.LuluBoardSentryConfig && window.LuluBoardSentryConfig.dsn;',
-      'if (dsn) Sentry.init({ dsn: dsn, defaultIntegrations: false, tracesSampleRate: 1 });',
-      'window.Sentry = Sentry;',
-    ].join('\n'),
-    resolveDir: repo,
-    sourcefile: 'lulu-board-sentry-client.js',
-    loader: 'js',
-  },
-  bundle: true,
-  format: 'iife',
-  platform: 'browser',
-  target: 'es2020',
-  minify: true,
-  write: false,
-});
-writeFileSync(path.join(vendorOut, 'sentry-client.js'), sentryBundle.outputFiles[0].text);
-console.log(`ok sentry-client.js (${sentryBundle.outputFiles[0].text.length} bytes)`);
-
 {
   const srcTemplates = path.join(srcDir, 'templates');
   const outTemplates = path.join(webDir, 'templates');

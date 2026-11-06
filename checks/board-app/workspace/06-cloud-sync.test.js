@@ -17,6 +17,8 @@ const sqlAssert = hasSql ? assert : { match() {}, doesNotMatch() {} };
 
 const html = read('packages/board-app/workspace/index.html');
 const appBuild = read('scripts/build-app/drawer.mjs');
+const sharedBuild = read('scripts/build-shared/build.mjs');
+const supabaseClient = read('packages/board-app/shared/vendor/supabase-client.js');
 const shareJs = read('packages/board-app/workspace/src/cloud/cloud-share.js');
 const shareCss = read('packages/board-app/workspace/css/05-share.css');
 const dockCss = read('packages/board-app/workspace/css/03-diagram.css');
@@ -100,7 +102,8 @@ assert.match(html, /data-shell-oauth="google"/, 'Google is an available provider
 assert.match(html, /data-shell-oauth="github"/, 'GitHub is an available provider');
 assert.match(html, /supabase-config\.js/, 'public page loads runtime Supabase configuration');
 assert.match(html, /supabase-client\.js/, 'public page loads the local Supabase client bundle');
-assert.match(appBuild, /@supabase\/supabase-js/, 'build bundles the Supabase client locally');
+assert.match(supabaseClient, /@supabase\/supabase-js/, 'the shared vendor entry bundles the Supabase client locally');
+assert.match(sharedBuild, /supabase-client\.js/, 'build-shared builds the Supabase client');
 assert.match(appBuild, /\.cache\/web/, 'drawer app output is temporary cached web assets');
 assert.match(webBuild, /supabase-config\.js/, 'public site build verifies the configuration asset');
 assert.match(webBuild, /supabase-client\.js/, 'public site build verifies the client asset');
