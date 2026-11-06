@@ -16,8 +16,8 @@ function token(claims) {
   return 'header.' + Buffer.from(JSON.stringify(claims)).toString('base64url') + '.sig';
 }
 
-const live = token({ iss: 'https://example.supabase.co/auth/v1', exp: Math.floor(Date.now() / 1000) + 3600 });
-const expired = token({ iss: 'https://example.supabase.co/auth/v1', exp: Math.floor(Date.now() / 1000) - 10 });
+const live = token({ iss: 'https://example.supabase.co/auth/v1', channel: 'web', exp: Math.floor(Date.now() / 1000) + 3600 });
+const expired = token({ iss: 'https://example.supabase.co/auth/v1', channel: 'web', exp: Math.floor(Date.now() / 1000) - 10 });
 
 // Every route that needs a login: the five wrapper functions in index.js between them serve these sixteen.
 const LOGIN_ROUTES = [

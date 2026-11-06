@@ -29,6 +29,7 @@ function token(claims) {
 function userToken() {
   return token({
     iss: 'https://example.supabase.co/auth/v1',
+    channel: 'web',
     exp: Math.floor(Date.now() / 1000) + 3600,
   });
 }
@@ -82,6 +83,7 @@ try {
 
   const expired = token({
     iss: 'https://example.supabase.co/auth/v1',
+    channel: 'web',
     exp: Math.floor(Date.now() / 1000) - 10,
   });
   const before = calls.length;

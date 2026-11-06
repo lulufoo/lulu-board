@@ -8,6 +8,7 @@ import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
 import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
 import { readShortLink } from './short-link.js';
+import { channelVerdict } from './channels.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -62,15 +63,20 @@ function bearer(request) {
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
 }
 
-// The one place a request's token is checked. Returns { token } to go on, or { response } to send back.
+// The one place a request's token is checked, and where its channel decides whether the route is open to it.
+// Returns { token } to go on, or { response } to send back.
 async function authenticate(request, env) {
   const token = bearer(request);
   if (!token) return { response: json({ error: 'unauthorized' }, 401) };
+  let identity;
   try {
-    await verifyAccessToken(env, token);
+    identity = await verifyAccessToken(env, token);
   } catch (_error) {
     return { response: json({ error: 'unauthorized' }, 401) };
   }
+  const verdict = channelVerdict(identity.channel, request.method, new URL(request.url).pathname);
+  if (verdict === 'unauthorized') return { response: json({ error: 'unauthorized' }, 401) };
+  if (verdict === 'forbidden') return { response: json({ error: 'forbidden' }, 403) };
   return { token };
 }
 

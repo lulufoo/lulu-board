@@ -26,5 +26,7 @@ export async function verifyAccessToken(env, token) {
   return {
     user_id: body.id,
     email: body.email || '',
+    // Read from the same token Auth just confirmed, so the sign-in hook's value is the one we see.
+    channel: typeof claims.channel === 'string' ? claims.channel : '',
   };
 }
