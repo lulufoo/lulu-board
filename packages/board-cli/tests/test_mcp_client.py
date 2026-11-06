@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import pathlib
 import unittest
 from unittest.mock import patch
 
@@ -58,6 +59,14 @@ class RequestShapeTests(McpClientCase):
             self.assertNotIn("os.environ", source)
             self.assertNotIn("getenv", source)
         self.assertIn('MCP_URL = "https://mcp.luluboard.app/mcp"', inspect.getsource(mcp_address))
+
+
+class NoDirectApiTests(unittest.TestCase):
+    def test_no_code_calls_the_api_directly(self) -> None:
+        package = pathlib.Path(inspect.getfile(mcp_client)).parents[1]
+        text = "\n".join(path.read_text(encoding="utf-8") for path in package.rglob("*.py"))
+        for gone in ("api.luluboard.app", "API_HOST", "call_api", "api_client"):
+            self.assertNotIn(gone, text)
 
 
 class ReplyTests(McpClientCase):

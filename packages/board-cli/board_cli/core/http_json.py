@@ -1,7 +1,7 @@
 """One HTTP request with the CLI's own User-Agent. Redirects are never followed.
 
-Cloudflare in front of api.luluboard.app answers Python's default User-Agent
-with 403 (error 1010), so every request sets its own.
+Cloudflare in front of the luluboard.app hosts has answered Python's default
+User-Agent with 403 (error 1010), so every request sets its own.
 """
 from __future__ import annotations
 

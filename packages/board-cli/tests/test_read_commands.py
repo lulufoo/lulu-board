@@ -1,15 +1,13 @@
-"""get-diagram, get-group, and search-diagrams against the fake API."""
+"""get-diagram, get-group, and search-diagrams against the fake MCP server."""
 from __future__ import annotations
 
 import json
 import os
 import unittest
-import urllib.parse
-from pathlib import Path
 
 from board_cli_support import run_cli
 from cloud_support import CloudCase
-from board_cli.auth import credentials, token_manager
+from board_cli.auth import credentials
 
 ID = "b_0fc10001"
 GROUP = "g_99aabbcc"
@@ -19,11 +17,12 @@ SKETCH = f'style abc123\nsketch "Hi"\ncontent {MARKER}\n'
 MERMAID = f"flowchart TD\n  a[{MARKER}] --> b\n"
 
 
-def graph_row(source: str, **changes) -> dict:
-    row = {"graph_id": ID, "title": "Now", "bmd": source, "version": 4,
-           "updated_at": "2026-09-19T00:00:00Z", "group_id": GROUP}
-    row.update(changes)
-    return row
+def diagram_doc(source: str, diagram_id: str = ID, **changes) -> dict:
+    """What the get_diagram tool returns (mcpDoc in packages/board-mcp/src/index.js)."""
+    doc = {"diagram_id": diagram_id, "title": "Now", "bmd": source, "version": 4,
+           "updated_at": "2026-09-19T00:00:00Z", "group_id": GROUP, "url": f"https://luluboard.app/#b:{diagram_id}"}
+    doc.update(changes)
+    return doc
 
 
 class ReadCase(CloudCase):
@@ -33,7 +32,7 @@ class ReadCase(CloudCase):
         self.out = self.dir / "out"
 
     def serve_diagram(self, source: str, diagram_id: str = ID, **changes) -> None:
-        self.api.route("GET", f"/graphs?diagram_id={diagram_id}", 200, graph_row(source, graph_id=diagram_id, **changes))
+        self.mcp.answer_tool("get_diagram", diagram_doc(source, diagram_id, **changes))
 
     def get_diagram(self, diagram_id: str = ID) -> tuple:
         return run_cli("get-diagram", "--diagram-id", diagram_id, "--out", str(self.out))
@@ -57,15 +56,11 @@ class GetDiagramTest(ReadCase):
             "group_id": GROUP, "url": f"https://luluboard.app/#b:{ID}", "file": str(path)})
         self.assertEqual(path.read_bytes(), BOXES.encode("utf-8"))  # CRLF and non-ASCII untouched
 
-    def test_a_sketch_diagram_gets_the_skt_extension(self) -> None:
-        self.serve_diagram(SKETCH)
-        self.assertEqual(self.get_diagram()[0], 0)
-        self.assertEqual((self.out / f"{ID}.skt").read_text(encoding="utf-8"), SKETCH)
-
-    def test_a_mermaid_diagram_gets_the_mmd_extension(self) -> None:
-        self.serve_diagram(MERMAID)
-        self.assertEqual(self.get_diagram()[0], 0)
-        self.assertEqual((self.out / f"{ID}.mmd").read_text(encoding="utf-8"), MERMAID)
+    def test_the_extension_follows_the_source(self) -> None:
+        for source, extension in ((SKETCH, ".skt"), (MERMAID, ".mmd"), (BOXES, ".bmd")):
+            self.serve_diagram(source)
+            self.assertEqual(self.get_diagram()[0], 0)
+            self.assertEqual((self.out / f"{ID}{extension}").read_bytes().decode("utf-8"), source)
 
     def test_the_output_has_no_source_and_no_kind(self) -> None:
         for source in (BOXES, SKETCH, MERMAID):
@@ -99,260 +94,179 @@ class GetDiagramTest(ReadCase):
         self.assertEqual(code, 0)
         self.assertEqual(json.loads(out)["file"], str((self.dir / "rel" / f"{ID}.bmd").resolve()))
 
-    def test_it_asks_for_the_id_with_the_bearer_token(self) -> None:
+    def test_it_calls_get_diagram_with_the_id_and_the_stored_token(self) -> None:
         self.serve_diagram(BOXES)
         self.get_diagram()
-        sent = self.api.requests[0]
-        self.assertEqual(sent["method"], "GET")
-        self.assertEqual(urllib.parse.parse_qs(urllib.parse.urlparse(sent["path"]).query), {"diagram_id": [ID]})
-        self.assertEqual(sent["authorization"], "Bearer " + credentials.read_credentials()["access_token"])
+        self.assertEqual(self.mcp.list_calls("get_diagram"), [{"diagram_id": ID}])
+        self.assertEqual(self.mcp.requests[0]["authorization"], "Bearer " + credentials.read_credentials()["access_token"])
+        self.assertEqual(self.mcp.list_methods(), ["tools/call"])
 
     def test_an_id_with_outer_spaces_is_trimmed(self) -> None:
         self.serve_diagram(BOXES)
         self.assertEqual(self.get_diagram(f"  {ID} ")[0], 0)
-        self.assertEqual(self.api.requests[0]["path"], f"/graphs?diagram_id={ID}")
+        self.assertEqual(self.mcp.list_calls("get_diagram"), [{"diagram_id": ID}])
 
     def test_a_malformed_id_fails_before_anything_is_sent(self) -> None:
         for bad in ("b_XYZ", "../../etc/passwd", "g_99aabbcc", ""):
             self.assert_fails(self.get_diagram(bad), "invalid diagram id")
-        self.assertEqual((self.api.requests, self.auth.requests), ([], []))
+        self.assertEqual((self.mcp.requests, self.auth.requests), ([], []))
         self.assertFalse(self.out.exists())
 
     def test_an_unknown_diagram_is_not_found(self) -> None:
-        self.api.route("GET", f"/graphs?diagram_id={ID}", 404, {"error": "not_found"})
+        self.mcp.fail_tool("get_diagram", "Cloud board not found")
         self.assert_fails(self.get_diagram(), f"cloud diagram not found: {ID}")
         self.assertFalse(self.out.exists())
 
-    def test_a_server_error_is_reported_with_its_reason(self) -> None:
-        self.api.route("GET", f"/graphs?diagram_id={ID}", 500, {"message": "boom"})
-        self.assert_fails(self.get_diagram(), "the API answered HTTP 500: boom")
+    def test_another_tool_failure_is_reported_with_its_reason(self) -> None:
+        self.mcp.fail_tool("get_diagram", "boom")
+        self.assert_fails(self.get_diagram(), "the MCP tool failed: boom")
 
     def test_a_row_without_source_is_refused_and_writes_nothing(self) -> None:
-        row = graph_row("x")
-        del row["bmd"]
-        self.api.route("GET", f"/graphs?diagram_id={ID}", 200, row)
-        self.assert_fails(self.get_diagram(), f"the API returned no source for {ID}")
+        doc = diagram_doc("x")
+        del doc["bmd"]
+        self.mcp.answer_tool("get_diagram", doc)
+        self.assert_fails(self.get_diagram(), f"the MCP server returned no source for {ID}")
         self.assertFalse(self.out.exists())
 
     def test_a_row_without_a_group_is_refused_and_writes_nothing(self) -> None:
-        row = graph_row(BOXES)
-        del row["group_id"]
-        self.api.route("GET", f"/graphs?diagram_id={ID}", 200, row)
-        self.assert_fails(self.get_diagram(), "the API gave no group id")
+        self.serve_diagram(BOXES, group_id=None)
+        self.assert_fails(self.get_diagram(), "the MCP server gave no group id")
         self.assertFalse(self.out.exists())
 
-    def test_a_reply_that_is_not_an_object_is_refused(self) -> None:
-        self.api.route("GET", f"/graphs?diagram_id={ID}", 200, [1, 2])
+    def test_an_answer_that_is_not_an_object_is_refused(self) -> None:
+        self.mcp.answer_tool("get_diagram", [1, 2])
         self.assert_fails(self.get_diagram(), "something other than an object")
 
-    def test_an_unusable_version_is_reported_as_one(self) -> None:
-        self.serve_diagram(BOXES, version="soon")
-        self.assertEqual(json.loads(self.get_diagram()[1])["version"], 1)
-
-    def test_a_missing_title_is_reported_empty(self) -> None:
-        self.serve_diagram(BOXES, title=None)
-        self.assertEqual(json.loads(self.get_diagram()[1])["title"], "")
+    def test_an_unusable_version_is_reported_as_one_and_a_missing_title_as_empty(self) -> None:
+        self.serve_diagram(BOXES, version="soon", title=None)
+        info = json.loads(self.get_diagram()[1])
+        self.assertEqual((info["version"], info["title"]), (1, ""))
 
     def test_an_empty_source_is_written_as_an_empty_mermaid_file(self) -> None:
         self.serve_diagram("")
         self.assertEqual(self.get_diagram()[0], 0)
         self.assertEqual((self.out / f"{ID}.mmd").read_text(), "")
 
+    def test_an_sse_answer_works_the_same(self) -> None:
+        self.mcp.response_format = "sse"
+        self.serve_diagram(BOXES)
+        self.assertEqual(self.get_diagram()[0], 0)
+        self.assertEqual((self.out / f"{ID}.bmd").read_bytes(), BOXES.encode("utf-8"))
+
 
 class GetGroupTest(ReadCase):
-    ROWS = [
-        {"graph_id": "b_22222222", "group_id": "g_aaaa0001", "title": "Second", "sort_order": 2},
-        {"graph_id": "b_11111111", "group_id": "g_aaaa0001", "title": "First", "sort_order": 1},
-        {"graph_id": "b_33333333", "group_id": "g_aaaa0001", "title": "Third"},
-        {"graph_id": "b_44444444", "group_id": "g_bbbb0002", "title": "Other", "sort_order": 1},
-    ]
-
-    def get_group(self, diagram_id: str = "b_22222222") -> tuple:
-        return run_cli("get-group", "--diagram-id", diagram_id)
+    """get_group answers with the members already in display order; the command passes them on."""
 
     def member(self, diagram_id: str, title: str, order: float) -> dict:
         return {"diagram_id": diagram_id, "title": title, "sort_order": order,
                 "url": f"https://luluboard.app/#b:{diagram_id}"}
 
-    def test_it_lists_the_members_of_the_group_in_display_order(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, self.ROWS)
+    def serve_group(self, members: list, group_id: str = "g_aaaa0001") -> None:
+        self.mcp.answer_tool("get_group", {"group_id": group_id, "members": members})
+
+    def get_group(self, diagram_id: str = "b_22222222") -> tuple:
+        return run_cli("get-group", "--diagram-id", diagram_id)
+
+    def test_it_lists_the_members_in_the_order_the_server_gave(self) -> None:
+        members = [self.member("b_11111111", "First", 1), self.member("b_22222222", "Second", 2),
+                   self.member("b_33333333", "Third", 9007199254740991)]
+        self.serve_group(members)
         code, out, err = self.get_group()
         self.assertEqual((code, err), (0, ""))
-        self.assertEqual(json.loads(out), {"group_id": "g_aaaa0001", "members": [
-            self.member("b_11111111", "First", 1),
-            self.member("b_22222222", "Second", 2),
-            self.member("b_33333333", "Third", 9007199254740991),
-        ]})
+        self.assertEqual(json.loads(out), {"group_id": "g_aaaa0001", "members": members})
 
-    def test_the_other_group_is_not_mixed_in(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, self.ROWS)
-        out = json.loads(self.get_group("b_44444444")[1])
-        self.assertEqual(out["group_id"], "g_bbbb0002")
-        self.assertEqual([m["diagram_id"] for m in out["members"]], ["b_44444444"])
-
-    def test_it_posts_the_diagram_id_as_json(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, self.ROWS)
+    def test_it_calls_get_group_with_the_id(self) -> None:
+        self.serve_group([])
         self.get_group()
-        sent = self.api.requests[0]
-        self.assertEqual((sent["method"], sent["path"], sent["content_type"]), ("POST", "/groups/shells", "application/json"))
-        self.assertEqual(json.loads(sent["body"]), {"diagram_id": "b_22222222"})
+        self.assertEqual(self.mcp.list_calls("get_group"), [{"diagram_id": "b_22222222"}])
 
-    def test_equal_sort_orders_fall_back_to_the_id(self) -> None:
-        rows = [{"graph_id": f"b_0000000{n}", "group_id": "g_aaaa0001", "title": str(n), "sort_order": 1} for n in (3, 1, 2)]
-        self.api.route("POST", "/groups/shells", 200, rows)
-        members = json.loads(self.get_group("b_00000001")[1])["members"]
-        self.assertEqual([m["diagram_id"] for m in members], ["b_00000001", "b_00000002", "b_00000003"])
-
-    def test_a_sort_order_that_is_not_a_number_ranks_last(self) -> None:
-        rows = [{"graph_id": "b_00000001", "group_id": "g_aaaa0001", "title": "odd", "sort_order": "1"},
-                {"graph_id": "b_00000002", "group_id": "g_aaaa0001", "title": "two", "sort_order": 2},
-                {"graph_id": "b_00000003", "group_id": "g_aaaa0001", "title": "null", "sort_order": None},
-                {"graph_id": "b_00000004", "group_id": "g_aaaa0001", "title": "bool", "sort_order": True}]
-        self.api.route("POST", "/groups/shells", 200, rows)
-        members = json.loads(self.get_group("b_00000002")[1])["members"]
-        self.assertEqual([m["diagram_id"] for m in members], ["b_00000002", "b_00000001", "b_00000003", "b_00000004"])
-
-    def test_rows_with_a_bad_id_or_a_non_object_are_skipped(self) -> None:
-        rows = self.ROWS + [{"graph_id": "nope", "group_id": "g_aaaa0001", "title": "x"}, "junk", None, {"title": "no id"}]
-        self.api.route("POST", "/groups/shells", 200, rows)
+    def test_the_url_is_built_here_and_a_missing_sort_order_ranks_last(self) -> None:
+        self.serve_group([{"diagram_id": "b_11111111", "title": "x", "url": "https://elsewhere.example/"},
+                          {"diagram_id": "b_22222222", "title": None, "sort_order": "1"},
+                          {"diagram_id": "b_33333333", "title": "y", "sort_order": True}])
         members = json.loads(self.get_group()[1])["members"]
-        self.assertEqual(len(members), 3)
+        self.assertEqual(members[0]["url"], "https://luluboard.app/#b:b_11111111")
+        self.assertEqual([m["sort_order"] for m in members], [9007199254740991] * 3)
+        self.assertEqual(members[1]["title"], "")
+
+    def test_members_with_a_bad_id_or_that_are_not_objects_are_skipped(self) -> None:
+        self.serve_group([self.member("b_11111111", "ok", 1), {"diagram_id": "nope", "title": "x"}, "junk", None, {"title": "no id"}])
+        self.assertEqual(len(json.loads(self.get_group()[1])["members"]), 1)
 
     def test_the_output_names_no_source(self) -> None:
-        rows = [dict(row, bmd=MARKER) for row in self.ROWS]
-        self.api.route("POST", "/groups/shells", 200, rows)
+        self.serve_group([dict(self.member("b_11111111", "x", 1), bmd=MARKER)])
         _, out, err = self.get_group()
         self.assertNotIn(MARKER, out + err)
 
-    def test_a_diagram_that_is_not_in_the_rows_is_not_found(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, [])
-        self.assert_fails(self.get_group("b_00000000"), "cloud diagram not found: b_00000000")
-
-    def test_a_404_is_not_found(self) -> None:
-        self.api.route("POST", "/groups/shells", 404, {"error": "not_found", "message": "Cloud diagram not found"})
+    def test_an_unknown_diagram_is_not_found(self) -> None:
+        self.mcp.fail_tool("get_group", "Cloud board not found")
         self.assert_fails(self.get_group("b_40440404"), "cloud diagram not found: b_40440404")
 
-    def test_a_row_without_a_group_is_refused(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, [{"graph_id": "b_0fc10003", "title": "Bare"}])
-        self.assert_fails(self.get_group("b_0fc10003"), "the API gave no group id")
+    def test_a_group_id_that_is_missing_or_malformed_is_refused(self) -> None:
+        self.serve_group([], group_id=None)
+        self.assert_fails(self.get_group(), "the MCP server gave no group id")
+        self.serve_group([], group_id="oops")
+        self.assert_fails(self.get_group(), "invalid group id")
 
-    def test_a_malformed_group_id_is_refused(self) -> None:
-        self.api.route("POST", "/groups/shells", 200, [{"graph_id": "b_0fc10003", "group_id": "oops", "title": "x"}])
-        self.assert_fails(self.get_group("b_0fc10003"), "invalid group id")
+    def test_an_answer_of_the_wrong_shape_is_refused(self) -> None:
+        for answer, words in (({"group_id": "g_aaaa0001"}, "something other than a list"),
+                              ([], "something other than an object"), ("text", "something other than an object")):
+            self.mcp.answer_tool("get_group", answer)
+            self.assert_fails(self.get_group(), words)
 
-    def test_a_reply_that_is_not_a_list_is_refused(self) -> None:
-        for body in ({"rows": []}, None, "text"):
-            self.api.route("POST", "/groups/shells", 200, body)
-            self.assert_fails(self.get_group(), "something other than a list")
-
-    def test_a_server_error_is_reported(self) -> None:
-        self.api.route("POST", "/groups/shells", 500, {"error": "db"})
-        self.assert_fails(self.get_group(), "the API answered HTTP 500: db")
+    def test_another_tool_failure_is_reported(self) -> None:
+        self.mcp.fail_tool("get_group", "db")
+        self.assert_fails(self.get_group(), "the MCP tool failed: db")
 
     def test_a_malformed_id_fails_before_anything_is_sent(self) -> None:
         self.assert_fails(self.get_group("g_aaaa0001"), "invalid diagram id")
-        self.assertEqual(self.api.requests, [])
+        self.assertEqual(self.mcp.requests, [])
 
 
 class SearchDiagramsTest(ReadCase):
-    HITS = [
-        {"category": "mine", "title": "Mine Hit", "share_id": None, "graph_id": "b_b9918fe6", "bmd": MARKER},
-        {"category": "public", "title": "Public Hit", "share_id": "s_public1", "graph_id": None},
-        {"category": "public", "title": "Public With Id", "graph_id": "b_f5a65aa5"},
-        {"category": "mine", "title": "Also Mine", "share_id": "", "graph_id": "b_f5a65aa5"},
-        {"category": "mine", "title": "Bad Id", "share_id": "", "graph_id": "nope"},
-        {"category": "mine", "graph_id": "b_00000001"},
-        "junk",
-    ]
+    """search_diagrams answers with only the user's own diagrams; the command lists them."""
 
     def search(self, query: str = "plan") -> tuple:
         return run_cli("search-diagrams", "--query", query)
 
-    def test_only_my_diagrams_with_good_ids_are_listed(self) -> None:
-        self.api.route("POST", "/search", 200, self.HITS)
+    def test_the_hits_are_listed_with_the_link_built_here(self) -> None:
+        self.mcp.answer_tool("search_diagrams", [
+            {"diagram_id": "b_b9918fe6", "title": "Mine Hit", "url": "https://luluboard.app/#b:b_b9918fe6"},
+            {"diagram_id": "b_f5a65aa5", "title": None, "url": "https://elsewhere.example/"}])
         code, out, err = self.search()
         self.assertEqual((code, err), (0, ""))
         self.assertEqual(json.loads(out), {"results": [
             {"diagram_id": "b_b9918fe6", "title": "Mine Hit", "url": "https://luluboard.app/#b:b_b9918fe6"},
-            {"diagram_id": "b_f5a65aa5", "title": "Also Mine", "url": "https://luluboard.app/#b:b_f5a65aa5"},
-            {"diagram_id": "b_00000001", "title": "", "url": "https://luluboard.app/#b:b_00000001"},
-        ]})
+            {"diagram_id": "b_f5a65aa5", "title": "", "url": "https://luluboard.app/#b:b_f5a65aa5"}]})
 
-    def test_the_source_the_server_sends_with_a_hit_is_not_printed(self) -> None:
-        self.api.route("POST", "/search", 200, self.HITS)
+    def test_a_hit_with_a_bad_id_or_that_is_not_an_object_is_skipped_and_no_source_is_printed(self) -> None:
+        self.mcp.answer_tool("search_diagrams", [{"diagram_id": "nope", "title": "x"}, "junk", None,
+                                                  {"diagram_id": "b_00000001", "title": "ok", "bmd": MARKER}])
         _, out, err = self.search()
+        self.assertEqual([hit["diagram_id"] for hit in json.loads(out)["results"]], ["b_00000001"])
         self.assertNotIn(MARKER, out + err)
-        self.assertNotIn("bmd", out)
 
     def test_no_hits_is_an_empty_list_and_still_success(self) -> None:
-        self.api.route("POST", "/search", 200, [])
+        self.mcp.answer_tool("search_diagrams", [])
         self.assertEqual(self.search()[:2], (0, '{"results": []}\n'))
 
-    def test_the_query_is_trimmed_and_posted_as_json(self) -> None:
-        self.api.route("POST", "/search", 200, [])
+    def test_the_query_is_trimmed_and_sent_as_the_tool_argument(self) -> None:
+        self.mcp.answer_tool("search_diagrams", [])
         self.search("  图 plan\t")
-        sent = self.api.requests[0]
-        self.assertEqual((sent["method"], sent["path"], sent["content_type"]), ("POST", "/search", "application/json"))
-        self.assertEqual(json.loads(sent["body"].decode("utf-8")), {"query": "图 plan"})
+        self.assertEqual(self.mcp.list_calls("search_diagrams"), [{"query": "图 plan"}])
 
     def test_a_blank_query_fails_before_anything_is_sent(self) -> None:
         for blank in ("", "   ", "\t\n"):
             self.assert_fails(self.search(blank), "--query must not be empty")
-        self.assertEqual((self.api.requests, self.auth.requests), ([], []))
+        self.assertEqual((self.mcp.requests, self.auth.requests), ([], []))
 
     def test_a_refused_search_is_reported_with_its_reason(self) -> None:
-        self.api.route("POST", "/search", 400, {"error": "invalid_request", "message": "query required"})
-        self.assert_fails(self.search(), "the API answered HTTP 400: query required")
+        self.mcp.fail_tool("search_diagrams", "query required")
+        self.assert_fails(self.search(), "the MCP tool failed: query required")
 
-    def test_a_reply_that_is_not_a_list_is_refused(self) -> None:
-        self.api.route("POST", "/search", 200, {"results": []})
+    def test_an_answer_that_is_not_a_list_is_refused(self) -> None:
+        self.mcp.answer_tool("search_diagrams", {"results": []})
         self.assert_fails(self.search(), "something other than a list")
-
-
-class LoginHandlingTest(ReadCase):
-    """The three commands share one way of handling the login; each is checked once."""
-
-    COMMANDS = (("get-diagram", "--diagram-id", ID, "--out", "OUT"), ("get-group", "--diagram-id", ID),
-                ("search-diagrams", "--query", "plan"))
-
-    def command(self, argv: tuple) -> tuple:
-        return run_cli(*[str(self.out) if part == "OUT" else part for part in argv])
-
-    def serve_all(self) -> None:
-        self.serve_diagram(BOXES)
-        self.api.route("POST", "/groups/shells", 200, [{"graph_id": ID, "group_id": GROUP, "title": "x"}])
-        self.api.route("POST", "/search", 200, [])
-
-    def test_without_a_login_each_is_exit_4_and_nothing_is_sent(self) -> None:
-        os.unlink(credentials.locate_credentials())
-        for argv in self.COMMANDS:
-            code, out, err = self.command(argv)
-            self.assertEqual((code, out), (4, '{"login_required": true}\n'), argv)
-            self.assertIn("run login", err)
-        self.assertEqual((self.api.requests, self.auth.requests), ([], []))
-
-    def test_an_expired_token_is_refreshed_before_each_call(self) -> None:
-        self.serve_all()
-        for argv in self.COMMANDS:
-            self.store_login(exp=self.expired())
-            self.assertEqual(self.command(argv)[0], 0, argv)
-        self.assertEqual(self.auth.refreshes, 3)
-
-    def test_a_revoked_token_is_refreshed_and_the_call_retried(self) -> None:
-        self.serve_all()
-        for index, argv in enumerate(self.COMMANDS, start=1):
-            stale = credentials.read_credentials()["access_token"]
-            self.auth.valid_access_tokens.discard(stale)
-            self.assertEqual(self.command(argv)[0], 0, argv)
-            self.assertEqual(self.auth.refreshes, index)
-
-    def test_a_refused_login_is_exit_4_for_each(self) -> None:
-        self.serve_all()
-        self.api.reject_all = True
-        for argv in self.COMMANDS:
-            code, out, err = self.command(argv)
-            self.assertEqual((code, out), (4, '{"login_required": true}\n'), argv)
-            self.assertEqual(err, token_manager.REFUSED + "\n")
 
 
 class HelpTest(ReadCase):
@@ -365,7 +279,7 @@ class HelpTest(ReadCase):
     def test_each_command_has_its_own_required_arguments(self) -> None:
         for argv in (("get-diagram", "--diagram-id", ID), ("get-diagram", "--out", "x"), ("get-group",), ("search-diagrams",)):
             self.assertEqual(run_cli(*argv)[0], 2, argv)
-        self.assertEqual(self.api.requests, [])
+        self.assertEqual(self.mcp.requests, [])
 
 
 if __name__ == "__main__":
