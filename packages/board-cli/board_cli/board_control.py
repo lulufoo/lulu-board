@@ -17,14 +17,19 @@ only.
       access token has expired; a file that holds only the client_id does not.
       Both results exit 0. A damaged credential file is an ordinary error.
 
-  login
-      Approve the CLI on the Lulu Board consent page in the browser, then store
-      the tokens. The link is also printed on stderr, in case the browser does not
+  login --resource-metadata-url URL
+      Approve the CLI on the consent page in the browser, then store the tokens.
+      URL is the resource_metadata address from the MCP server's 401 answer; it is
+      required and must be https. The metadata there must name the MCP address
+      built into this CLI as its resource, or login refuses before it registers
+      anything or opens the browser. Only then is its authorization server
+      believed and its own metadata read. Every login registers a new client; a
+      stored client_id is never reused. Authorization code with PKCE (S256); the
+      authorization request and the token request both carry resource=<the MCP
+      address>. The link is also printed on stderr, in case the browser does not
       open. It waits 300 seconds for the approval and then fails (exit 1).
       The callback port is fixed, 127.0.0.1:48621; when another program holds it,
-      login fails before it registers anything. The client is registered once per
-      machine and its client_id is kept in the credential file; a client the
-      server no longer knows is registered again. Authorization code with PKCE.
+      login fails before it contacts anything.
       stdout: the same object as whoami reports once logged in.
 
   get-diagram --diagram-id ID --out DIR
@@ -117,7 +122,8 @@ decode-source fails when the content is damaged.
 
 Credentials
   ~/.config/lulu-board/credentials.json (directory 0700, file 0600): the access
-  token, the refresh token, and the OAuth client_id. Commands never print them.
+  token, the refresh token, the OAuth client_id, and the token endpoint of the
+  authorization server (all four are written by login). Commands never print them.
 
 Cloud commands
   get-diagram, get-group, search-diagrams, create-diagram, and save-diagram call

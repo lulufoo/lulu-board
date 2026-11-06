@@ -9,6 +9,7 @@ from unittest.mock import patch
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
 from board_cli.cloud import mcp_client
 from board_cli.cloud.mcp_client import ToolFailed, Unauthorized, call_tool
+from board_cli.core import mcp_address
 from board_cli.core.http_json import USER_AGENT
 from login_support import find_free_port
 from mcp_support import McpClientCase
@@ -52,10 +53,11 @@ class RequestShapeTests(McpClientCase):
         self.assertEqual(self.mcp.list_calls("create_diagram"), [{"source": "盒子 → 线"}])
 
     def test_the_address_is_built_in_and_has_no_override(self) -> None:
-        source = inspect.getsource(mcp_client)  # MCP_URL itself is patched to the fake server here
-        self.assertIn('MCP_URL = "https://mcp.luluboard.app/mcp"', source)
-        self.assertNotIn("environ", source)
-        self.assertNotIn("getenv", source)
+        for module in (mcp_address, mcp_client):  # MCP_URL itself is patched to the fake server here
+            source = inspect.getsource(module)
+            self.assertNotIn("os.environ", source)
+            self.assertNotIn("getenv", source)
+        self.assertIn('MCP_URL = "https://mcp.luluboard.app/mcp"', inspect.getsource(mcp_address))
 
 
 class ReplyTests(McpClientCase):
@@ -187,7 +189,7 @@ class FailureTests(McpClientCase):
         self.assertIn("exactly one text", str(caught.exception))
 
     def test_a_server_that_cannot_be_reached_is_a_runtime_error(self) -> None:
-        with patch.object(mcp_client, "MCP_URL", f"http://127.0.0.1:{find_free_port()}/mcp"):
+        with patch.object(mcp_address, "MCP_URL", f"http://127.0.0.1:{find_free_port()}/mcp"):
             with self.assertRaises(RuntimeError) as caught:
                 call_tool("get_diagram", {}, self.token)
         self.assertIn("cannot reach", str(caught.exception))

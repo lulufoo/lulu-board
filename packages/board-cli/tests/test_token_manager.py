@@ -43,6 +43,12 @@ class RefreshTest(CloudCase):
         self.assertEqual(stored["access_token"], new)
         self.assertEqual(stored["refresh_token"], "refresh-rotated-1")
         self.assertEqual(stored["client_id"], "client-seed")
+        self.assertEqual(stored["token_endpoint"], self.auth.base + "/auth/v1/oauth/token")
+
+    def test_the_refresh_goes_to_the_token_endpoint_in_the_credentials(self) -> None:
+        self.store_login(exp=self.expired())
+        token_manager.get_access_token()
+        self.assertEqual([path for _, path, _ in self.auth.requests], ["/auth/v1/oauth/token"])
 
     def test_the_refresh_sends_the_stored_refresh_token_and_client(self) -> None:
         self.store_login(exp=self.expired())
@@ -58,7 +64,8 @@ class RefreshTest(CloudCase):
         self.assertEqual(self.auth.refreshes, 1)
 
     def test_a_missing_access_token_is_refreshed_from_the_refresh_token(self) -> None:
-        credentials.update_credentials({"refresh_token": "refresh-seed", "client_id": "client-seed"})
+        credentials.update_credentials({"refresh_token": "refresh-seed", "client_id": "client-seed",
+                                        "token_endpoint": self.auth.base + "/auth/v1/oauth/token"})
         self.auth.live_refresh.add("refresh-seed")
         self.auth.clients["client-seed"] = []
         token_manager.get_access_token()
@@ -118,6 +125,11 @@ class LoginRequiredTest(CloudCase):
 
     def test_a_refresh_token_and_no_client_id(self) -> None:
         self.store_login(exp=self.expired(), client=None)
+        self.assert_login_required(token_manager.INCOMPLETE)
+        self.assertEqual(self.auth.requests, [])
+
+    def test_a_login_stored_without_a_token_endpoint(self) -> None:
+        self.store_login(exp=self.expired(), endpoint=None)
         self.assert_login_required(token_manager.INCOMPLETE)
         self.assertEqual(self.auth.requests, [])
 

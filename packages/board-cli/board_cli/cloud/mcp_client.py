@@ -1,6 +1,6 @@
 """Calls to the Lulu Board MCP server: one tools/call, and its answer read from JSON or SSE.
 
-The address is built in, and nothing overrides it. The server speaks Streamable HTTP, so
+The address is built in (core/mcp_address.py). The server speaks Streamable HTTP, so
 every request accepts both reply types, and the reply is one JSON body or an SSE stream
 whose events carry JSON-RPC messages. The call is sent as it is: no initialize
 handshake, no session, and no MCP-Protocol-Version header (the SDK transport accepts a
@@ -14,10 +14,10 @@ from __future__ import annotations
 import json
 import re
 
+from board_cli.core import mcp_address
 from board_cli.core.event_stream import read_event_data
 from board_cli.core.http_json import Response, send_request
 
-MCP_URL = "https://mcp.luluboard.app/mcp"
 REQUEST_ID = 1
 REASON_LIMIT = 120
 CALL_HEADERS = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
@@ -104,7 +104,7 @@ def call_tool(name: str, arguments: dict, token: str | None = None) -> object:
     headers = dict(CALL_HEADERS)
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    reply = send_request("POST", MCP_URL, headers, json.dumps(body, ensure_ascii=False).encode("utf-8"))
+    reply = send_request("POST", mcp_address.MCP_URL, headers, json.dumps(body, ensure_ascii=False).encode("utf-8"))
     if reply.status == 401:
         raise Unauthorized("the MCP server refused the login (HTTP 401)", find_metadata_url(reply.headers))
     if not 200 <= reply.status < 300:

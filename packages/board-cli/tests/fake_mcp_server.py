@@ -90,6 +90,7 @@ class FakeMcpServer:
         self.auth = auth                 # the fake authorization server whose tokens this server accepts
         self.requests: list[dict] = []
         self.response_format = "json"    # "json" or "sse"
+        self.metadata_overrides: dict = {}  # fields of the protected-resource metadata a test replaces
         self.sse_noise = False           # an SSE reply also carries a keepalive, a priming event, and a notification
         self.forced: tuple | None = None  # (status, content type, body, headers): answers every accepted POST
         self.tools: dict[str, tuple[bool, object]] = {}  # name -> (is_error, result data or error text)
@@ -142,6 +143,7 @@ class FakeMcpServer:
             "resource": self.url,
             "authorization_servers": [self.auth.base + "/auth/v1"],
             "bearer_methods_supported": ["header"],
+            **self.metadata_overrides,
         }
 
     def build_challenge(self) -> str:

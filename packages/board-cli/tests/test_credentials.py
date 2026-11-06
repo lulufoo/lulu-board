@@ -44,6 +44,11 @@ class ReadTest(HomeCase):
         with self.assertRaisesRegex(RuntimeError, "damaged"):
             credentials.read_credentials()
 
+    def test_a_token_endpoint_that_is_not_a_string_is_damaged(self) -> None:
+        self.put_credentials(json.dumps({"token_endpoint": ["https://x"]}))
+        with self.assertRaisesRegex(RuntimeError, "damaged"):
+            credentials.read_credentials()
+
     def test_a_file_that_is_not_utf8_is_damaged(self) -> None:
         directory = credentials.locate_config_dir()
         directory.mkdir(parents=True)
@@ -84,9 +89,10 @@ class WriteTest(UmaskCase):
         self.assertEqual(mode_of(credentials.locate_credentials()), 0o600)
 
     def test_the_stored_file_is_json_with_the_given_fields(self) -> None:
-        credentials.update_credentials({"access_token": "a", "refresh_token": "r", "client_id": "c"})
+        fields = {"access_token": "a", "refresh_token": "r", "client_id": "c", "token_endpoint": "https://t"}
+        credentials.update_credentials(fields)
         stored = json.loads(credentials.locate_credentials().read_text(encoding="utf-8"))
-        self.assertEqual(stored, {"access_token": "a", "refresh_token": "r", "client_id": "c"})
+        self.assertEqual(stored, fields)
         self.assertEqual(credentials.read_credentials(), stored)
 
     def test_an_update_keeps_the_fields_it_does_not_name(self) -> None:
@@ -112,7 +118,7 @@ class WriteTest(UmaskCase):
         self.assertEqual(credentials.read_credentials(), {"client_id": "c"})
 
     def test_unknown_or_empty_or_non_string_fields_are_refused(self) -> None:
-        for bad in ({"password": "x"}, {"client_id": ""}, {"client_id": None}, {"access_token": 5}):
+        for bad in ({"password": "x"}, {"client_id": ""}, {"client_id": None}, {"access_token": 5}, {"token_endpoint": ""}):
             with self.subTest(bad=bad), self.assertRaisesRegex(RuntimeError, "cannot store"):
                 credentials.update_credentials(bad)
         self.assertIsNone(credentials.read_credentials())

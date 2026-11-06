@@ -73,6 +73,7 @@ class FakeAuthServer:
         self.consented: set[str] = set()     # clients the user has approved once
         self.token_forms: list[dict] = []
         self.access_claims = {"email": "me@example.com", "sub": "user-123", "exp": FUTURE}
+        self.metadata_overrides: dict = {}   # fields of the metadata document a test replaces
         self.refuse_registration = False
         self.refuse_token = False
         self.omit_refresh_token = False
@@ -107,6 +108,8 @@ class FakeAuthServer:
             "authorization_endpoint": self.base + "/auth/v1/oauth/authorize",
             "token_endpoint": self.base + "/auth/v1/oauth/token",
             "registration_endpoint": self.base + "/auth/v1/oauth/clients/register",
+            "code_challenge_methods_supported": ["S256", "plain"],
+            **self.metadata_overrides,
         }
 
     def reply_register(self, payload: dict) -> tuple:
@@ -189,7 +192,11 @@ class FakeAuthServer:
 
 
 class FakeBrowser:
-    """Stands in for webbrowser.open. It plays what the browser does after the user decides."""
+    """Stands in for webbrowser.open. It plays what the browser does after the user decides.
+
+    The browser asks the authorize endpoint first. An unknown client_id, an unregistered redirect
+    address, or any other refusal there ends the visit: the callback is never reached.
+    """
 
     def __init__(self, fake: FakeAuthServer, outcome: str = "approve") -> None:
         self.fake = fake
@@ -208,6 +215,8 @@ class FakeBrowser:
     def visit_callback(self, url: str) -> None:
         query = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
         redirect, state = query["redirect_uri"][0], query["state"][0]
+        if self.fake.reply_authorize({name: values[0] for name, values in query.items()})[0] != 302:
+            return  # the authorize endpoint refused the request: the browser shows an error page, no callback
         if self.outcome == "consent_page" and self.fake.consent_outcome(url) == "auto_approved":
             return  # the page's approval is refused, so the browser never reaches the callback
         if self.outcome == "deny":

@@ -8,6 +8,9 @@ Refreshing happens under a lock. After taking it, the credential file is read
 again: when another process already stored a fresh token, that one is used and
 the old refresh token is not spent a second time.
 
+The token endpoint is the one login stored beside the tokens. A login made before it
+was stored cannot be refreshed: it needs a new login.
+
 A refresh the server refuses does not delete the stored tokens: the refusal could
 come from a request fault, and a login replaces them anyway.
 """
@@ -44,11 +47,11 @@ def refresh(stored: dict) -> str:
     """Exchange the stored refresh token, store the result, and return the new access token."""
     refresh_token = stored.get(credentials.REFRESH_TOKEN)
     client_id = stored.get(credentials.CLIENT_ID)
-    if not refresh_token or not client_id:
+    token_endpoint = stored.get(credentials.TOKEN_ENDPOINT)
+    if not refresh_token or not client_id or not token_endpoint:
         raise LoginRequired(INCOMPLETE)
-    metadata = oauth_client.fetch_metadata()
     try:
-        tokens = oauth_client.refresh_tokens(metadata, client_id, refresh_token)
+        tokens = oauth_client.refresh_tokens(token_endpoint, client_id, refresh_token)
     except oauth_client.RefreshRejected:
         raise LoginRequired(REFUSED) from None
     new_refresh = tokens.get("refresh_token")

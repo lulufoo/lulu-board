@@ -1,19 +1,18 @@
 """board-cli login: every way it can fail leaves no tokens behind and says why on one stderr line."""
 from __future__ import annotations
 
-import json
 import socket
 import time
 import unittest
 
-from board_cli_support import run_cli
-from board_cli.auth import credentials, oauth_client
+import board_cli_support  # noqa: F401  (puts the package on sys.path)
+from board_cli.auth import credentials
 from login_support import LoginCase, find_free_port
 
 
 class FailureCase(LoginCase):
-    def assert_fails(self, *words: str) -> str:
-        code, out, err = run_cli("login")
+    def assert_fails(self, *words: str, address: str | None = None) -> str:
+        code, out, err = self.login(address=address)
         self.assertEqual((code, out), (1, ""), err)
         lines = [line for line in err.splitlines() if not line.startswith("Open this link")]
         self.assertEqual(len(lines), 1, err)
@@ -23,8 +22,8 @@ class FailureCase(LoginCase):
 
     def assert_no_tokens(self) -> None:
         stored = credentials.read_credentials() or {}
-        self.assertNotIn("access_token", stored)
-        self.assertNotIn("refresh_token", stored)
+        for name in ("access_token", "refresh_token", "client_id", "token_endpoint"):
+            self.assertNotIn(name, stored)
 
 
 class PortBusyTest(FailureCase):
@@ -33,9 +32,8 @@ class PortBusyTest(FailureCase):
             holder.bind(("127.0.0.1", self.port))
             holder.listen()
             self.assert_fails(f"callback port {self.port} is in use", "run login again")
-        self.assertEqual(self.auth.requests, [])
+        self.assert_nothing_contacted()
         self.assertEqual(self.auth.registrations, [])
-        self.assertEqual(self.browser.opened, [])
         self.assertIsNone(credentials.read_credentials())
 
 
@@ -68,6 +66,17 @@ class DeniedTest(FailureCase):
         self.assertEqual(self.auth.token_forms, [])
 
 
+class AuthorizeRefusedTest(FailureCase):
+    wait_seconds = 1
+
+    def test_an_authorize_endpoint_that_refuses_never_reaches_the_callback(self) -> None:
+        self.auth.force_authorize_status = 500
+        self.assert_fails("no authorization within 1 seconds")
+        self.assertEqual(len(self.auth.registrations), 1)
+        self.assertEqual(self.auth.token_forms, [])
+        self.assert_no_tokens()
+
+
 class ServerRefusalTest(FailureCase):
     def test_a_refused_token_exchange_fails_and_stores_no_tokens(self) -> None:
         self.auth.refuse_token = True
@@ -83,33 +92,25 @@ class ServerRefusalTest(FailureCase):
         self.auth.refuse_registration = True
         self.assert_fails("client registration was refused: HTTP 400", "registration is closed")
         self.assertEqual(self.browser.opened, [])
-        self.assertIsNone((credentials.read_credentials() or {}).get("client_id"))
+        self.assertIsNone(credentials.read_credentials())
 
-    def test_a_refusal_of_a_new_client_is_a_failure_not_a_retry_loop(self) -> None:
-        self.auth.force_authorize_status = 500
-        self.assert_fails("authorization server refused the request: HTTP 500: boom")
-        self.assertEqual(len(self.auth.registrations), 1)
-        self.assertEqual(self.browser.opened, [])
-
-    def test_a_stored_client_that_is_refused_for_another_reason_is_not_replaced(self) -> None:
-        credentials.update_credentials({"client_id": "client-kept"})
-        self.auth.force_authorize_status = 500
-        self.assert_fails("HTTP 500")
-        self.assertEqual(self.auth.registrations, [])
-        self.assertEqual(credentials.read_credentials()["client_id"], "client-kept")
+    def test_a_failed_login_leaves_an_earlier_login_as_it_was(self) -> None:
+        credentials.update_credentials({"access_token": "a", "refresh_token": "r", "client_id": "c", "token_endpoint": "https://t"})
+        self.auth.refuse_token = True
+        self.assert_fails("token exchange failed")
+        self.assertEqual(credentials.read_credentials(),
+                         {"access_token": "a", "refresh_token": "r", "client_id": "c", "token_endpoint": "https://t"})
 
 
 class UnreachableTest(FailureCase):
     def test_a_server_that_cannot_be_reached_fails_and_frees_the_port(self) -> None:
         dead = find_free_port()
-        self.patch_in(oauth_client, "METADATA_URL", f"http://127.0.0.1:{dead}/meta")
-        self.assert_fails(f"cannot reach 127.0.0.1:{dead}")
+        self.assert_fails(f"cannot reach 127.0.0.1:{dead}", address=f"http://127.0.0.1:{dead}/meta")
         self.assertEqual(self.browser.opened, [])
         self.assert_port_released()
 
     def test_missing_metadata_fails_with_the_status(self) -> None:
-        self.patch_in(oauth_client, "METADATA_URL", self.auth.base + "/nope")
-        self.assert_fails("authorization server metadata unavailable: HTTP 404")
+        self.assert_fails("the resource metadata unavailable: HTTP 404", address=self.mcp.base + "/nope")
         self.assertEqual(self.auth.registrations, [])
 
 

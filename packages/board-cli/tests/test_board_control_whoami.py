@@ -45,6 +45,10 @@ class LoggedOutTest(WhoamiCase):
         self.store(client_id="c1")
         self.assertEqual(self.whoami(), {"logged_in": False})
 
+    def test_a_file_with_only_the_client_id_and_the_token_endpoint_is_not_logged_in(self) -> None:
+        self.store(client_id="c1", token_endpoint="https://auth.example/token")
+        self.assertEqual(self.whoami(), {"logged_in": False})
+
     def test_an_expired_access_token_without_a_refresh_token_is_not_logged_in(self) -> None:
         self.store(access_token=make_token({**IDENTITY, "exp": PAST}))
         self.assertEqual(self.whoami(), {"logged_in": False})
