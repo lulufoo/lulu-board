@@ -6,8 +6,8 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 
 ['boardDirEditor', 'board-align-x-editor', 'board-align-y-editor', 'board-max-width-input'].forEach((id) => {
   const re = new RegExp('class="props-control"[\\s\\S]*id="' + id + '"[\\s\\S]*props-hint-end');

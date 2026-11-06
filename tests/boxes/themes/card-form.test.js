@@ -12,7 +12,7 @@ const pack = Themes.get('default');
 assert.strictEqual(pack.colors[0], '#fffdf9');
 
 // form layer: cards have no CSS border (the edge is an inset ring), are rounded and lifted
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/04-board-form.css'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/04-board-form.css'), 'utf8');
 assert.match(css, /\.box\.board-type-card\s*\{[^}]*border:\s*0 !important/);
 assert.match(css, /\.board-type-card \.box\.board-type-card\s*\{[^}]*box-shadow:\s*var\(--bf-edge-in\)/, 'nested card: edge ring, no lift');
 assert.doesNotMatch(css, /color-mix\(in srgb, var\(--board-card-zone-bg/, 'nested card fill comes from the rotation, not a mix');
@@ -21,7 +21,7 @@ console.log('ok card-form');
 // container keeps the dashed shell but follows the same 12px corner as cards
 const form = css;
 assert.match(form, /board-type-container,[^{]*\{\s*border-radius:\s*var\(--bf-radius-box\) !important/);
-const diagram = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const diagram = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 assert.match(diagram, /border:\s*1\.5px dashed var\(--board-container-zone-border/);
 assert.doesNotMatch(diagram, /board-type-container > \.box-title[^}]*opacity:\s*0\.72/);
 
@@ -54,7 +54,7 @@ assert.doesNotMatch(dsrc, /stroke-linejoin', 'miter'/);
   const fs = require('fs');
   const path = require('path');
   const Themes = require('../../../packages/boxes/themes');
-  const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/04-board-form.css'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/04-board-form.css'), 'utf8');
   assert.match(css, /\.board-render \{\s*--bf-edge: rgba\(var\(--bf-rgb/, 'ring colour is derived from --bf-rgb on the board root');
   assert.doesNotMatch(css, /:root \{[^}]*--bf-edge/, 'no theme-blind ring colour left on :root');
   Themes.ORDER.forEach((id) => {

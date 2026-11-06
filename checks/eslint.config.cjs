@@ -5,7 +5,7 @@
 // edges, not at names (the #137 incident). no-undef resolves each name inside its own module.
 //
 // no-unused-vars is off: it cannot be limited to imports, and 14 unused locals exist today.
-// Unused imports are checked by checks/drawer-app/07-imports-hooks.test.js.
+// Unused imports are checked by checks/board-app/workspace/07-imports-hooks.test.js.
 //
 // typeof: true makes `typeof name` count as a use, so a guard cannot hide a missing import.
 const globals = require('globals');
@@ -27,14 +27,14 @@ module.exports = [
       'packages/board-core/document-format.js',
       'packages/board-core/search-text.js',
       'packages/board-core/style-token.js',
-      'packages/drawer-app/src/core/hash-persist.js',
-      'packages/drawer-app/src/core/style-line.js',
+      'packages/board-app/workspace/src/core/hash-persist.js',
+      'packages/board-app/workspace/src/core/style-line.js',
     ],
     languageOptions: { globals: { Buffer: 'readonly' } },
   },
   {
     // Also loaded by Node tests: `typeof module === 'object' && module.exports`.
-    files: ['packages/site/oauth/consent/consent.js'],
+    files: ['packages/board-app/oauth/consent/consent.js'],
     languageOptions: { globals: { module: 'readonly' } },
   },
 ];

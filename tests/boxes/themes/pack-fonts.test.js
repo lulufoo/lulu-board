@@ -42,7 +42,7 @@ const VAR_KEY = {
 for (const [name, key] of Object.entries(VAR_KEY)) assert.strictEqual(vars[name], W[key], name + ' comes from WEIGHT.' + key);
 
 // edge labels (SVG text) inherit the same --board-font as boxes and items
-const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 assert.doesNotMatch(css, /Trebuchet/, 'no theme-specific font left in the diagram CSS');
 assert.doesNotMatch(css, /\.board-edge-label\s*\{[^}]*font-family/, 'link labels do not set their own font family');
 

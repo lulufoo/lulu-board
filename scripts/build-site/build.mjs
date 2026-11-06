@@ -10,13 +10,13 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const webDir = path.join(repo, '.cache/web');
 
 for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
-  const src = path.join(repo, 'packages/brand', name);
+  const src = path.join(repo, 'packages/board-app/shared/brand', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(webDir, name));
   console.log('ok ' + name);
 }
 
-const consentSrc = path.join(repo, 'packages/site/oauth/consent');
+const consentSrc = path.join(repo, 'packages/board-app/oauth/consent');
 const consentOut = path.join(webDir, 'oauth/consent');
 mkdirSync(consentOut, { recursive: true });
 for (const name of ['index.html', 'consent.css', 'consent.js']) {
@@ -26,7 +26,7 @@ for (const name of ['index.html', 'consent.css', 'consent.js']) {
   console.log('ok .cache/web/oauth/consent/' + name);
 }
 
-const landingSrc = path.join(repo, 'packages/site/landing');
+const landingSrc = path.join(repo, 'packages/board-app/landing');
 const landingOut = path.join(webDir, 'landing');
 mkdirSync(landingOut, { recursive: true });
 mkdirSync(path.join(landingOut, 'fonts'), { recursive: true });

@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const html = fs.readFileSync(path.join(root, 'packages/drawer-app/index.html'), 'utf8');
-const boardJs = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/board.js'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'packages/board-app/workspace/index.html'), 'utf8');
+const boardJs = fs.readFileSync(path.join(root, 'packages/board-app/workspace/src/kinds/board.js'), 'utf8');
 
 assert.ok(!html.includes('id="board-order-field"'), 'Props has no Order field');
 assert.ok(!html.includes('id="btn-board-order-prev"'), 'Props has no prev order button');

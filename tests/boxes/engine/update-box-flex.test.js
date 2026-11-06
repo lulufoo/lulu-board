@@ -46,7 +46,7 @@ const src = 'boxes Demo\nbox A "A"\n';
 }
 
 {
-  const html = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
+  const html = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
   assert.ok(/id="board-align-x-editor"/.test(html), 'align x control');
   assert.ok(/id="board-align-y-editor"/.test(html), 'align y control');
   assert.ok(/<option value="right">right<\/option>/.test(html), 'right align x');
@@ -58,7 +58,7 @@ const src = 'boxes Demo\nbox A "A"\n';
 }
 
 {
-  const ui = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/drawer-app/src/kinds/board.js'), 'utf8');
+  const ui = require('fs').readFileSync(require('path').join(__dirname, '../../../packages/board-app/workspace/src/kinds/board.js'), 'utf8');
   assert.ok(/default · not in source/.test(ui), 'unset direction tip');
   assert.ok(/isTitle \? "row" : "column"/.test(ui), 'select still shows resolved default');
 }

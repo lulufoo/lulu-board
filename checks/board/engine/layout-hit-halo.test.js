@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const box = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/box.js'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 
 assert.ok(/board-layout-halo/.test(box), 'layout mount adds a halo node');
 assert.ok(/isLayout/.test(box) && /board-layout-halo/.test(box), 'halo is layout-only');

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * App vendor build: boxes, mermaid-ext, drawer, supabase/sentry clients.
+ * App build: boxes and the workspace bundle. Supabase / Sentry clients come from scripts/build-shared.
  */
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';

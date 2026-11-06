@@ -6,12 +6,12 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
-const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
 const itemJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/item/item.js'), 'utf8');
-const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/kinds/board.js'), 'utf8');
-const panesJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/state/props-panes.js'), 'utf8');
-const nativeJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/chrome/native-selects.js'), 'utf8');
+const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/board.js'), 'utf8');
+const panesJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/props-panes.js'), 'utf8');
+const nativeJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/native-selects.js'), 'utf8');
 
 assert.ok(
   /data-board-align\^="top"/.test(css) && /data-board-align\^="bottom"/.test(css),

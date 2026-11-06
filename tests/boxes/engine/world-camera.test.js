@@ -11,9 +11,9 @@ const path = require('path');
 const repo = path.join(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(repo, rel), 'utf8');
 const render = read('packages/boxes/engine/render.js');
-const css = read('packages/drawer-app/css/03-diagram.css');
-const board = read('packages/drawer-app/src/kinds/board-logic.js');
-const exportPng = read('packages/drawer-app/src/export/export-png.js');
+const css = read('packages/board-app/workspace/css/03-diagram.css');
+const board = read('packages/board-app/workspace/src/kinds/board-logic.js');
+const exportPng = read('packages/board-app/workspace/src/export/export-png.js');
 const Layout = require(path.join(repo, 'packages/boxes/engine/layout')).default;
 const Render = require(path.join(repo, 'packages/boxes/engine/render.js')).default;
 

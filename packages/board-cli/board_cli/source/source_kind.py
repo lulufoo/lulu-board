@@ -1,7 +1,7 @@
 """Which file extension a diagram source gets, read from the source text itself.
 
 The viewer decides a diagram's type from its first statement (bodyKind in the
-drawer-app style-line module), because the server stores no type. This follows
+board-app workspace style-line module), because the server stores no type. This follows
 the same rule, so a file named .bmd is a diagram the viewer shows as Boxes.
 """
 from __future__ import annotations

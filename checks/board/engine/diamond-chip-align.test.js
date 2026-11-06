@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const diamondJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/diamond.js'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 const renderJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/engine/render.js'), 'utf8');
 
 assert.ok(!/alignSelf = rootItem \? 'auto' : 'stretch'/.test(diamondJs), 'fit must not stretch nested diamond');

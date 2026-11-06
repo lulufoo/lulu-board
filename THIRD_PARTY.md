@@ -36,14 +36,14 @@ Board renders Mermaid 12.1.0 syntax through Pele. Do not load Mermaid.js.
 
 ## Fonts on the landing page
 
-- Instrument Serif (latin, 400) — https://github.com/Instrument/instrument-serif — SIL OFL 1.1, see `packages/site/landing/fonts/OFL-instrument-serif.txt`
-- Inter (latin, variable) — https://github.com/rsms/inter — SIL OFL 1.1, see `packages/site/landing/fonts/OFL-inter.txt`
+- Instrument Serif (latin, 400) — https://github.com/Instrument/instrument-serif — SIL OFL 1.1, see `packages/board-app/landing/fonts/OFL-instrument-serif.txt`
+- Inter (latin, variable) — https://github.com/rsms/inter — SIL OFL 1.1, see `packages/board-app/landing/fonts/OFL-inter.txt`
 
 Both were taken from the `@fontsource/instrument-serif` and `@fontsource-variable/inter` npm packages (5.3.0).
 
 ## Own layers
 
 - `packages/boxes/` — Lulu Board renderer
-- `packages/drawer-app/` — Drawer shell UI
+- `packages/board-app/workspace/` — Drawer shell UI
 
 These are part of this project and covered by the root `LICENSE` (MIT).

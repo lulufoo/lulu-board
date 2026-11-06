@@ -6,9 +6,9 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 const boxJs = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/box/box.js'), 'utf8');
-const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/kinds/board.js'), 'utf8');
+const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/board.js'), 'utf8');
 
 assert.ok(
   /board-item-type-chip[\s\S]{0,220}board-item-type-note[\s\S]{0,80}max-width:\s*var\(--board-item-cap/.test(css),

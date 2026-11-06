@@ -1,0 +1,73 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const Style = require('../../../packages/board-app/workspace/src/core/style-line.js').default;
+const MathCam = require('../../../packages/board-app/workspace/src/core/canvas-math.js');
+const canvas = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/canvas-view.js'), 'utf8');
+const mathSrc = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/core/canvas-math.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
+
+assert.ok(typeof Style.authoredViewport === 'function');
+assert.deepStrictEqual(Style.authoredViewport({ scale: 0.9, cx: 12.4, cy: 8.6 }), {
+  scale: 0.9,
+  cx: 12,
+  cy: 9,
+});
+assert.strictEqual(Style.authoredViewport({ scale: 1, cx: 0 }), null);
+assert.strictEqual(Style.authoredViewport({ scale: 1, x: 10, y: 20 }), null, 'legacy pan-pixel viewport reads as no camera');
+
+assert.ok(/style\.viewport/.test(canvas), 'one viewport field');
+assert.ok(/export function cameraToPan/.test(mathSrc), 'camera -> pan is a pure function');
+assert.ok(/export function panToCamera/.test(mathSrc), 'pan -> camera is a pure function');
+assert.ok(/function worldOriginLayout/.test(canvas), 'measures the world origin inside #preview');
+assert.ok(/function setWorld/.test(canvas), 'kinds register a world root and bounds');
+assert.ok(/function fitWorld/.test(canvas), 'fit lives on Canvas');
+assert.ok(/persistDocumentView/.test(canvas), 'writes viewport into document style');
+assert.ok(/forgetDocumentView/.test(canvas), 'Fit clears document viewport');
+assert.ok(!/querySelector\("\.board-canvas"\)/.test(canvas), 'Canvas does not query a kind root');
+assert.ok(!/function fitDiagramView|BoxesRender\.worldBounds/.test(canvas), 'Canvas has no Board names');
+assert.ok(!/measureDiagramOnCanvas|panAfterScaleAroundPoint/.test(canvas), 'no diagram-rect pan math left');
+assert.ok(!/id="boardView/.test(html), 'Style panel does not expose viewport');
+assert.ok(!/view_scale|view_pan/.test(canvas), 'does not split viewport into three style keys');
+
+{
+  const api = { cameraToPan: MathCam.cameraToPan, panToCamera: MathCam.panToCamera };
+  const stage = { w: 1000, h: 600 };
+  const origin = { x: 40, y: 34 };
+
+  // Camera at the world origin, zoom 1: origin lands at the stage centre.
+  assert.deepStrictEqual(api.cameraToPan({ scale: 1, cx: 0, cy: 0 }, stage, origin), { x: 460, y: 266 });
+  // Negative world coordinates are ordinary camera targets.
+  const pan = api.cameraToPan({ scale: 0.5, cx: -300, cy: -158 }, stage, origin);
+  assert.deepStrictEqual(pan, { x: 500 - (-300 + 40) * 0.5, y: 300 - (-158 + 34) * 0.5 });
+  // Round trip.
+  const back = api.panToCamera(pan.x, pan.y, 0.5, stage, origin);
+  assert.ok(Math.abs(back.cx + 300) < 1e-9 && Math.abs(back.cy + 158) < 1e-9 && back.scale === 0.5);
+  // Zooming about the stage centre keeps the camera point.
+  const zoomed = api.cameraToPan({ scale: 1.08, cx: back.cx, cy: back.cy }, stage, origin);
+  const again = api.panToCamera(zoomed.x, zoomed.y, 1.08, stage, origin);
+  assert.ok(Math.abs(again.cx + 300) < 1e-9 && Math.abs(again.cy + 158) < 1e-9);
+  assert.strictEqual(api.panToCamera(0, 0, 0, stage, origin), null, 'zero scale has no camera');
+}
+
+{
+  const chrome = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/chrome-boot.js'), 'utf8');
+  const interact = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/canvas-interaction.js'), 'utf8');
+  const shell = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/shell-state.js'), 'utf8');
+  const boardSrc = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/diagram.js'), 'utf8');
+  assert.ok(/function setCanvasZoom/.test(shell), 'zoom keeps the camera point at the stage centre');
+  assert.ok(/setCanvasZoom\(scale \* 1\.08\)/.test(chrome), 'plus zooms about the stage centre');
+  assert.ok(/setCanvasZoom\(scale \/ 1\.08\)/.test(chrome), 'minus zooms about the stage centre');
+  assert.ok(/setCanvasZoom\(scale \* factor\)/.test(interact), 'wheel zooms about the stage centre');
+  assert.ok(/\$\('#btnZoomReset'\)\.onclick = \(\) => \{ centerView\(\)/.test(chrome), 'percent still fits');
+  assert.ok(/function contentBounds/.test(canvas), 'Fit frames the registered world bounds');
+  assert.ok(/applyCamera\(\{ scale: next, cx: b\.cx, cy: b\.cy \}\)/.test(canvas), 'Fit centres the camera on the bounds');
+  assert.ok(/call\("setWorld"/.test(boardSrc), 'kinds register the world after render');
+  assert.ok(!/setCanvasScaleAroundDiagram|measureDiagramCenterOnCanvas/.test(shell + chrome + interact), 'no diagram-rect zoom left');
+}
+
+console.log('ok canvas-view');

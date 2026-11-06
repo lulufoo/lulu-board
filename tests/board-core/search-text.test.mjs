@@ -35,7 +35,7 @@ assert.doesNotMatch(
   /color:red|<h2/
 );
 
-const template = readFileSync(path.join(root, 'packages/drawer-app/templates/sketch.skt'), 'utf8');
+const template = readFileSync(path.join(root, 'packages/board-app/workspace/templates/sketch.skt'), 'utf8');
 const fromTemplate = searchTextFromBody(template);
 assert.match(fromTemplate, /A free-form board/);
 assert.match(fromTemplate, /Use the \/sketch skill in an AI agent to create this/);

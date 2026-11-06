@@ -6,11 +6,11 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/09-props-tabs.css'), 'utf8');
-const js = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/state/props-panes.js'), 'utf8');
-const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/kinds/board.js'), 'utf8');
-const fieldCss = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/09-props-tabs.css'), 'utf8');
+const js = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/props-panes.js'), 'utf8');
+const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/board.js'), 'utf8');
+const fieldCss = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 
 const fieldsAt = html.indexOf('id="propsFields"');
 const fieldsEnd = html.indexOf('id="flowchartDocTitleField"');

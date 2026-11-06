@@ -142,7 +142,7 @@ skills/
 
 ```text
 examples/    # README previews (source) → packed into skills/boxes/templates
-packages/    # board, drawer-app, board-mcp
+packages/    # board, board-app, board-mcp
 scripts/     # build tooling
 skills/     # /boxes /sketch /mermaid
 tests/

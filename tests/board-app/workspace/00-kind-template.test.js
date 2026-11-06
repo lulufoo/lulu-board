@@ -1,0 +1,63 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const Meta = require('../../../packages/board-app/workspace/src/core/document-meta.js').default;
+global.stripDocumentMeta = Meta.stripDocumentMeta;
+global.updateMermaidTitle = Meta.updateMermaidTitle;
+const Template = require('../../../packages/board-app/workspace/src/core/kind-template.js').default;
+
+const root = path.join(__dirname, '../../..');
+const dir = path.join(root, 'packages/board-app/workspace/templates');
+
+assert.strictEqual(Template.kindTemplateFileName('welcome'), 'welcome.bmd');
+assert.strictEqual(Template.kindTemplateFileName('boxes'), 'boxes.bmd');
+assert.strictEqual(Template.kindTemplateFileName('sketch'), 'sketch.skt');
+assert.strictEqual(Template.applyUntitledTitle('sketch ""\ncontent e30=\n'), 'sketch ""\ncontent e30=\n');
+assert.strictEqual(Template.kindTemplateFileName(''), 'boxes.bmd');
+assert.strictEqual(Template.kindTemplateFileName('sequence'), 'sequenceDiagram.mmd');
+assert.strictEqual(Template.kindTemplateFileName('sequenceDiagram'), 'sequenceDiagram.mmd');
+assert.strictEqual(Template.kindTemplateFileName('C4Context'), 'C4Context.mmd');
+assert.strictEqual(Template.kindTemplateFileName('block-beta'), '');
+
+{
+  const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'boxes.bmd'), 'utf8'));
+  assert.match(untitled, /^boxes "Untitled"/m);
+  assert.doesNotMatch(untitled, /boxes "Demo"/);
+}
+
+{
+  const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'welcome.bmd'), 'utf8'));
+  assert.match(untitled, /^sketch "What each one is for\."/);
+}
+
+{
+  const untitled = Template.applyUntitledTitle(fs.readFileSync(path.join(dir, 'sequenceDiagram.mmd'), 'utf8'));
+  assert.match(untitled, /^%% title Untitled\nsequenceDiagram\n/);
+  assert.match(untitled, /actor User/);
+}
+
+global.fetch = async function (url) {
+  const name = String(url).replace(/^\.\/templates\//, '');
+  const file = path.join(dir, name);
+  if (!fs.existsSync(file)) return { ok: false, text: async () => '' };
+  return { ok: true, text: async () => fs.readFileSync(file, 'utf8') };
+};
+
+(async function () {
+  const board = await Template.loadKindTemplateSource('boxes');
+  assert.match(board, /^boxes "Untitled"/m);
+  assert.match(board, /box CARD 002 "Card"/);
+  const welcome = await Template.loadKindTemplateSource('welcome');
+  assert.match(welcome, /^sketch "What each one is for\."/);
+  const sequence = await Template.loadKindTemplateSource('sequenceDiagram');
+  assert.match(sequence, /^%% title Untitled\nsequenceDiagram\n/);
+  await assert.rejects(() => Template.loadKindTemplateSource('block-beta'), /Template is unavailable/);
+  console.log('ok kind-template');
+})().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
