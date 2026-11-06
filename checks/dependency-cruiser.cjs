@@ -58,6 +58,20 @@ module.exports = {
       to: { path: "^packages/board-api/" },
     },
     {
+      name: "board-app-surfaces-isolated",
+      comment: "workspace, landing and oauth are separate build outputs; none imports another surface or shared.",
+      severity: "error",
+      from: { path: "^packages/board-app/(workspace|landing|oauth)/" },
+      to: { path: "^packages/board-app/", pathNot: "^packages/board-app/$1/" },
+    },
+    {
+      name: "board-app-shared-is-leaf",
+      comment: "board-app/shared holds build outputs and static files; it imports no surface.",
+      severity: "error",
+      from: { path: "^packages/board-app/shared/" },
+      to: { path: "^packages/board-app/", pathNot: "^packages/board-app/shared/" },
+    },
+    {
       name: "api-only-core",
       comment: "board-api may import board-core only.",
       severity: "error",
