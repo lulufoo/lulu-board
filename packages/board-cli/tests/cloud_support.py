@@ -1,4 +1,7 @@
-"""Shared base for the cloud-call tests: fake authorization server, fake API, a stored login.
+"""Shared base for the cloud-call tests: fake authorization, API and MCP servers, a stored login.
+
+The fakes are plain http on loopback, so the scheme list admits http and MCP_URL points at
+the fake MCP server (production is https only, with the address built in).
 
 The test runner skips this file.
 """
@@ -8,10 +11,12 @@ import time
 from unittest.mock import patch
 
 from board_cli_support import HomeCase, make_token
-from board_cli.auth import credentials
+from board_cli.auth import credentials, resource_discovery
 from board_cli.cloud import api_client
+from board_cli.core import mcp_address
 from fake_api_server import FakeApiServer
 from fake_auth_server import FUTURE, FakeAuthServer
+from fake_mcp_server import FakeMcpServer
 
 NOT_GIVEN = object()
 
@@ -23,6 +28,10 @@ class CloudCase(HomeCase):
         self.addCleanup(self.auth.stop)
         self.api = FakeApiServer(self.auth).start()
         self.addCleanup(self.api.stop)
+        self.mcp = FakeMcpServer(self.auth).start()
+        self.addCleanup(self.mcp.stop)
+        self.patch_in(mcp_address, "MCP_URL", self.mcp.url)
+        self.patch_in(resource_discovery, "SCHEMES", ("http", "https"))
         self.patch_in(api_client, "API_HOST", self.api.base)
         self.seeded = 0
 

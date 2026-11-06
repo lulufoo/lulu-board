@@ -102,6 +102,7 @@ def refresh_tokens(token_endpoint: str, client_id: str, refresh_token: str) -> d
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,
         "client_id": client_id,
+        "resource": mcp_address.MCP_URL,
     }).encode()
     reply = send_request("POST", token_endpoint, FORM_HEADERS, form)
     if reply.status in (400, 401):

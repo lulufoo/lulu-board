@@ -91,6 +91,8 @@ class FakeMcpServer:
         self.requests: list[dict] = []
         self.response_format = "json"    # "json" or "sse"
         self.metadata_overrides: dict = {}  # fields of the protected-resource metadata a test replaces
+        self.reject_all = False          # a 401 for every token, valid or not
+        self.omit_challenge_address = False  # the 401's WWW-Authenticate names no metadata address
         self.sse_noise = False           # an SSE reply also carries a keepalive, a priming event, and a notification
         self.forced: tuple | None = None  # (status, content type, body, headers): answers every accepted POST
         self.tools: dict[str, tuple[bool, object]] = {}  # name -> (is_error, result data or error text)
@@ -147,10 +149,12 @@ class FakeMcpServer:
         }
 
     def build_challenge(self) -> str:
+        if self.omit_challenge_address:
+            return 'Bearer realm="lulu-board"'
         return f'Bearer realm="lulu-board", resource_metadata="{self.metadata_url}"'
 
     def accepts(self, token: str) -> bool:
-        if not token or token not in self.auth.valid_access_tokens:
+        if self.reject_all or not token or token not in self.auth.valid_access_tokens:
             return False
         return not has_expired(read_claims(token))
 

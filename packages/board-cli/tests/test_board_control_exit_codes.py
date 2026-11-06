@@ -34,6 +34,20 @@ class ExitCodeTest(HomeCase):
         self.assertEqual((code, out), (4, '{"login_required": true}\n'))
         self.assertEqual(err, "not logged in; run login first\n")
 
+    def test_login_required_with_an_address_gives_it_on_stdout_and_in_the_stderr_line(self) -> None:
+        address = "https://mcp.example/.well-known/oauth-protected-resource"
+        code, out, err = self.run_failing(LoginRequired("not logged in", address))
+        self.assertEqual(code, 4)
+        self.assertEqual(json.loads(out), {"login_required": True, "resource_metadata": address})
+        self.assertEqual(err, f"not logged in; run login --resource-metadata-url {address}\n")
+
+    def test_point_to_keeps_the_reason_and_adds_the_address(self) -> None:
+        first = LoginRequired("the login is no longer valid")
+        second = first.point_to("https://a.example/m")
+        self.assertEqual((second.reason, second.resource_metadata), (first.reason, "https://a.example/m"))
+        self.assertEqual(second.payload, {"login_required": True, "resource_metadata": "https://a.example/m"})
+        self.assertEqual(first.payload, {"login_required": True})
+
     def test_a_version_conflict_is_exit_3_with_the_conflict_object_on_stdout(self) -> None:
         code, out, err = self.run_failing(VersionConflict("version conflict: b_00000001 is at version 7, not 3", "b_00000001", 7))
         self.assertEqual(code, 3)

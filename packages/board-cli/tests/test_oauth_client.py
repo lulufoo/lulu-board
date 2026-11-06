@@ -141,7 +141,8 @@ class RefreshTokensTest(OneServerCase):
         self.body = json.dumps({"access_token": "a", "refresh_token": "r"}).encode()
         self.assertEqual(self.refresh(), {"access_token": "a", "refresh_token": "r"})
         self.assertEqual(urllib.parse.parse_qs(self.seen["body"].decode()),
-                         {"grant_type": ["refresh_token"], "refresh_token": ["old-refresh"], "client_id": ["cid"]})
+                         {"grant_type": ["refresh_token"], "refresh_token": ["old-refresh"], "client_id": ["cid"],
+                          "resource": ["https://mcp.luluboard.app/mcp"]})
         self.assertEqual(self.seen["agent"], http_json.USER_AGENT)
 
     def test_a_reply_without_a_refresh_token_is_fine(self) -> None:

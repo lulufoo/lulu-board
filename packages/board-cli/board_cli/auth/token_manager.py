@@ -16,7 +16,7 @@ come from a request fault, and a login replaces them anyway.
 """
 from __future__ import annotations
 
-from board_cli.auth import credential_lock, credentials, oauth_client
+from board_cli.auth import credential_lock, credentials, oauth_client, resource_discovery
 from board_cli.auth.token_claims import has_expired, read_claims
 from board_cli.core.cli_errors import LoginRequired
 
@@ -28,6 +28,7 @@ LOCK_WAIT_SECONDS = 90
 NOT_LOGGED_IN = "not logged in; run login first"
 REFUSED = "the login is no longer valid; run login again"
 INCOMPLETE = "the stored login cannot be refreshed; run login again"
+BAD_ENDPOINT = "the stored token endpoint is not an https address; run login again"
 
 
 def read_stored() -> dict:
@@ -50,6 +51,10 @@ def refresh(stored: dict) -> str:
     token_endpoint = stored.get(credentials.TOKEN_ENDPOINT)
     if not refresh_token or not client_id or not token_endpoint:
         raise LoginRequired(INCOMPLETE)
+    try:
+        resource_discovery.check_https_url(token_endpoint, "the stored token endpoint")
+    except RuntimeError:
+        raise LoginRequired(BAD_ENDPOINT) from None
     try:
         tokens = oauth_client.refresh_tokens(token_endpoint, client_id, refresh_token)
     except oauth_client.RefreshRejected:

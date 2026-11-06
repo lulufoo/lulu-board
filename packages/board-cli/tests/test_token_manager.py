@@ -4,9 +4,10 @@ from __future__ import annotations
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from cloud_support import CloudCase
-from board_cli.auth import credential_lock, credentials, token_manager
+from board_cli.auth import credential_lock, credentials, resource_discovery, token_manager
 from board_cli.core.cli_errors import LoginRequired
 
 
@@ -131,6 +132,18 @@ class LoginRequiredTest(CloudCase):
     def test_a_login_stored_without_a_token_endpoint(self) -> None:
         self.store_login(exp=self.expired(), endpoint=None)
         self.assert_login_required(token_manager.INCOMPLETE)
+        self.assertEqual(self.auth.requests, [])
+
+    def test_a_stored_token_endpoint_that_is_not_https_is_never_called(self) -> None:
+        self.store_login(exp=self.expired(), endpoint="http://auth.example/token")
+        with patch.object(resource_discovery, "SCHEMES", ("https",)):
+            self.assert_login_required(token_manager.BAD_ENDPOINT)
+        self.assertEqual(self.auth.requests, [])
+
+    def test_a_stored_token_endpoint_that_is_not_https_is_never_called(self) -> None:
+        self.store_login(exp=self.expired(), endpoint="http://auth.example/token")
+        with patch.object(resource_discovery, "SCHEMES", ("https",)):
+            self.assert_login_required(token_manager.BAD_ENDPOINT)
         self.assertEqual(self.auth.requests, [])
 
     def test_a_refused_refresh_token(self) -> None:

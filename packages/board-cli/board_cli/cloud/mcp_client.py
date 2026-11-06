@@ -8,6 +8,7 @@ request without one). Redirects are not followed.
 
 Tokens are not handled here. A call takes the access token to send, or none; a 401 is
 raised as Unauthorized, with the metadata address the server named in WWW-Authenticate.
+Refreshing and the retry are in authorized_mcp.py.
 """
 from __future__ import annotations
 
@@ -93,6 +94,28 @@ def read_tool_result(message: dict) -> object:
         raise RuntimeError("the MCP tool's text is not JSON") from None
 
 
+def post_message(method: str, params: dict, token: str | None) -> Response:
+    """POST one JSON-RPC request, with the token when there is one. The status is not judged here."""
+    body = {"jsonrpc": "2.0", "id": REQUEST_ID, "method": method, "params": params}
+    headers = dict(CALL_HEADERS)
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return send_request("POST", mcp_address.MCP_URL, headers, json.dumps(body, ensure_ascii=False).encode("utf-8"))
+
+
+def find_login_address() -> str:
+    """Ask the server, with no token, where to log in: the address its 401 answer names.
+
+    The server checks the token before it reads the request, so the request can be the
+    smallest one that has no side effect. Anything but a 401 that names an address is a RuntimeError.
+    """
+    reply = post_message("tools/list", {}, None)
+    address = find_metadata_url(reply.headers) if reply.status == 401 else None
+    if not address:
+        raise RuntimeError(f"the MCP server did not say where to log in (HTTP {reply.status})")
+    return address
+
+
 def call_tool(name: str, arguments: dict, token: str | None = None) -> object:
     """Call one MCP tool and return what it returned, the JSON in its text content.
 
@@ -100,11 +123,7 @@ def call_tool(name: str, arguments: dict, token: str | None = None) -> object:
     RuntimeError for any other failure: another HTTP status, a JSON-RPC error, or an
     answer that is not what the protocol says.
     """
-    body = {"jsonrpc": "2.0", "id": REQUEST_ID, "method": "tools/call", "params": {"name": name, "arguments": arguments}}
-    headers = dict(CALL_HEADERS)
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    reply = send_request("POST", mcp_address.MCP_URL, headers, json.dumps(body, ensure_ascii=False).encode("utf-8"))
+    reply = post_message("tools/call", {"name": name, "arguments": arguments}, token)
     if reply.status == 401:
         raise Unauthorized("the MCP server refused the login (HTTP 401)", find_metadata_url(reply.headers))
     if not 200 <= reply.status < 300:
