@@ -391,14 +391,10 @@ assert.doesNotMatch(worker, /registerTool\("get_vela"|registerTool\("create_vela
 assert.doesNotMatch(worker, /outputSchema/, 'no outputSchema');
 assert.doesNotMatch(worker, /workers\.dev/, 'personal workers.dev host is not allowed');
 const toolDescription = (name) => worker.split('registerTool("' + name + '"')[1].match(/description: "([^"]*)"/)[1];
-for (const name of ['get_diagram', 'create_diagram', 'save_diagram']) {
-  assert.match(toolDescription(name), /Use the board-cli program to (?:read|create|save) any diagram when the client can run it/, name + ' sends every diagram type to the board-cli program');
-  assert.match(toolDescription(name), /a Sketch (?:\(source starts with `sketch`\) )?is always (?:read|created|saved) with board-cli, not this tool/i, name + ' keeps a Sketch off this tool');
+for (const name of ['whoami', 'get_diagram', 'get_group', 'search_diagrams', 'create_diagram', 'save_diagram']) {
+  assert.doesNotMatch(toolDescription(name), /board-cli|\bCLI\b/i, name + ' does not mention the CLI');
 }
-for (const name of ['whoami', 'get_group', 'search_diagrams']) {
-  assert.doesNotMatch(toolDescription(name), /board-cli/, name + ' does not mention the CLI');
-}
-assert.doesNotMatch(worker.replace(/description: "[^"]*"/g, ''), /sketch/i, 'the Worker only describes Sketch; it never inspects a source for it');
+assert.doesNotMatch(worker, /sketch/i, 'the Worker neither names Sketch nor inspects a source for it');
 const payload = Buffer.from(JSON.stringify({
   iss: 'https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1',
   sub: 'user-1',
