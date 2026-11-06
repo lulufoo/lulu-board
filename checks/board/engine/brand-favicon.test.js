@@ -6,7 +6,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const brand = path.join(__dirname, '../../../packages/brand');
+const brand = path.join(__dirname, '../../../packages/board-app/shared/brand');
 const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
 
 assert.ok(/href="\.\/favicon\.ico\?v=2"/.test(html), 'page links favicon.ico');

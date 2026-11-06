@@ -410,7 +410,7 @@ assert.throws(() => decodePayload('not-a-jwt'), /invalid token/);
 assert.doesNotMatch(worker, /list_recent/, 'list_recent stays out of v1');
 assert.doesNotMatch(worker, /service_role|SERVICE_ROLE/, 'worker holds no service key');
 
-const brandDir = path.join(root, 'packages/brand');
+const brandDir = path.join(root, 'packages/board-app/shared/brand');
 assert.equal(FAVICON_SVG, readFileSync(path.join(brandDir, 'favicon.svg'), 'utf8'), 'MCP svg matches drawer brand');
 assert.equal(
   FAVICON_PNG_BASE64,

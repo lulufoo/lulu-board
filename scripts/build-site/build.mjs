@@ -10,7 +10,7 @@ const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const webDir = path.join(repo, '.cache/web');
 
 for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
-  const src = path.join(repo, 'packages/brand', name);
+  const src = path.join(repo, 'packages/board-app/shared/brand', name);
   if (!existsSync(src)) throw new Error('missing ' + src);
   copyFileSync(src, path.join(webDir, name));
   console.log('ok ' + name);
