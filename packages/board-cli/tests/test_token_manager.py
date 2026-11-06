@@ -164,12 +164,13 @@ class LoginRequiredTest(CloudCase):
             token_manager.get_access_token()
         self.assertEqual(credentials.read_credentials(), before)
 
-    def test_the_message_tells_the_user_to_run_login_and_holds_no_token(self) -> None:
+    def test_the_reason_says_why_the_login_is_unusable_and_holds_no_token(self) -> None:
         access = self.store_login(exp=self.expired())
         self.auth.live_refresh.clear()
         with self.assertRaises(LoginRequired) as caught:
             token_manager.get_access_token()
-        self.assertIn("run login", str(caught.exception))
+        self.assertEqual(caught.exception.reason, token_manager.REFUSED)
+        self.assertNotIn("run login", caught.exception.reason)
         self.assertNotIn(access, str(caught.exception))
         self.assertNotIn("refresh-seed", str(caught.exception))
 

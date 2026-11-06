@@ -25,10 +25,10 @@ REFRESH_MARGIN_SECONDS = 60
 # The holder spends at most two requests under the lock, each up to 20 seconds.
 LOCK_WAIT_SECONDS = 90
 
-NOT_LOGGED_IN = "not logged in; run login first"
-REFUSED = "the login is no longer valid; run login again"
-INCOMPLETE = "the stored login cannot be refreshed; run login again"
-BAD_ENDPOINT = "the stored token endpoint is not an https address; run login again"
+NOT_LOGGED_IN = "not logged in"
+REFUSED = "the login is no longer valid"
+INCOMPLETE = "the stored login cannot be refreshed"
+BAD_ENDPOINT = "the stored token endpoint is not an https address"
 
 
 def read_stored() -> dict:

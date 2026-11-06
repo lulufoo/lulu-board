@@ -44,7 +44,7 @@ class NoLoginTest(LoginHandlingCase):
             code, out, err = run_cli(*argv)
             self.assertEqual(code, 4, tool)
             self.assertEqual(json.loads(out), {"login_required": True, "resource_metadata": self.mcp.metadata_url}, tool)
-            self.assertEqual(err, f"{token_manager.NOT_LOGGED_IN}; run login --resource-metadata-url {self.mcp.metadata_url}\n", tool)
+            self.assertEqual(err, f"not logged in; run login --resource-metadata-url {self.mcp.metadata_url}\n", tool)
             self.assertEqual(self.mcp.list_methods()[before:], ["tools/list"], tool)
         self.assertEqual(self.auth.requests, [])
 
@@ -74,7 +74,7 @@ class RefusedLoginTest(LoginHandlingCase):
             code, out, err = run_cli(*argv)
             self.assertEqual(code, 4, tool)
             self.assertEqual(json.loads(out), {"login_required": True, "resource_metadata": self.mcp.metadata_url}, tool)
-            self.assertEqual(err, f"{token_manager.REFUSED}; run login --resource-metadata-url {self.mcp.metadata_url}\n", tool)
+            self.assertEqual(err, f"the login is no longer valid; run login --resource-metadata-url {self.mcp.metadata_url}\n", tool)
             self.assertEqual(self.auth.refreshes, index, tool)
         self.assertEqual(self.mcp.list_methods(), ["tools/call"] * 10)
 
