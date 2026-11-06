@@ -1,4 +1,7 @@
-"""Shared base for the cloud-call tests: fake authorization server, fake API, a stored login.
+"""Shared base for the cloud-call tests: fake authorization and MCP servers, a stored login.
+
+The fakes are plain http on loopback, so the scheme list admits http and MCP_URL points at
+the fake MCP server (production is https only, with the address built in).
 
 The test runner skips this file.
 """
@@ -8,10 +11,12 @@ import time
 from unittest.mock import patch
 
 from board_cli_support import HomeCase, make_token
-from board_cli.auth import credentials, oauth_client
-from board_cli.cloud import api_client
-from fake_api_server import FakeApiServer
-from fake_auth_server import FUTURE, METADATA_PATH, FakeAuthServer
+from board_cli.auth import credentials, resource_discovery
+from board_cli.core import mcp_address
+from fake_auth_server import FUTURE, FakeAuthServer
+from fake_mcp_server import FakeMcpServer
+
+NOT_GIVEN = object()
 
 
 class CloudCase(HomeCase):
@@ -19,10 +24,10 @@ class CloudCase(HomeCase):
         super().setUp()
         self.auth = FakeAuthServer().start()
         self.addCleanup(self.auth.stop)
-        self.api = FakeApiServer(self.auth).start()
-        self.addCleanup(self.api.stop)
-        self.patch_in(oauth_client, "METADATA_URL", self.auth.base + METADATA_PATH)
-        self.patch_in(api_client, "API_HOST", self.api.base)
+        self.mcp = FakeMcpServer(self.auth).start()
+        self.addCleanup(self.mcp.stop)
+        self.patch_in(mcp_address, "MCP_URL", self.mcp.url)
+        self.patch_in(resource_discovery, "SCHEMES", ("http", "https"))
         self.seeded = 0
 
     def patch_in(self, target, name: str, value) -> None:
@@ -31,11 +36,13 @@ class CloudCase(HomeCase):
         self.addCleanup(patcher.stop)
 
     def store_login(self, exp: float = FUTURE, refresh: str | None = "refresh-seed",
-                    client: str | None = "client-seed", opaque: str | None = None) -> str:
+                    client: str | None = "client-seed", opaque: str | None = None,
+                    endpoint: object = NOT_GIVEN) -> str:
         """Leave a login in the credential file, as an earlier login would have. Return its access token.
 
         exp is the access token's expiry; opaque is an access token that is not a JWT.
-        A refresh token or client left as None is not stored.
+        A refresh token, client, or endpoint left as None is not stored. The endpoint is the fake
+        authorization server's token endpoint unless one is given.
         """
         self.seeded += 1
         access = opaque or make_token({"sub": "user-1", "exp": exp, "jti": f"seed-{self.seeded}"})
@@ -47,6 +54,9 @@ class CloudCase(HomeCase):
         if client:
             fields[credentials.CLIENT_ID] = client
             self.auth.clients[client] = []
+        endpoint = self.auth.base + "/auth/v1/oauth/token" if endpoint is NOT_GIVEN else endpoint
+        if endpoint:
+            fields[credentials.TOKEN_ENDPOINT] = endpoint
         credentials.update_credentials(fields)
         return access
 

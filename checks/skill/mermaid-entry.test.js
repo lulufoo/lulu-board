@@ -50,7 +50,7 @@ assert.match(skill, /Use \*\*cloud mode\*\* only when one of these holds/, 'clou
 assert.match(skill, /the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams/, 'cloud on explicit intent');
 assert.match(skill, /the user pastes a `#b:` link/, 'a pasted #b: link means cloud');
 assert.match(skill, /this session already created the diagram in cloud mode/, 'cloud sticks within a session');
-assert.match(skill, /Run `\$BOARD_CLI whoami`\. When `logged_in` is false, run `\$BOARD_CLI login`/, 'cloud mode checks the login and logs in');
+assert.doesNotMatch(skill, /\bwhoami\b/, 'cloud mode runs the command directly, with no whoami first');
 assert.match(skill, /If `login` fails or times out, use \*\*short-link mode\*\* and tell the user why/, 'a failed login falls back to short link');
 assert.match(skill, /Load \[cloud\]\(\.\.\/references\/cloud\.md\)/, 'cloud mode loads cloud.md');
 assert.match(skill, /load \[pointers\]\(\.\.\/references\/pointers\.md\)/, 'a pasted viewer URL loads pointers.md');
@@ -70,7 +70,9 @@ for (const command of ['create-diagram', 'get-diagram', 'save-diagram', 'get-gro
   assert.match(cloud, new RegExp('\\$BOARD_CLI ' + command + ' '), 'cloud flow runs ' + command);
 }
 assert.match(cloud, /--expected-version <version>/, 'save gives back the version that was read');
-assert.match(cloud, /A command that exits 4 needs a login: run `\$BOARD_CLI login`, then repeat that command once/, 'exit 4 means login and one retry');
+assert.match(cloud, /A command that exits 4 needs a login\. Its stdout JSON holds `resource_metadata`\./, 'exit 4 carries the address in stdout');
+assert.match(cloud, /Run `\$BOARD_CLI login --resource-metadata-url <resource_metadata>`: the user approves in the browser\. Then repeat that command once\./, 'login takes that address, then one retry');
+assert.doesNotMatch(skill + cloud, /\$BOARD_CLI login(?! --resource-metadata-url <resource_metadata>)/, 'no login command without the address');
 assert.match(cloud, /Exit 3 means the cloud holds a newer `latest_version`/, 'exit 3 is the version conflict');
 assert.match(cloud, /the diagram belongs to another skill: leave this one/, 'a diagram of another type is left to its own skill');
 assert.doesNotMatch(cloud, /Sketch/, 'the shared cloud file does not name Sketch');

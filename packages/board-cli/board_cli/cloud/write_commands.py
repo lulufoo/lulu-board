@@ -1,24 +1,24 @@
 """create-diagram and save-diagram: the cloud commands that write.
 
-The file goes up exactly as written. The server drops leading meta lines and takes
-the title from the source itself, and falls back to Untitled. The reply carries
-the source back; it is dropped, so no output holds it. A save that finds another
-version in the cloud saves nothing and exits 3 (VersionConflict). board_control.py
-documents the contract.
+The file goes up exactly as written, through the create_diagram and save_diagram
+tools of the MCP server. The server drops leading meta lines and takes the title from
+the source itself, and falls back to Untitled. The reply carries the source back; it is
+dropped, so no output holds it. A save that finds another version in the cloud saves
+nothing and exits 3 (VersionConflict); the tool's answer already holds the latest
+version, so nothing is read again. board_control.py documents the contract.
 """
 from __future__ import annotations
 
 import argparse
 import re
 
-from board_cli.cloud.api_client import call_api
+from board_cli.cloud.authorized_mcp import call_tool_as_user
 from board_cli.cloud.diagram_model import (
-    check_diagram_id, check_group_argument, check_reply, coerce_version, diagram_info,
+    check_diagram_id, check_group_argument, coerce_version, diagram_info, read_object,
 )
-from board_cli.cloud.read_commands import fetch_row, valid_diagram_id
-from board_cli.core.cli_errors import LoginRequired, VersionConflict
+from board_cli.cloud.read_commands import valid_diagram_id
+from board_cli.core.cli_errors import VersionConflict
 from board_cli.core.cli_output import emit
-from board_cli.core.http_json import Response
 from board_cli.source.source_files import read_checked_source
 
 WHOLE_NUMBER = re.compile(r"[0-9]+")
@@ -34,23 +34,20 @@ def check_expected_version(raw: str) -> int:
     return int(text)
 
 
-def read_saved(reply: Response, action: str) -> dict:
-    """The public fields of the diagram the API answered with. The source in the reply is left out."""
-    row = reply.read_json()
-    diagram_id = valid_diagram_id(row.get("diagram_id")) if row else None
+def read_saved(answer: object, action: str) -> dict:
+    """The public fields of the diagram the tool answered with. The source in the answer is left out."""
+    row = answer if isinstance(answer, dict) else {}
+    diagram_id = valid_diagram_id(row.get("diagram_id"))
     if not diagram_id:
-        raise RuntimeError(f"the API's reply to {action} holds no diagram id")
+        raise RuntimeError(f"the MCP server's answer to {action} holds no diagram id")
     return diagram_info(diagram_id, row)
 
 
-def find_conflict(diagram_id: str, expected: int) -> VersionConflict:
+def build_conflict(diagram_id: str, expected: int, latest_row: object) -> VersionConflict:
     """The exit-3 result for a save the server turned down, with the version the cloud holds now."""
-    try:
-        latest = coerce_version(fetch_row(diagram_id).get("version"))
-    except LoginRequired:
-        raise
-    except RuntimeError as err:
-        raise RuntimeError(f"version conflict on {diagram_id}, and the latest version could not be read: {err}") from None
+    if not isinstance(latest_row, dict):
+        raise RuntimeError(f"version conflict on {diagram_id}, and the MCP server did not say the latest version")
+    latest = coerce_version(latest_row.get("version"))
     return VersionConflict(
         f"version conflict: {diagram_id} is at version {latest}, not {expected}; run get-diagram for the latest source",
         diagram_id, latest,
@@ -58,26 +55,24 @@ def find_conflict(diagram_id: str, expected: int) -> VersionConflict:
 
 
 def run_create_diagram(args: argparse.Namespace) -> None:
-    body: dict = {}
+    arguments: dict = {}
     if args.diagram_id is not None:
-        body["diagram_id"] = check_diagram_id(args.diagram_id)
+        arguments["diagram_id"] = check_diagram_id(args.diagram_id)
     if args.group_id is not None:
-        body["group_id"] = check_group_argument(args.group_id)
-    body["bmd"] = read_checked_source(args.file, "create-diagram")
-    reply = call_api("POST", "/graphs", body=body)
-    check_reply(reply)
-    emit(read_saved(reply, "create-diagram"))
+        arguments["group_id"] = check_group_argument(args.group_id)
+    arguments["bmd"] = read_checked_source(args.file, "create-diagram")
+    emit(read_saved(call_tool_as_user("create_diagram", arguments), "create-diagram"))
 
 
 def run_save_diagram(args: argparse.Namespace) -> None:
     diagram_id = check_diagram_id(args.diagram_id)
     expected = check_expected_version(args.expected_version)
     source = read_checked_source(args.file, "save-diagram")
-    reply = call_api("PATCH", "/graphs", body={"diagram_id": diagram_id, "bmd": source, "expected_version": expected})
-    if reply.status == 409:
-        raise find_conflict(diagram_id, expected)
-    check_reply(reply)
-    emit(read_saved(reply, "save-diagram"))
+    result = read_object(call_tool_as_user(
+        "save_diagram", {"diagram_id": diagram_id, "bmd": source, "expected_version": expected}), "the save")
+    if result.get("conflict") is True:
+        raise build_conflict(diagram_id, expected, result.get("row"))
+    emit(read_saved(result.get("row"), "save-diagram"))
 
 
 def register_commands(sub: "argparse._SubParsersAction") -> None:

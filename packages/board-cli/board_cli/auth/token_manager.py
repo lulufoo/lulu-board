@@ -8,12 +8,15 @@ Refreshing happens under a lock. After taking it, the credential file is read
 again: when another process already stored a fresh token, that one is used and
 the old refresh token is not spent a second time.
 
+The token endpoint is the one login stored beside the tokens. A login made before it
+was stored cannot be refreshed: it needs a new login.
+
 A refresh the server refuses does not delete the stored tokens: the refusal could
 come from a request fault, and a login replaces them anyway.
 """
 from __future__ import annotations
 
-from board_cli.auth import credential_lock, credentials, oauth_client
+from board_cli.auth import credential_lock, credentials, oauth_client, resource_discovery
 from board_cli.auth.token_claims import has_expired, read_claims
 from board_cli.core.cli_errors import LoginRequired
 
@@ -22,9 +25,10 @@ REFRESH_MARGIN_SECONDS = 60
 # The holder spends at most two requests under the lock, each up to 20 seconds.
 LOCK_WAIT_SECONDS = 90
 
-NOT_LOGGED_IN = "not logged in; run login first"
-REFUSED = "the login is no longer valid; run login again"
-INCOMPLETE = "the stored login cannot be refreshed; run login again"
+NOT_LOGGED_IN = "not logged in"
+REFUSED = "the login is no longer valid"
+INCOMPLETE = "the stored login cannot be refreshed"
+BAD_ENDPOINT = "the stored token endpoint is not an https address"
 
 
 def read_stored() -> dict:
@@ -44,11 +48,15 @@ def refresh(stored: dict) -> str:
     """Exchange the stored refresh token, store the result, and return the new access token."""
     refresh_token = stored.get(credentials.REFRESH_TOKEN)
     client_id = stored.get(credentials.CLIENT_ID)
-    if not refresh_token or not client_id:
+    token_endpoint = stored.get(credentials.TOKEN_ENDPOINT)
+    if not refresh_token or not client_id or not token_endpoint:
         raise LoginRequired(INCOMPLETE)
-    metadata = oauth_client.fetch_metadata()
     try:
-        tokens = oauth_client.refresh_tokens(metadata, client_id, refresh_token)
+        resource_discovery.check_https_url(token_endpoint, "the stored token endpoint")
+    except RuntimeError:
+        raise LoginRequired(BAD_ENDPOINT) from None
+    try:
+        tokens = oauth_client.refresh_tokens(token_endpoint, client_id, refresh_token)
     except oauth_client.RefreshRejected:
         raise LoginRequired(REFUSED) from None
     new_refresh = tokens.get("refresh_token")

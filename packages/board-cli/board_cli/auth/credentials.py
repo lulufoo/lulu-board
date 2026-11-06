@@ -1,4 +1,4 @@
-"""The local credential file: access token, refresh token, and the OAuth client_id.
+"""The local credential file: access token, refresh token, the OAuth client_id, and the token endpoint.
 
 The file is ~/.config/lulu-board/credentials.json, one JSON object. The
 directory is 0700 and the file 0600, set in code and not left to the umask. A
@@ -17,7 +17,8 @@ from pathlib import Path
 ACCESS_TOKEN = "access_token"
 REFRESH_TOKEN = "refresh_token"
 CLIENT_ID = "client_id"
-FIELDS = (ACCESS_TOKEN, REFRESH_TOKEN, CLIENT_ID)
+TOKEN_ENDPOINT = "token_endpoint"
+FIELDS = (ACCESS_TOKEN, REFRESH_TOKEN, CLIENT_ID, TOKEN_ENDPOINT)
 
 DIR_MODE = 0o700
 FILE_MODE = 0o600
@@ -62,7 +63,7 @@ def describe_damage(path: Path) -> str:
 def update_credentials(fields: dict) -> None:
     """Merge fields into the stored credentials and write the file atomically.
 
-    Only the three known fields are accepted, each a non-empty string. A damaged
+    Only the known fields are accepted, each a non-empty string. A damaged
     file holds nothing usable, so it is replaced instead of failing the update.
     """
     for name, value in fields.items():

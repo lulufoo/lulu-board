@@ -40,7 +40,7 @@ class AuthorizeUrlTest(unittest.TestCase):
         self.assertEqual({k: v[0] for k, v in urllib.parse.parse_qs(query).items()}, {
             "response_type": "code", "client_id": "cid", "redirect_uri": "http://127.0.0.1:1/callback",
             "code_challenge": "chal", "code_challenge_method": "S256", "state": "st",
-            "scope": "openid email offline_access",
+            "scope": "openid email offline_access", "resource": "https://mcp.luluboard.app/mcp",
         })
         self.assertNotIn("http://127", query)
 
@@ -135,13 +135,14 @@ class HttpJsonTest(OneServerCase):
 
 class RefreshTokensTest(OneServerCase):
     def refresh(self) -> dict:
-        return oauth_client.refresh_tokens({"token_endpoint": self.url}, "cid", "old-refresh")
+        return oauth_client.refresh_tokens(self.url, "cid", "old-refresh")
 
     def test_it_posts_the_refresh_grant_as_a_form(self) -> None:
         self.body = json.dumps({"access_token": "a", "refresh_token": "r"}).encode()
         self.assertEqual(self.refresh(), {"access_token": "a", "refresh_token": "r"})
         self.assertEqual(urllib.parse.parse_qs(self.seen["body"].decode()),
-                         {"grant_type": ["refresh_token"], "refresh_token": ["old-refresh"], "client_id": ["cid"]})
+                         {"grant_type": ["refresh_token"], "refresh_token": ["old-refresh"], "client_id": ["cid"],
+                          "resource": ["https://mcp.luluboard.app/mcp"]})
         self.assertEqual(self.seen["agent"], http_json.USER_AGENT)
 
     def test_a_reply_without_a_refresh_token_is_fine(self) -> None:

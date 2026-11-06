@@ -4,9 +4,10 @@ from __future__ import annotations
 import threading
 import time
 import unittest
+from unittest.mock import patch
 
 from cloud_support import CloudCase
-from board_cli.auth import credential_lock, credentials, token_manager
+from board_cli.auth import credential_lock, credentials, resource_discovery, token_manager
 from board_cli.core.cli_errors import LoginRequired
 
 
@@ -43,6 +44,12 @@ class RefreshTest(CloudCase):
         self.assertEqual(stored["access_token"], new)
         self.assertEqual(stored["refresh_token"], "refresh-rotated-1")
         self.assertEqual(stored["client_id"], "client-seed")
+        self.assertEqual(stored["token_endpoint"], self.auth.base + "/auth/v1/oauth/token")
+
+    def test_the_refresh_goes_to_the_token_endpoint_in_the_credentials(self) -> None:
+        self.store_login(exp=self.expired())
+        token_manager.get_access_token()
+        self.assertEqual([path for _, path, _ in self.auth.requests], ["/auth/v1/oauth/token"])
 
     def test_the_refresh_sends_the_stored_refresh_token_and_client(self) -> None:
         self.store_login(exp=self.expired())
@@ -58,7 +65,8 @@ class RefreshTest(CloudCase):
         self.assertEqual(self.auth.refreshes, 1)
 
     def test_a_missing_access_token_is_refreshed_from_the_refresh_token(self) -> None:
-        credentials.update_credentials({"refresh_token": "refresh-seed", "client_id": "client-seed"})
+        credentials.update_credentials({"refresh_token": "refresh-seed", "client_id": "client-seed",
+                                        "token_endpoint": self.auth.base + "/auth/v1/oauth/token"})
         self.auth.live_refresh.add("refresh-seed")
         self.auth.clients["client-seed"] = []
         token_manager.get_access_token()
@@ -121,6 +129,23 @@ class LoginRequiredTest(CloudCase):
         self.assert_login_required(token_manager.INCOMPLETE)
         self.assertEqual(self.auth.requests, [])
 
+    def test_a_login_stored_without_a_token_endpoint(self) -> None:
+        self.store_login(exp=self.expired(), endpoint=None)
+        self.assert_login_required(token_manager.INCOMPLETE)
+        self.assertEqual(self.auth.requests, [])
+
+    def test_a_stored_token_endpoint_that_is_not_https_is_never_called(self) -> None:
+        self.store_login(exp=self.expired(), endpoint="http://auth.example/token")
+        with patch.object(resource_discovery, "SCHEMES", ("https",)):
+            self.assert_login_required(token_manager.BAD_ENDPOINT)
+        self.assertEqual(self.auth.requests, [])
+
+    def test_a_stored_token_endpoint_that_is_not_https_is_never_called(self) -> None:
+        self.store_login(exp=self.expired(), endpoint="http://auth.example/token")
+        with patch.object(resource_discovery, "SCHEMES", ("https",)):
+            self.assert_login_required(token_manager.BAD_ENDPOINT)
+        self.assertEqual(self.auth.requests, [])
+
     def test_a_refused_refresh_token(self) -> None:
         self.store_login(exp=self.expired())
         self.auth.live_refresh.clear()
@@ -139,12 +164,13 @@ class LoginRequiredTest(CloudCase):
             token_manager.get_access_token()
         self.assertEqual(credentials.read_credentials(), before)
 
-    def test_the_message_tells_the_user_to_run_login_and_holds_no_token(self) -> None:
+    def test_the_reason_says_why_the_login_is_unusable_and_holds_no_token(self) -> None:
         access = self.store_login(exp=self.expired())
         self.auth.live_refresh.clear()
         with self.assertRaises(LoginRequired) as caught:
             token_manager.get_access_token()
-        self.assertIn("run login", str(caught.exception))
+        self.assertEqual(caught.exception.reason, token_manager.REFUSED)
+        self.assertNotIn("run login", caught.exception.reason)
         self.assertNotIn(access, str(caught.exception))
         self.assertNotIn("refresh-seed", str(caught.exception))
 

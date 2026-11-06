@@ -1,19 +1,16 @@
-"""What the cloud commands share about a diagram: its ids, its link, and its public fields.
+"""What the cloud commands share about a diagram: its ids, its link, its public fields, and the shape of a tool's answer.
 
-The rules follow the MCP server (packages/board-mcp/src/graphs.js and index.js),
-so a command here answers like the tool it replaces.
+The rules follow the MCP server (packages/board-mcp/src/graphs.js and index.js), so
+a command here answers as the tool it calls.
 """
 from __future__ import annotations
 
 import math
 import re
 
-from board_cli.core.http_json import Response
-
 WEB_ORIGIN = "https://luluboard.app"
 DIAGRAM_ID = re.compile(r"b_[0-9a-f]{8}")
 GROUP_ID = re.compile(r"g_[0-9a-f]{8}")
-REASON_LIMIT = 120
 
 
 def check_diagram_id(raw: str) -> str:
@@ -36,9 +33,9 @@ def check_group_id(raw: object) -> str:
     """A group id from the server: g_ and 8 lowercase hex digits."""
     group_id = str(raw or "").strip()
     if not group_id:
-        raise RuntimeError("the API gave no group id")
+        raise RuntimeError("the MCP server gave no group id")
     if not GROUP_ID.fullmatch(group_id):
-        raise RuntimeError(f"the API gave an invalid group id {group_id!r}")
+        raise RuntimeError(f"the MCP server gave an invalid group id {group_id!r}")
     return group_id
 
 
@@ -47,19 +44,18 @@ def diagram_url(diagram_id: str) -> str:
     return f"{WEB_ORIGIN}/#b:{diagram_id}"
 
 
-def describe_api_failure(reply: Response) -> str:
-    """HTTP status plus the API's short reason when its body gives one."""
-    body = reply.read_json() or {}
-    reason = body.get("message") or body.get("error")
-    return f"the API answered HTTP {reply.status}" + (f": {str(reason)[:REASON_LIMIT]}" if reason else "")
+def read_object(data: object, what: str) -> dict:
+    """What a tool returned, as a JSON object."""
+    if not isinstance(data, dict):
+        raise RuntimeError(f"the MCP server answered {what} with something other than an object")
+    return data
 
 
-def check_reply(reply: Response, not_found: str | None = None) -> None:
-    """Pass a 2xx reply. A 404 raises not_found when given; any other status raises the API's reason."""
-    if reply.status == 404 and not_found:
-        raise RuntimeError(not_found)
-    if not 200 <= reply.status < 300:
-        raise RuntimeError(describe_api_failure(reply))
+def read_list(data: object, what: str) -> list:
+    """What a tool returned, as a JSON list."""
+    if not isinstance(data, list):
+        raise RuntimeError(f"the MCP server answered {what} with something other than a list")
+    return data
 
 
 def coerce_version(raw: object) -> int:

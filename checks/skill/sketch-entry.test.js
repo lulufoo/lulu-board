@@ -80,7 +80,7 @@ assert.match(skill, /Use \*\*cloud mode\*\* only when one of these holds/, 'clou
 assert.match(skill, /the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams/, 'cloud on explicit intent');
 assert.match(skill, /the user pastes a `#b:` link/, 'a pasted #b: link means cloud');
 assert.match(skill, /this session already created the diagram in cloud mode/, 'cloud sticks within a session');
-assert.match(skill, /Run `\$BOARD_CLI whoami`\. When `logged_in` is false, run `\$BOARD_CLI login`/, 'cloud mode checks the login and logs in');
+assert.doesNotMatch(skill, /\bwhoami\b/, 'cloud mode runs the command directly, with no whoami first');
 assert.match(skill, /If `login` fails or times out, use \*\*short-link mode\*\* and tell the user why/, 'a failed login falls back to short link');
 assert.match(skill, /Load \[cloud flow\]\(\.\/references\/cloud-flow\.md\)/, 'cloud mode loads the sketch cloud flow');
 assert.match(skill, /load \[pointers\]\(\.\.\/references\/pointers\.md\)/, 'a pasted viewer URL loads pointers.md');
@@ -106,7 +106,9 @@ for (const command of ['create-diagram', 'get-diagram', 'save-diagram', 'get-gro
 assert.match(cloudFlow, /--expected-version <version>/, 'save gives back the version that was read');
 assert.match(cloudFlow, /--style <style>/, 'save: the style from decode-source goes back');
 assert.match(cloudFlow, /When `decode-source` returned an empty `title`, write a short title/, 'an empty decoded title is named before encode');
-assert.match(cloudFlow, /A command that exits 4 needs a login: run `\$BOARD_CLI login`, then repeat that command once/, 'exit 4 means login and one retry');
+assert.match(cloudFlow, /A command that exits 4 needs a login\. Its stdout JSON holds `resource_metadata`\./, 'exit 4 carries the address in stdout');
+assert.match(cloudFlow, /Run `\$BOARD_CLI login --resource-metadata-url <resource_metadata>`: the user approves in the browser\. Then repeat that command once\./, 'login takes that address, then one retry');
+assert.doesNotMatch(skill + cloudFlow, /\$BOARD_CLI login(?! --resource-metadata-url <resource_metadata>)/, 'no login command without the address');
 assert.match(cloudFlow, /When `login` fails or times out, use short-link mode/, 'a failed login falls back to short link');
 assert.match(cloudFlow, /Exit 3 means the cloud holds a newer `latest_version`/, 'exit 3 is the version conflict');
 assert.match(cloudFlow, /does not end in `\.skt`, the diagram is not a Sketch/, 'a diagram of another type is left to its own skill');

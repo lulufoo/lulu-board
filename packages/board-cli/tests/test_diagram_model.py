@@ -5,7 +5,6 @@ import unittest
 
 import board_cli_support  # noqa: F401  (puts the package on sys.path)
 from board_cli.cloud import diagram_model as model
-from board_cli.core.http_json import Response
 
 
 class DiagramIdTest(unittest.TestCase):
@@ -38,12 +37,12 @@ class GroupIdTest(unittest.TestCase):
 
     def test_a_missing_one_is_named_as_missing(self) -> None:
         for raw in (None, "", "  "):
-            with self.assertRaisesRegex(RuntimeError, r"^the API gave no group id$"):
+            with self.assertRaisesRegex(RuntimeError, r"^the MCP server gave no group id$"):
                 model.check_group_id(raw)
 
     def test_a_malformed_one_is_named_as_invalid(self) -> None:
         for raw in ("b_99aabbcc", "g_99AABBCC", "g_99aabb", "g_99aabbccdd", "g_99aabbcc\nx"):
-            with self.assertRaisesRegex(RuntimeError, r"^the API gave an invalid group id "):
+            with self.assertRaisesRegex(RuntimeError, r"^the MCP server gave an invalid group id "):
                 model.check_group_id(raw)
 
 
@@ -57,7 +56,7 @@ class VersionTest(unittest.TestCase):
 
 
 class DiagramInfoTest(unittest.TestCase):
-    ROW = {"graph_id": "b_0fc10001", "title": "Now", "bmd": "SOURCE", "version": 4,
+    ROW = {"diagram_id": "b_0fc10001", "title": "Now", "bmd": "SOURCE", "version": 4,
            "updated_at": "2026-09-19T00:00:00Z", "group_id": "g_99aabbcc"}
 
     def test_it_holds_the_public_fields_and_never_the_source(self) -> None:
@@ -76,37 +75,18 @@ class DiagramInfoTest(unittest.TestCase):
             model.diagram_info("b_0fc10001", {"title": "Bare"})
 
 
-class ReplyTest(unittest.TestCase):
-    def reply(self, status: int, text: str = "") -> Response:
-        return Response(status, {}, text)
+class ToolAnswerTest(unittest.TestCase):
+    def test_an_object_passes_and_anything_else_is_refused(self) -> None:
+        self.assertEqual(model.read_object({"a": 1}, "the diagram"), {"a": 1})
+        for data in ([], "x", 3, None):
+            with self.assertRaisesRegex(RuntimeError, r"^the MCP server answered the diagram with something other than an object$"):
+                model.read_object(data, "the diagram")
 
-    def test_the_reason_is_message_then_error(self) -> None:
-        self.assertEqual(model.describe_api_failure(self.reply(403, '{"error": "forbidden", "message": "group not found"}')),
-                         "the API answered HTTP 403: group not found")
-        self.assertEqual(model.describe_api_failure(self.reply(409, '{"error": "conflict"}')),
-                         "the API answered HTTP 409: conflict")
-
-    def test_a_body_that_is_not_json_gives_only_the_status(self) -> None:
-        self.assertEqual(model.describe_api_failure(self.reply(502, "<html>")), "the API answered HTTP 502")
-
-    def test_a_long_reason_is_cut(self) -> None:
-        text = model.describe_api_failure(self.reply(400, '{"message": "' + "x" * 500 + '"}'))
-        self.assertEqual(len(text), len("the API answered HTTP 400: ") + 120)
-
-    def test_check_reply_passes_every_2xx(self) -> None:
-        for status in (200, 201, 204):
-            model.check_reply(self.reply(status))
-
-    def test_check_reply_raises_not_found_only_when_given(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "^gone$"):
-            model.check_reply(self.reply(404), not_found="gone")
-        with self.assertRaisesRegex(RuntimeError, "HTTP 404"):
-            model.check_reply(self.reply(404))
-
-    def test_check_reply_raises_the_reason_for_other_failures(self) -> None:
-        for status in (400, 403, 409, 500, 302):
-            with self.assertRaisesRegex(RuntimeError, f"HTTP {status}"):
-                model.check_reply(self.reply(status), not_found="gone")
+    def test_a_list_passes_and_anything_else_is_refused(self) -> None:
+        self.assertEqual(model.read_list([1], "the search"), [1])
+        for data in ({}, "x", 3, None):
+            with self.assertRaisesRegex(RuntimeError, r"^the MCP server answered the search with something other than a list$"):
+                model.read_list(data, "the search")
 
 
 if __name__ == "__main__":

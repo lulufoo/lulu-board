@@ -14,11 +14,11 @@ Done when a tool `url` is shown.
 | Macro | CLI |
 |---|---|
 | `$BOARD_CLI` | `~/.local/bin/board-cli` |
-| `$INSTALL_BOARD_CLI` | `mkdir -p ~/.local/bin && curl -fsSL https://github.com/lulufoo/lulu-board/releases/download/board-cli-v0.1.0/board-cli.pyz -o ~/.local/bin/board-cli && chmod +x ~/.local/bin/board-cli` |
+| `$INSTALL_BOARD_CLI` | `mkdir -p ~/.local/bin && curl -fsSL https://github.com/lulufoo/lulu-board/releases/download/board-cli-v0.3.0/board-cli.pyz -o ~/.local/bin/board-cli && chmod +x ~/.local/bin/board-cli` |
 
 ## CLI
 
-`$BOARD_CLI` is the installed `board-cli` program. Minimum version: `0.1.0`.
+`$BOARD_CLI` is the installed `board-cli` program. Minimum version: `0.3.0`.
 
 1. Before the first `$BOARD_CLI` call of a session, run `$BOARD_CLI --version`.
 2. When the command is missing or its `version` is below the minimum, run `$INSTALL_BOARD_CLI`, then continue.
@@ -52,7 +52,7 @@ The frame is resized by its content and exported as one still image. Write for t
 
 Pick short link or cloud. Short link is the default.
 
-1. Use **cloud mode** only when one of these holds: the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams; the user pastes a `#b:` link; this session already created the diagram in cloud mode. Run `$BOARD_CLI whoami`. When `logged_in` is false, run `$BOARD_CLI login`: the user approves in the browser. Load [cloud flow](./references/cloud-flow.md).
+1. Use **cloud mode** only when one of these holds: the user asks to save, keep, or update a cloud diagram, or to search cloud diagrams; the user pastes a `#b:` link; this session already created the diagram in cloud mode. Load [cloud flow](./references/cloud-flow.md).
 2. Otherwise use **short-link mode**.
 3. If `login` fails or times out, use **short-link mode** and tell the user why.
 4. If the user pastes a viewer URL, load [pointers](../references/pointers.md).

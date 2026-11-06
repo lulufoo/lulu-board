@@ -1,39 +1,28 @@
 """get-diagram, get-group, and search-diagrams: the cloud commands that only read.
 
-They call the API as the logged-in user (api_client), so a missing or refused
-login is exit 4. get-diagram writes the source to a file; no output holds the
-source. board_control.py documents the contract.
+They call the MCP server's tools as the logged-in user (authorized_mcp), so a missing
+or refused login is exit 4. get-diagram writes the source to a file; no output holds
+the source. board_control.py documents the contract.
 """
 from __future__ import annotations
 
 import argparse
-import json
 import math
 from pathlib import Path
 
-from board_cli.cloud.api_client import call_api
+from board_cli.cloud.authorized_mcp import call_tool_as_user
 from board_cli.cloud.diagram_model import (
-    DIAGRAM_ID, check_diagram_id, check_group_id, check_reply, diagram_info, diagram_url,
+    DIAGRAM_ID, check_diagram_id, check_group_id, diagram_info, diagram_url, read_list, read_object,
 )
+from board_cli.cloud.mcp_client import ToolFailed
 from board_cli.core.cli_output import emit
-from board_cli.core.http_json import Response
 from board_cli.source import sketch_schema as schema
 from board_cli.source.source_kind import detect_extension
 
 # A member with no usable sort_order goes last, as in the MCP server (JavaScript's MAX_SAFE_INTEGER).
 LAST_RANK = 9007199254740991
-MINE = "mine"
-
-
-def read_list(reply: Response, what: str) -> list:
-    """The reply body as a JSON list."""
-    try:
-        data = json.loads(reply.text)
-    except ValueError:
-        data = None
-    if not isinstance(data, list):
-        raise RuntimeError(f"the API answered {what} with something other than a list")
-    return data
+# What get_diagram and get_group fail with for a diagram that is not there (packages/board-mcp/src/graphs.js).
+NOT_FOUND = "Cloud board not found"
 
 
 def valid_diagram_id(raw: object) -> str | None:
@@ -49,69 +38,53 @@ def rank_of(raw: object) -> float:
     return raw
 
 
-def fetch_row(diagram_id: str) -> dict:
-    """The cloud row of a diagram, source included. A missing diagram is an ordinary error."""
-    reply = call_api("GET", "/graphs", query={"diagram_id": diagram_id})
-    check_reply(reply, not_found=f"cloud diagram not found: {diagram_id}")
-    row = reply.read_json()
-    if row is None:
-        raise RuntimeError("the API answered the diagram with something other than an object")
-    return row
+def call_diagram_tool(name: str, diagram_id: str) -> object:
+    """Call a tool that takes one diagram id. The server's not-found text becomes the CLI's own."""
+    try:
+        return call_tool_as_user(name, {"diagram_id": diagram_id})
+    except ToolFailed as failure:
+        if failure.reason == NOT_FOUND:
+            raise RuntimeError(f"cloud diagram not found: {diagram_id}") from None
+        raise
 
 
 def run_get_diagram(args: argparse.Namespace) -> None:
     diagram_id = check_diagram_id(args.diagram_id)
-    row = fetch_row(diagram_id)
+    row = read_object(call_diagram_tool("get_diagram", diagram_id), "the diagram")
     source = row.get("bmd")
     if not isinstance(source, str):
-        raise RuntimeError(f"the API returned no source for {diagram_id}")
+        raise RuntimeError(f"the MCP server returned no source for {diagram_id}")
     info = diagram_info(diagram_id, row)  # checks the row first, so a bad one leaves no file behind
     path = Path(args.out).resolve() / (diagram_id + detect_extension(source))
     schema.write_file(path, source)
     emit({**info, "file": str(path)})
 
 
-def collect_group(diagram_id: str, rows: list) -> dict:
-    """The group of diagram_id and its members in display order, from the /groups/shells rows."""
-    group_id = ""
-    found = False
-    pending = []
-    for row in rows:
-        member_id = valid_diagram_id(row.get("graph_id")) if isinstance(row, dict) else None
-        if not member_id:
-            continue
-        raw_group = str(row.get("group_id") or "").strip()
-        if member_id == diagram_id:
-            found, group_id = True, raw_group
-        pending.append({"diagram_id": member_id, "title": row.get("title") or "",
-                        "sort_order": rank_of(row.get("sort_order")), "group_id": raw_group})
-    if not found:
-        raise RuntimeError(f"cloud diagram not found: {diagram_id}")
-    group_id = check_group_id(group_id)
-    members = [{"diagram_id": item["diagram_id"], "title": item["title"],
-                "sort_order": item["sort_order"], "url": diagram_url(item["diagram_id"])}
-               for item in pending if item["group_id"] == group_id]
-    members.sort(key=lambda member: (member["sort_order"], member["diagram_id"]))
-    return {"group_id": group_id, "members": members}
+def collect_group(answer: object) -> dict:
+    """The group and its members as get_group returned them, already in display order."""
+    group = read_object(answer, "the group")
+    members = []
+    for row in read_list(group.get("members"), "the group's members"):
+        member_id = valid_diagram_id(row.get("diagram_id")) if isinstance(row, dict) else None
+        if member_id:
+            members.append({"diagram_id": member_id, "title": row.get("title") or "",
+                            "sort_order": rank_of(row.get("sort_order")), "url": diagram_url(member_id)})
+    return {"group_id": check_group_id(group.get("group_id")), "members": members}
 
 
 def run_get_group(args: argparse.Namespace) -> None:
     diagram_id = check_diagram_id(args.diagram_id)
-    reply = call_api("POST", "/groups/shells", body={"diagram_id": diagram_id})
-    check_reply(reply, not_found=f"cloud diagram not found: {diagram_id}")
-    emit(collect_group(diagram_id, read_list(reply, "the group")))
+    emit(collect_group(call_diagram_tool("get_group", diagram_id)))
 
 
 def run_search_diagrams(args: argparse.Namespace) -> None:
     query = args.query.strip()
     if not query:
         raise RuntimeError("--query must not be empty")
-    reply = call_api("POST", "/search", body={"query": query})
-    check_reply(reply)
     results = []
-    for row in read_list(reply, "the search"):
-        diagram_id = valid_diagram_id(row.get("graph_id")) if isinstance(row, dict) else None
-        if diagram_id and row.get("category") == MINE:
+    for row in read_list(call_tool_as_user("search_diagrams", {"query": query}), "the search"):
+        diagram_id = valid_diagram_id(row.get("diagram_id")) if isinstance(row, dict) else None
+        if diagram_id:
             results.append({"diagram_id": diagram_id, "title": row.get("title") or "", "url": diagram_url(diagram_id)})
     emit({"results": results})
 
