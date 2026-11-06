@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
 import { getGraph, getGroup, createGraph, saveGraph, searchDiagrams } from "./graphs.js";
+import { isAuthProxyPath, proxyAuthRequest } from "./auth-proxy.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
@@ -146,6 +147,7 @@ export default {
       if (request.method === "HEAD") return new Response(null, { status: icon.status, headers: icon.headers });
       return icon;
     }
+    if (isAuthProxyPath(url.pathname)) return proxyAuthRequest(request, env);
     if (url.pathname !== "/mcp") return new Response("Not found", { status: 404 });
     const header = request.headers.get("authorization") || "";
     const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
