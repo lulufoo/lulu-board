@@ -129,7 +129,7 @@ try {
   }
   assert.equal(seen.length, 0);
 
-  // Any other path is not forwarded, register included (a later Issue).
+  // Any other path is not forwarded here. Register is served by register-proxy.js, not by this proxy.
   for (const route of [
     '/auth/v1',
     '/auth/v1/',

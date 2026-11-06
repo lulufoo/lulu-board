@@ -23,12 +23,12 @@ export function isAuthProxyPath(pathname) {
   return pathname === PREFIX || pathname.indexOf(PREFIX + "/") === 0;
 }
 
-function buildUpstreamUrl(env, subPath, search) {
+export function buildUpstreamUrl(env, subPath, search) {
   return String(env.SUPABASE_URL || "").replace(/\/$/, "") + PREFIX + subPath + search;
 }
 
 // The client IP is the one Cloudflare put in CF-Connecting-IP; the client cannot change it.
-function buildRequestHeaders(request) {
+export function buildRequestHeaders(request) {
   var headers = new Headers();
   REQUEST_HEADERS.forEach(function (name) {
     var value = request.headers.get(name);
@@ -39,7 +39,7 @@ function buildRequestHeaders(request) {
   return headers;
 }
 
-function buildResponse(upstream) {
+export function buildResponse(upstream) {
   var headers = new Headers();
   RESPONSE_HEADERS.forEach(function (name) {
     var value = upstream.headers.get(name);
@@ -49,7 +49,7 @@ function buildResponse(upstream) {
   return new Response(upstream.body, { status: upstream.status, headers: headers });
 }
 
-function buildErrorResponse(status, error, allow) {
+export function buildErrorResponse(status, error, allow) {
   var headers = { "content-type": "application/json", "access-control-allow-origin": "*" };
   if (allow) headers.allow = allow;
   return new Response(JSON.stringify({ error: error }), { status: status, headers: headers });

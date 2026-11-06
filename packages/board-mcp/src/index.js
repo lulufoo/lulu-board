@@ -6,6 +6,7 @@ import { getGraph, getGroup, createGraph, saveGraph, searchDiagrams } from "./gr
 import { isAuthProxyPath, proxyAuthRequest } from "./auth-proxy.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
+import { isRegisterPath, proxyRegisterRequest } from "./register-proxy.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
 import { GRAPH_ID_RE } from "../../board-core/index.js";
 
@@ -147,6 +148,7 @@ export default {
       if (request.method === "HEAD") return new Response(null, { status: icon.status, headers: icon.headers });
       return icon;
     }
+    if (isRegisterPath(url.pathname)) return proxyRegisterRequest(request, env);
     if (isAuthProxyPath(url.pathname)) return proxyAuthRequest(request, env);
     if (url.pathname !== "/mcp") return new Response("Not found", { status: 404 });
     const header = request.headers.get("authorization") || "";
