@@ -135,7 +135,7 @@ assert.match(path.basename(encoded.file), /^\d{8}-\d{6}-\d{3}\.skt$/, 'encode-so
 assert.deepStrictEqual([encoded.title, encoded.style], ["A 'quoted' 标题", style], 'encode-source returns the cleaned title and the style');
 
 const text = fs.readFileSync(encoded.file, 'utf8');
-const StyleLine = (await import(pathToFileURL(path.join(root, 'packages/drawer-app/src/core/style-line.js')).href)).default;
+const StyleLine = (await import(pathToFileURL(path.join(root, 'packages/board-app/workspace/src/core/style-line.js')).href)).default;
 const { diagramTitleFromBody } = await import(pathToFileURL(path.join(root, 'packages/board-core/document-format.js')).href);
 assert.strictEqual(StyleLine.bodyKind(text), 'sketch', 'the viewer reads the file as a sketch');
 assert.strictEqual(diagramTitleFromBody(text), "A 'quoted' 标题", 'the viewer reads the cleaned title');

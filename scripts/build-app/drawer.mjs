@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * drawer-app build: vendor/drawer-app → .cache/web/.
+ * workspace build: packages/board-app/workspace → .cache/web/.
  */
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -13,7 +13,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const packages = path.join(repo, 'packages');
 const webDir = path.join(repo, '.cache/web');
-const srcDir = path.join(packages, 'drawer-app');
+const srcDir = path.join(packages, 'board-app', 'workspace');
 const vendorOut = path.join(webDir, 'vendor');
 mkdirSync(vendorOut, { recursive: true });
 

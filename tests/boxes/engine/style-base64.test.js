@@ -188,7 +188,7 @@ item HERO type text "Hi"
 }
 
 {
-  const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
   const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/skill-assets/vocab.md'), 'utf8');
   assert.ok(/id="board-max-width-input"/.test(html), 'props have Max Width input');
   assert.ok(/Max Width/.test(html), 'width field is labeled Max Width');

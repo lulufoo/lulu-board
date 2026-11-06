@@ -44,6 +44,6 @@ Both were taken from the `@fontsource/instrument-serif` and `@fontsource-variabl
 ## Own layers
 
 - `packages/boxes/` — Lulu Board renderer
-- `packages/drawer-app/` — Drawer shell UI
+- `packages/board-app/workspace/` — Drawer shell UI
 
 These are part of this project and covered by the root `LICENSE` (MIT).

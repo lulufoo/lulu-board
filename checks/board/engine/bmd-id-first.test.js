@@ -7,10 +7,10 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const html = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/index.html'), 'utf8');
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
-const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
-const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
+const shell = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/shell-state.js'), 'utf8');
+const boot = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/chrome-boot.js'), 'utf8');
 const board = fs.readFileSync(path.join(root, 'skills/boxes/SKILL.md'), 'utf8');
 const pointers = fs.readFileSync(path.join(root, 'skills/references/pointers.md'), 'utf8');
 const vocab = fs.readFileSync(path.join(root, 'packages/boxes/skill-assets/vocab.md'), 'utf8');

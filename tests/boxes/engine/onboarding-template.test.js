@@ -5,10 +5,10 @@ const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const Style = require('../../../packages/drawer-app/src/core/style-line.js').default;
+const Style = require('../../../packages/board-app/workspace/src/core/style-line.js').default;
 
 const src = fs.readFileSync(
-  path.join(__dirname, '../../../packages/drawer-app/templates/welcome.bmd'),
+  path.join(__dirname, '../../../packages/board-app/workspace/templates/welcome.bmd'),
   'utf8'
 );
 assert.ok(!/^\s*meta\s+/.test(src), 'welcome has no document meta');

@@ -1,7 +1,7 @@
 """Reading a diagram source file for the commands that publish it.
 
 The extension names the type and decides what is accepted. The viewer reads the
-type from the source text itself (bodyKind in the drawer-app style-line module),
+type from the source text itself (bodyKind in the board-app workspace style-line module),
 so the text of a .bmd or .mmd file is not compared with its extension. A .skt
 file is parsed first: a damaged one, or one that holds another type, is never sent.
 """

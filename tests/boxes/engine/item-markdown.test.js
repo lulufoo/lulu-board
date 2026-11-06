@@ -57,11 +57,11 @@ assert.ok(/`\[text\]\(url\)`/.test(vocab), 'vocab documents markdown links');
 assert.ok(/mailto:/.test(vocab), 'vocab names allowed protocols');
 assert.ok(!/`note` supports only/.test(vocab), 'vocab is not note-only');
 
-const boardJs = ['board-logic.js', 'board.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/kinds', f), 'utf8')).join('\n');
+const boardJs = ['board-logic.js', 'board.js'].map((f) => fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds', f), 'utf8')).join('\n');
 assert.ok(/function boardEventIsItemMdLink/.test(boardJs), 'drawer isolates markdown link clicks');
 assert.ok((boardJs.match(/boardEventIsItemMdLink\(event\)/g) || []).length >= 5, 'pointerdown click and dblclick skip md links');
 
-const css = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/css/03-diagram.css'), 'utf8');
+const css = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 assert.ok(/\.board-item-md a/.test(css), 'markdown links have styles');
 assert.ok(!/function renderNoteMarkdown/.test(boardJs), 'drawer has no second markdown renderer');
 

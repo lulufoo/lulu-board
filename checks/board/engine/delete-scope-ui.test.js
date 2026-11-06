@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const boardJs = fs.readFileSync(path.join(root, 'packages/drawer-app/src/kinds/board-logic.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'packages/drawer-app/css/03-diagram.css'), 'utf8');
+const boardJs = fs.readFileSync(path.join(root, 'packages/board-app/workspace/src/kinds/board-logic.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'packages/board-app/workspace/css/03-diagram.css'), 'utf8');
 
 assert.ok(/function boardWantsTreeSelect/.test(boardJs), 'tree select reads modifier keys');
 assert.ok(/function boardTreeTargetEl/.test(boardJs), 'tree select can climb from a nested item');

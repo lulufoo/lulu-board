@@ -62,7 +62,7 @@ assert.ok(!/registerItem\('image'/.test(iconJs), 'does not register image');
 assert.ok(/board-item-icon/.test(iconJs), 'icon class name');
 assert.ok(!/board-item-image/.test(iconJs), 'no image class');
 
-const css = read('packages/drawer-app/css/03-diagram.css');
+const css = read('packages/board-app/workspace/css/03-diagram.css');
 assert.ok(/\.board-item-icon\b/.test(css), 'css uses board-item-icon');
 assert.ok(!/\.board-item-image\b/.test(css), 'css has no board-item-image');
 
@@ -70,7 +70,7 @@ const build = read('scripts/build-app/boxes.mjs');
 assert.ok(/item\/icon\.js/.test(read('packages/boxes/model.js')), 'model registers icon.js');
 assert.ok(!/item\/image\.js/.test(build), 'build does not list image.js');
 
-const props = read('packages/drawer-app/src/kinds/board.js');
+const props = read('packages/board-app/workspace/src/kinds/board.js');
 assert.ok(props.includes('"icon"'), 'props type list has icon');
 assert.ok(!/"img"/.test(props), 'props type list has no img');
 assert.ok(!/itemType === "image"/.test(props), 'props has no image alias');

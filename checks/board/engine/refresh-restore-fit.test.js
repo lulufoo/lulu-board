@@ -6,10 +6,10 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const shell = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/state/shell-state.js'), 'utf8');
-const canvas = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/chrome/canvas-view.js'), 'utf8');
-const board = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/kinds/diagram.js'), 'utf8');
-const boot = fs.readFileSync(path.join(__dirname, '../../../packages/drawer-app/src/chrome/chrome-boot.js'), 'utf8');
+const shell = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/shell-state.js'), 'utf8');
+const canvas = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/canvas-view.js'), 'utf8');
+const board = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/diagram.js'), 'utf8');
+const boot = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/chrome/chrome-boot.js'), 'utf8');
 
 assert.ok(/function applyRestoredDiagramView/.test(shell), 'restore helper');
 assert.ok(/opts\.restoreView\) \{\s*applyRestoredDiagramView\(\)/.test(board), 'renderDiagram restore uses helper');

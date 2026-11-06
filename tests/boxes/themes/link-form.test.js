@@ -19,8 +19,8 @@ assert.match(render, /markerWidth', '6\.4'/);
 assert.match(render, /stroke-linejoin', 'round'/);
 
 // selection is brand pink, label weight 600 / 11px
-assert.match(read('packages/drawer-app/src/kinds/board-logic.js'), /BOARD_EDGE_SELECTED_COLOR = "#db4c84"/);
-const css = read('packages/drawer-app/css/03-diagram.css');
+assert.match(read('packages/board-app/workspace/src/kinds/board-logic.js'), /BOARD_EDGE_SELECTED_COLOR = "#db4c84"/);
+const css = read('packages/board-app/workspace/css/03-diagram.css');
 // the 600 itself lives in WEIGHT.edgeLabel; the rule only reads it
 assert.strictEqual(require('../../../packages/boxes/themes/type-scale').WEIGHT.edgeLabel, '600');
 assert.match(css, /\.board-edge-label \{[^}]*font-weight: var\(--board-edge-label-weight\)/);

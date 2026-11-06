@@ -6,7 +6,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 
-const app = path.join(__dirname, '../../../packages/drawer-app');
+const app = path.join(__dirname, '../../../packages/board-app/workspace');
 const html = fs.readFileSync(path.join(app, 'index.html'), 'utf8');
 const css = fs.readFileSync(path.join(app, 'css/03-diagram.css'), 'utf8');
 const io = fs.readFileSync(path.join(app, 'src/export/render-io.js'), 'utf8');

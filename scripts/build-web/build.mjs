@@ -12,7 +12,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(here, '../..');
 const webDir = path.join(repo, '.cache/web');
 const webVendor = path.join(webDir, 'vendor');
-const srcHtml = path.join(repo, 'packages/drawer-app/index.html');
+const srcHtml = path.join(repo, 'packages/board-app/workspace/index.html');
 
 function runBuild(rel) {
   const result = spawnSync(process.execPath, [path.join(repo, rel)], { stdio: 'inherit' });
@@ -87,7 +87,7 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
 }
 
 {
-  const templatesSrc = path.join(repo, 'packages/drawer-app/templates');
+  const templatesSrc = path.join(repo, 'packages/board-app/workspace/templates');
   const templatesOut = path.join(webDir, 'templates');
   const names = readdirSync(templatesSrc).sort();
   if (names.length !== 14) throw new Error('expected 14 templates, got ' + names.length);

@@ -1,0 +1,107 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+const __dirname = require('path').dirname(fileURLToPath(import.meta.url));
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const Style = require('../../../packages/board-app/workspace/src/core/style-line.js').default;
+global.DrawerStyleLine = Style;
+const Meta = require('../../../packages/board-app/workspace/src/core/document-meta.js').default;
+
+function token(id, version) {
+  return Buffer.from(JSON.stringify({ id: id, version: version }), 'utf8').toString('base64');
+}
+
+{
+  const raw = Meta.joinDocument({ id: 'b_0fc10001', version: 3 }, 'board "A"\n');
+  assert.strictEqual(raw.split('\n')[0], 'meta ' + token('b_0fc10001', 3));
+  assert.ok(!raw.split('\n')[0].includes('{'), raw);
+  const doc = Meta.splitDocument(raw);
+  assert.deepStrictEqual(doc.meta, { id: 'b_0fc10001', version: 3 });
+  assert.strictEqual(doc.body, 'board "A"\n');
+}
+
+{
+  const doc = Meta.splitDocument('meta {"id":"b_0fc10001","version":3}\nboard "A"\n');
+  assert.deepStrictEqual(doc.meta, { id: 'b_0fc10001', version: 3 });
+  assert.strictEqual(doc.body, 'board "A"\n');
+}
+
+{
+  const stacked = 'meta {"id":"b_22bc0e55","version":1}\nmeta ' + token('b_22bc0e55', 152) + '\nboard "A"\n';
+  const doc = Meta.splitDocument(stacked);
+  assert.deepStrictEqual(doc.meta, { id: 'b_22bc0e55', version: 152 });
+  assert.strictEqual(doc.body, 'board "A"\n');
+}
+
+{
+  assert.throws(() => Meta.splitDocument('board "A"\n'), /document meta required/);
+  assert.throws(() => Meta.splitDocument('meta not-valid-base64!!!\nboard "A"\n'), /document meta required/);
+}
+
+{
+  const blank = Meta.blankHashBoardSource("Untitled");
+  assert.strictEqual(blank, 'boxes "Untitled"\n');
+  assert.strictEqual(Meta.stripDocumentMeta('meta {"id":"b_0fc10001","version":3}\nboard "A"\n'), 'board "A"\n');
+  assert.strictEqual(
+    Meta.stripDocumentMeta('%% meta {"id":"m_51c67540","version":1}\nflowchart TD\n  A-->B\n'),
+    'flowchart TD\n  A-->B\n'
+  );
+}
+
+{
+  const Template = require('../../../packages/board-app/workspace/src/core/kind-template.js').default;
+  const titled = (name) => Template.applyUntitledTitle(
+    fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/templates', name), 'utf8')
+  );
+  assert.strictEqual(Style.bodyKind(titled('flowchart.mmd')), 'flowchart');
+  assert.strictEqual(Style.bodyKind(titled('mindmap.mmd')), 'mindmap');
+  assert.strictEqual(Style.bodyKind(titled('sequenceDiagram.mmd')), 'sequence');
+  assert.strictEqual(Style.bodyKind(titled('classDiagram.mmd')), 'class');
+  assert.strictEqual(Style.bodyKind(titled('stateDiagram.mmd')), 'state');
+  assert.strictEqual(Style.bodyKind(titled('erDiagram.mmd')), 'er');
+  assert.strictEqual(Style.bodyKind(titled('requirement.mmd')), 'requirement');
+  assert.strictEqual(Style.bodyKind(titled('C4Context.mmd')), 'c4');
+  assert.strictEqual(Style.bodyKind(titled('eventmodeling.mmd')), 'eventmodeling');
+  assert.strictEqual(Style.bodyKind(titled('usecase-beta.mmd')), 'usecase');
+  assert.strictEqual(Style.bodyKind(titled('railroad-beta.mmd')), 'railroad');
+  assert.strictEqual(Meta.diagramTitleFromBody(titled('flowchart.mmd')), 'Untitled');
+}
+
+{
+  const body = 'classDiagram\n  class Service\n';
+  const titled = Meta.updateMermaidTitle(body, 'Catalog');
+  assert.strictEqual(titled, '%% title Catalog\nclassDiagram\n  class Service\n');
+  assert.strictEqual(Meta.diagramTitleFromBody(titled), 'Catalog');
+  assert.strictEqual(
+    Meta.diagramTitleFromBody('style eyJ2aWV3cG9ydCI6eyJzY2FsZSI6MX0=\nsketch "拖动找不到页签"\ncontent e30=\n'),
+    '拖动找不到页签',
+    'sketch title after a style line'
+  );
+  assert.strictEqual(Meta.diagramTitleFromBody('sketch ""\ncontent e30=\n'), '', 'empty sketch quotes stay empty');
+  assert.strictEqual(Meta.diagramTitleFromBody('boxes "盒子"\n'), '盒子', 'boxes title still wins');
+  assert.strictEqual(Meta.updateMermaidTitle(titled, ''), body);
+}
+
+{
+  assert.strictEqual(Style.bodyKind('C4Container\n  Person(user, "User", "Uses")\n'), 'c4');
+  assert.strictEqual(Style.bodyKind('railroad-ebnf-beta\nrule = "hello";\n'), 'railroad');
+}
+
+{
+  const board = fs.readFileSync(path.join(__dirname, '../../../skills/boxes/SKILL.md'), 'utf8');
+  const vocab = fs.readFileSync(path.join(__dirname, '../../../packages/boxes/skill-assets/vocab.md'), 'utf8');
+  assert.ok(/Mint without style/.test(board), 'board SKILL mints without stash');
+  assert.ok(/leave those\s+lines unchanged/.test(board), 'board SKILL leaves stash on update');
+  assert.ok(/style <base64>/.test(vocab), 'vocab names style as stash');
+  assert.ok(/leftover `meta <base64>`/.test(vocab), 'vocab treats leftover meta as non-identity');
+  assert.ok(/never writes it back/.test(vocab), 'vocab says leftover meta is not rewritten');
+  assert.ok(!/\{\"id\"/.test(vocab), 'vocab hides meta JSON');
+  const shell = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/state/shell-state.js'), 'utf8');
+  const boardJs = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/board.js'), 'utf8');
+  const diagram = fs.readFileSync(path.join(__dirname, '../../../packages/board-app/workspace/src/kinds/diagram.js'), 'utf8');
+  assert.ok(!/joinDocument/.test(shell + boardJs + diagram), 'drawer production does not join envelope');
+}
+
+console.log('ok document-meta');

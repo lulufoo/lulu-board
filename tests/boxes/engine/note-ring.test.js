@@ -48,8 +48,8 @@ assert.strictEqual(SELECT_WIDTH, ring.width, 'selected width is the shared ring 
 
 // ---- constants stay in step with the CSS they mirror ----
 {
-  const diagram = read('packages/drawer-app/css/03-diagram.css');
-  const form = read('packages/drawer-app/css/04-board-form.css');
+  const diagram = read('packages/board-app/workspace/css/03-diagram.css');
+  const form = read('packages/board-app/workspace/css/04-board-form.css');
   const fold = /board-item-note-sheet \{[^}]*clip-path:\s*polygon\(0 0, calc\(100% - (\d+)px\) 0, 100% (\d+)px/.exec(diagram);
   assert.ok(fold, 'note sheet has the dog-ear clip-path');
   assert.strictEqual(Number(fold[1]), NOTE_FOLD, 'dog-ear width');
@@ -66,7 +66,7 @@ assert.strictEqual(SELECT_WIDTH, ring.width, 'selected width is the shared ring 
 
 // ---- CSS: a note swaps its rectangular outline for the ring paths ----
 {
-  const diagram = read('packages/drawer-app/css/03-diagram.css');
+  const diagram = read('packages/board-app/workspace/css/03-diagram.css');
   assert.match(diagram, /\.board-item-note\.canvas-selected,\s*\.board-render \.board-item-note\.board-selection \{ outline: none !important; \}/, 'note drops the rectangular outline');
   assert.match(diagram, /\.board-item-note-ring path \{ fill: none; visibility: hidden; \}/, 'rings are hidden by default');
   assert.match(diagram, /\.board-item-note\.canvas-selected \.board-item-note-ring-select/, 'selected ring is shown on .canvas-selected');
@@ -77,8 +77,8 @@ assert.strictEqual(SELECT_WIDTH, ring.width, 'selected width is the shared ring 
 
 // ---- CSS: layout corners match the chip corner; the ring tokens are untouched ----
 {
-  const diagram = read('packages/drawer-app/css/03-diagram.css');
-  const form = read('packages/drawer-app/css/04-board-form.css');
+  const diagram = read('packages/board-app/workspace/css/03-diagram.css');
+  const form = read('packages/board-app/workspace/css/04-board-form.css');
   assert.match(diagram, /\.board-render \.board-layout \{[^}]*border-radius:\s*var\(--bf-radius-chip, 8px\);/, 'layout radius follows the chip radius');
   assert.match(form, /--bf-radius-chip:\s*8px/, 'chip radius');
 }
