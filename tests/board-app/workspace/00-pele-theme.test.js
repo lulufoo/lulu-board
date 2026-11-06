@@ -65,7 +65,7 @@ const boardJs = fs.readFileSync(path.join(root, 'packages/board-app/workspace/sr
 const diagramJs = fs.readFileSync(path.join(root, 'packages/board-app/workspace/src/kinds/diagram.js'), 'utf8');
 assert.match(chrome, /applyPeleThemeVars/, 'host maps Board packs onto Pele');
 assert.match(boardJs, /persistMermaidStyle/, 'flowchart writes %% style');
-assert.doesNotMatch(boardJs, /MermaidFlowchartThemes/, 'mermaid-ext does not own theme packs');
+assert.doesNotMatch(boardJs, /MermaidFlowchartThemes/, 'mermaid does not own theme packs');
 assert.doesNotMatch(diagramJs, /svg\.style\.width/, 'fixSvgIntrinsic must not rewrite SVG style');
 assert.match(diagramJs, /var PELE_VIEW_SCALE = 1\.5/, 'Pele 100% shows 150% size');
 assert.match(diagramJs, /DrawerPeleTheme\.polishBoxes/, 'Pele paint bakes the shared box radius');

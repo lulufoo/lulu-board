@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { getDirection, updateDirection, normalizeDirection } from '../../packages/mermaid-ext/flowchart/source.js';
-import { addSubgraph, getSubgraph, updateSubgraphDirection } from '../../packages/mermaid-ext/flowchart/subgraph.js';
+import { getDirection, updateDirection, normalizeDirection } from '../../packages/mermaid/flowchart/source.js';
+import { addSubgraph, getSubgraph, updateSubgraphDirection } from '../../packages/mermaid/flowchart/subgraph.js';
 
 assert.equal(normalizeDirection('lr'), 'LR');
 assert.equal(normalizeDirection('RL'), 'LR');

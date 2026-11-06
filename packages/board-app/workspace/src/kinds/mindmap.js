@@ -1,5 +1,5 @@
 /* Mindmap toolbar + Properties. Own field IDs; do not reuse Board / flowchart props. */
-import MindmapEdit from '../../../../mermaid-ext/mindmap/index.js';
+import MindmapEdit from '../../../../mermaid/mindmap/index.js';
 import { emit } from '../core/hooks.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
 import DrawerStyleLine from '../core/style-line.js';

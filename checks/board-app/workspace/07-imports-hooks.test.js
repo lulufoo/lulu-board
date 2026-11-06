@@ -319,17 +319,17 @@ function loadSrc(files) {
 // --- fixtures: each must fail one rule ---
 function fixtureUnusedImport() {
   return {
-    'packages/mermaid-ext/fixture-unused.js': 'import { missingName } from "./kinds.js";\nexport function x() { return 1; }\n',
+    'packages/mermaid/fixture-unused.js': 'import { missingName } from "./kinds.js";\nexport function x() { return 1; }\n',
   };
 }
 function fixturePropertyOnlyImport() {
   return {
-    'packages/mermaid-ext/fixture-property.js': 'import { call } from "../board-app/workspace/src/core/hooks.js";\nexport function x(list) { return Array.prototype.map.call(list, String); }\n',
+    'packages/mermaid/fixture-property.js': 'import { call } from "../board-app/workspace/src/core/hooks.js";\nexport function x(list) { return Array.prototype.map.call(list, String); }\n',
   };
 }
 function fixtureSpreadUse() {
   return {
-    'packages/mermaid-ext/fixture-spread.js': 'import { rest } from "./kinds.js";\nexport const x = [...rest];\n',
+    'packages/mermaid/fixture-spread.js': 'import { rest } from "./kinds.js";\nexport const x = [...rest];\n',
   };
 }
 function fixtureUnusedRegister() {

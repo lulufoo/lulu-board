@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
-import { parseMindmap } from '../../packages/mermaid-ext/mindmap/parse.js';
-import { addChild, deleteTopic, updateTopicLabel, getTopic } from '../../packages/mermaid-ext/mindmap/edit.js';
-import { getTitle, updateTitle } from '../../packages/mermaid-ext/mindmap/source.js';
-import { selectionFromDom } from '../../packages/mermaid-ext/mindmap/selection.js';
+import { parseMindmap } from '../../packages/mermaid/mindmap/parse.js';
+import { addChild, deleteTopic, updateTopicLabel, getTopic } from '../../packages/mermaid/mindmap/edit.js';
+import { getTitle, updateTitle } from '../../packages/mermaid/mindmap/source.js';
+import { selectionFromDom } from '../../packages/mermaid/mindmap/selection.js';
 
 const source = `mindmap
   Root

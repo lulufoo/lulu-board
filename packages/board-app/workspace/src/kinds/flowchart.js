@@ -1,5 +1,5 @@
 /* Flowchart toolbar + Properties. Own field IDs; do not reuse Board props. */
-import FlowchartEdit from '../../../../mermaid-ext/flowchart/index.js';
+import FlowchartEdit from '../../../../mermaid/flowchart/index.js';
 import { emit } from '../core/hooks.js';
 import { CanvasInteraction } from '../state/canvas-interaction.js';
 import FlowchartShapes from './flowchart-shapes.js';

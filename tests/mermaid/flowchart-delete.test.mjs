@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { deleteNode, getNode } from '../../packages/mermaid-ext/flowchart/node.js';
-import { deleteLink, getLink } from '../../packages/mermaid-ext/flowchart/link.js';
-import { collectIds } from '../../packages/mermaid-ext/flowchart/source.js';
+import { deleteNode, getNode } from '../../packages/mermaid/flowchart/node.js';
+import { deleteLink, getLink } from '../../packages/mermaid/flowchart/link.js';
+import { collectIds } from '../../packages/mermaid/flowchart/source.js';
 
 const source = `flowchart LR
   Start(["本轮只设计 /mermaid"]) --> Q{"图上点选编辑?"}

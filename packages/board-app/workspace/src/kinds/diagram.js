@@ -1,6 +1,6 @@
 /* Opened-document host: kind dispatch, render, hash save. */
 import BoxesRender from '../../../../boxes/index.js';
-import MindmapEdit from '../../../../mermaid-ext/mindmap/index.js';
+import MindmapEdit from '../../../../mermaid/mindmap/index.js';
 import { register, emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
 import { applyGround } from '../core/workspace-ground.js';

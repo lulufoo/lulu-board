@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { parseEdgeDomId, selectionFromDom } from '../../packages/mermaid-ext/flowchart/selection.js';
+import { parseEdgeDomId, selectionFromDom } from '../../packages/mermaid/flowchart/selection.js';
 
 const source = `flowchart TD
   A[Start] --> B{Fork?}

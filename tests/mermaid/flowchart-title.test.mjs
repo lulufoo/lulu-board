@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getTitle, updateTitle, updateDirection } from '../../packages/mermaid-ext/flowchart/source.js';
+import { getTitle, updateTitle, updateDirection } from '../../packages/mermaid/flowchart/source.js';
 
 assert.equal(getTitle('%% title Demo\nflowchart TD\n  A-->B\n'), 'Demo');
 assert.equal(getTitle('%% title: "Ship"\nflowchart TD\n  A-->B\n'), 'Ship');

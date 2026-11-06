@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { addNode, getNode, deleteNode } from '../../packages/mermaid-ext/flowchart/node.js';
-import { addLink, getLink, deleteLink } from '../../packages/mermaid-ext/flowchart/link.js';
-import { addSubgraph, getSubgraph, deleteSubgraph } from '../../packages/mermaid-ext/flowchart/subgraph.js';
+import { addNode, getNode, deleteNode } from '../../packages/mermaid/flowchart/node.js';
+import { addLink, getLink, deleteLink } from '../../packages/mermaid/flowchart/link.js';
+import { addSubgraph, getSubgraph, deleteSubgraph } from '../../packages/mermaid/flowchart/subgraph.js';
 
 const source = `flowchart TD
   A[Start]

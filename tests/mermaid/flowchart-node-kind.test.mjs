@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getNode, updateNodeKind } from '../../packages/mermaid-ext/flowchart/node.js';
+import { getNode, updateNodeKind } from '../../packages/mermaid/flowchart/node.js';
 
 const inline = `flowchart LR
   Start([本轮只设计 /mermaid]) --> Q{图上点选编辑?}

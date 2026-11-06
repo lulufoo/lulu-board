@@ -1,6 +1,6 @@
 /* drawer-app shell state. Live camera and chrome refs. */
 import BoxesRender from '../../../../boxes/index.js';
-import FlowchartEdit from '../../../../mermaid-ext/flowchart/index.js';
+import FlowchartEdit from '../../../../mermaid/flowchart/index.js';
 import { emit, call } from '../core/hooks.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
 import DrawerStyleLine from '../core/style-line.js';

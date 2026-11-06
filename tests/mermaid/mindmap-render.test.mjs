@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { get } from '../../packages/board-themes/index.js';
-import { render, normalizeLayout } from '../../packages/mermaid-ext/mindmap/render.js';
-import { normalizeTheme, themePalette } from '../../packages/mermaid-ext/mindmap/themes.js';
+import { render, normalizeLayout } from '../../packages/mermaid/mindmap/render.js';
+import { normalizeTheme, themePalette } from '../../packages/mermaid/mindmap/themes.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '../..');

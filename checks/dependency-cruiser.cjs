@@ -23,11 +23,11 @@ module.exports = {
       to: { path: "^packages/", pathNot: "^packages/(boxes|board-core|board-themes)/" },
     },
     {
-      name: "mermaid-ext-only-themes",
-      comment: "mermaid-ext imports only board-themes.",
+      name: "mermaid-only-themes",
+      comment: "mermaid imports only board-themes.",
       severity: "error",
-      from: { path: "^packages/mermaid-ext/" },
-      to: { path: "^packages/", pathNot: "^packages/(mermaid-ext|board-themes)/" },
+      from: { path: "^packages/mermaid/" },
+      to: { path: "^packages/", pathNot: "^packages/(mermaid|board-themes)/" },
     },
     {
       name: "sandbox-app-is-leaf",
@@ -90,7 +90,7 @@ module.exports = {
       comment: "shared kernel does not import L1/L2/L3.",
       severity: "error",
       from: { path: "^packages/(board-themes|board-core)/" },
-      to: { path: "^packages/(board-app|boxes|mermaid-ext|board-mcp|board-api)/" },
+      to: { path: "^packages/(board-app|boxes|mermaid|board-mcp|board-api)/" },
     },
     {
       name: "drawer-core-no-upward",
