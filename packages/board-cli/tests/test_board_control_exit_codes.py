@@ -72,8 +72,17 @@ class ExitCodeTest(HomeCase):
 
     def test_help_documents_exit_4_and_the_refresh_rules(self) -> None:
         _, out, _ = run_cli("--help")
-        for text in ("exit 4", '{"login_required": true}', "60 seconds", "credentials.lock", "401"):
-            self.assertIn(text, out)
+        flat = " ".join(out.split())
+        for text in ("exit 4", '{"login_required": true, "resource_metadata": "<address>"}',
+                     'then "run login --resource-metadata-url <address>"',
+                     "60 seconds", "credentials.lock", "401", "token endpoint", "run login again"):
+            self.assertIn(text, flat)
+
+    def test_help_describes_the_mcp_server_and_no_other_cloud_address(self) -> None:
+        _, out, _ = run_cli("--help")
+        self.assertIn("https://mcp.luluboard.app/mcp", out)
+        for text in ("Lulu Board API", "api.luluboard.app", "auth.luluboard.app"):
+            self.assertNotIn(text, out)
 
     def test_the_local_commands_never_give_exit_4(self) -> None:
         for argv in (("whoami",), ("--version",)):

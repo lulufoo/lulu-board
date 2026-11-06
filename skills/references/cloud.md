@@ -11,8 +11,9 @@ the mermaid skill. Every `--out` is `<dir>`.
 
 ## Login
 
-1. A command that exits 4 needs a login: run `$BOARD_CLI login`, then repeat that command once.
-2. When `login` fails or times out, use short-link mode and tell the user why.
+1. A command that exits 4 needs a login. Its stdout JSON holds `resource_metadata`.
+2. Run `$BOARD_CLI login --resource-metadata-url <resource_metadata>`: the user approves in the browser. Then repeat that command once.
+3. When `login` fails or times out, use short-link mode and tell the user why.
 
 ## New
 

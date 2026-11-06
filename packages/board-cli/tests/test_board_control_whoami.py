@@ -115,6 +115,10 @@ class FailureTest(WhoamiCase):
         for word in ("whoami", "logged_in", "refresh token", "~/.config/lulu-board/credentials.json", "0600"):
             self.assertIn(word, out)
 
+    def test_help_says_whoami_is_not_a_step_before_login(self) -> None:
+        _, out, _ = run_cli("--help")
+        self.assertIn("it is not a step before login", " ".join(out.split()))
+
 
 class ProcessTest(WhoamiCase):
     def test_a_process_reads_the_credentials_under_its_own_home(self) -> None:

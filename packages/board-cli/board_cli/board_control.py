@@ -16,6 +16,8 @@ only.
       it holds none. A stored refresh token counts as logged in even after the
       access token has expired; a file that holds only the client_id does not.
       Both results exit 0. A damaged credential file is an ordinary error.
+      It reads the file and asks no server, so it is not a step before login or
+      before a cloud command: a command that needs a login says so itself (exit 4).
 
   login --resource-metadata-url URL
       Approve the CLI on the consent page in the browser, then store the tokens.
@@ -47,7 +49,7 @@ only.
 
   get-group --diagram-id ID
       Login needed. The group the diagram belongs to, and its members in display
-      order. The API wants a diagram id; a group id does not work.
+      order. The server wants a diagram id; a group id does not work.
       stdout: {"group_id", "members": [{"diagram_id", "title", "sort_order", "url"}]}
       A member whose sort_order is missing comes last, with sort_order 9007199254740991.
 
@@ -127,14 +129,18 @@ Credentials
 
 Cloud commands
   get-diagram, get-group, search-diagrams, create-diagram, and save-diagram call
-  the Lulu Board API with the stored login. An access token that has expired, or ends within 60 seconds, is
-  refreshed before the call, and the new refresh token is stored at once. A 401
-  from the server causes one refresh and one retry. Processes refresh one at a
-  time (a lock on
-  credentials.lock beside the credential file); a process that waited reuses the
-  token the other one stored. A refresh the server refuses keeps the stored tokens.
-  A login is needed when there is no credential file or token, the refresh token
-  is missing or refused, or the retry gets 401 again: that is exit 4.
+  the tools of the Lulu Board MCP server (https://mcp.luluboard.app/mcp, built
+  in) with the stored login. An access token that has expired, or ends within 60
+  seconds, is refreshed before the call, and the new refresh token is stored at
+  once. The refresh goes to the token endpoint that login stored. A 401 from the
+  server causes one refresh and one retry. Processes refresh one at a time (a
+  lock on credentials.lock beside the credential file); a process that waited
+  reuses the token the other one stored. A refresh the server refuses keeps the
+  stored tokens.
+  A login is needed when there is no credential file or token, the refresh token,
+  client_id, or token endpoint is missing, the refresh is refused, or the retry
+  gets 401 again: that is exit 4. A credential file written by an earlier version
+  has no token endpoint, so its first refresh is exit 4: run login again.
   A refresh that fails for another reason (no network, a 5xx) is an ordinary error.
 
 Output
@@ -144,8 +150,13 @@ Output
   exit 2  command-line usage error: usage on stderr, stdout empty
   exit 3  version conflict, from save-diagram only: stdout {"conflict": true,
           "diagram_id", "latest_version"}, one line on stderr. Nothing was saved.
-  exit 4  login required: stdout {"login_required": true}, one line on stderr
-          telling the user to run login. Only commands that call the API give it.
+  exit 4  login required: stdout {"login_required": true, "resource_metadata":
+          "<address>"}, one line on stderr: the reason, then "run login
+          --resource-metadata-url <address>". Only commands that call the MCP
+          server give it. The address is the one in the server's 401 answer;
+          with no 401 at hand (no token, a login that cannot be refreshed) one
+          request without a token asks the server for it. When the server names
+          no address, that is an ordinary error (exit 1).
 """
 from __future__ import annotations
 
