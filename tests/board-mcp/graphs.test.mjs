@@ -351,7 +351,7 @@ const meta = metadataDocument({
   PUBLIC_ORIGIN: 'https://mcp.luluboard.app',
 });
 assert.equal(meta.resource, 'https://mcp.luluboard.app/mcp');
-assert.deepEqual(meta.authorization_servers, ['https://xjwlxxuafhsfzksxxmtu.supabase.co/auth/v1']);
+assert.deepEqual(meta.authorization_servers, ['https://mcp.luluboard.app/auth/v1'], 'clients are sent to this Worker, not to Supabase');
 const viaAlias = metadataDocument(
   {
     SUPABASE_URL: 'https://xjwlxxuafhsfzksxxmtu.supabase.co',
@@ -360,6 +360,13 @@ const viaAlias = metadataDocument(
   new Request('https://example.workers.dev/mcp')
 );
 assert.equal(viaAlias.resource, 'https://mcp.luluboard.app/mcp');
+assert.deepEqual(viaAlias.authorization_servers, ['https://mcp.luluboard.app/auth/v1'], 'an alias host still names the public origin');
+const withoutOrigin = metadataDocument(
+  { SUPABASE_URL: 'https://xjwlxxuafhsfzksxxmtu.supabase.co' },
+  new Request('https://preview.example.workers.dev/mcp')
+);
+assert.equal(withoutOrigin.resource, 'https://preview.example.workers.dev/mcp');
+assert.deepEqual(withoutOrigin.authorization_servers, ['https://preview.example.workers.dev/auth/v1'], 'without PUBLIC_ORIGIN the request origin is used for both');
 const denied = unauthorized(
   { PUBLIC_ORIGIN: 'https://mcp.luluboard.app' },
   new Request('https://mcp.luluboard.app/mcp')

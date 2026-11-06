@@ -9,6 +9,7 @@ const env = {
 function token() {
   const body = Buffer.from(JSON.stringify({
     iss: 'https://example.supabase.co/auth/v1',
+    channel: 'web',
     exp: Math.floor(Date.now() / 1000) + 3600,
   })).toString('base64url');
   return 'header.' + body + '.sig';

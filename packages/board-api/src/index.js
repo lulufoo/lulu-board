@@ -8,6 +8,7 @@ import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
 import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
 import { readShortLink } from './short-link.js';
+import { channelVerdict } from './channels.js';
 import { verifyAccessToken } from './jwt.js';
 
 const CORS = {
@@ -62,6 +63,23 @@ function bearer(request) {
   return header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
 }
 
+// The one place a request's token is checked, and where its channel decides whether the route is open to it.
+// Returns { token } to go on, or { response } to send back.
+async function authenticate(request, env) {
+  const token = bearer(request);
+  if (!token) return { response: json({ error: 'unauthorized' }, 401) };
+  let identity;
+  try {
+    identity = await verifyAccessToken(env, token);
+  } catch (_error) {
+    return { response: json({ error: 'unauthorized' }, 401) };
+  }
+  const verdict = channelVerdict(identity.channel, request.method, new URL(request.url).pathname);
+  if (verdict === 'unauthorized') return { response: json({ error: 'unauthorized' }, 401) };
+  if (verdict === 'forbidden') return { response: json({ error: 'forbidden' }, 403) };
+  return { token };
+}
+
 async function publicCall(request, env, run) {
   let input;
   try {
@@ -81,13 +99,9 @@ async function publicCall(request, env, run) {
 }
 
 async function authedCall(request, env, run) {
-  const token = bearer(request);
-  if (!token) return json({ error: 'unauthorized' }, 401);
-  try {
-    await verifyAccessToken(env, token);
-  } catch (_error) {
-    return json({ error: 'unauthorized' }, 401);
-  }
+  const auth = await authenticate(request, env);
+  if (auth.response) return auth.response;
+  const token = auth.token;
   let input = {};
   if (request.method !== 'GET') {
     try {
@@ -108,13 +122,9 @@ async function authedCall(request, env, run) {
 }
 
 async function shareSettingResponse(request, env, action) {
-  const token = bearer(request);
-  if (!token) return json({ error: 'unauthorized' }, 401);
-  try {
-    await verifyAccessToken(env, token);
-  } catch (_error) {
-    return json({ error: 'unauthorized' }, 401);
-  }
+  const auth = await authenticate(request, env);
+  if (auth.response) return auth.response;
+  const token = auth.token;
   let input;
   try {
     input = await request.json();
@@ -133,13 +143,9 @@ async function shareSettingResponse(request, env, action) {
 }
 
 async function shareResponse(request, env) {
-  const token = bearer(request);
-  if (!token) return json({ error: 'unauthorized' }, 401);
-  try {
-    await verifyAccessToken(env, token);
-  } catch (_error) {
-    return json({ error: 'unauthorized' }, 401);
-  }
+  const auth = await authenticate(request, env);
+  if (auth.response) return auth.response;
+  const token = auth.token;
   let input;
   try {
     input = await request.json();
@@ -158,13 +164,9 @@ async function shareResponse(request, env) {
 }
 
 async function updateResponse(request, env) {
-  const token = bearer(request);
-  if (!token) return json({ error: 'unauthorized' }, 401);
-  try {
-    await verifyAccessToken(env, token);
-  } catch (_error) {
-    return json({ error: 'unauthorized' }, 401);
-  }
+  const auth = await authenticate(request, env);
+  if (auth.response) return auth.response;
+  const token = auth.token;
   let input;
   try {
     input = await request.json();
@@ -183,13 +185,9 @@ async function updateResponse(request, env) {
 }
 
 async function createResponse(request, env) {
-  const token = bearer(request);
-  if (!token) return json({ error: 'unauthorized' }, 401);
-  try {
-    await verifyAccessToken(env, token);
-  } catch (_error) {
-    return json({ error: 'unauthorized' }, 401);
-  }
+  const auth = await authenticate(request, env);
+  if (auth.response) return auth.response;
+  const token = auth.token;
   let input;
   try {
     input = await request.json();
