@@ -7,6 +7,7 @@ import { isAuthProxyPath, proxyAuthRequest } from "./auth-proxy.js";
 import { verifyAccessToken } from "./jwt.js";
 import { json, metadataDocument, unauthorized } from "./meta.js";
 import { isRegisterPath, proxyRegisterRequest } from "./register-proxy.js";
+import { isServerMetadataPath, serverMetadataResponse } from "./server-metadata.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
 import { GRAPH_ID_RE } from "../../board-core/index.js";
 
@@ -143,6 +144,7 @@ export default {
     if (request.method === "GET" && isMetaPath(url.pathname)) {
       return json(metadataDocument(env, request));
     }
+    if (isServerMetadataPath(url.pathname)) return serverMetadataResponse(request, env);
     if ((request.method === "GET" || request.method === "HEAD") && isBrandPath(url.pathname)) {
       const icon = brandResponse(url.pathname);
       if (request.method === "HEAD") return new Response(null, { status: icon.status, headers: icon.headers });

@@ -1,19 +1,29 @@
 /* board-mcp/meta.js — RFC 9728 protected-resource metadata */
 
-function resourceUrl(env, request) {
+function publicOrigin(env, request) {
   var origin = String(env.PUBLIC_ORIGIN || "").replace(/\/$/, "");
   if (!origin && request) origin = new URL(request.url).origin;
-  return origin + "/mcp";
+  return origin;
 }
 
-function authorizationServer(env) {
+function resourceUrl(env, request) {
+  return publicOrigin(env, request) + "/mcp";
+}
+
+// The authorization server clients are told to use: this Worker's /auth/v1, which forwards to Supabase Auth.
+export function authorizationServer(env, request) {
+  return publicOrigin(env, request) + "/auth/v1";
+}
+
+// The issuer Supabase Auth puts in its own metadata and in every token it signs.
+export function upstreamIssuer(env) {
   return String(env.SUPABASE_URL || "").replace(/\/$/, "") + "/auth/v1";
 }
 
 export function metadataDocument(env, request) {
   return {
     resource: resourceUrl(env, request),
-    authorization_servers: [authorizationServer(env)],
+    authorization_servers: [authorizationServer(env, request)],
     bearer_methods_supported: ["header"],
   };
 }
