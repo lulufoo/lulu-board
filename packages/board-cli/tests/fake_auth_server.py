@@ -2,8 +2,9 @@
 
 The server speaks the endpoints login uses, over real HTTP on a loopback port.
 It answers like the real one does where that was checked: an unknown client_id
-and a redirect address that was not registered are both 400. The test runner
-skips this file.
+and a redirect address that was not registered are both 400, and a client the
+user has already approved is approved again without a click (consent_outcome).
+The test runner skips this file.
 """
 from __future__ import annotations
 
@@ -69,6 +70,7 @@ class FakeAuthServer:
         self.requests: list[tuple] = []      # (method, path, user agent)
         self.authorize_queries: list[dict] = []
         self.codes: dict[str, dict] = {}     # issued code -> what it was issued for
+        self.consented: set[str] = set()     # clients the user has approved once
         self.token_forms: list[dict] = []
         self.access_claims = {"email": "me@example.com", "sub": "user-123", "exp": FUTURE}
         self.refuse_registration = False
@@ -130,10 +132,22 @@ class FakeAuthServer:
         """What the consent page does on approval: issue a code bound to this request."""
         query = {name: values[0] for name, values in urllib.parse.parse_qs(urllib.parse.urlparse(url).query).items()}
         self.issued += 1
+        self.consented.add(query["client_id"])
         code = f"code-{self.issued}"
         self.codes[code] = {"client_id": query["client_id"], "redirect_uri": query["redirect_uri"],
                             "challenge": query["code_challenge"]}
         return code
+
+    def consent_outcome(self, url: str) -> str:
+        """What the server does when the consent page reads the authorization details.
+
+        "auto_approved" for a client the user has approved before: the server has already
+        approved this request, so the page's own approval is refused with "authorization
+        request is no longer pending" and the browser never returns to the callback.
+        "pending" otherwise: the user's click decides.
+        """
+        query = {name: values[0] for name, values in urllib.parse.parse_qs(urllib.parse.urlparse(url).query).items()}
+        return "auto_approved" if query.get("client_id") in self.consented else "pending"
 
     def reply_refresh(self, form: dict) -> tuple:
         """Rotate like the real server: the old refresh token dies, a new one is issued."""
@@ -179,7 +193,7 @@ class FakeBrowser:
 
     def __init__(self, fake: FakeAuthServer, outcome: str = "approve") -> None:
         self.fake = fake
-        self.outcome = outcome   # approve | deny | stray_then_approve | nothing
+        self.outcome = outcome   # approve | deny | stray_then_approve | nothing | consent_page
         self.opened: list[str] = []
         self.threads: list[threading.Thread] = []
 
@@ -194,6 +208,8 @@ class FakeBrowser:
     def visit_callback(self, url: str) -> None:
         query = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
         redirect, state = query["redirect_uri"][0], query["state"][0]
+        if self.outcome == "consent_page" and self.fake.consent_outcome(url) == "auto_approved":
+            return  # the page's approval is refused, so the browser never reaches the callback
         if self.outcome == "deny":
             self.get(redirect, {"error": "access_denied", "error_description": "the user said no", "state": state})
             return
