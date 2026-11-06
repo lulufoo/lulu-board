@@ -7,9 +7,9 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '../../..');
-const html = fs.readFileSync(path.join(root, 'packages/site/oauth/consent/index.html'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'packages/site/oauth/consent/consent.css'), 'utf8');
-const js = fs.readFileSync(path.join(root, 'packages/site/oauth/consent/consent.js'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'packages/board-app/oauth/consent/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'packages/board-app/oauth/consent/consent.css'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'packages/board-app/oauth/consent/consent.js'), 'utf8');
 const siteBuild = fs.readFileSync(path.join(root, 'scripts/build-site/build.mjs'), 'utf8');
 const siteWorker = fs.readFileSync(path.join(root, 'wrangler.toml'), 'utf8');
 const mcpWorker = fs.readFileSync(path.join(root, 'packages/board-mcp/wrangler.toml'), 'utf8');

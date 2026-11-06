@@ -13,7 +13,7 @@ assert.ok(/href="\.\/favicon\.ico\?v=2"/.test(html), 'page links favicon.ico');
 assert.ok(/href="\.\/favicon-32\.png\?v=2"/.test(html), 'page links favicon png');
 assert.ok(/href="\.\/favicon\.svg\?v=2"/.test(html), 'page links favicon svg');
 const pages = ['landing/index.html', 'oauth/consent/index.html'].map((rel) => (
-  fs.readFileSync(path.join(__dirname, '../../../packages/site', rel), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../../../packages/board-app', rel), 'utf8')
 ));
 [html].concat(pages).forEach((page) => {
   const versions = (page.match(/rel="icon" href="[^"]*\?v=(\d+)"/g) || []).map((s) => s.match(/v=(\d+)/)[1]);

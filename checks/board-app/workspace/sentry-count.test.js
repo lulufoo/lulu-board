@@ -10,8 +10,8 @@ const root = path.join(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 
 const html = read('packages/board-app/workspace/index.html');
-const landing = read('packages/site/landing/index.html');
-const landingJs = read('packages/site/landing/landing.js');
+const landing = read('packages/board-app/landing/index.html');
+const landingJs = read('packages/board-app/landing/landing.js');
 const appBuild = read('scripts/build-app/drawer.mjs');
 const webBuild = read('scripts/build-web/build.mjs');
 const helper = read('packages/board-app/workspace/src/core/sentry-count.js');

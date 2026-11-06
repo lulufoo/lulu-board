@@ -10,8 +10,8 @@ const vm = require('vm');
 const root = path.join(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
 const sync = read('packages/board-app/workspace/src/cloud/cloud-sync.js');
-const landingJs = read('packages/site/landing/landing.js');
-const landingHtml = read('packages/site/landing/index.html');
+const landingJs = read('packages/board-app/landing/landing.js');
+const landingHtml = read('packages/board-app/landing/index.html');
 
 // the landing page only writes known intents
 const intents = new Set((landingHtml.match(/data-open-sign-in="[^"]*"/g) || []).map((m) => m.split('"')[1]));

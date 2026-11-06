@@ -76,7 +76,7 @@ module.exports = {
       comment: "shared kernel does not import L1/L2/L3.",
       severity: "error",
       from: { path: "^packages/(board-themes|board-core)/" },
-      to: { path: "^packages/(board-app|boxes|mermaid-ext|board-mcp|board-api|site|brand)/" },
+      to: { path: "^packages/(board-app|boxes|mermaid-ext|board-mcp|board-api|brand)/" },
     },
     {
       name: "drawer-core-no-upward",

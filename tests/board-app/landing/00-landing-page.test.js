@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const Persist = require('../../../packages/board-app/workspace/src/core/hash-persist.js').default;
 
-const landingDir = path.join(__dirname, '../../../packages/site/landing');
+const landingDir = path.join(__dirname, '../../../packages/board-app/landing');
 const BLANK = '#z:eJyrVkrKTVGyUkrKTyxKUYhRCs0rySzJSU2JUYrJU9JRKkstKs7Mz1OyMqwFACtUDgY';
 const WS = '/?ws=1';
 

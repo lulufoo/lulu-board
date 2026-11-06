@@ -1,4 +1,4 @@
-/* drawer-app/oauth/consent — OAuth 2.1 consent for any MCP client (named from its registration) */
+/* board-app/oauth/consent — OAuth 2.1 consent for any MCP client (named from its registration) */
 (function () {
   "use strict";
 

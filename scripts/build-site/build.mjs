@@ -16,7 +16,7 @@ for (const name of ['favicon.svg', 'favicon-32.png', 'favicon.ico']) {
   console.log('ok ' + name);
 }
 
-const consentSrc = path.join(repo, 'packages/site/oauth/consent');
+const consentSrc = path.join(repo, 'packages/board-app/oauth/consent');
 const consentOut = path.join(webDir, 'oauth/consent');
 mkdirSync(consentOut, { recursive: true });
 for (const name of ['index.html', 'consent.css', 'consent.js']) {
@@ -26,7 +26,7 @@ for (const name of ['index.html', 'consent.css', 'consent.js']) {
   console.log('ok .cache/web/oauth/consent/' + name);
 }
 
-const landingSrc = path.join(repo, 'packages/site/landing');
+const landingSrc = path.join(repo, 'packages/board-app/landing');
 const landingOut = path.join(webDir, 'landing');
 mkdirSync(landingOut, { recursive: true });
 mkdirSync(path.join(landingOut, 'fonts'), { recursive: true });

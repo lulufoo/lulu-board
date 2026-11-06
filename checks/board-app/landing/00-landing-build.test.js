@@ -8,7 +8,7 @@ const path = require('path');
 
 const root = path.join(__dirname, '../../..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
-const landingRel = 'packages/site/landing';
+const landingRel = 'packages/board-app/landing';
 
 // what build.mjs ships into .cache/web/landing/
 const build = read('scripts/build-site/build.mjs');

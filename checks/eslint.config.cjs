@@ -34,7 +34,7 @@ module.exports = [
   },
   {
     // Also loaded by Node tests: `typeof module === 'object' && module.exports`.
-    files: ['packages/site/oauth/consent/consent.js'],
+    files: ['packages/board-app/oauth/consent/consent.js'],
     languageOptions: { globals: { module: 'readonly' } },
   },
 ];
