@@ -4,7 +4,10 @@ It follows the real Worker (packages/board-mcp/src/index.js and meta.js). A requ
 /mcp without a Bearer token the fake authorization server issued gets 401 with a
 WWW-Authenticate header that carries resource_metadata, before the body is read. A tool
 answers with its result as one JSON text. The reply to tools/call is JSON or an SSE
-stream; a test switches between them. The test runner skips this file.
+stream; a test switches between them. The SSE stream is framed as the SDK transport
+frames it (event: message, a data line, a blank line) and can carry the frames the SDK
+adds around it: a keepalive comment, a priming event without data, and a notification
+before the reply. The test runner skips this file.
 """
 from __future__ import annotations
 
@@ -16,6 +19,11 @@ from board_cli.auth.token_claims import has_expired, read_claims
 
 METADATA_PATHS = ("/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp")
 REPLY_TYPES = ("application/json", "text/event-stream")
+SSE_NOISE = (
+    ": keepalive\n\n"
+    "id: 0\nretry: 1000\ndata: \n\n"
+    'event: message\ndata: {"jsonrpc": "2.0", "method": "notifications/progress", "params": {"progress": 1}}\n\n'
+)
 PARSE_ERROR = -32700
 METHOD_NOT_FOUND = -32601
 INVALID_PARAMS = -32602
@@ -39,8 +47,9 @@ class McpHandler(BaseHTTPRequestHandler):
 
     def send_reply(self, reply: dict) -> None:
         """The JSON-RPC reply, as one JSON body or as one SSE event."""
-        if self.server.fake.response_format == "sse":
-            event = "event: message\ndata: " + json.dumps(reply) + "\n\n"
+        fake = self.server.fake
+        if fake.response_format == "sse":
+            event = (SSE_NOISE if fake.sse_noise else "") + "event: message\ndata: " + json.dumps(reply) + "\n\n"
             self.send_body(200, "text/event-stream", event.encode())
         else:
             self.send_json(200, reply)
@@ -67,6 +76,11 @@ class McpHandler(BaseHTTPRequestHandler):
             self.send_json(401, {"error": "invalid_token"}, {"WWW-Authenticate": fake.build_challenge()})
         elif not fake.allows_reply_types(self.headers.get("Accept", "")):
             self.send_json(406, {"error": "Not Acceptable: Client must accept both application/json and text/event-stream"})
+        elif not self.headers.get("Content-Type", "").lower().startswith("application/json"):
+            self.send_json(415, {"error": "Unsupported Media Type: Content-Type must be application/json"})
+        elif fake.forced is not None:
+            status, content_type, payload, headers = fake.forced
+            self.send_body(status, content_type, payload, headers)
         else:
             self.send_reply(fake.answer(raw))
 
@@ -76,6 +90,8 @@ class FakeMcpServer:
         self.auth = auth                 # the fake authorization server whose tokens this server accepts
         self.requests: list[dict] = []
         self.response_format = "json"    # "json" or "sse"
+        self.sse_noise = False           # an SSE reply also carries a keepalive, a priming event, and a notification
+        self.forced: tuple | None = None  # (status, content type, body, headers): answers every accepted POST
         self.tools: dict[str, tuple[bool, object]] = {}  # name -> (is_error, result data or error text)
         self.http = ThreadingHTTPServer(("127.0.0.1", 0), McpHandler)
         self.http.fake = self
@@ -100,6 +116,10 @@ class FakeMcpServer:
     def fail_tool(self, name: str, message: str) -> None:
         """tools/call for name returns a tool error (isError) with this text."""
         self.tools[name] = (True, message)
+
+    def force_reply(self, status: int, content_type: str, payload: bytes, headers: dict | None = None) -> None:
+        """Answer every accepted POST with this, as a gateway in front of the server might."""
+        self.forced = (status, content_type, payload, headers)
 
     def list_calls(self, name: str) -> list[dict]:
         """The arguments of every tools/call for name, in order."""
@@ -147,6 +167,7 @@ class FakeMcpServer:
             "authorization": handler.headers.get("Authorization", ""),
             "user_agent": handler.headers.get("User-Agent"), "accept": handler.headers.get("Accept"),
             "content_type": handler.headers.get("Content-Type"), "body": raw, "message": message,
+            "headers": {name.lower(): value for name, value in handler.headers.items()},
         })
 
     def answer(self, raw: bytes) -> dict:
