@@ -4,8 +4,8 @@ import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
 import { getGraph, getGroup, createGraph, saveGraph, searchDiagrams } from "./graphs.js";
 import { isAuthProxyPath, proxyAuthRequest } from "./auth-proxy.js";
-import { verifyAccessToken } from "./jwt.js";
-import { json, metadataDocument, unauthorized } from "./meta.js";
+import { authenticate } from "./entrance.js";
+import { json, metadataDocument } from "./meta.js";
 import { isRegisterPath, proxyRegisterRequest } from "./register-proxy.js";
 import { isServerMetadataPath, serverMetadataResponse } from "./server-metadata.js";
 import { brandResponse, isBrandPath, PUBLIC_WEB_ORIGIN, serverInfo } from "./brand.js";
@@ -153,21 +153,14 @@ export default {
     if (isRegisterPath(url.pathname)) return proxyRegisterRequest(request, env);
     if (isAuthProxyPath(url.pathname)) return proxyAuthRequest(request, env);
     if (url.pathname !== "/mcp") return new Response("Not found", { status: 404 });
-    const header = request.headers.get("authorization") || "";
-    const token = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
-    if (!token) return unauthorized(env, request);
-    let identity;
-    try {
-      identity = await verifyAccessToken(env, token);
-    } catch (_error) {
-      return unauthorized(env, request);
-    }
+    const auth = await authenticate(request, env);
+    if (auth.response) return auth.response;
     return handler.fetch(request, {
       authInfo: {
-        token: token,
-        clientId: identity.client_id || "lulu-board",
+        token: auth.token,
+        clientId: auth.identity.client_id || "lulu-board",
         scopes: [],
-        extra: { env: env, identity: identity, token: token },
+        extra: { env: env, identity: auth.identity, token: auth.token },
       },
     });
   },
