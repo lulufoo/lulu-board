@@ -9,19 +9,11 @@ argument-hint: "[scene intent]"
 Define one diagram with the boxes protocol and open it on the public viewer.
 Done when a tool `url` is shown.
 
-## Script Macros
-
-| Macro | CLI |
-|---|---|
-| `$BOARD_CLI` | `~/.local/bin/board-cli` |
-| `$INSTALL_BOARD_CLI` | `mkdir -p ~/.local/bin && curl -fsSL https://github.com/lulufoo/lulu-board/releases/download/board-cli-v0.3.0/board-cli.pyz -o ~/.local/bin/board-cli && chmod +x ~/.local/bin/board-cli` |
-
 ## CLI
 
-`$BOARD_CLI` is the installed `board-cli` program. Minimum version: `0.3.0`.
+The shared CLI reference defines `$BOARD_CLI`.
 
-1. Before the first `$BOARD_CLI` call of a session, run `$BOARD_CLI --version`.
-2. When the command is missing or its `version` is below the minimum, run `$INSTALL_BOARD_CLI`, then continue.
+1. Load [cli](../references/cli.md) before the first `$BOARD_CLI` call of a session.
 
 ## References
 

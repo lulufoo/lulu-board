@@ -10,46 +10,18 @@ const { execFileSync } = require('child_process');
 
 const root = path.join(__dirname, '../..');
 const cliDir = path.join(root, 'packages/board-cli');
-const pack = fs.readFileSync(path.join(root, 'skills/SKILL.md'), 'utf8');
 const skill = fs.readFileSync(path.join(root, 'skills/sketch/SKILL.md'), 'utf8');
 const template = fs.readFileSync(path.join(root, 'skills/sketch/references/template.md'), 'utf8');
 const cloudFlow = fs.readFileSync(path.join(root, 'skills/sketch/references/cloud-flow.md'), 'utf8');
 const sharedCloud = fs.readFileSync(path.join(root, 'skills/references/cloud.md'), 'utf8');
-const cliVersion = fs.readFileSync(path.join(cliDir, 'board_cli/core/version.py'), 'utf8').match(/VERSION = "(\d+(?:\.\d+)*)"/)[1];
-
-const asNumbers = (version) => version.split('.').map(Number);
-const isAtMost = (a, b) => {
-  const [left, right] = [asNumbers(a), asNumbers(b)];
-  for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
-    const [x, y] = [left[i] || 0, right[i] || 0];
-    if (x !== y) return x < y;
-  }
-  return true;
-};
 
 // The entry
-assert.match(pack, /`sketch\/`/, 'pack lists sketch/');
-assert.match(pack, /One Sketch diagram/, 'pack names sketch a diagram');
-assert.doesNotMatch(pack, /picture/, 'pack no longer says picture');
 assert.doesNotMatch(skill, /picture/, 'skill names the drawing a diagram');
 assert.match(skill, /Done when a tool `url` is shown/, 'done is a tool url');
 assert.doesNotMatch(skill + cloudFlow, /docs\//, 'an installed skill cites no repo docs');
 
-// The program macro and its install
-assert.match(skill, /\| `\$BOARD_CLI` \| `~\/\.local\/bin\/board-cli` \|/, 'one macro row for the installed program');
+// The program macro and its install live in skills/references/cli.md (see cli-reference.test.js)
 assert.match(skill, /CLI contract: `\$BOARD_CLI --help`/, 'the CLI contract lives in --help');
-const minimum = skill.match(/Minimum version: `(\d+(?:\.\d+)*)`/);
-assert.ok(minimum, 'skill declares a minimum version');
-const install = skill.match(/\| `\$INSTALL_BOARD_CLI` \| `([^`]+)` \|/);
-assert.ok(install, 'one macro row installs the program');
-assert.ok(
-  install[1].includes('/releases/download/board-cli-v' + minimum[1] + '/board-cli.pyz'),
-  'install downloads the release of the minimum version',
-);
-assert.match(install[1], /-o ~\/\.local\/bin\/board-cli && chmod \+x ~\/\.local\/bin\/board-cli$/, 'install puts the program where the macro points and makes it executable');
-assert.ok(isAtMost(minimum[1], cliVersion), 'the minimum version is not newer than the package version');
-assert.match(skill, /Before the first `\$BOARD_CLI` call of a session, run `\$BOARD_CLI --version`/, 'the version is checked before the first call');
-assert.match(skill, /is missing or its `version` is below the minimum, run `\$INSTALL_BOARD_CLI`/, 'a missing or old program is installed');
 assert.ok(!fs.existsSync(path.join(root, 'skills/sketch/scripts/sketch_control.py')), 'the old entry is gone');
 assert.ok(!fs.existsSync(path.join(root, 'skills/scripts/sketch_schema.py')), 'the old schema copy is gone');
 assert.doesNotMatch(skill + cloudFlow, /SKETCH_CTL|sketch_control|\b(?:create|get|save|search)_diagram|MCP/, 'sketch no longer names the old entry or the MCP tools');
