@@ -133,7 +133,8 @@ export function renderSketch(opts) {
   // outline, or ring at the picture edge is painted instead of cut off by the frame.
   var picture = document.createElement("div");
   picture.className = "sketch-picture";
-  picture.style.cssText = "position:relative;width:100%;";
+  // Invisible until the camera returns true. Opacity keeps the layout box, so the runner can still measure.
+  picture.style.cssText = "position:relative;width:100%;opacity:0;";
   var frame = document.createElement("iframe");
   frame.className = "sketch-frame";
   // allow-scripts without allow-same-origin: the frame gets an opaque origin, so its scripts cannot reach Board's
@@ -141,7 +142,7 @@ export function renderSketch(opts) {
   // an escape.
   frame.setAttribute("sandbox", "allow-scripts");
   frame.setAttribute("scrolling", "no");
-  // Width and height are replaced by the runner's size. Until that arrives, a placeholder keeps the frame on screen.
+  // Width and height are replaced by the runner's size. Until that arrives, a placeholder keeps a layout box.
   frame.style.cssText = "display:block;border:0;width:100%;height:800px;background:transparent;pointer-events:none;";
   frame.src = SKETCH_RUNNER_URL;
   picture.appendChild(frame);
@@ -152,6 +153,10 @@ export function renderSketch(opts) {
     finished = true;
     clearTimeout(timer);
     bindWorld(picture, function () { return sketchWorldBounds(picture); });
+    if (!failed && call("placeDocumentCamera") === true) {
+      opts.cameraPlaced = true;
+      picture.style.opacity = "1";
+    }
     if (failed) {
       showDiagramError("Sketch runner did not respond");
       setStatus("Sketch runner did not respond", true);

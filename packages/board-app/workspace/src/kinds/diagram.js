@@ -202,7 +202,9 @@ function finishCanvasView(opts) {
   opts = opts || {};
   applyDocumentGround();
   try {
-    if (opts.fit) {
+    if (opts.cameraPlaced) {
+      applyTransform();
+    } else if (opts.fit) {
       fitDiagramView();
     } else if (opts.restoreView) {
       applyRestoredDiagramView();

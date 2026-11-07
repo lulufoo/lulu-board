@@ -190,6 +190,32 @@ function restoreOrFit() {
   return false;
 }
 
+/* Sketch shows its frame only after this returns true. Same camera as restoreOrFit, in this turn:
+ * no animation frame and no timer. A saved view that misses the stage is fitted before the return. */
+function placeDocumentCamera() {
+  var prevSkip = _skipDocumentViewPersist;
+  _skipDocumentViewPersist = true;
+  try {
+    var view = readDocumentView();
+    var ok = view ? applyCamera(view) : false;
+    if (!ok || !contentOnStage()) {
+      var stage = stageSize();
+      if (!stage) return false;
+      var b = contentBounds();
+      if (!b) ok = applyCamera({ scale: 1, cx: 0, cy: 0 });
+      else {
+        var topBand = 12;
+        var pad = 24;
+        var next = Math.max(0.2, Math.min(1, (stage.w - pad) / Math.max(1, b.width), (stage.h - topBand - pad) / Math.max(1, b.height)));
+        ok = applyCamera({ scale: next, cx: b.cx, cy: b.cy });
+      }
+    }
+    return ok === true;
+  } finally {
+    _skipDocumentViewPersist = prevSkip;
+  }
+}
+
 window.addEventListener("pagehide", flushDocumentViewSave);
 document.addEventListener("visibilitychange", function () {
   if (document.visibilityState === "hidden") flushDocumentViewSave();
@@ -212,6 +238,7 @@ register("forgetDocumentView", forgetDocumentView);
 register("applyDocumentView", applyDocumentView);
 register("fitWorld", fitWorld);
 register("restoreOrFit", restoreOrFit);
+register("placeDocumentCamera", placeDocumentCamera);
 export {
   setWorld,
   stageSize,
@@ -229,5 +256,6 @@ export {
   forgetDocumentView,
   applyDocumentView,
   fitWorld,
-  restoreOrFit
+  restoreOrFit,
+  placeDocumentCamera
 };
