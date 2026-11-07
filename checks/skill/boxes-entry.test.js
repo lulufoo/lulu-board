@@ -18,28 +18,8 @@ assert.match(skill, /leave those lines unchanged/, 'update still leaves stash');
 assert.match(skill, /Run `\$BOARD_CLI assets`\. If it fails, stop and report/, 'references come from the assets command');
 assert.ok(!fs.existsSync(path.join(root, 'skills/boxes/references/viewer.md')), 'the viewer reference is gone');
 
-// The program macro and its install
-const asNumbers = (version) => version.split('.').map(Number);
-const isAtMost = (a, b) => {
-  const [left, right] = [asNumbers(a), asNumbers(b)];
-  for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
-    const [x, y] = [left[i] || 0, right[i] || 0];
-    if (x !== y) return x < y;
-  }
-  return true;
-};
-const cliVersion = fs.readFileSync(path.join(root, 'packages/board-cli/board_cli/core/version.py'), 'utf8').match(/VERSION = "(\d+(?:\.\d+)*)"/)[1];
-assert.match(skill, /\| `\$BOARD_CLI` \| `~\/\.local\/bin\/board-cli` \|/, 'one macro row for the installed program');
+// The program macro and its install live in skills/references/cli.md (see cli-reference.test.js)
 assert.match(skill, /CLI contract: `\$BOARD_CLI --help`/, 'the CLI contract lives in --help');
-const minimum = skill.match(/Minimum version: `(\d+(?:\.\d+)*)`/);
-assert.ok(minimum, 'skill declares a minimum version');
-const install = skill.match(/\| `\$INSTALL_BOARD_CLI` \| `([^`]+)` \|/);
-assert.ok(install, 'one macro row installs the program');
-assert.ok(install[1].includes('/releases/download/board-cli-v' + minimum[1] + '/board-cli.pyz'), 'install downloads the release of the minimum version');
-assert.match(install[1], /-o ~\/\.local\/bin\/board-cli && chmod \+x ~\/\.local\/bin\/board-cli$/, 'install puts the program where the macro points and makes it executable');
-assert.ok(isAtMost(minimum[1], cliVersion), 'the minimum version is not newer than the package version');
-assert.match(skill, /Before the first `\$BOARD_CLI` call of a session, run `\$BOARD_CLI --version`/, 'the version is checked before the first call');
-assert.match(skill, /is missing or its `version` is below the minimum, run `\$INSTALL_BOARD_CLI`/, 'a missing or old program is installed');
 
 // Mode
 assert.match(skill, /## Mode\n\nPick short link or cloud\. Short link is the default\./, 'short link is the default');
