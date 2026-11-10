@@ -3,7 +3,8 @@ import { saveSharedGraph } from './share-graph.js';
 import { changeShareSetting } from './share-settings.js';
 import { deleteOwnedGraphs } from './graph-delete.js';
 import { reorderGroup } from './group-reorder.js';
-import { readOwnedGraph } from './graph-read.js';
+import { readOwnedGraph, readOwnedGraphWithPat } from './graph-read.js';
+import { isPatToken } from './pat-token.js';
 import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
 import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
@@ -23,6 +24,14 @@ function json(data, status) {
     status: status || 200,
     headers: Object.assign({ 'content-type': 'application/json' }, CORS),
   });
+}
+
+function failJson(error) {
+  const status = error.status || 500;
+  const code = error.error || 'db_error';
+  const body = { error: code };
+  if (error.message && code !== 'unauthorized') body.message = error.message;
+  return json(body, status);
 }
 
 function gzipAccepted(header) {
@@ -91,11 +100,7 @@ async function publicCall(request, env, run) {
   try {
     return json(await run(input), 200);
   } catch (error) {
-    const status = error.status || 500;
-    const code = error.error || 'db_error';
-    const body = { error: code };
-    if (error.message && code !== 'unauthorized') body.message = error.message;
-    return json(body, status);
+    return failJson(error);
   }
 }
 
@@ -114,11 +119,7 @@ async function authedCall(request, env, run) {
   try {
     return json(await run(token, input, request), 200);
   } catch (error) {
-    const status = error.status || 500;
-    const code = error.error || 'db_error';
-    const body = { error: code };
-    if (error.message && code !== 'unauthorized') body.message = error.message;
-    return json(body, status);
+    return failJson(error);
   }
 }
 
@@ -216,11 +217,16 @@ export default {
       return new Response('ok', { status: 200, headers: CORS });
     }
     if (request.method === 'GET' && url.pathname === '/graphs') {
-      const response = await gzipJsonResponse(request, await authedCall(request, env, (token, _input, current) => readOwnedGraph(
-        env,
-        token,
-        new URL(current.url).searchParams.get('diagram_id')
-      )));
+      const token = bearer(request);
+      const diagramId = url.searchParams.get('diagram_id');
+      let inner;
+      if (isPatToken(token)) {
+        try { inner = json(await readOwnedGraphWithPat(env, token, diagramId), 200); }
+        catch (error) { inner = failJson(error); }
+      } else {
+        inner = await authedCall(request, env, (jwt) => readOwnedGraph(env, jwt, diagramId));
+      }
+      const response = await gzipJsonResponse(request, inner);
       response.headers.set('timing-allow-origin', '*');
       return response;
     }
