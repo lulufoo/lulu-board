@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import base64
+import gc
 import hashlib
 import json
 import threading
 import unittest
 import urllib.parse
+import warnings
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest.mock import patch
 
@@ -115,6 +117,13 @@ class HttpJsonTest(OneServerCase):
         self.status, self.body = 400, b'{"msg": "no"}'
         reply = http_json.send_request("GET", self.url)
         self.assertEqual((reply.status, reply.read_json()), (400, {"msg": "no"}))
+
+    def test_an_error_status_closes_the_http_body(self) -> None:
+        self.status, self.body = 404, b"nope"
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", ResourceWarning)
+            http_json.send_request("GET", self.url)
+            gc.collect()
 
     def test_a_refused_connection_raises_one_readable_error(self) -> None:
         self.server.shutdown()

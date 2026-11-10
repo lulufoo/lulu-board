@@ -50,8 +50,9 @@
         <span class="shell-avatar" id="shellAccountAvatar" aria-hidden="true">L</span>
         <span class="shell-account-text"><b id="shellAccountName">lulu</b><span id="shellAccountEmail">namdamlu@outlook.com</span></span>
       </button>
-      <button type="button" id="btnShellSignOut" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.2 3H4.4A1.4 1.4 0 0 0 3 4.4v7.2A1.4 1.4 0 0 0 4.4 13h1.8M9.6 5.2 12.4 8l-2.8 2.8M12.2 8H6.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <a class="shell-foot-icon" id="linkBoardIntro" href="/landing/" title="Product intro" aria-label="Product intro"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.6" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.2v3.4M8 5.3v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
+      <button type="button" id="btnShellSignOut" title="Sign out" aria-label="Sign out"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.7 1.6H3.39A1.79 1.79 0 0 0 1.6 3.39v9.22A1.79 1.79 0 0 0 3.39 14.4h2.3M10.05 4.42 13.63 8 10.05 11.58M13.38 8H5.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="shell-foot-icon" id="btnShellSettings" title="Settings" aria-label="Settings"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6.18 3.5 6.53 1.62 9.47 1.62 9.82 3.5 10.99 4.18 12.79 3.53 14.26 6.08 12.8 7.33 12.8 8.67 14.26 9.92 12.79 12.47 10.99 11.82 9.82 12.5 9.47 14.38 6.53 14.38 6.18 12.5 5.01 11.82 3.21 12.47 1.74 9.92 3.2 8.67 3.2 7.33 1.74 6.08 3.21 3.53 5.01 4.18Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.15" stroke="currentColor" stroke-width="1.5"/></svg></button>
+      <a class="shell-foot-icon" id="linkBoardIntro" href="/landing/" title="Product intro" aria-label="Product intro"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 7.09v3.89M8 4.91v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a>
     </footer>
   </aside>
   <div class="shell-search-pop" id="shellSearchPop" role="dialog" aria-label="Search diagrams" hidden>
@@ -550,6 +551,56 @@
     <div class="shell-dialog-actions confirm-actions">
       <button type="button" class="btn" id="btnConfirmCancel">Cancel</button>
       <button type="button" class="btn primary" id="btnConfirmOk">Confirm</button>
+    </div>
+  </div>
+</div>
+<div class="shell-dialog" id="settingsDialog" hidden>
+  <button type="button" class="shell-dialog-backdrop" id="settingsDialogBackdrop" aria-label="Close"></button>
+  <div class="shell-dialog-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
+    <header class="settings-head">
+      <div>
+        <h2 id="settingsDialogTitle">Settings</h2>
+        <p class="settings-sub" id="settingsDialogSub">Manage access to Board</p>
+      </div>
+      <button type="button" class="settings-close" id="settingsDialogClose" aria-label="Close">×</button>
+    </header>
+    <div class="settings-body">
+      <p class="settings-error" id="settingsError" hidden></p>
+      <div class="settings-pane" id="settingsPaneList">
+        <div class="settings-toolbar">
+          <span class="settings-section">Personal access tokens</span>
+          <button type="button" class="btn primary" id="settingsGenerateOpen">Generate token</button>
+        </div>
+        <div id="settingsTokenList"></div>
+        <p class="settings-hint">Read-only access to your diagrams. Revoke anytime.</p>
+      </div>
+      <div class="settings-pane" id="settingsPaneGenerate" hidden>
+        <div class="settings-label">Name</div>
+        <input class="settings-input" id="settingsTokenName" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-label="Token name">
+        <div class="settings-label">Expiration</div>
+        <div class="settings-pills" role="radiogroup" aria-label="Expiration">
+          <button type="button" role="radio" data-settings-days="7" aria-checked="false">7 days</button>
+          <button type="button" role="radio" data-settings-days="30" aria-checked="true" class="is-active">30 days</button>
+          <button type="button" role="radio" data-settings-days="90" aria-checked="false">90 days</button>
+        </div>
+        <p class="settings-hint">Expires automatically, within 90 days.</p>
+        <p class="settings-hint">Access: read your diagrams by ID</p>
+        <div class="settings-foot">
+          <button type="button" class="btn" id="settingsGenerateClose">Close</button>
+          <button type="button" class="btn primary" id="settingsGenerateSubmit">Generate token</button>
+        </div>
+      </div>
+      <div class="settings-pane" id="settingsPaneResult" hidden>
+        <p class="settings-notice">Copy and save your token now. You won't be able to see it again.</p>
+        <div class="settings-code">
+          <span id="settingsTokenValue"></span>
+          <button type="button" class="settings-text-btn" id="settingsCopyToken">Copy</button>
+        </div>
+        <p class="settings-hint">Paste the token into Spark. If lost, revoke it and create a new one.</p>
+        <div class="settings-foot">
+          <button type="button" class="btn primary" id="settingsResultDone">Done</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

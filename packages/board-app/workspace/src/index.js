@@ -62,6 +62,7 @@ export * from './cloud/cloud-share.js';
 export * from './cloud/cloud-short-link.js';
 export * from './cloud/cloud-shares.js';
 export * from './cloud/cloud-search.js';
+export * from './cloud/cloud-tokens.js';
 
 export {
   sentryCount,

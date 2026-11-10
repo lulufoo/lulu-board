@@ -172,6 +172,10 @@ function closeAuthMenu() {}
   if (intro) intro.addEventListener("click", function () {
     if (typeof sentryCount === "function") sentryCount("home.product_intro");
   });
+  var settingsBtn = document.getElementById("btnShellSettings");
+  if (settingsBtn) settingsBtn.addEventListener("click", function () {
+    emit("settingsDialogOpen");
+  });
   var shareBtn = document.getElementById("shellShareDiagram");
   if (shareBtn) shareBtn.addEventListener("click", function () {
     emit("shareDialogOpenCurrent", false);
@@ -189,6 +193,11 @@ function shellPaintAccount(profile) {
   if (email) email.textContent = profile && profile.email && profile.email !== profile.name ? profile.email : "";
   if (avatar) avatar.textContent = profile ? profile.initials : "?";
   if (out) out.hidden = !profile;
+  var settings = document.getElementById("btnShellSettings");
+  if (settings) {
+    var preview = typeof isLocalDrawerPreview === "function" && isLocalDrawerPreview() && !(cloudSession && cloudSession.user);
+    settings.hidden = !profile && !preview;
+  }
   var row = document.getElementById("btnShellAccount");
   if (row) {
     row.classList.toggle("is-signin", !profile);

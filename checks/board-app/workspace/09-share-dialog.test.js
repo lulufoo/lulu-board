@@ -39,6 +39,8 @@ assert.match(row, /shellShareAction\("Stop"/, 'a Shared row keeps Stop');
 assert.match(row, /li\.addEventListener\("click", openShare\)/, 'the row opens the Share dialog');
 assert.match(css, /\.share-seg button\[aria-checked="true"\]/, 'the chosen access is visibly selected');
 assert.match(css, /\.share-switch\[aria-checked="true"\]/, 'Public on is visibly selected');
+assert.match(css, /\.share-sheet,\s*\.settings-sheet \{ width: min\(528px, 100%\)/, 'share and settings sheets share the 528px target');
+assert.doesNotMatch(css, /440px/, 'the previous 440px share width is gone');
 assert.match(css, /\.share-switch::after/, 'Public on/off is a sliding thumb, not a full-width pill');
 assert.match(sheet, /class="share-switch-name"[^>]*>Public/, 'Public stays a name next to the switch');
 
