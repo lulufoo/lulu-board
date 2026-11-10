@@ -554,6 +554,56 @@
     </div>
   </div>
 </div>
+<div class="shell-dialog" id="settingsDialog" hidden>
+  <button type="button" class="shell-dialog-backdrop" id="settingsDialogBackdrop" aria-label="Close"></button>
+  <div class="shell-dialog-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
+    <header class="settings-head">
+      <div>
+        <h2 id="settingsDialogTitle">Settings</h2>
+        <p class="settings-sub" id="settingsDialogSub">Manage access to Board</p>
+      </div>
+      <button type="button" class="settings-close" id="settingsDialogClose" aria-label="Close">×</button>
+    </header>
+    <div class="settings-body">
+      <p class="settings-error" id="settingsError" hidden></p>
+      <div class="settings-pane" id="settingsPaneList">
+        <div class="settings-toolbar">
+          <span class="settings-section">Personal access tokens</span>
+          <button type="button" class="btn primary" id="settingsGenerateOpen">Generate token</button>
+        </div>
+        <div id="settingsTokenList"></div>
+        <p class="settings-hint">Read-only access to your diagrams. Revoke anytime.</p>
+      </div>
+      <div class="settings-pane" id="settingsPaneGenerate" hidden>
+        <div class="settings-label">Name</div>
+        <input class="settings-input" id="settingsTokenName" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-label="Token name">
+        <div class="settings-label">Expiration</div>
+        <div class="settings-pills" role="radiogroup" aria-label="Expiration">
+          <button type="button" role="radio" data-settings-days="7" aria-checked="false">7 days</button>
+          <button type="button" role="radio" data-settings-days="30" aria-checked="true" class="is-active">30 days</button>
+          <button type="button" role="radio" data-settings-days="90" aria-checked="false">90 days</button>
+        </div>
+        <p class="settings-hint">Expires automatically, within 90 days.</p>
+        <p class="settings-hint">Access: read your diagrams by ID</p>
+        <div class="settings-foot">
+          <button type="button" class="btn" id="settingsGenerateClose">Close</button>
+          <button type="button" class="btn primary" id="settingsGenerateSubmit">Generate token</button>
+        </div>
+      </div>
+      <div class="settings-pane" id="settingsPaneResult" hidden>
+        <p class="settings-notice">Copy and save your token now. You won't be able to see it again.</p>
+        <div class="settings-code">
+          <span id="settingsTokenValue"></span>
+          <button type="button" class="settings-text-btn" id="settingsCopyToken">Copy</button>
+        </div>
+        <p class="settings-hint">Paste the token into Spark. If lost, revoke it and create a new one.</p>
+        <div class="settings-foot">
+          <button type="button" class="btn primary" id="settingsResultDone">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="shell-dialog" id="createKindDialog" hidden>
   <button type="button" class="shell-dialog-backdrop" id="createKindBackdrop" aria-label="Cancel"></button>
   <div class="create-kind-pop" role="dialog" aria-modal="true" aria-labelledby="createKindTitle">
