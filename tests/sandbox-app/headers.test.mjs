@@ -6,7 +6,7 @@ const directives = csp.split('; ');
 assert.deepEqual(directives, [
   'sandbox allow-scripts',
   "connect-src 'none'",
-  'frame-ancestors https://luluboard.app',
+  'frame-ancestors https://luluboard.app tauri://localhost',
   "frame-src 'none'",
   "object-src 'none'",
 ]);
@@ -14,7 +14,9 @@ assert.ok(!/allow-same-origin/.test(csp), 'the runner never regains an origin');
 assert.ok(!/allow-(top-navigation|popups|forms|modals)/.test(csp), 'no permission beyond scripts');
 
 assert.equal(runnerCsp(['https://a.example', 'https://b.example']).split('; ')[2], 'frame-ancestors https://a.example https://b.example');
-assert.equal(runnerCsp([]).split('; ')[2], 'frame-ancestors https://luluboard.app', 'empty list falls back to Board');
+assert.equal(runnerCsp([]).split('; ')[2], 'frame-ancestors https://luluboard.app tauri://localhost', 'empty list falls back to the default allowlist');
+assert.doesNotMatch(csp, /\*/, 'production does not open every parent');
+assert.doesNotMatch(csp, /localhost:5173/, 'production does not allow the Spark dev server');
 
 assert.deepEqual(Object.keys(runnerHeaders()), ['Content-Security-Policy']);
 

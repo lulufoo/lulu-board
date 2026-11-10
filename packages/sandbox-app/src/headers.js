@@ -3,7 +3,10 @@
  * Not covered on purpose: script-src, img-src, style-src. Sketch scripts and styles must run,
  * and image GETs can still leak data; connect-src only closes fetch, XHR, WebSocket, and beacon. */
 
-export const RUNNER_FRAME_ANCESTORS = Object.freeze(['https://luluboard.app']);
+export const RUNNER_FRAME_ANCESTORS = Object.freeze([
+  'https://luluboard.app',
+  'tauri://localhost',
+]);
 
 export function runnerCsp(frameAncestors) {
   var ancestors = frameAncestors && frameAncestors.length ? frameAncestors : RUNNER_FRAME_ANCESTORS;
@@ -12,7 +15,7 @@ export function runnerCsp(frameAncestors) {
     'sandbox allow-scripts',
     // Scripts cannot send data out through fetch, XHR, WebSocket, or beacon.
     "connect-src 'none'",
-    // Only Board may embed the runner.
+    // Board and the Tauri Mac webview origin may embed the runner. Not a Spark identity.
     'frame-ancestors ' + ancestors.join(' '),
     // Scripts cannot create nested documents or plugins to get around connect-src.
     "frame-src 'none'",
