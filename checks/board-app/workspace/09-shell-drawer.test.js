@@ -19,6 +19,12 @@ assert.doesNotMatch(appBuild, /09-shell-prototype/, 'the prototype file name is 
 assert.match(html, /id="shellMineList"/, 'Mine is a data container, not mock rows');
 assert.match(html, /id="shellShared"[^>]*hidden/, 'Shared stays hidden until it is wired');
 assert.match(html, /id="shellAccountName"[\s\S]*id="btnShellSignOut"/, 'account row has name and sign out');
+assert.match(html, /id="btnShellSettings"[^>]*aria-label="Settings"/, 'account row exposes Settings');
+assert.match(html, /id="linkBoardIntro"[^>]*aria-label="Product intro"/, 'the product intro icon stays');
+assert.doesNotMatch(html, /id="btnShellSignOut"[^>]*shell-foot-icon/, 'sign out is not a foot icon');
+const footCss = read('packages/board-app/workspace/css/08-workspace-shell.css');
+assert.match(footCss, /\.shell-drawer-foot \.shell-foot-icon:hover/, 'settings and intro share a hover rule');
+assert.match(footCss, /color: var\(--brand, #db4c84\)/, 'foot icons hover in brand red');
 assert.doesNotMatch(html, /Payments retry flow<\/b><span>4 boards/, 'no mock Mine rows in the markup');
 assert.match(sync, /emit\("shellPaintAccount", profile\)/, 'account row follows the session');
 assert.match(js, /cloudSwitchToDiagram\(group\.faceDiagramId, group\.groupId\)/, 'a mine row passes its group id');

@@ -508,9 +508,14 @@ html[data-drawer-mode="diagram"] .group-tab.is-active { background: rgba(219, 76
 /* product intro: an icon at the far right of the account row */
 .shell-foot-icon {
   width: 30px; height: 30px; display: grid; place-items: center; flex: none;
-  border-radius: 8px; color: var(--ink-soft); text-decoration: none;
+  border: 0; padding: 0; border-radius: 8px; color: var(--ink-soft); text-decoration: none;
+  background: transparent; cursor: pointer;
 }
-.shell-foot-icon:hover { background: var(--wash); color: var(--ink); }
+.shell-drawer-foot .shell-foot-icon:hover,
+.shell-foot-icon:hover {
+  background: color-mix(in srgb, var(--brand, #db4c84) 14%, transparent);
+  color: var(--brand, #db4c84);
+}
 .shell-foot-icon svg { width: 16px; height: 16px; }
 
 /* Mine: per-row delete, revealed on hover/focus */
