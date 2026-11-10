@@ -20,7 +20,11 @@ assert.match(html, /id="shellMineList"/, 'Mine is a data container, not mock row
 assert.match(html, /id="shellShared"[^>]*hidden/, 'Shared stays hidden until it is wired');
 assert.match(html, /id="shellAccountName"[\s\S]*id="btnShellSignOut"/, 'account row has name and sign out');
 assert.match(html, /id="btnShellSettings"[^>]*aria-label="Settings"/, 'account row exposes Settings');
+assert.doesNotMatch(html, /M8 1\.7v1\.5M8 12\.8v1\.5/, 'settings is a gear, not a sun');
+assert.match(html, /id="btnShellSettings"[\s\S]*?M6\.18 3\.5/, 'settings uses a six-tooth gear');
 assert.match(html, /id="linkBoardIntro"[^>]*aria-label="Product intro"/, 'the product intro icon stays');
+assert.match(html, /id="btnShellSignOut"[\s\S]*?M5\.7 1\.6/, 'sign out fills the same 16px box as settings');
+assert.match(html, /id="linkBoardIntro"[\s\S]*?<circle cx="8" cy="8" r="6\.4"/, 'intro circle matches the gear outer size');
 assert.doesNotMatch(html, /id="btnShellSignOut"[^>]*shell-foot-icon/, 'sign out is not a foot icon');
 const footCss = read('packages/board-app/workspace/css/08-workspace-shell.css');
 assert.match(footCss, /\.shell-drawer-foot \.shell-foot-icon:hover/, 'settings and intro share a hover rule');

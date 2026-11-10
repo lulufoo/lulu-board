@@ -57,7 +57,6 @@ const srcState = [
   'src/chrome/source-lines.js',
   'src/chrome/shell-drawer.js',
   'src/chrome/share-dialog.js',
-  'src/chrome/settings-token-swipe.js',
   'src/chrome/settings-token-row.js',
   'src/chrome/settings-dialog.js',
   'src/chrome/shell-tabs.js',

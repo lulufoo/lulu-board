@@ -1,6 +1,4 @@
-/* One personal-access-token row: swipe left to reveal Revoke. */
-import { bindTokenSwipe } from './settings-token-swipe.js';
-
+/* One personal-access-token row: click Revoke to reveal the trailing confirm. */
 export function paintTokenRow(row, hooks) {
   var card = document.createElement('div');
   card.className = 'settings-token' + (hooks.armedId === row.id ? ' is-armed' : '');
@@ -39,10 +37,5 @@ export function paintTokenRow(row, hooks) {
   card.appendChild(body);
   card.appendChild(reveal);
   card.appendChild(action);
-  bindTokenSwipe(card, {
-    isOpen: function () { return hooks.isOpen(row.id); },
-    setOpen: function (open) { hooks.setArmed(open ? row.id : ''); },
-    onDragStart: function () { hooks.onDragStart(card, row.id); },
-  });
   return card;
 }

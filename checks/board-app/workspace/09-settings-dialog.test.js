@@ -13,7 +13,6 @@ const html = read('packages/board-app/workspace/index.html');
 const drawer = read('packages/board-app/workspace/src/chrome/shell-drawer.js');
 const dialogJs = read('packages/board-app/workspace/src/chrome/settings-dialog.js');
 const rowJs = read('packages/board-app/workspace/src/chrome/settings-token-row.js');
-const swipeJs = read('packages/board-app/workspace/src/chrome/settings-token-swipe.js');
 const tokensJs = read('packages/board-app/workspace/src/cloud/cloud-tokens.js');
 const css = read('packages/board-app/workspace/css/09-settings-dialog.css');
 const shareCss = read('packages/board-app/workspace/css/09-share-dialog.css');
@@ -28,7 +27,7 @@ assert.match(sheet, /Generate token/);
 assert.match(sheet, /7 days[\s\S]*30 days[\s\S]*90 days/);
 assert.match(sheet, /Access: read your diagrams by ID/);
 assert.match(sheet, /You won't be able to see it again/);
-assert.match(sheet, /Swipe left to revoke/);
+assert.match(sheet, /Revoke anytime/);
 assert.doesNotMatch(sheet, /go back|返回|back-arrow|settings-back/i);
 assert.match(sheet, /class="shell-dialog-sheet settings-sheet"/);
 assert.match(shareCss, /min\(528px, 100%\)/);
@@ -151,7 +150,7 @@ function load(opts) {
     setStatus() {},
   };
   vm.createContext(ctx);
-  const script = [swipeJs, rowJs, dialogJs].join('\n')
+  const script = [rowJs, dialogJs].join('\n')
     .replace(/^import \{[\s\S]*?\} from ['"][^'"]+['"];\n/gm, '')
     .replace(/^import .*$/gm, '')
     .replace(/^export \{[\s\S]*?\};/gm, '')
@@ -229,8 +228,13 @@ const tick = () => new Promise((r) => setImmediate(r));
     const action = findClass(card, 'settings-token-action');
     assert.ok(reveal && action, 'row has reveal and trailing revoke');
     reveal.click();
-    assert.ok(card.classList.contains('is-armed'), 'Revoke slides the row open');
+    assert.ok(card.classList.contains('is-armed'), 'clicking Revoke reveals the rail');
     assert.match(card.className, /settings-token/, 'arming does not remove the row');
+    t.docListeners.pointerdown.forEach((fn) => fn({ target: action }));
+    assert.ok(card.classList.contains('is-armed'), 'pointerdown on the red rail stays armed');
+    t.docListeners.pointerdown.forEach((fn) => fn({ target: findClass(card, 'settings-token-body') }));
+    assert.ok(!card.classList.contains('is-armed'), 'a tap on the row body closes the rail');
+    reveal.click();
     t.docListeners.pointerdown.forEach((fn) => fn({ target: { closest() { return null; } } }));
     assert.ok(!card.classList.contains('is-armed'), 'a tap elsewhere closes the rail');
     reveal.click();

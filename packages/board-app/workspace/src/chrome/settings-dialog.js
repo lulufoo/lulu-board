@@ -71,20 +71,9 @@ function settingsSetArmed(id) {
   Array.prototype.forEach.call(settingsTokenCards(), function (card) {
     var on = !!settingsArmedId && card.getAttribute('data-token-id') === settingsArmedId;
     card.classList.toggle('is-armed', on);
-    card.classList.remove('is-dragging');
     var action = card.querySelector('.settings-token-action');
     if (action) action.style.transform = '';
   });
-}
-
-function settingsDragStart(card, id) {
-  Array.prototype.forEach.call(settingsTokenCards(), function (other) {
-    if (other === card) return;
-    other.classList.remove('is-armed', 'is-dragging');
-    var action = other.querySelector('.settings-token-action');
-    if (action) action.style.transform = '';
-  });
-  if (settingsArmedId !== id) settingsArmedId = '';
 }
 
 function settingsPaintList() {
@@ -106,9 +95,6 @@ function settingsPaintList() {
       expiresLabel: settingsExpiresLabel,
       onReveal: settingsSetArmed,
       onRevoke: function (id) { void settingsRevoke(id); },
-      isOpen: function (id) { return settingsArmedId === id; },
-      setArmed: settingsSetArmed,
-      onDragStart: settingsDragStart,
     }));
   });
 }
@@ -260,7 +246,8 @@ async function settingsCopy() {
   });
   document.addEventListener('pointerdown', function (event) {
     if (!settingsArmedId || dialog.hidden) return;
-    var card = event.target && event.target.closest ? event.target.closest('.settings-token') : null;
+    var hit = event.target && event.target.closest ? event.target.closest('.settings-token-action') : null;
+    var card = hit && hit.closest ? hit.closest('.settings-token') : null;
     if (card && card.getAttribute('data-token-id') === settingsArmedId) return;
     settingsSetArmed('');
   }, true);
