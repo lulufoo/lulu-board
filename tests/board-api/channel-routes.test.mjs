@@ -20,7 +20,7 @@ function tokenFor(channel) {
   return 'header.' + Buffer.from(JSON.stringify(claims)).toString('base64url') + '.sig';
 }
 
-// The sixteen routes that need a login.
+// Routes that need a login.
 const LOGIN_ROUTES = [
   ['GET', '/graphs?diagram_id=b_aabbccdd'],
   ['POST', '/graphs'],
@@ -38,6 +38,9 @@ const LOGIN_ROUTES = [
   ['POST', '/shares/rotate'],
   ['POST', '/shares/unshare'],
   ['POST', '/shares/role'],
+  ['GET', '/tokens'],
+  ['POST', '/tokens'],
+  ['POST', '/tokens/revoke'],
 ];
 
 const MCP_ROUTES = ['POST /groups/shells', 'GET /graphs', 'POST /graphs', 'PATCH /graphs', 'POST /search'];
@@ -116,11 +119,11 @@ try {
   // web: every route.
   for (const [method, route] of LOGIN_ROUTES) await expectOpen('web', method, route);
 
-  // mcp: its five routes, a 403 on the other eleven (a login required, but not for this channel).
+  // mcp: its five routes, a 403 on the other login routes (a login required, but not for this channel).
   const open = LOGIN_ROUTES.filter(([method, route]) => MCP_ROUTES.includes(keyOf(method, route)));
   const shut = LOGIN_ROUTES.filter(([method, route]) => !MCP_ROUTES.includes(keyOf(method, route)));
   assert.equal(open.length, 5);
-  assert.equal(shut.length, 11);
+  assert.equal(shut.length, 14);
   for (const [method, route] of open) await expectOpen('mcp', method, route);
   for (const [method, route] of shut) await expectRefused('mcp', method, route, 403, 'forbidden');
 

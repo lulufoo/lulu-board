@@ -8,6 +8,7 @@ import { listMine, loadGroupShells } from './mine-lists.js';
 import { searchGraphs } from './graph-search.js';
 import { listOutgoingShares, readOwnShareState, readSharedGraph } from './share-reads.js';
 import { readShortLink } from './short-link.js';
+import { createAccessToken, listAccessTokens, revokeAccessToken } from './access-tokens.js';
 import { channelVerdict } from './channels.js';
 import { verifyAccessToken } from './jwt.js';
 
@@ -272,6 +273,15 @@ export default {
     }
     if (request.method === 'POST' && url.pathname === '/short-links/get') {
       return publicCall(request, env, (input) => readShortLink(env, input));
+    }
+    if (request.method === 'POST' && url.pathname === '/tokens') {
+      return authedCall(request, env, (token, input) => createAccessToken(env, token, input));
+    }
+    if (request.method === 'GET' && url.pathname === '/tokens') {
+      return authedCall(request, env, (token) => listAccessTokens(env, token));
+    }
+    if (request.method === 'POST' && url.pathname === '/tokens/revoke') {
+      return authedCall(request, env, (token, input) => revokeAccessToken(env, token, input));
     }
     return new Response('Not Found', { status: 404, headers: CORS });
   },

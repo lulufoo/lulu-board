@@ -19,7 +19,7 @@ function token(claims) {
 const live = token({ iss: 'https://example.supabase.co/auth/v1', channel: 'web', exp: Math.floor(Date.now() / 1000) + 3600 });
 const expired = token({ iss: 'https://example.supabase.co/auth/v1', channel: 'web', exp: Math.floor(Date.now() / 1000) - 10 });
 
-// Every route that needs a login: the five wrapper functions in index.js between them serve these sixteen.
+// Every route that needs a login.
 const LOGIN_ROUTES = [
   ['GET', '/graphs?diagram_id=b_aabbccdd'],
   ['POST', '/graphs'],
@@ -37,6 +37,9 @@ const LOGIN_ROUTES = [
   ['POST', '/shares/rotate'],
   ['POST', '/shares/unshare'],
   ['POST', '/shares/role'],
+  ['GET', '/tokens'],
+  ['POST', '/tokens'],
+  ['POST', '/tokens/revoke'],
 ];
 
 // Without a token this route is the anonymous read; with a token it goes through the login entrance.
