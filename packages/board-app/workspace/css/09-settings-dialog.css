@@ -16,15 +16,28 @@
 .settings-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 12px; }
 .settings-section { color: var(--text); font: 650 13px/1.3 var(--font); }
 .settings-token {
-  border: 1px solid var(--stroke); border-radius: 10px; padding: 12px;
-  margin: 0 0 10px;
+  position: relative; display: flex; align-items: center; overflow: hidden;
+  border: 1px solid var(--stroke); border-radius: 10px;
+  margin: 0 0 10px; touch-action: pan-y; user-select: none;
 }
-.settings-token-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; font: 650 13px/1.3 var(--font); }
+.settings-token.is-armed .settings-text-btn { visibility: hidden; }
+.settings-token-body { flex: 1; min-width: 0; padding: 12px 8px 12px 12px; }
+.settings-token > .settings-text-btn { flex-shrink: 0; padding: 0 14px 0 4px; }
+.settings-token-title { font: 650 13px/1.3 var(--font); }
 .settings-dot {
   display: inline-block; width: 7px; height: 7px; margin-right: 6px;
   border-radius: 50%; background: var(--ok);
 }
 .settings-token-meta { margin-top: 6px; color: var(--muted); font: 12px/1.55 var(--font); white-space: pre-line; }
+.settings-token-action {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 88px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0; border: 0; border-radius: 0; padding: 0;
+  background: var(--danger); color: #fff; font: 650 13px var(--font); cursor: pointer;
+  transform: translateX(100%); transition: transform 180ms ease;
+}
+.settings-token.is-dragging .settings-token-action { transition: none; }
+.settings-token.is-armed .settings-token-action { transform: translateX(0); }
 .settings-text-btn { padding: 0; border: 0; background: transparent; color: var(--accent); font: 650 12.5px var(--font); cursor: pointer; }
 .settings-text-btn:hover { text-decoration: underline; }
 .settings-hint { margin: 8px 0 0; color: var(--muted); font: 12px/1.45 var(--font); }

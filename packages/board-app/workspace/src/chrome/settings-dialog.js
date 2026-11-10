@@ -2,13 +2,15 @@
 import { register, call } from '../core/hooks.js';
 import { cloudListTokens, cloudCreateToken, cloudRevokeToken } from '../cloud/cloud-tokens.js';
 import { setStatus } from '../state/shell-state.js';
-import { askConfirm } from './confirm.js';
+import { paintTokenRow } from './settings-token-row.js';
 
 var settingsBusy = false;
 var settingsPlain = '';
 var settingsDays = 30;
+var settingsArmedId = '';
 var settingsRows = [];
 var settingsPreviewRows = [
+  { id: 'preview-ci', name: 'CI bot', prefix: 'lbp_abcd', expires_at: '2026-12-10T00:00:00Z' },
   { id: 'preview-1', name: 'Spark — Mac', prefix: 'lbp_6a2f', expires_at: '2026-12-10T00:00:00Z' },
 ];
 
@@ -59,11 +61,38 @@ function settingsPaintDays() {
   });
 }
 
+function settingsTokenCards() {
+  var box = settingsEl('settingsTokenList');
+  return box ? box.querySelectorAll('.settings-token') : [];
+}
+
+function settingsSetArmed(id) {
+  settingsArmedId = id || '';
+  Array.prototype.forEach.call(settingsTokenCards(), function (card) {
+    var on = !!settingsArmedId && card.getAttribute('data-token-id') === settingsArmedId;
+    card.classList.toggle('is-armed', on);
+    card.classList.remove('is-dragging');
+    var action = card.querySelector('.settings-token-action');
+    if (action) action.style.transform = '';
+  });
+}
+
+function settingsDragStart(card, id) {
+  Array.prototype.forEach.call(settingsTokenCards(), function (other) {
+    if (other === card) return;
+    other.classList.remove('is-armed', 'is-dragging');
+    var action = other.querySelector('.settings-token-action');
+    if (action) action.style.transform = '';
+  });
+  if (settingsArmedId !== id) settingsArmedId = '';
+}
+
 function settingsPaintList() {
   var box = settingsEl('settingsTokenList');
   if (!box) return;
   box.replaceChildren();
   if (!settingsRows.length) {
+    settingsArmedId = '';
     var empty = document.createElement('p');
     empty.className = 'settings-empty';
     empty.textContent = 'No personal access tokens yet.';
@@ -71,28 +100,16 @@ function settingsPaintList() {
     return;
   }
   settingsRows.forEach(function (row) {
-    var card = document.createElement('div');
-    card.className = 'settings-token';
-    var top = document.createElement('div');
-    top.className = 'settings-token-title';
-    var name = document.createElement('span');
-    var dot = document.createElement('i');
-    dot.className = 'settings-dot';
-    name.appendChild(dot);
-    name.appendChild(document.createTextNode(row.name || 'Untitled'));
-    var revoke = document.createElement('button');
-    revoke.type = 'button';
-    revoke.className = 'settings-text-btn';
-    revoke.textContent = 'Revoke';
-    revoke.addEventListener('click', function () { void settingsRevoke(row.id); });
-    top.appendChild(name);
-    top.appendChild(revoke);
-    var meta = document.createElement('div');
-    meta.className = 'settings-token-meta';
-    meta.textContent = settingsPrefixLabel(row.prefix) + '\n' + settingsExpiresLabel(row.expires_at);
-    card.appendChild(top);
-    card.appendChild(meta);
-    box.appendChild(card);
+    box.appendChild(paintTokenRow(row, {
+      armedId: settingsArmedId,
+      prefixLabel: settingsPrefixLabel,
+      expiresLabel: settingsExpiresLabel,
+      onReveal: settingsSetArmed,
+      onRevoke: function (id) { void settingsRevoke(id); },
+      isOpen: function (id) { return settingsArmedId === id; },
+      setArmed: settingsSetArmed,
+      onDragStart: settingsDragStart,
+    }));
   });
 }
 
@@ -115,6 +132,7 @@ async function settingsLoadList() {
 }
 
 function settingsOpenGenerate() {
+  settingsSetArmed('');
   settingsSetError('');
   var name = settingsEl('settingsTokenName');
   if (name) name.value = '';
@@ -140,6 +158,7 @@ function settingsOpen() {
   var dialog = settingsEl('settingsDialog');
   if (!dialog) return;
   settingsPlain = '';
+  settingsArmedId = '';
   settingsShowPane('list');
   dialog.hidden = false;
   var first = settingsEl('settingsGenerateOpen');
@@ -151,6 +170,7 @@ function settingsClose() {
   var dialog = settingsEl('settingsDialog');
   if (dialog) dialog.hidden = true;
   settingsPlain = '';
+  settingsArmedId = '';
   settingsSetError('');
   var value = settingsEl('settingsTokenValue');
   if (value) value.textContent = '';
@@ -188,21 +208,17 @@ async function settingsCreate() {
 
 async function settingsRevoke(id) {
   if (settingsBusy || !id) return;
-  if (typeof askConfirm === 'function' && !(await askConfirm({
-    title: 'Revoke this token?',
-    copy: 'Apps using it will lose access.',
-    ok: 'Revoke',
-    cancel: 'Cancel',
-  }))) return;
   if (!settingsLive()) {
     settingsPreviewRows = settingsPreviewRows.filter(function (row) { return row.id !== id; });
     settingsRows = settingsPreviewRows.slice();
+    settingsArmedId = '';
     settingsPaintList();
     return;
   }
   settingsBusy = true;
   try {
     await cloudRevokeToken(id);
+    settingsArmedId = '';
     await settingsLoadList();
     if (typeof setStatus === 'function') setStatus('Token revoked');
   } catch (error) {
@@ -242,8 +258,15 @@ async function settingsCopy() {
       settingsPaintDays();
     });
   });
+  document.addEventListener('pointerdown', function (event) {
+    if (!settingsArmedId || dialog.hidden) return;
+    var card = event.target && event.target.closest ? event.target.closest('.settings-token') : null;
+    if (card && card.getAttribute('data-token-id') === settingsArmedId) return;
+    settingsSetArmed('');
+  }, true);
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape' || dialog.hidden) return;
+    if (settingsArmedId) { event.stopPropagation(); settingsSetArmed(''); return; }
     var confirm = document.getElementById('confirmDialog');
     if (confirm && !confirm.hidden) return;
     event.stopPropagation();
