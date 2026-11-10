@@ -141,6 +141,12 @@ try {
   const badId = await send('POST', '/tokens/revoke', { id: 'nope' }, jwt());
   assert.equal(badId.status, 400);
   assert.equal(calls.some((call) => call.url.includes('/rpc/')), false);
+
+  calls.length = 0;
+  const missing = await send('POST', '/tokens/', { name: 'Spark', expires_in_days: 30 }, jwt());
+  assert.equal(missing.status, 404);
+  assert.equal((await missing.json()).error, 'not_found');
+  assert.equal(calls.some((call) => call.url.includes('/rpc/')), false);
 } finally {
   globalThis.fetch = prevFetch;
 }

@@ -289,6 +289,6 @@ export default {
     if (request.method === 'POST' && url.pathname === '/tokens/revoke') {
       return authedCall(request, env, (token, input) => revokeAccessToken(env, token, input));
     }
-    return new Response('Not Found', { status: 404, headers: CORS });
+    return json({ error: 'not_found' }, 404);
   },
 };
