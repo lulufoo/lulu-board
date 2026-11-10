@@ -108,14 +108,15 @@ try {
   assert.equal(calls.some((call) => call.url.includes('/rpc/')), false);
 
   calls.length = 0;
-  const created = await send('POST', '/tokens', { name: 'Spark — Mac', expires_in_days: 30 }, jwt());
+  const web = jwt();
+  const created = await send('POST', '/tokens', { name: 'Spark — Mac', expires_in_days: 30 }, web);
   assert.equal(created.status, 200);
   const createdBody = await created.json();
   assert.equal(createdBody.token, minted.token);
   assert.equal(createdBody.prefix, 'lbp_6a2f');
   const createRpc = calls.find((call) => call.url.includes('/rpc/create_personal_access_token'));
   assert.deepEqual(JSON.parse(createRpc.body), { p_name: 'Spark — Mac', p_expires_in_days: 30 });
-  assert.equal(createRpc.headers.Authorization, 'Bearer ' + jwt());
+  assert.equal(createRpc.headers.Authorization, 'Bearer ' + web);
 
   calls.length = 0;
   const listedRes = await send('GET', '/tokens', undefined, jwt());

@@ -3,10 +3,12 @@
 The runner page that lets a Sketch run its own JavaScript without touching Board.
 
 Board embeds `https://sandbox.luluboard.app/` in an iframe with
-`sandbox="allow-scripts"` and no `allow-same-origin`. The page is served from its own
-origin, and its response carries a `sandbox` CSP, so the document has an opaque origin: it
-cannot read Board's storage, cookies, or DOM. This package holds only that page. The Worker
-that serves it and its response headers live outside this package.
+`sandbox="allow-scripts"` and no `allow-same-origin`. A packed Tauri Mac webview
+(`tauri://localhost`) may embed it too; that origin is not a Spark identity.
+The page is served from its own origin, and its response carries a `sandbox` CSP,
+so the document has an opaque origin: it cannot read Board's storage, cookies, or
+DOM. This package holds only that page. The Worker that serves it and its
+response headers live outside this package.
 
 ## Build
 
@@ -31,7 +33,7 @@ CORS, but a module or a dynamic `import()` would need `Access-Control-Allow-Orig
 Workers static assets Worker; a Worker with its own code imports `runnerHeaders()` instead.
 
 ```
-Content-Security-Policy: sandbox allow-scripts; connect-src 'none'; frame-ancestors https://luluboard.app; frame-src 'none'; object-src 'none'
+Content-Security-Policy: sandbox allow-scripts; connect-src 'none'; frame-ancestors https://luluboard.app tauri://localhost; frame-src 'none'; object-src 'none'
 ```
 
 Cache rules sit in the same file (`RUNNER_CACHE`): `/` is `max-age=60, stale-while-revalidate=86400`
