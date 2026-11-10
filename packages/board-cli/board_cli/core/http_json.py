@@ -53,7 +53,10 @@ def send_request(method: str, url: str, headers: dict | None = None, data: bytes
         with OPENER.open(request, timeout=TIMEOUT_SECONDS) as reply:
             return build_response(reply.status, reply.headers, reply.read())
     except urllib.error.HTTPError as err:
-        return build_response(err.code, err.headers, err.read())
+        try:
+            return build_response(err.code, err.headers, err.read())
+        finally:
+            err.close()
     except (urllib.error.URLError, http.client.HTTPException, OSError) as err:
         reason = getattr(err, "reason", err)
         raise RuntimeError(f"cannot reach {urllib.parse.urlparse(url).netloc}: {reason}") from None
