@@ -18,7 +18,10 @@ async function tokenRequest(path, method, payload) {
   else delete headers['Content-Type'];
   var response = await fetch('https://api.luluboard.app' + path, init);
   var text = await response.text();
-  var body = text ? JSON.parse(text) : null;
+  var body = null;
+  if (text) {
+    try { body = JSON.parse(text); } catch (_error) { body = { message: text }; }
+  }
   if (!response.ok) throw new Error(readError(body, 'HTTP ' + response.status));
   return body;
 }

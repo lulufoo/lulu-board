@@ -18,6 +18,7 @@ assert.match(tokens, /https:\/\/api\.luluboard\.app/, 'tokens go through board-a
 assert.match(tokens, /tokenRequest\('\/tokens', 'GET'\)/);
 assert.match(tokens, /tokenRequest\('\/tokens', 'POST'/);
 assert.match(tokens, /tokenRequest\('\/tokens\/revoke', 'POST'/);
+assert.match(tokens, /try \{ body = JSON\.parse\(text\); \} catch \(_error\) \{ body = \{ message: text \}; \}/);
 assert.match(tokens, /expires_in_days/);
 assert.doesNotMatch(tokens, /token_hash|localStorage|sessionStorage/);
 assert.match(dialog, /from '\.\.\/cloud\/cloud-tokens\.js'/);
