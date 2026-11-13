@@ -2,8 +2,7 @@
 
 ## Fragment
 
-The fragment is the diagram.
-The diagram is one 16:9 slide. Keep it landscape.
+The fragment is the diagram, content is drawn with HTML. The diagram is one 16:9 slide. Keep it landscape.
 
 1. Contains `<style>` and markup.
 2. Excludes `<!doctype>`, `<html>`, `<head>`, and `<body>`.
