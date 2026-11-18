@@ -88,6 +88,8 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     get innerWidth() { return page.innerWidth; },
     get innerHeight() { return page.innerHeight; },
     addEventListener: (type, fn, capture) => { listeners[type] = fn; captures[type] = capture; },
+    // An element is scrollable when its fake inline style says so; plain content reads back visible.
+    getComputedStyle: (el) => ({ overflowY: (el && el.style && el.style.overflowY) || 'visible' }),
   };
   let observe = null;
   const runner = createRunner({
@@ -97,7 +99,7 @@ function makeEnv({ width = 300, height = 120, toCanvas } = {}) {
     createImageBitmap: async (canvas) => ({ width: canvas.width, height: canvas.height }),
     ResizeObserver: function (cb) { observe = cb; this.observe = () => {}; },
   });
-  return { runner, posted, listeners, captures, parent, mounted, win, page, rootStyle, root: documentElement, events, stack, byTarget, head, fire: () => observe() };
+  return { runner, posted, listeners, captures, parent, mounted, win, page, rootStyle, root: documentElement, body, events, stack, byTarget, head, fire: () => observe() };
 }
 
 const types = (posted) => posted.map((p) => p.msg.type);
@@ -438,6 +440,76 @@ const mountedEnv = () => {
   env.runner.onMessage({ source: env.parent, data: captureMessage('c8', 1) });
   await new Promise((r) => setTimeout(r, 0));
   assert.equal('data-lulu-selected' in el.attrs, true, 'the ring comes back after a failed capture');
+}
+
+/* A wheel target with a parentElement chain; each link carries a fake inline overflow. */
+function wheelNode(overflowY, parentElement) {
+  return { style: { overflowY: overflowY || 'visible' }, parentElement: parentElement || null };
+}
+function wheelEvent(target, deltaY, deltaX, deltaMode) {
+  return {
+    target, deltaX: deltaX || 0, deltaY, deltaMode: deltaMode || 0, prevented: false,
+    preventDefault() { this.prevented = true; },
+  };
+}
+
+{
+  const { runner, listeners, captures } = makeEnv();
+  runner.start();
+  assert.equal(typeof listeners.wheel, 'function', 'the runner watches wheel for Present leftover swipes');
+  assert.deepEqual(captures.wheel, { passive: false }, 'forwarding takes preventDefault, so wheel is not passive');
+}
+
+{
+  // Plain picture content: no inner owner, so the whole vertical gesture goes to Board.
+  const { runner, listeners, posted } = makeEnv();
+  runner.start();
+  const leaf = wheelNode('visible', wheelNode('visible'));
+  const event = wheelEvent(leaf, -90);
+  listeners.wheel(event);
+  assert.equal(event.prevented, true, 'the leftover swipe takes the default away');
+  assert.deepEqual(posted.filter((p) => p.msg.type === SANDBOX_MSG.SCROLL), [
+    { msg: { type: SANDBOX_MSG.SCROLL, dy: -90 }, target: '*', transfer: [] },
+  ], 'the full delta is forwarded through the validated channel');
+}
+
+{
+  // The wheel is over an auto area: the inner layer owns the gesture, even sitting at its own end.
+  const { runner, listeners, posted } = makeEnv();
+  runner.start();
+  const pane = wheelNode('auto');
+  const leaf = wheelNode('visible', pane);
+  listeners.wheel(wheelEvent(leaf, 200));
+  assert.deepEqual(posted.filter((p) => p.msg.type === SANDBOX_MSG.SCROLL), [], 'nothing is forwarded from inside an inner scrollable');
+  const second = wheelEvent(leaf, 200);
+  listeners.wheel(second);
+  assert.equal(second.prevented, false, 'the event stays native so the browser scrolls the pane');
+}
+
+{
+  // Ownership is by position, not by remaining room: a fixed-height dialog body at its last line still holds the swipe.
+  const { runner } = makeEnv();
+  const { scrollOwner } = runner;
+  const dialogBody = wheelNode('scroll');
+  const leaf = wheelNode('visible', dialogBody);
+  assert.equal(scrollOwner(leaf), dialogBody, 'a scroll area at its boundary is still the owner');
+  assert.equal(scrollOwner(wheelNode('visible')), null, 'plain content has no owner');
+  assert.equal(scrollOwner(wheelNode('hidden')), null, 'a clipped area that never scrolls is not an owner');
+}
+
+{
+  // Horizontal swipes and wheel ticks are not Present scroll input.
+  const { runner, listeners, posted } = makeEnv();
+  runner.start();
+  const leaf = wheelNode('visible');
+  listeners.wheel(wheelEvent(leaf, 10, 120));
+  assert.deepEqual(posted.filter((p) => p.msg.type === SANDBOX_MSG.SCROLL), [], 'a horizontal-dominant swipe is left alone');
+  listeners.wheel(wheelEvent(leaf, 0));
+  assert.deepEqual(posted.filter((p) => p.msg.type === SANDBOX_MSG.SCROLL), [], 'a zero vertical delta carries nothing');
+  listeners.wheel(wheelEvent(leaf, 2, 0, 1));
+  assert.deepEqual(posted.filter((p) => p.msg.type === SANDBOX_MSG.SCROLL), [
+    { msg: { type: SANDBOX_MSG.SCROLL, dy: 32 }, target: '*', transfer: [] },
+  ], 'line mode is normalized the same 16 px way the drawer zooms by');
 }
 
 console.log('ok sandbox runner');

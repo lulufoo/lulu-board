@@ -45,3 +45,40 @@ html[data-sketch-mode="present"] .sketch-mode-thumb { transform: translateX(calc
 html[data-sketch-mode="present"] .sketch-frame { pointer-events: auto !important; }
 html[data-sketch-mode="present"]:has(.diagram-dock:not([data-open=""])) .sketch-frame { pointer-events: none !important; }
 html[data-kind="sketch"][data-sketch-mode="present"] #preview-stage { cursor: default; }
+
+/* Present vertical scrollbar: a quiet track in the slot at the canvas right edge — left of the dock rail,
+   clear of the toolbar above and the floats below. Hidden until the canvas actually scrolls, moves with the
+   camera, fades once scrolling stops (canvas-interaction.js drives it). Painted only: pointer-events none
+   keeps the ground underneath clickable and pannable. */
+.sketch-present-scroll {
+  position: absolute;
+  top: 64px;
+  bottom: 56px;
+  right: 52px;
+  width: 6px;
+  border-radius: 3px;
+  background: var(--wash, rgba(15, 23, 42, .06));
+  opacity: 0;
+  transition: opacity .25s ease;
+  pointer-events: none;
+  z-index: 30;
+}
+.sketch-present-scroll.is-visible { opacity: 1; }
+.sketch-present-scroll-thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-height: 24px;
+  border-radius: 3px;
+  background: var(--ink, rgba(15, 23, 42, .35));
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch-present-scroll { transition: none; }
+}
+/* The dock opens over the ground: the track slides left of it so neither covers the other. */
+html:has(.diagram-dock[data-open="props"]) .sketch-present-scroll,
+html:has(.diagram-dock[data-open="style"]) .sketch-present-scroll,
+html:has(.diagram-dock[data-open="source"]) .sketch-present-scroll,
+html:has(.diagram-dock[data-open="export"]) .sketch-present-scroll {
+  right: calc(var(--dock-open-width, 400px) + 12px);
+}

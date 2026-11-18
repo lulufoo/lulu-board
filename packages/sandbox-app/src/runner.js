@@ -11,6 +11,7 @@ import {
   parseText,
   readyMessage,
   sizeMessage,
+  scrollMessage,
   capturedMessage,
   errorMessage,
   pickedMessage,
@@ -257,12 +258,46 @@ export function createRunner(env) {
     }
   }
 
+  /* A wheel delta in CSS px, from the line / page modes the pixel mode needs no help with. The same 16 / 400
+   * units the drawer's zoom uses, so both ends read a gesture the same way. */
+  function wheelDelta(event) {
+    var unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 400 : 1;
+    return { x: Number(event.deltaX || 0) * unit, y: Number(event.deltaY || 0) * unit };
+  }
+
+  /* The scrollable area the wheel landed in, if any. Ownership is by position, not by boundary state: while the
+   * wheel is over an auto / scroll area, that area keeps the whole gesture even at its end, so the canvas behind
+   * the frame never moves (contain, not chain). The walk stops at html and body: the frame is sized to the
+   * picture, so the runner page itself never scrolls and must not swallow the gesture. */
+  function scrollOwner(target) {
+    if (typeof win.getComputedStyle !== 'function') return null;
+    for (var node = target; node; node = node.parentElement) {
+      if (node === doc.documentElement || node === doc.body) return null;
+      var style = win.getComputedStyle(node);
+      var overflow = style && style.overflowY;
+      if (overflow === 'auto' || overflow === 'scroll' || overflow === 'overlay') return node;
+    }
+    return null;
+  }
+
+  /* Present mode gives the frame pointer input, so a two-finger swipe over the picture arrives here. An inner
+   * scrollable area scrolls itself (the event stays native); anything left over goes to Board, which decides
+   * whether the picture is taller than its view and moves the camera. Only a vertical gesture forwards. */
+  function onWheel(event) {
+    var delta = wheelDelta(event);
+    if (!delta.y || Math.abs(delta.x) > Math.abs(delta.y)) return;
+    if (scrollOwner(event.target)) return;
+    event.preventDefault();
+    post(scrollMessage(delta.y));
+  }
+
   function start() {
     win.addEventListener('message', onMessage);
     // Capture phase on the window, registered before any fragment mounts, so it runs ahead of fragment listeners.
     win.addEventListener('click', blockLinkClick, true);
+    win.addEventListener('wheel', onWheel, { passive: false });
     post(readyMessage());
   }
 
-  return { start: start, onMessage: onMessage, blockLinkClick: blockLinkClick };
+  return { start: start, onMessage: onMessage, blockLinkClick: blockLinkClick, scrollOwner: scrollOwner };
 }

@@ -43,7 +43,7 @@ assert.match(skill, /\]\(\.\/references\/template\.md\)/, 'skill loads the templ
 assert.doesNotMatch(template, /data-sketch-mode|lulu-sketch-mode|Present|## Click/, 'template does not describe the modes');
 assert.match(template, /\n## Theme\n\nThe sketch follows the Board theme\.\n\n1\. [\s\S]*\n## Board\n\n[^\n]+\n\n```html\n[\s\S]*\n```\n$/, 'template holds the Theme rules, then ends with the Board block alone');
 assert.doesNotMatch(template, /\]\([^)]*template\.md\)/, 'template does not load itself');
-assert.match(template, /The fragment is the diagram\.\nThe diagram is one 16:9 slide\. Keep it landscape\./, 'template keeps the diagram as one 16:9 slide');
+assert.match(template, /The fragment is the diagram, content is drawn with HTML\. The diagram is one 16:9 slide\. Keep it landscape\./, 'template keeps the diagram as one 16:9 slide');
 assert.match(template, /## Fragment[\s\S]*\n3\. Excludes `<iframe>`, `<object>`, `<embed>`, `<link>`, and `<a>`\. Board removes them before mounting\. Put CSS in `<style>`\.\n[\s\S]*## Theme/, 'template fragment lists the tags Board removes, links included');
 
 // Mode

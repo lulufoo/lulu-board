@@ -26,10 +26,12 @@ import {
   pickedMessage,
   selectMessage,
   textMessage,
+  scrollMessage,
   parsePick,
   parsePicked,
   parseSelect,
   parseText,
+  parseScroll,
 } from '../../packages/sandbox-app/src/protocol.js';
 
 assert.deepEqual(parseRender(renderMessage('<p>x</p>')), { html: '<p>x</p>', appearance: 'light' });
@@ -160,6 +162,17 @@ for (const bad of [
   assert.equal(parseText(bad), null, JSON.stringify(bad));
 }
 assert.equal(parseText({ type: 'x', target: '1', text: 'a' }), null);
+
+assert.deepEqual(parseScroll(scrollMessage(-120)), { dy: -120 }, 'a leftover vertical delta reaches Board');
+assert.deepEqual(parseScroll(scrollMessage(16)), { dy: 16 });
+assert.equal(parseScroll(scrollMessage(0)), null, 'zero carries no motion and is dropped');
+assert.equal(parseScroll(scrollMessage(NaN)), null);
+assert.equal(parseScroll(scrollMessage(Infinity)), null);
+assert.equal(parseScroll(scrollMessage(SANDBOX_MAX_EDGE + 1)), null, 'an oversized delta is dropped, not clamped');
+assert.equal(parseScroll(scrollMessage('5')), null);
+assert.equal(parseScroll(scrollMessage(null)), null);
+assert.equal(parseScroll(scrollMessage(undefined)), null);
+assert.equal(parseScroll({ type: 'x', dy: 5 }), null);
 
 assert.deepEqual(splitSketchText('a\nb\r\nc\rd'), ['a', 'b', 'c', 'd'], 'every line ending is one break');
 assert.deepEqual(splitSketchText(''), ['']);

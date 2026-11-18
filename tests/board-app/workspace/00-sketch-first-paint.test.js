@@ -17,6 +17,9 @@ assert.match(sketch, /height:800px/, 'the frame keeps a layout box before the ru
 assert.match(sketch, /if \(!failed && call\("placeDocumentCamera"\) === true\) \{\s*opts\.cameraPlaced = true;\s*picture\.style\.opacity = "1";/, 'the picture shows only after the camera returns true');
 assert.match(sketch, /renderMessage\(html, getSessionAppearance\(\)\)/, 'the runner still receives html and appearance only');
 assert.doesNotMatch(protocol, /function renderMessage\(html, appearance, viewport/, 'viewport is not a sandbox render field');
+assert.match(sketch, /var scroll = parseScroll\(event\.data\);/, 'a leftover swipe arrives as a validated bridge message');
+assert.match(sketch, /presentScrollBy\(scroll\.dy\)/, 'the leftover swipe feeds the one Present camera mover');
+assert.match(sketch, /presentReclamp\(\);/, 'a new picture size re-clamps the Present camera');
 
 const place = canvas.slice(canvas.indexOf('function placeDocumentCamera'), canvas.indexOf('\nwindow.addEventListener'));
 assert.ok(place.indexOf('function placeDocumentCamera') === 0, 'sync camera lives on the canvas');
