@@ -65,7 +65,10 @@ const panAt = downFn.indexOf('panning = true');
 const armed = downFn.indexOf('presentDismiss = true');
 const presentReturn = downFn.indexOf('return;', armed);
 assert.ok(presentAt >= 0 && armed > presentAt && presentReturn > armed && presentReturn < panAt, 'Present press returns before pan starts');
-assert.match(src.slice(src.indexOf('function onWheel'), src.indexOf('function onPointerDown')), /if \(isSketchPresent\(\)\) return;/, 'Present does not wheel-zoom the ground');
+const wheelFn = src.slice(src.indexOf('function onWheel'), src.indexOf('function onPointerDown'));
+assert.match(wheelFn, /if \(isSketchPresent\(\)\)/, 'Present wheel takes its own path, not wheel zoom');
+assert.ok(wheelFn.indexOf('isSketchPresent') < wheelFn.indexOf('setCanvasZoom'), 'Present returns before the ground zooms');
+assert.match(wheelFn, /presentWheel\(event\)/, 'the Present ground wheel feeds the one Present entry');
 assert.match(src.slice(src.indexOf('function onDblClick'), src.indexOf('function onWheel')), /if \(isSketchPresent\(\)\) return;/, 'Present does not open Props on blank dblclick');
 const upFn = src.slice(src.indexOf('function onPointerUp'), src.indexOf('function onPointerCancel'));
 assert.match(upFn, /if \(presentDismiss\)/, 'Present click is handled on release');
@@ -176,6 +179,106 @@ assert.doesNotMatch(flow, /\.top-float, \.diagram-dock, \.zoom-float/, 'dock res
     Interaction.leaveBlank();
     assert.equal(probes.length, 2, 'leaving without a click never probes');
     assert.equal(sketchClear, base + 3);
+  } finally {
+    if (previousDocument === undefined) delete globalThis.document;
+    else globalThis.document = previousDocument;
+  }
+}
+
+{
+  // Present vertical scroll: one camera mover for the host ground and the runner's leftover swipe, clamped to
+  // the content, with the quiet edge scrollbar as its only trace.
+  const hooks = require('../../../packages/board-app/workspace/src/core/hooks.js');
+  const previousDocument = globalThis.document;
+  const camera = { scale: 0.5, cx: 300, cy: 1000 };
+  const bounds = { minX: 0, minY: 0, maxX: 600, maxY: 2000, width: 600, height: 2000, cx: 300, cy: 1000 };
+  const stageBox = { w: 400, h: 500 };
+  let applied = null;
+  hooks.register("readCamera", () => camera);
+  hooks.register("contentBounds", () => bounds);
+  hooks.register("stageSize", () => stageBox);
+  hooks.register("applyCamera", (cam) => {
+    applied = cam;
+    camera.scale = cam.scale;
+    camera.cx = cam.cx;
+    camera.cy = cam.cy;
+    return true;
+  });
+  function fakeEl(name) {
+    const el = {
+      name, className: '', style: {}, kids: [], firstChild: null, classes: [],
+      appendChild(k) { el.kids.push(k); if (!el.firstChild) el.firstChild = k; },
+      classList: {
+        add(c) { el.classes.push(c); },
+        remove(c) { el.classes = el.classes.filter((x) => x !== c); },
+      },
+    };
+    return el;
+  }
+  const created = [];
+  globalThis.document = {
+    documentElement: { dataset: { kind: 'sketch', sketchMode: 'present' } },
+    createElement(name) { const el = fakeEl(name); created.push(el); return el; },
+  };
+  const kids = [];
+  const stage = {
+    on: {},
+    addEventListener(type, fn) { this.on[type] = fn; },
+    appendChild(k) { kids.push(k); },
+  };
+  Interaction.bind(stage);
+  try {
+    // Half the stage in world is 250 / .5 = 500, so over 0..2000 content the centre runs 500..1500.
+    assert.equal(Interaction.presentScrollBy(-200), true, 'a swipe up moves the camera while the picture is taller');
+    assert.equal(camera.cy, 600, 'the move is the delta at the live zoom (200 / .5 = 400 world)');
+    assert.equal(applied.scale, 0.5, 'Present scroll never touches the zoom');
+    assert.equal(Interaction.presentScrollBy(-5000), true, 'a long swipe past the top is taken');
+    assert.equal(camera.cy, 500, 'the camera stops with the content top at the stage top');
+    assert.equal(Interaction.presentScrollBy(-10), false, 'at the top boundary nothing moves');
+    assert.equal(Interaction.presentScrollBy(7000), true, 'a long swipe down reaches the bottom boundary');
+    assert.equal(camera.cy, 1500, 'the camera stops with the content bottom at the stage bottom');
+    const bar = kids[0];
+    assert.ok(bar, 'the scrollbar track is hung on the stage');
+    assert.equal(bar.className, 'sketch-present-scroll', 'the track is the Present scrollbar');
+    assert.equal(created.length, 2, 'one track and one thumb are built, once');
+    assert.equal(bar.firstChild.style.height, '50%', 'the thumb is the visible share of the content');
+    assert.equal(bar.firstChild.style.top, '50%', 'at the bottom boundary the thumb sits flush with the track end (100 - 50)');
+    assert.ok(bar.classes.indexOf('is-visible') >= 0, 'a real scroll shows the scrollbar');
+    assert.equal(Interaction.presentScrollBy(0), false, 'a zero delta carries no motion');
+    assert.equal(Interaction.presentScrollBy(NaN), false, 'a junk delta carries no motion');
+    bounds.maxY = 800;
+    assert.equal(Interaction.presentScrollBy(10), false, 'content that fits scrolls nowhere');
+    assert.equal(camera.cy, 1500, 'and the camera stays where it is');
+    Interaction.presentReclamp();
+    assert.equal(camera.cy, 1500, 'a fitting picture is never pulled by a reclamp');
+    bounds.maxY = 2000;
+    camera.cy = 1600;
+    Interaction.presentReclamp();
+    assert.equal(camera.cy, 1500, 'a camera left past the range by a resize comes back inside it');
+    camera.cy = 300;
+    Interaction.presentReclamp();
+    assert.equal(camera.cy, 500, 'a camera left above the range comes back inside it');
+
+    const prevented = [];
+    const wheel = (target, deltaY) => {
+      const event = { target, deltaY, deltaMode: 0, prevented: false, preventDefault() { this.prevented = true; } };
+      stage.on.wheel(event);
+      prevented.push(event.prevented);
+      return event;
+    };
+    camera.cy = 1000;
+    const before = camera.cy;
+    wheel({ closest: () => '.props-panel' }, -100);
+    assert.equal(camera.cy, before, 'a wheel on chrome never moves the Present camera');
+    assert.deepEqual(prevented, [false], 'chrome keeps its own native scroll, boundary included');
+    wheel({ closest: () => null }, -100);
+    assert.equal(camera.cy, before - 200, 'a wheel on the blank ground moves the camera');
+    assert.deepEqual(prevented, [false, true], 'the ground swipe takes the default away');
+
+    globalThis.document.documentElement.dataset.sketchMode = 'canvas';
+    assert.equal(Interaction.presentScrollBy(-50), false, 'Canvas mode never scrolls the picture');
+    Interaction.presentReclamp();
+    assert.equal(camera.cy, before - 200, 'Canvas mode never reclamps either');
   } finally {
     if (previousDocument === undefined) delete globalThis.document;
     else globalThis.document = previousDocument;

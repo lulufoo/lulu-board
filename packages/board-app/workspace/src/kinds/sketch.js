@@ -1,11 +1,12 @@
 /* Mount a sketch fragment in the sandbox runner frame. Its scripts run there. */
 import DrawerStyleLine from '../core/style-line.js';
 import { emit, call } from '../core/hooks.js';
-import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseCaptured, parsePicked, parseError } from '../../../../sandbox-app/src/protocol.js';
+import { renderMessage, appearanceMessage, captureMessage, parseReady, parseSize, parseScroll, parseCaptured, parsePicked, parseError } from '../../../../sandbox-app/src/protocol.js';
 import { stampSketchLeaves } from '../core/sketch-source.js';
 import { openSketchChannel, getSketchChannel, settleSketchPick, failSketchPicks } from './sketch-bridge.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
 import { setSketchMode, bindSketchMode, getSessionSketchMode } from './sketch-mode.js';
+import { presentScrollBy, presentReclamp } from '../state/canvas-interaction.js';
 import {
   previewEl,
   diagramSourceEl,
@@ -178,6 +179,8 @@ export function renderSketch(opts) {
     frame.style.top = -bleed + "px";
     frame.style.width = size.width + "px";
     frame.style.height = size.height + "px";
+    // New picture bounds mean a new Present scroll range; keep the camera inside it.
+    presentReclamp();
   }
   var sent = false;
   var channel = openSketchChannel(frame);
@@ -219,6 +222,12 @@ export function renderSketch(opts) {
     var picked = parsePicked(event.data);
     if (picked) {
       settleSketchPick(channel, picked.id, picked.target);
+      return;
+    }
+    // A swipe the runner's inner layer did not take. Present keeps one camera mover, so the leftover goes there.
+    var scroll = parseScroll(event.data);
+    if (scroll) {
+      presentScrollBy(scroll.dy);
       return;
     }
     var captured = parseCaptured(event.data);

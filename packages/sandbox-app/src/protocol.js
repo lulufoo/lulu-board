@@ -13,6 +13,7 @@ export const SANDBOX_MSG = Object.freeze({
   PICKED: 'lulu-sandbox:picked',
   SELECT: 'lulu-sandbox:select',
   TEXT: 'lulu-sandbox:text',
+  SCROLL: 'lulu-sandbox:scroll',
   ERROR: 'lulu-sandbox:error',
 });
 
@@ -130,6 +131,18 @@ export function parseText(data) {
   if (!isObject(data) || data.type !== SANDBOX_MSG.TEXT || !isSketchTarget(data.target)) return null;
   if (typeof data.text !== 'string' || data.text.length > SANDBOX_MAX_TEXT) return null;
   return { target: data.target, text: data.text };
+}
+
+/* The vertical wheel delta the frame's inner layer did not take, in frame CSS px. The drawer turns it into camera
+ * motion at its own zoom. Zero carries no motion, so it is dropped. */
+export function scrollMessage(dy) {
+  return { type: SANDBOX_MSG.SCROLL, dy: dy };
+}
+
+export function parseScroll(data) {
+  if (!isObject(data) || data.type !== SANDBOX_MSG.SCROLL) return null;
+  if (!validPoint(data.dy) || data.dy === 0) return null;
+  return { dy: data.dy };
 }
 
 export function parseRender(data) {

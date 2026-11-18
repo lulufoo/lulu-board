@@ -1,5 +1,5 @@
 /* Shared canvas gestures. Live camera is imported from shell-state. */
-import { emit } from '../core/hooks.js';
+import { emit, call } from '../core/hooks.js';
 import DrawerStyleLine from '../core/style-line.js';
 import {
   closePropsPanel,
@@ -92,6 +92,98 @@ export function wheelFactor(deltaY, deltaMode) {
   return Math.exp(-(Number(deltaY) * unit) * 0.0012);
 }
 
+/* Present vertical scroll. Present locks zoom, so a two-finger swipe has one job: move the camera's centre up
+ * and down, and only while the drawing is taller than the stage. One entry, `presentScrollBy`, feeds both wheel
+ * sources: the host ground (blank ground, or the inert frame under an open dock) and the runner's leftover
+ * swipe, which arrives over the Sketch bridge as a `scroll` message. The camera is never persisted from here. */
+
+var presentBar = null;
+var presentBarTimer = 0;
+
+function presentRange() {
+  var cam = call("readCamera");
+  var b = call("contentBounds");
+  var stage = call("stageSize");
+  if (!cam || !b || !stage || !(cam.scale > 0)) return null;
+  var halfH = stage.h / 2 / cam.scale;
+  var minCy = b.minY + halfH;
+  var maxCy = b.maxY - halfH;
+  if (!(maxCy > minCy)) return null;
+  return { cam: cam, minCy: minCy, maxCy: maxCy, contentH: b.maxY - b.minY, visibleH: stage.h / cam.scale };
+}
+
+function presentClamp(range, cy) {
+  return Math.min(range.maxCy, Math.max(range.minCy, cy));
+}
+
+export function presentScrollBy(dy) {
+  if (!isSketchPresent()) return false;
+  var n = Number(dy);
+  if (!isFinite(n) || n === 0) return false;
+  var range = presentRange();
+  if (!range) return false;
+  var next = presentClamp(range, range.cam.cy + n / range.cam.scale);
+  if (next === range.cam.cy) return false;
+  if (call("applyCamera", { scale: range.cam.scale, cx: range.cam.cx, cy: next }) !== true) return false;
+  flashPresentBar((next - range.minCy) / (range.maxCy - range.minCy), range.visibleH / range.contentH);
+  return true;
+}
+
+/* A window or picture resize changes the range: pull the camera back inside the new one. Content that now fits
+ * leaves the camera where it is. */
+export function presentReclamp() {
+  if (!isSketchPresent()) return;
+  var range = presentRange();
+  if (!range) return;
+  var cy = presentClamp(range, range.cam.cy);
+  if (cy === range.cam.cy) return;
+  call("applyCamera", { scale: range.cam.scale, cx: range.cam.cx, cy: cy });
+}
+
+function onPresentResize() {
+  presentReclamp();
+}
+
+function presentScrollbar() {
+  if (presentBar) return presentBar;
+  if (!boundStage || typeof document === "undefined" || !document.createElement) return null;
+  var bar = document.createElement("div");
+  bar.className = "sketch-present-scroll";
+  var thumb = document.createElement("span");
+  thumb.className = "sketch-present-scroll-thumb";
+  bar.appendChild(thumb);
+  boundStage.appendChild(bar);
+  presentBar = bar;
+  return bar;
+}
+
+function flashPresentBar(fraction, ratio) {
+  var thumb = presentScrollbar();
+  thumb = thumb && thumb.firstChild;
+  if (!thumb || !thumb.style) return;
+  var height = Math.round(Math.min(100, Math.max(10, ratio * 100)));
+  var top = Math.round(Math.min(1, Math.max(0, fraction)) * (100 - height));
+  thumb.style.height = height + "%";
+  thumb.style.top = top + "%";
+  if (presentBar.classList && presentBar.classList.add) presentBar.classList.add("is-visible");
+  if (presentBarTimer) clearTimeout(presentBarTimer);
+  presentBarTimer = setTimeout(function () {
+    presentBarTimer = 0;
+    if (presentBar && presentBar.classList && presentBar.classList.remove) {
+      presentBar.classList.remove("is-visible");
+    }
+  }, 900);
+}
+
+function presentWheel(event) {
+  var target = event.target;
+  // Chrome under the wheel scrolls itself, at its boundary too; the ground never takes the gesture back.
+  if (target && typeof target.closest === "function" && target.closest(CHROME_SEL)) return;
+  event.preventDefault();
+  var unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 400 : 1;
+  presentScrollBy(Number(event.deltaY) * unit);
+}
+
 function hideBlankProps() {
   closePropsPanel();
 }
@@ -116,8 +208,11 @@ function onDblClick(event) {
 }
 
 function onWheel(event) {
+  if (isSketchPresent()) {
+    presentWheel(event);
+    return;
+  }
   event.preventDefault();
-  if (isSketchPresent()) return;
   var factor = wheelFactor(event.deltaY, event.deltaMode);
   setCanvasZoom(scale * factor);
   emit("noteUserCanvasView");
@@ -205,6 +300,9 @@ export function bind(stage) {
   stage.addEventListener("pointercancel", onPointerCancel);
   stage.addEventListener("selectstart", onSelectStart);
   stage.addEventListener("dblclick", onDblClick);
+  if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener("resize", onPresentResize);
+  }
 }
 
 export const Canvas = {
@@ -214,6 +312,8 @@ export const Canvas = {
   isBlockedTarget: isBlockedTarget,
   isSketchPresent: isSketchPresent,
   wheelFactor: wheelFactor,
+  presentScrollBy: presentScrollBy,
+  presentReclamp: presentReclamp,
   leaveBlank: leaveBlank,
   openBlankProps: openBlankProps,
   bind: bind,
