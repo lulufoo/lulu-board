@@ -19,6 +19,8 @@ import {
   cloudDiagramCache,
   setCloudClient,
   setCloudSession,
+  setCloudDiagramReady,
+  completeCloudDiagramView,
   setCloudSessionReady,
   bumpCloudLoadSeq,
   bumpCloudSaveSeq,
@@ -38,6 +40,8 @@ import {
   setStatus,
   updateDiagramChars,
   applyDiagramLiveMeta,
+  observeDiagramSource,
+  setDiagramSaveStatus,
   syncSourceDockLabel,
   setDiagramDirty,
   setDiagramLocalRev,
@@ -384,6 +388,7 @@ function cloudSetDiagramHash(diagramId, replace) {
 }
 
 function cloudClearOpenDiagram() {
+  setCloudDiagramReady(false);
   emit("cloudClearGroupTabs");
   if (!cloudDiagramId() || !diagramSourceEl) return;
   diagramSourceEl.value = "";
@@ -531,6 +536,10 @@ function applyCloudDiagramRow(row, opts) {
     localRev: diagramLocalRev,
   });
   syncCloudSaveChrome();
+  if (opts.loaded) {
+    setDiagramSaveStatus(row && row.dirty ? 'saving' : 'saved');
+    setCloudDiagramReady(false);
+  }
 }
 
 function groupDiagramRowsByGroup(diagramRows, memberships) {
@@ -584,12 +593,13 @@ async function saveDiagramToCloud(opts) {
     return false;
   }
   var source = stripDocumentMeta(diagramSourceEl && diagramSourceEl.value);
-  if (diagramSourceEl && source !== diagramSourceEl.value) diagramSourceEl.value = source;
+  if (diagramSourceEl && source !== diagramSourceEl.value) { diagramSourceEl.value = source; observeDiagramSource(); }
   var diagramId = (typeof cloudDiagramId === "function" && cloudDiagramId())
     || (typeof liveDiagramId !== "undefined" ? String(liveDiagramId || "") : "");
   if (cloudPlusDraftActive) diagramId = "";
   var title = cloudDiagramTitle(source) || "Untitled";
   var seq = bumpCloudSaveSeq();
+  var loadSeq = cloudLoadSeq;
   setDiagramSyncUI("saving");
   try {
     if (!diagramId) {
@@ -629,8 +639,12 @@ async function saveDiagramToCloud(opts) {
       setCloudPlusDraftActive(false);
       setCloudPlusDraftSource("");
       setCloudPlusDraftRev(1);
-      applyCloudDiagramRow(created);
+      applyCloudDiagramRow(created, { loaded: loadSeq === cloudLoadSeq });
       cloudSetDiagramHash(diagramId, true);
+      if (loadSeq === cloudLoadSeq) {
+        emit("renderDiagram", { fit: false, restoreView: true });
+        completeCloudDiagramView(loadSeq);
+      }
       await call("refreshCloudGroupMembers", diagramId);
     } else {
       var expected = Number(diagramServerRev);
@@ -654,6 +668,7 @@ async function saveDiagramToCloud(opts) {
       if (updateResponse.status === 409) {
         if (seq !== cloudSaveSeq) return false;
         var latest = await fetchOwnedGraph(diagramId);
+        if (seq !== cloudSaveSeq) return false;
         if (!latest) throw new Error("Cloud diagram not found");
         applyCloudDiagramRow(latest);
         emit("renderDiagram", { fit: false, restoreView: true });
@@ -698,6 +713,7 @@ async function loadCloudDiagramByHash(raw) {
   emit("setShareEdit", false);
   var diagramId = cloudDiagramIdFromHash(raw);
   if (!diagramId) return false;
+  var seq = bumpCloudLoadSeq();
   // Fade only when a different board opens. Judge now: applying the row sets liveDiagramId.
   var switching = diagramId !== liveDiagramId;
   var requestedGroupId = call("cloudTakeRequestedGroupId") != null ? call("cloudTakeRequestedGroupId") : "";
@@ -707,26 +723,27 @@ async function loadCloudDiagramByHash(raw) {
     return true;
   }
   await cloudSessionReady;
+  if (seq !== cloudLoadSeq) return true;
   if (!cloudSession || !cloudSession.user) {
     cloudClearOpenDiagram();
     cloudShowSignInDialog();
     setStatus("Sign in to open this cloud diagram", true);
     return true;
   }
-  var seq = bumpCloudLoadSeq();
   var known = call("cloudKnownGroupDiagram", diagramId);
   var cached = cloudCachedDiagramRow(diagramId);
   if (cached) {
     if (seq !== cloudLoadSeq) return true;
     setCloudPlusDraftActive(false);
-    applyCloudDiagramRow(cached, { skipShare: known });
+    applyCloudDiagramRow(cached, { skipShare: known, loaded: true });
+    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
+    completeCloudDiagramView(seq);
     if (known) {
       emit("renderCloudGroupTabs");
     } else {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     emit("shellRenderMine");
@@ -738,14 +755,15 @@ async function loadCloudDiagramByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     if (!result) throw new Error("Cloud diagram not found");
     setCloudPlusDraftActive(false);
-    applyCloudDiagramRow(result, { skipShare: known });
+    applyCloudDiagramRow(result, { skipShare: known, loaded: true });
+    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
+    completeCloudDiagramView(seq);
     if (known) {
       emit("renderCloudGroupTabs");
     } else {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
     setDiagramSyncUI("ok");
     setStatus("Cloud diagram loaded");
     emit("shellRenderMine");

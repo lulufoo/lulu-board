@@ -43,6 +43,8 @@ import {
   setDiagramLocalRev,
   setDiagramServerRev,
   setDiagramDirty,
+  setDiagramSaveStatus,
+  observeDiagramSource,
   setDiagramSaveTimer,
   bumpDiagramSaveSeq,
   setDiagramRenderTimer,
@@ -369,6 +371,7 @@ function renderMindmap(opts) {
 }
 
 function renderDiagram(opts) {
+  observeDiagramSource();
   opts = opts || {};
   holdDiagramSwap(opts);
   var renderToken = ++diagramRenderToken;
@@ -430,7 +433,7 @@ function renderDiagram(opts) {
   });
 }
 function scheduleDiagramRender() { clearTimeout(diagramRenderTimer); setDiagramRenderTimer(setTimeout(renderDiagram, 220)); }
-function setDiagramSyncUI(state = 'ok') { const pill = $('#diagramSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${diagramLocalRev}</b>`; }
+function setDiagramSyncUI(state = 'ok') { setDiagramSaveStatus(state === 'ok' ? 'saved' : state); const pill = $('#diagramSyncPill'); if (!pill) return; const label = state === 'saving' ? 'saving' : state === 'error' ? 'error' : state === 'conflict' ? 'conflict' : 'rev'; pill.className = 'pill ' + (state === 'ok' ? 'ok' : 'warn'); pill.innerHTML = `${label} <b>${diagramLocalRev}</b>`; }
 // Cloud saves hit Supabase; debounce them longer than local/URL saves.
 function diagramSaveDelay() { return call("cloudDiagramId") ? 3000 : 350; }
 function bumpClientRevIfSynced() {
@@ -482,7 +485,7 @@ async function saveDiagramToHash(opts) {
   opts = opts || {};
   setDiagramSaveTimer(null);
   var text = stripDocumentMeta(diagramSourceEl.value);
-  if (diagramSourceEl && text !== diagramSourceEl.value) diagramSourceEl.value = text;
+  if (diagramSourceEl && text !== diagramSourceEl.value) { diagramSourceEl.value = text; observeDiagramSource(); }
   const seq = bumpDiagramSaveSeq();
   try {
     if (opts.bump !== false) setDiagramLocalRev((Number(diagramLocalRev) || 0) + 1);
@@ -516,7 +519,7 @@ async function saveDiagramToFile() {
     return saveDiagramToHash();
   }
   var text = stripDocumentMeta(diagramSourceEl.value);
-  if (diagramSourceEl && text !== diagramSourceEl.value) diagramSourceEl.value = text;
+  if (diagramSourceEl && text !== diagramSourceEl.value) { diagramSourceEl.value = text; observeDiagramSource(); }
   const seq = bumpDiagramSaveSeq(), baseRev = diagramLocalRev;
   try {
     const headers = {

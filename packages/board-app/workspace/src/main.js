@@ -13,3 +13,17 @@ import './chrome/shortcuts.js';
 import './chrome/source-style.js';
 import './chrome/theme-picker.js';
 import './chrome/native-selects.js';
+
+import { configureCurrentDiagramContext } from './state/current-diagram.js';
+import { cloudClient, cloudSession, cloudPlusDraftActive, cloudDiagramReady } from './cloud/cloud-state.js';
+import { isShareGuest } from './cloud/cloud-share.js';
+import { invalidatePageRevision } from './core/page-revision.js';
+
+configureCurrentDiagramContext(function () {
+  return {
+    signedIn: !!(cloudSession && cloudSession.user && cloudSession.user.id),
+    canEdit: !!cloudClient && !cloudPlusDraftActive && !isShareGuest(),
+    ready: cloudDiagramReady,
+  };
+});
+window.addEventListener('hashchange', invalidatePageRevision);

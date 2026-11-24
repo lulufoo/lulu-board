@@ -4,6 +4,9 @@ import { emit, call } from '../core/hooks.js';
 import {
   cloudClient,
   cloudSession,
+  cloudDiagramReady,
+  setCloudDiagramReady,
+  completeCloudDiagramView,
   cloudLoadSeq,
   cloudPlusDraftActive,
   bumpCloudLoadSeq,
@@ -26,6 +29,7 @@ import { cloudClearDirtyLeave, bindChromeTip } from './cloud-group-tabs.js';
 /* drawer-app/06-cloud-pull.js — green Saved pulls the open board from the cloud */
 async function pullDiagramFromCloud() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return false;
+  if (!cloudDiagramReady) return false;
   if (call("isShareGuest")) return false;
   var diagramId = cloudDiagramId();
   if (!diagramId || cloudPlusDraftActive) return false;
@@ -38,6 +42,8 @@ async function pullDiagramFromCloud() {
     });
     if (!ok) return false;
   }
+  if (!cloudDiagramReady) return false;
+  var wasReady = cloudDiagramReady;
   var seq = bumpCloudLoadSeq();
   setDiagramSyncUI("saving");
   try {
@@ -46,14 +52,16 @@ async function pullDiagramFromCloud() {
     if (!result) throw new Error("Cloud diagram not found");
     cloudClearDirtyLeave();
     cloudForgetDiagramCache([diagramId]);
-    applyCloudDiagramRow(result);
+    applyCloudDiagramRow(result, { loaded: true });
     emit("renderDiagram", { fit: false, restoreView: true });
+    completeCloudDiagramView(seq);
     setDiagramSyncUI("ok");
     setStatus("Pulled from cloud");
     emit("showCopyTip", "Pulled from cloud");
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return false;
+    setCloudDiagramReady(wasReady);
     setDiagramSyncUI("error");
     setStatus(error && error.message ? error.message : "Cloud pull failed", true);
     return false;
