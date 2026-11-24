@@ -1,5 +1,6 @@
-/* Settings dialog: list, generate, and one-time copy of a personal access token. */
+/* Settings: browser collaboration preference and separate personal-access-token panes. */
 import { register, call } from '../core/hooks.js';
+import { getWebMcpPreference, setWebMcpEnabled, subscribeWebMcpPreference } from '../core/webmcp-preference.js';
 import { cloudListTokens, cloudCreateToken, cloudRevokeToken } from '../cloud/cloud-tokens.js';
 import { setStatus } from '../state/shell-state.js';
 import { paintTokenRow } from './settings-token-row.js';
@@ -9,6 +10,9 @@ var settingsPlain = '';
 var settingsDays = 30;
 var settingsArmedId = '';
 var settingsRows = [];
+var settingsTab = 'general';
+var settingsListLoaded = false;
+var settingsSession = 0;
 var settingsPreviewRows = [
   { id: 'preview-ci', name: 'CI bot', prefix: 'lbp_abcd', expires_at: '2026-12-10T00:00:00Z' },
   { id: 'preview-1', name: 'Spark — Mac', prefix: 'lbp_6a2f', expires_at: '2026-12-10T00:00:00Z' },
@@ -37,11 +41,40 @@ function settingsSetError(text) {
   if (node) { node.textContent = text || ''; node.hidden = !text; }
 }
 
-function settingsHead(title, sub) {
-  var h = settingsEl('settingsDialogTitle');
-  var s = settingsEl('settingsDialogSub');
-  if (h) h.textContent = title;
-  if (s) s.textContent = sub;
+function settingsPaintPreference() {
+  var state = getWebMcpPreference();
+  var toggle = settingsEl('settingsWebMcpSwitch');
+  if (toggle) toggle.setAttribute('aria-checked', state.enabled ? 'true' : 'false');
+  var notice = settingsEl('settingsPreferenceNotice');
+  if (notice) {
+    notice.textContent = state.storageError === 'read'
+      ? 'This browser could not load the setting. WebMCP stays off until you choose a setting.'
+      : state.storageError === 'write'
+        ? 'Changed for this tab. This browser could not save the setting for your next visit.'
+        : '';
+    notice.hidden = !state.storageError;
+  }
+}
+
+function settingsSelectTab(name, focus) {
+  settingsTab = name === 'tokens' ? 'tokens' : 'general';
+  ['general', 'tokens'].forEach(function (part) {
+    var suffix = part === 'general' ? 'General' : 'Tokens';
+    var tab = settingsEl('settingsTab' + suffix);
+    var panel = settingsEl('settingsPanel' + suffix);
+    var selected = part === settingsTab;
+    if (tab) {
+      tab.setAttribute('aria-selected', selected ? 'true' : 'false');
+      tab.tabIndex = selected ? 0 : -1;
+      if (focus && selected) tab.focus({ preventScroll: true });
+    }
+    if (panel) panel.hidden = !selected;
+  });
+  settingsSetArmed('');
+  if (settingsTab === 'tokens' && !settingsListLoaded) {
+    settingsListLoaded = true;
+    void settingsLoadList();
+  }
 }
 
 function settingsShowPane(name) {
@@ -49,8 +82,6 @@ function settingsShowPane(name) {
     var pane = settingsEl('settingsPane' + part);
     if (pane) pane.hidden = part.toLowerCase() !== name;
   });
-  if (name === 'list') settingsHead('Settings', 'Manage access to Board');
-  if (name === 'generate') settingsHead('Generate personal access token', 'For reading your diagrams in Spark');
 }
 
 function settingsPaintDays() {
@@ -71,14 +102,24 @@ function settingsSetArmed(id) {
   Array.prototype.forEach.call(settingsTokenCards(), function (card) {
     var on = !!settingsArmedId && card.getAttribute('data-token-id') === settingsArmedId;
     card.classList.toggle('is-armed', on);
+    var reveal = card.querySelector('.settings-text-btn');
+    if (reveal) reveal.tabIndex = on ? -1 : 0;
     var action = card.querySelector('.settings-token-action');
-    if (action) action.style.transform = '';
+    if (action) {
+      action.style.transform = '';
+      action.tabIndex = on ? 0 : -1;
+      if (settingsTab === 'tokens') {
+        if (on) action.focus({ preventScroll: true });
+        else if (document.activeElement === action && reveal) reveal.focus({ preventScroll: true });
+      }
+    }
   });
 }
 
 function settingsPaintList() {
   var box = settingsEl('settingsTokenList');
   if (!box) return;
+  var hadFocus = box.contains(document.activeElement);
   box.replaceChildren();
   if (!settingsRows.length) {
     settingsArmedId = '';
@@ -86,20 +127,25 @@ function settingsPaintList() {
     empty.className = 'settings-empty';
     empty.textContent = 'No personal access tokens yet.';
     box.appendChild(empty);
-    return;
+  } else {
+    settingsRows.forEach(function (row) {
+      box.appendChild(paintTokenRow(row, {
+        armedId: settingsArmedId,
+        prefixLabel: settingsPrefixLabel,
+        expiresLabel: settingsExpiresLabel,
+        onReveal: settingsSetArmed,
+        onRevoke: function (id) { void settingsRevoke(id); },
+      }));
+    });
   }
-  settingsRows.forEach(function (row) {
-    box.appendChild(paintTokenRow(row, {
-      armedId: settingsArmedId,
-      prefixLabel: settingsPrefixLabel,
-      expiresLabel: settingsExpiresLabel,
-      onReveal: settingsSetArmed,
-      onRevoke: function (id) { void settingsRevoke(id); },
-    }));
-  });
+  if (hadFocus && settingsTab === 'tokens') {
+    var trigger = settingsEl('settingsGenerateOpen');
+    if (trigger && !trigger.closest('[hidden]')) trigger.focus({ preventScroll: true });
+  }
 }
 
 async function settingsLoadList() {
+  var session = settingsSession;
   settingsSetError('');
   if (!settingsLive()) {
     settingsRows = settingsPreviewRows.slice();
@@ -107,8 +153,11 @@ async function settingsLoadList() {
     return;
   }
   try {
-    settingsRows = await cloudListTokens();
+    var rows = await cloudListTokens();
+    if (session !== settingsSession) return;
+    settingsRows = rows;
   } catch (error) {
+    if (session !== settingsSession) return;
     settingsRows = [];
     var message = error && error.message ? error.message : 'Could not load tokens';
     settingsSetError(message);
@@ -131,28 +180,34 @@ function settingsOpenGenerate() {
 function settingsShowResult(name, days, token) {
   settingsPlain = token;
   var sub = String(name || 'Token') + ' · Expires in ' + days + ' days';
-  settingsHead('Token generated', sub);
+  var resultSub = settingsEl('settingsTokenResultSub');
+  if (resultSub) resultSub.textContent = sub;
   var value = settingsEl('settingsTokenValue');
   if (value) value.textContent = token;
   var copy = settingsEl('settingsCopyToken');
   if (copy) copy.textContent = 'Copy';
   settingsShowPane('result');
-  if (copy) copy.focus({ preventScroll: true });
+  if (copy && settingsTab === 'tokens') copy.focus({ preventScroll: true });
 }
 
 function settingsOpen() {
   var dialog = settingsEl('settingsDialog');
   if (!dialog) return;
+  settingsSession += 1;
   settingsPlain = '';
   settingsArmedId = '';
+  settingsListLoaded = false;
+  settingsSetError('');
+  var value = settingsEl('settingsTokenValue');
+  if (value) value.textContent = '';
   settingsShowPane('list');
+  settingsPaintPreference();
   dialog.hidden = false;
-  var first = settingsEl('settingsGenerateOpen');
-  if (first) first.focus({ preventScroll: true });
-  void settingsLoadList();
+  settingsSelectTab('general', true);
 }
 
 function settingsClose() {
+  settingsSession += 1;
   var dialog = settingsEl('settingsDialog');
   if (dialog) dialog.hidden = true;
   settingsPlain = '';
@@ -161,6 +216,8 @@ function settingsClose() {
   var value = settingsEl('settingsTokenValue');
   if (value) value.textContent = '';
   settingsShowPane('list');
+  var trigger = settingsEl('btnShellSettings');
+  if (trigger) trigger.focus({ preventScroll: true });
 }
 
 async function settingsCreate() {
@@ -180,10 +237,13 @@ async function settingsCreate() {
     return;
   }
   settingsBusy = true;
+  var session = settingsSession;
   try {
     var made = await cloudCreateToken(name, settingsDays);
+    if (session !== settingsSession) return;
     settingsShowResult(name, settingsDays, made.token);
   } catch (error) {
+    if (session !== settingsSession) return;
     var message = error && error.message ? error.message : 'Could not create token';
     settingsSetError(message);
     if (typeof setStatus === 'function') setStatus(message, true);
@@ -202,12 +262,15 @@ async function settingsRevoke(id) {
     return;
   }
   settingsBusy = true;
+  var session = settingsSession;
   try {
     await cloudRevokeToken(id);
+    if (session !== settingsSession) return;
     settingsArmedId = '';
     await settingsLoadList();
     if (typeof setStatus === 'function') setStatus('Token revoked');
   } catch (error) {
+    if (session !== settingsSession) return;
     var message = error && error.message ? error.message : 'Could not revoke token';
     settingsSetError(message);
     if (typeof setStatus === 'function') setStatus(message, true);
@@ -231,6 +294,25 @@ async function settingsCopy() {
 (function wireSettingsDialog() {
   var dialog = settingsEl('settingsDialog');
   if (!dialog) return;
+  settingsPaintPreference();
+  subscribeWebMcpPreference(settingsPaintPreference);
+  settingsEl('settingsWebMcpSwitch').addEventListener('click', function () {
+    setWebMcpEnabled(!getWebMcpPreference().enabled);
+  });
+  ['general', 'tokens'].forEach(function (name, index) {
+    var tab = settingsEl(name === 'general' ? 'settingsTabGeneral' : 'settingsTabTokens');
+    tab.addEventListener('click', function () { settingsSelectTab(name, true); });
+    tab.addEventListener('keydown', function (event) {
+      var next;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') next = 1 - index;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = 1;
+      else return;
+      event.preventDefault();
+      event.stopPropagation();
+      settingsSelectTab(next === 0 ? 'general' : 'tokens', true);
+    });
+  });
   settingsEl('settingsDialogBackdrop').addEventListener('click', settingsClose);
   settingsEl('settingsDialogClose').addEventListener('click', settingsClose);
   settingsEl('settingsGenerateOpen').addEventListener('click', settingsOpenGenerate);
@@ -252,10 +334,24 @@ async function settingsCopy() {
     settingsSetArmed('');
   }, true);
   document.addEventListener('keydown', function (event) {
-    if (event.key !== 'Escape' || dialog.hidden) return;
-    if (settingsArmedId) { event.stopPropagation(); settingsSetArmed(''); return; }
+    if (dialog.hidden) return;
     var confirm = document.getElementById('confirmDialog');
     if (confirm && !confirm.hidden) return;
+    if (event.key === 'Tab') {
+      var controls = Array.prototype.filter.call(dialog.querySelectorAll('button, input, [tabindex]'), function (node) {
+        return !node.disabled && node.tabIndex >= 0 && !node.closest('[hidden]');
+      });
+      var first = controls[0];
+      var last = controls[controls.length - 1];
+      if (first && (controls.indexOf(document.activeElement) === -1 || (event.shiftKey ? document.activeElement === first : document.activeElement === last))) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus({ preventScroll: true });
+      }
+      return;
+    }
+    if (event.key !== 'Escape') return;
+    if (settingsArmedId) { event.stopPropagation(); settingsSetArmed(''); return; }
+    event.preventDefault();
     event.stopPropagation();
     settingsClose();
   }, true);

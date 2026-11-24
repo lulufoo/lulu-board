@@ -19,6 +19,7 @@ const srcState = [
   'src/core/hooks.js',
   'src/core/sentry-count.js',
   'src/core/session-appearance.js',
+  'src/core/webmcp-preference.js',
   'src/state/shell-state.js',
   'src/state/canvas-interaction.js',
   'src/kinds/sketch-mode.js',
