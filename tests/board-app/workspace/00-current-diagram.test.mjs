@@ -117,7 +117,7 @@ function page(signedIn = true) {
   ].map(name => productionFunction(cloudSource, name)).join('\n');
   const inputStart = read('chrome/chrome-boot.js').indexOf("diagramSourceEl.addEventListener('input'");
   const inputEnd = read('chrome/chrome-boot.js').indexOf('\nif (boardIdEditor)', inputStart);
-  const compose = read('main.js').slice(read('main.js').indexOf('configureCurrentDiagramContext(function'));
+  const compose = read('main.js').slice(read('main.js').indexOf('configureCurrentDiagramContext(function')).split('\n// Preference')[0];
   vm.runInContext([
     'var diagramDirty = false, diagramSaveStatus = "saved", diagramLocalRev = 1, diagramServerRev = 1, diagramSaveTimer = null, diagramSaveSeq = 0, diagramRenderToken = 0, diagramSwapSeq = 0, pendingDiagramRender = null;'
     , 'const cloudSaveInFlight = new Map(), cloudSaveConflicts = new Set();',

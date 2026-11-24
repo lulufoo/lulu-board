@@ -30,7 +30,7 @@ export let cloudTabDragId = "";
 export let cloudTabDropAfter = false;
 export let cloudTabDropId = "";
 
-export function setCloudClient(v) { cloudClient = v; }
+export function setCloudClient(v) { if (cloudClient !== v) { cloudClient = v; invalidatePageRevision(); } }
 export function setCloudSession(v) {
   var before = cloudSession && cloudSession.user && cloudSession.user.id || '';
   var after = v && v.user && v.user.id || '';
@@ -73,7 +73,7 @@ export function setCloudSiblingDiagramIds(v) { cloudSiblingDiagramIds = v; }
 export function setCloudGroupId(v) { cloudGroupId = v; }
 export function setCloudGroupMembers(v) { cloudGroupMembers = v; }
 export function setCloudPlusDraft(v) { cloudPlusDraft = !!v; }
-export function setCloudPlusDraftActive(v) { cloudPlusDraftActive = !!v; }
+export function setCloudPlusDraftActive(v) { if (cloudPlusDraftActive !== !!v) { cloudPlusDraftActive = !!v; invalidatePageRevision(); } }
 export function setCloudPlusDraftSource(v) { cloudPlusDraftSource = v; }
 export function setCloudPlusDraftRev(v) { cloudPlusDraftRev = v; }
 export function setCloudDiagramCache(v) { cloudDiagramCache = v; }

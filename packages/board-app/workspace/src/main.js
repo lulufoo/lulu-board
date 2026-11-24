@@ -14,11 +14,15 @@ import './chrome/source-style.js';
 import './chrome/theme-picker.js';
 import './chrome/native-selects.js';
 
-import { configureCurrentDiagramContext } from './state/current-diagram.js';
-import { cloudClient, cloudSession, cloudPlusDraftActive, cloudDiagramReady } from './cloud/cloud-state.js';
+import { configureCurrentDiagramContext, getCurrentDiagram } from './state/current-diagram.js';
+import { cloudClient, cloudSession, cloudPlusDraftActive, cloudDiagramReady, cloudLoadSeq } from './cloud/cloud-state.js';
 import { isShareGuest } from './cloud/cloud-share.js';
 import { cloudHasSaveConflict } from './cloud/cloud-sync.js';
-import { invalidatePageRevision } from './core/page-revision.js';
+import { invalidatePageRevision, subscribePageRevision } from './core/page-revision.js';
+import { getWebMcpEnabled, subscribeWebMcpPreference } from './core/webmcp-preference.js';
+import { liveDiagramId } from './state/shell-state.js';
+import { updateCurrentDiagram, configureCurrentDiagramUpdateGuard } from './kinds/current-diagram-update.js';
+import { createWebMcpLifecycle } from './chrome/webmcp.js';
 
 configureCurrentDiagramContext(function () {
   return {
@@ -29,3 +33,26 @@ configureCurrentDiagramContext(function () {
   };
 });
 window.addEventListener('hashchange', invalidatePageRevision);
+
+// Preference is restored synchronously by its module, before registration is considered.
+function webMcpTarget() {
+  if (!getWebMcpEnabled()) return null;
+  const current = getCurrentDiagram({ diagram_id: liveDiagramId });
+  return current.ok ? JSON.stringify([cloudSession.user.id, cloudLoadSeq, current.diagram_id]) : null;
+}
+configureCurrentDiagramUpdateGuard(function () { return !!webMcpTarget(); });
+const webMcpLifecycle = createWebMcpLifecycle({
+  getModelContext: function () { return document.modelContext; },
+  getTarget: webMcpTarget,
+  readDiagram: getCurrentDiagram,
+  updateDiagram: updateCurrentDiagram,
+});
+let webMcpSyncQueued = false;
+subscribePageRevision(function () {
+  // Setters can invalidate before publishing their next state. Reconcile once the
+  // synchronous transition is complete; execute guards still read state immediately.
+  if (webMcpSyncQueued) return;
+  webMcpSyncQueued = true;
+  Promise.resolve().then(function () { webMcpSyncQueued = false; webMcpLifecycle.reconcile(); });
+});
+subscribeWebMcpPreference(function () { webMcpLifecycle.reconcile(); });

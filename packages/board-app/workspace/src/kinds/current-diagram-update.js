@@ -11,20 +11,20 @@ import {
 let updateGuard = function () { return true; };
 export function configureCurrentDiagramUpdateGuard(guard) { updateGuard = guard; }
 
-function allowed(signal) {
-  try { return !(signal && signal.aborted) && updateGuard() === true; } catch (_error) { return false; }
+function allowed(signal, availability) {
+  try { return !(signal && signal.aborted) && updateGuard() === true && (!availability || availability() === true); } catch (_error) { return false; }
 }
 function unavailable() { return { ok: false, code: 'NOT_AVAILABLE', message: 'AI collaboration is not available for this page.' }; }
 
 export async function updateCurrentDiagram(input, options) {
   options = options || {};
-  if (!allowed(options.signal)) return unavailable();
+  if (!allowed(options.signal, options.isAvailable)) return unavailable();
   const first = checkCurrentDiagram(input);
   if (!first.ok) return first;
   const candidate = await validateDiagramSource(input.source);
   if (!candidate.ok) return candidate;
   // No await between this final check and replacing Source. An old token can commit only once.
-  if (!allowed(options.signal)) return unavailable();
+  if (!allowed(options.signal, options.isAvailable)) return unavailable();
   const current = checkCurrentDiagram(input);
   if (!current.ok) return current;
   if (current.save_status === 'conflict') return { ok: false, code: 'CLOUD_CONFLICT', message: 'Pull the cloud diagram before updating it again.' };
