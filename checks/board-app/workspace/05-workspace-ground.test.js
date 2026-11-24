@@ -58,8 +58,8 @@ assert.match(diagram, /getSessionAppearance/, 'document ground reads the session
 assert.match(diagram, /applyChrome\(document\.documentElement, appearance\)/, 'opening a document reapplies dock chrome');
 assert.match(
   diagram.slice(diagram.indexOf('BoxesRender.render')),
-  /applyDocumentGround\(\)/,
-  'Boxes paint reapplies the document appearance ground',
+  /finishCanvasView\(opts\)/,
+  'Boxes paint uses the shared completion that reapplies the document appearance ground',
 );
 
 console.log('ok workspace-ground check');

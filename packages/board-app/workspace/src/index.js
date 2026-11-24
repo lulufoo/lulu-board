@@ -47,6 +47,7 @@ export * from './kinds/mermaid-halo.js';
 export * from './kinds/flowchart-shapes.js';
 export * from './kinds/flowchart.js';
 export * from './kinds/diagram.js';
+export * from './kinds/current-diagram-update.js';
 export * from './kinds/board-logic.js';
 export * from './kinds/board-style.js';
 export * from './kinds/board.js';

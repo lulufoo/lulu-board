@@ -1,11 +1,14 @@
 /* Shared cloud session / draft / cache. Writes go through setters. */
 import { cloudDiagramIdFromHash } from '../core/cloud-route.js';
 import { invalidatePageRevision } from '../core/page-revision.js';
+import { register } from '../core/hooks.js';
+import { liveDiagramId } from '../state/shell-state.js';
 
 export let cloudClient = null;
 export let cloudSession = null;
 export let cloudSessionReady = Promise.resolve(null);
 export let cloudDiagramReady = false;
+let cloudDiagramView = null;
 let cloudHadAuthenticatedSession = false;
 export let cloudLoadSeq = 0;
 export let cloudSaveSeq = 0;
@@ -43,13 +46,23 @@ export function setCloudSession(v) {
   if (after) cloudHadAuthenticatedSession = true;
 }
 export function setCloudDiagramReady(v) {
+  if (!v) cloudDiagramView = null;
   if (cloudDiagramReady !== !!v) invalidatePageRevision();
   cloudDiagramReady = !!v;
 }
-export function completeCloudDiagramView(sequence) {
-  if (sequence !== cloudLoadSeq) return false;
-  // Render hand-off only in LB-763. LB-764 must move this signal to its shared render
-  // completion boundary for cloud open, Pull and create, as well as AI updates.
+export function beginCloudDiagramView(diagramId) {
+  setCloudDiagramReady(false);
+  cloudDiagramView = { diagramId: diagramId, sequence: cloudLoadSeq, owner: cloudSession && cloudSession.user && cloudSession.user.id };
+}
+export function captureCloudDiagramView() {
+  var view = cloudDiagramView;
+  return view && view.sequence === cloudLoadSeq && view.diagramId === liveDiagramId
+    && view.diagramId === cloudDiagramId() && cloudSession && cloudSession.user && view.owner === cloudSession.user.id ? view : null;
+}
+export function completeCloudDiagramView(view) {
+  if (!view || view !== captureCloudDiagramView()) return false;
+  // Any current successful render may finish this loaded view, including a human replacement render.
+  cloudDiagramView = null;
   setCloudDiagramReady(true);
   return true;
 }
@@ -77,3 +90,6 @@ export function setCloudTabDropId(v) { cloudTabDropId = v; }
 export function cloudDiagramId() {
   return cloudDiagramIdFromHash(typeof location !== "undefined" ? location.hash : "");
 }
+
+register('diagramViewContext', captureCloudDiagramView);
+register('diagramViewReady', completeCloudDiagramView);

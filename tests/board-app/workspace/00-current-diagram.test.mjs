@@ -44,28 +44,36 @@ function page(signedIn = true) {
   let fetchGraph = async () => null;
   let groupRefresh = () => null;
   let renderObserver = () => {};
+  const hooks = new Map();
+  const rootNode = { isConnected: true, classList: { contains() { return true; } }, querySelectorAll() { return []; }, querySelector() { return null; } };
+  const buttons = new Map();
   const context = {
     console, Promise, Number, String, Object, Array,
     location: { hash: '#b:b_aabbccdd' },
-    document: { getElementById() { return null; }, documentElement: { dataset: {} } },
-    previewEl: { childElementCount: 1 },
+    document: { getElementById(id) { return buttons.get(id) || null; }, documentElement: { dataset: {} } },
+    previewEl: { childElementCount: 1, classList: { add() {} } },
     window: { addEventListener(type, listener) { events.set(type, listener); } },
     diagramSourceEl: editor,
     observePageSource: source => revision.observe(source),
     invalidatePageRevision: () => revision.invalidate(),
     getPageRevision: () => revision.get(),
     cloudDiagramIdFromHash: Route.cloudDiagramIdFromHash,
-    DrawerStyleLine, BoxesRender, stripDocumentMeta,
+    DrawerStyleLine, BoxesRender: Object.assign({}, BoxesRender, { render: async () => ({ root: rootNode, board: {} }) }), stripDocumentMeta,
+    bindCanvasWorld() {}, setSelectedBoardEdge() {},
+    finishCanvasView(opts, result) { opts.completeRender(result || { ok: true }); },
+    register(name, fn) { hooks.set(name, fn); },
+    newGraphId() { return 'b_55667788'; },
     $() { return null; },
     setCharsLabel() {}, syncSourceDockLabel() {}, syncCloudSaveChrome() {},
     cloudClearDirtyLeave() {},
-    setStatus() {}, showDiagramError(error) { errors.push(error); },
+    setStatus(message, error) { if (error) errors.push(message); }, showDiagramError(error) { errors.push(error); },
     cloudConfigured() { return true; }, cloudShowSignInDialog() {},
     fetchOwnedGraph(id) { return fetchGraph(id); },
     cloudDiagramTitle() { return 'Sample'; },
-    cloudSetDiagramHash() {}, cloudRefreshGroups() {},
+    cloudSetDiagramHash(id) { context.location.hash = '#b:' + id; }, cloudRefreshGroups() {},
     setTimeout() { return 1; }, clearTimeout() {},
-    applyDrawerKind() {}, renderFlowchart() {},
+    isDesignKind() { return false; },
+    applyDrawerKind() {}, renderFlowchart(opts) { context.finishCanvasView(opts); },
     scheduleDiagramRender() {},
     fetch: async () => { throw new Error('offline'); },
     diagramPersistMode() { return 'hash'; }, encodeDiagramHash: async () => { throw new Error('encode failed'); },
@@ -73,12 +81,16 @@ function page(signedIn = true) {
       if (name === 'cloudDiagramId') return context.cloudDiagramId();
       if (name === 'isShareGuest') return !!context.shareGuest;
       if (name === 'cloudPlusDraftActive') return context.cloudPlusDraftActive;
-      if (name === 'askConfirm') return Promise.resolve(true);
+      if (name === 'askConfirm') return Promise.resolve(context.confirm !== false);
+      if (name === 'saveDiagramToCloudResult') return context.saveDiagramToCloudResult(arguments[1]);
+      if (hooks.has(name)) return hooks.get(name)(...Array.prototype.slice.call(arguments, 1));
       if (name === 'refreshCloudGroupMembers') return groupRefresh();
       return null;
     },
     emit(name, opts) {
+      if (hooks.has(name)) hooks.get(name)(opts);
       if (name === 'scheduleDiagramSave') context.scheduleDiagramSave();
+      if (name === 'syncCloudSaveChrome') context.syncCloudSaveChrome();
       if (name === 'renderDiagram') {
         if (context.renderInEmit) context.renderDiagram(opts);
         renderObserver(opts);
@@ -98,13 +110,17 @@ function page(signedIn = true) {
   const cloudFunctions = [
     'cloudCachePut', 'cloudCacheGet', 'cloudRememberDiagramRow', 'cloudCachedDiagramRow', 'cloudForgetDiagramCache',
     'cloudRowSource', 'applyCloudDiagramRow', 'cloudClearOpenDiagram',
+    'cloudSaveKey', 'cloudHasSaveConflict', 'clearCloudDiagramConflict', 'cloudSaveRefusal', 'refuseCloudSaveConflict',
+    'sameCloudSaveContext', 'currentCloudSavePage', 'captureCloudSave', 'rememberCloudSave', 'performCloudSave', 'saveDiagramToCloudResult',
+    'cloudSetActionLabel', 'cloudSetSaveSignedOut', 'cloudSaveButtonCopy', 'cloudSaveUncreated', 'cloudVersionsAligned', 'syncCloudSaveChrome',
     'loadCloudDiagramByHash', 'saveDiagramToCloud',
   ].map(name => productionFunction(cloudSource, name)).join('\n');
   const inputStart = read('chrome/chrome-boot.js').indexOf("diagramSourceEl.addEventListener('input'");
   const inputEnd = read('chrome/chrome-boot.js').indexOf('\nif (boardIdEditor)', inputStart);
   const compose = read('main.js').slice(read('main.js').indexOf('configureCurrentDiagramContext(function'));
   vm.runInContext([
-    'var diagramDirty = false, diagramSaveStatus = "saved", diagramLocalRev = 1, diagramServerRev = 1, diagramSaveTimer = null, diagramSaveSeq = 0, diagramRenderToken = 0, diagramSwapSeq = 0;',
+    'var diagramDirty = false, diagramSaveStatus = "saved", diagramLocalRev = 1, diagramServerRev = 1, diagramSaveTimer = null, diagramSaveSeq = 0, diagramRenderToken = 0, diagramSwapSeq = 0, pendingDiagramRender = null;'
+    , 'const cloudSaveInFlight = new Map(), cloudSaveConflicts = new Set();',
     'var liveDiagramId = "", liveDiagramArchive = "", liveDiagramPath = "", selectedBoardNode = null, selectedBoardEdge = null;',
     'var boardTitleEditor = { value: "" };',
     shellFunctions, diagramFunctions,
@@ -120,10 +136,11 @@ function page(signedIn = true) {
   context.setCloudClient({});
   if (signedIn) context.setCloudSession({ user: { id: 'owner' }, access_token: 'private-session-token' });
   return {
-    context, editor, errors,
+    context, editor, errors, rootNode, buttons,
+    render(opts) { renderObserver(opts); return context.renderDiagram(opts); },
     row(id = 'b_aabbccdd', source = 'boxes "Draft"\nbox A "One"\n') {
       context.applyCloudDiagramRow({ graph_id: id, bmd: source, version: 7 }, { skipShare: true, loaded: true });
-      vm.runInContext('completeCloudDiagramView(cloudLoadSeq)', context);
+      vm.runInContext('completeCloudDiagramView(captureCloudDiagramView())', context);
     },
     snapshot(id = 'b_aabbccdd') { return context.getCurrentDiagram({ diagram_id: id }); },
     check(snapshot, id = snapshot.diagram_id) { return context.checkCurrentDiagram({ diagram_id: id, expected_revision: snapshot.revision }); },
@@ -236,7 +253,7 @@ function page(signedIn = true) {
   await Promise.resolve();
   load.resolve({ graph_id: 'b_11223344', bmd: 'boxes "Other"\n', version: 1 });
   await pending;
-  assert.equal(p.snapshot('b_11223344').diagram_id, 'b_11223344');
+  assert.equal(p.snapshot('b_11223344').diagram_id, 'b_11223344', JSON.stringify(p.errors));
   p.route('#b:b_aabbccdd');
   p.fetchGraph(async () => ({ graph_id: 'b_aabbccdd', bmd: original.source, version: 7 }));
   await p.context.loadCloudDiagramByHash('#b:b_aabbccdd');
@@ -251,7 +268,6 @@ function page(signedIn = true) {
   p.row();
   const before = p.snapshot();
   const pendingPull = deferred();
-  p.onRender(() => assert.equal(p.snapshot().code, 'TARGET_NOT_READY', 'Pull also waits until its render hand-off returns'));
   p.fetchGraph(() => pendingPull.promise);
   const pull = p.context.pullDiagramFromCloud();
   assert.equal(p.snapshot().code, 'TARGET_NOT_READY');
@@ -315,19 +331,15 @@ function page(signedIn = true) {
 }
 
 {
-  const p = page();
-  p.row();
-  const latest = deferred();
-  const started = deferred();
-  p.fetchGraph(() => { started.resolve(); return latest.promise; });
-  p.context.fetch = async () => ({ ok: false, status: 409, text: async () => '{}' });
+  const p = page(); p.row();
+  const response = deferred();
+  p.context.fetch = () => response.promise;
   const saving = p.context.saveDiagramToCloud();
-  await started.promise;
   p.context.setCloudSession({ user: { id: 'different-owner' } });
-  latest.resolve({ graph_id: 'b_aabbccdd', bmd: 'boxes "Old conflict response"\n', version: 10 });
+  response.resolve({ ok: false, status: 409, text: async () => '{}' });
   assert.equal(await saving, false);
-  assert.equal(p.snapshot().code, 'TARGET_NOT_READY', 'an old-session 409 reread cannot restore readiness');
-  assert.ok(!p.editor.value.includes('Old conflict response'));
+  assert.equal(p.snapshot().code, 'TARGET_NOT_READY', 'an old-session 409 cannot restore readiness');
+  assert.equal(p.context.cloudHasSaveConflict(), false, 'an old owner conflict cannot poison the new owner');
 }
 
 {
@@ -365,7 +377,7 @@ function page(signedIn = true) {
   sessionReady.resolve();
   await Promise.all([first, second]);
   assert.deepEqual(requests, ['b_11223344'], 'an old load waiting on the session cannot run after a newer load begins');
-  assert.equal(p.snapshot('b_11223344').diagram_id, 'b_11223344');
+  assert.equal(p.snapshot('b_11223344').diagram_id, 'b_11223344', JSON.stringify(p.errors));
 }
 
 {
@@ -390,31 +402,23 @@ function page(signedIn = true) {
   p.row('b_11223344', 'boxes "Saved cloud row"\n');
   assert.equal(p.snapshot('b_11223344').save_status, 'saved', 'a newly loaded row does not inherit another diagram error');
   p.context.applyCloudDiagramRow({ graph_id: 'b_11223344', bmd: 'boxes "Cached draft"\n', version: 7, dirty: true, localRev: 8 }, { skipShare: true, loaded: true });
-  vm.runInContext('completeCloudDiagramView(cloudLoadSeq)', p.context);
+  vm.runInContext('completeCloudDiagramView(captureCloudDiagramView())', p.context);
   assert.equal(p.snapshot('b_11223344').save_status, 'saving', 'an owned unsaved cache row remains pending');
 }
 
 {
-  const p = page();
-  p.row();
-  p.route('#b:b_11223344');
-  const metadata = deferred();
-  const metadataStarted = deferred();
-  let renderChecks = 0;
-  p.context.renderInEmit = true;
-  p.fetchGraph(async id => ({ graph_id: id, bmd: 'flowchart TD\nA --> B\n', version: 1 }));
-  p.onRender(() => {
-    renderChecks += 1;
-    assert.equal(p.snapshot('b_11223344').code, 'TARGET_NOT_READY', 'applying Source does not publish readiness before render hand-off');
-    assert.equal(p.context.document.documentElement.dataset.diagramSwap, 'hold', 'the real renderer has hidden the outgoing drawing');
-  });
+  const p = page(); p.row(); p.route('#b:b_11223344');
+  const metadata = deferred(), metadataStarted = deferred(), drawing = deferred();
+  p.fetchGraph(async id => ({ graph_id: id, bmd: 'boxes "Other"\n', version: 1 }));
+  p.context.BoxesRender.render = () => drawing.promise;
   p.groupRefresh(() => { metadataStarted.resolve(); return metadata.promise; });
   const opening = p.context.loadCloudDiagramByHash('#b:b_11223344');
+  await Promise.resolve(); await Promise.resolve();
+  assert.equal(p.snapshot('b_11223344').code, 'TARGET_NOT_READY', 'loaded Source waits for the actual render');
+  drawing.resolve({ root: p.rootNode, board: {} });
   await metadataStarted.promise;
-  assert.equal(renderChecks, 1);
-  assert.equal(p.snapshot('b_11223344').ok, true, 'render has taken over while unrelated group metadata is still pending');
-  metadata.resolve();
-  await opening;
+  assert.equal(p.snapshot('b_11223344').ok, true, 'actual render publishes ready while group metadata is pending');
+  metadata.resolve(); await opening;
 }
 
 {
@@ -431,4 +435,80 @@ function page(signedIn = true) {
   assert.equal(p.snapshot().source, original);
 }
 
+
+const tick = () => new Promise(resolve => setImmediate(resolve));
+const response = (id = 'b_aabbccdd', version = 8, status = 200) => ({ ok: status < 400, status, text: async () => JSON.stringify({ diagram_id: id, version }) });
+{
+  const p = page(); p.row(); p.route('#b:b_11223344');
+  const firstDrawing = deferred(), secondDrawing = deferred(); let renders = 0;
+  p.context.BoxesRender.render = () => (++renders === 1 ? firstDrawing.promise : secondDrawing.promise);
+  p.fetchGraph(async id => ({ graph_id: id, bmd: 'boxes "Loaded B"\n', version: 1 }));
+  const loading = p.context.loadCloudDiagramByHash('#b:b_11223344'); await tick();
+  assert.equal(p.snapshot('b_11223344').code, 'TARGET_NOT_READY');
+  p.input('boxes "Human B"\n');
+  const replacement = p.render(); await tick();
+  assert.equal(p.snapshot('b_11223344').code, 'TARGET_NOT_READY');
+  secondDrawing.resolve({ root: p.rootNode, board: {} });
+  assert.equal((await replacement).ok, true, 'ready publication does not supersede its own successful render');
+  assert.equal(p.snapshot('b_11223344').ok, true, 'human replacement render completes the same loaded-view lease');
+  assert.match(p.snapshot('b_11223344').source, /Human B/);
+  firstDrawing.resolve({ root: p.rootNode, board: {} }); await loading;
+  assert.match(p.snapshot('b_11223344').source, /Human B/);
+  const oldLease = p.context.captureCloudDiagramView();
+  p.context.bumpCloudLoadSeq();
+  p.context.applyCloudDiagramRow({ graph_id: 'b_11223344', bmd: p.editor.value, version: 1 }, { loaded: true });
+  assert.equal(p.context.completeCloudDiagramView(oldLease), false, 'a pre-Pull completed render cannot publish the next same-ID load');
+  assert.equal(p.snapshot('b_11223344').code, 'TARGET_NOT_READY');
+  await p.render(); assert.equal(p.snapshot('b_11223344').ok, true);
+}
+{
+  const p = page(); p.row(); const first = deferred(), second = deferred(); const requests = [];
+  p.context.fetch = (_url, opts) => { requests.push(JSON.parse(opts.body)); return requests.length === 1 ? first.promise : second.promise; };
+  p.input('boxes "A1"\n'); const saving1 = p.context.saveDiagramToCloudResult();
+  p.input('boxes "A2"\n'); const ownRevision = p.snapshot().revision;
+  const saving2 = p.context.saveDiagramToCloudResult(), saving3 = p.context.saveDiagramToCloudResult();
+  assert.equal(requests.length, 1);
+  first.resolve(response()); await tick();
+  assert.equal(p.editor.value, 'boxes "A2"\n', 'old success preserves the newer human draft');
+  assert.equal(p.context.diagramDirty, true); assert.equal(p.context.diagramServerRev, 8);
+  assert.equal(requests.length, 2, 'two waiting saves share one following PATCH');
+  assert.equal(requests[1].expected_version, 8, 'the following request absorbs the successful server base');
+  second.resolve(response('b_aabbccdd', 9));
+  const [r1, r2, r3] = await Promise.all([saving1, saving2, saving3]);
+  assert.equal(r1.superseded, true); assert.equal(r2.ok, true); assert.equal(r3.ok, true);
+  assert.equal(r2.revision, ownRevision); assert.equal(r3.revision, ownRevision);
+  assert.equal(r2.save_status, 'saved'); assert.equal(r3.save_status, 'saved');
+  assert.equal(p.context.cloudHasSaveConflict(), false); assert.equal(p.context.diagramDirty, false);
+}
+{
+  const p = page(); p.row(); p.input('boxes "Outgoing A"\n'); p.route('#b:b_11223344');
+  const pending = deferred(); let request;
+  p.context.fetch = (_url, opts) => { request = JSON.parse(opts.body); return pending.promise; };
+  const saving = p.context.saveDiagramToCloudResult();
+  assert.equal(request.diagram_id, 'b_aabbccdd', 'outgoing save is bound to the loaded ID, never the new hash');
+  p.context.bumpCloudLoadSeq(); p.row('b_11223344', 'boxes "B"\n');
+  pending.resolve(response()); const result = await saving;
+  assert.equal(result.detached, true); assert.equal(p.editor.value, 'boxes "B"\n');
+  assert.equal(p.snapshot('b_11223344').diagram_id, 'b_11223344');
+}
+{
+  const p = page(); p.row(); p.input('boxes "Local conflict draft"\n');
+  const classes = () => { const values = new Set(); return { add(value) { values.add(value); }, remove(value) { values.delete(value); }, contains(value) { return values.has(value); } }; };
+  const button = () => ({ hidden: true, disabled: false, classList: classes(), attributes: {}, label: { textContent: 'Saved' },
+    setAttribute(key, value) { this.attributes[key] = value; }, removeAttribute(key) { delete this.attributes[key]; }, querySelector() { return this.label; } });
+  const save = button(), status = button(); p.buttons.set('btnShellSaveCloud', save); p.buttons.set('shellCloudStatus', status);
+  let count = 0; p.context.fetch = async () => { count++; return response('b_aabbccdd', 99, 409); };
+  const original = p.editor.value; const conflicting = await p.context.saveDiagramToCloudResult();
+  assert.equal(conflicting.code, 'CLOUD_CONFLICT'); assert.equal(p.editor.value, original);
+  assert.equal(p.context.diagramServerRev, 7, 'remote conflict version is never adopted as a write base');
+  assert.equal(p.snapshot().save_status, 'conflict'); assert.equal(status.hidden, false); assert.equal(save.hidden, true);
+  assert.equal(status.label.textContent, 'Conflict'); assert.match(status.attributes['aria-label'], /Pull/);
+  assert.equal((await p.context.saveDiagramToCloudResult()).code, 'CLOUD_CONFLICT'); assert.equal(count, 1, 'conflict blocks blind retries');
+  p.context.confirm = false; assert.equal(await p.context.pullDiagramFromCloud(), false); assert.equal(p.editor.value, original);
+  assert.equal(p.context.cloudHasSaveConflict(), true, 'Cancel retains the conflict and draft');
+  p.context.confirm = true; p.fetchGraph(async id => ({ graph_id: id, bmd: 'boxes "Remote"\n', version: 99 }));
+  assert.equal(await p.context.pullDiagramFromCloud(), true); assert.equal(p.context.cloudHasSaveConflict(), false);
+  assert.equal(p.context.diagramServerRev, 99); assert.match(p.editor.value, /Remote/);
+  assert.equal(status.label.textContent, 'Saved');
+}
 console.log('ok current-diagram snapshot and production mutation entrypoints');

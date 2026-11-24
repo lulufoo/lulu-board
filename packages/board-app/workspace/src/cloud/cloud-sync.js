@@ -2,6 +2,7 @@
 import { register, emit, call } from '../core/hooks.js';
 import { diagramFetchRequestBytes, diagramFetchWireBytes, recordDiagramFetch, sentryCount, utf8ByteLength } from '../core/sentry-count.js';
 import { stripDocumentMeta, diagramTitleFromBody, newGraphId } from '../core/document-meta.js';
+import { getPageRevision } from '../core/page-revision.js';
 
 import {
   cloudDiagramIdFromHash,
@@ -20,7 +21,7 @@ import {
   setCloudClient,
   setCloudSession,
   setCloudDiagramReady,
-  completeCloudDiagramView,
+  beginCloudDiagramView,
   setCloudSessionReady,
   bumpCloudLoadSeq,
   bumpCloudSaveSeq,
@@ -49,7 +50,10 @@ import {
   setShellMineTotal,
   setShellMineCursor,
 } from '../state/shell-state.js';
-import { setDiagramSyncUI } from '../kinds/diagram.js';
+import { setDiagramSyncUI, renderDiagram } from '../kinds/diagram.js';
+
+const cloudSaveInFlight = new Map();
+const cloudSaveConflicts = new Set();
 
 /* drawer-app/06-cloud-sync.js — browser Auth, one latest cloud board per owner */
 
@@ -288,6 +292,22 @@ function syncCloudSaveChrome() {
     return;
   }
   save.classList.remove("is-uncreated");
+  if (signedIn && ownCloud && cloudHasSaveConflict(ownCloud)) {
+    save.hidden = true;
+    save.disabled = true;
+    cloudSetActionLabel(save, "");
+    status.hidden = false;
+    status.classList.remove('is-current');
+    status.classList.add('is-pending');
+    cloudSetActionLabel(status, 'Pull to resolve conflict');
+    var conflictLabel = status.querySelector('.shell-cloud-status-label');
+    if (conflictLabel) conflictLabel.textContent = 'Conflict';
+    return;
+  }
+  status.classList.remove('is-pending');
+  status.classList.add('is-current');
+  var statusLabel = status.querySelector('.shell-cloud-status-label');
+  if (statusLabel) statusLabel.textContent = 'Saved';
   var copy = cloudSaveButtonCopy(signedIn, cloudVersionsAligned(diagramServerRev, diagramLocalRev));
   save.hidden = !copy.pending;
   save.disabled = !copy.pending;
@@ -536,10 +556,12 @@ function applyCloudDiagramRow(row, opts) {
     localRev: diagramLocalRev,
   });
   syncCloudSaveChrome();
+  if (opts.fresh && row && row.graph_id) clearCloudDiagramConflict(row.graph_id);
   if (opts.loaded) {
-    setDiagramSaveStatus(row && row.dirty ? 'saving' : 'saved');
-    setCloudDiagramReady(false);
+    setDiagramSaveStatus(cloudHasSaveConflict(row && row.graph_id) ? 'conflict' : row && row.dirty ? 'saving' : 'saved');
+    beginCloudDiagramView(row && row.graph_id);
   }
+  syncCloudSaveChrome();
 }
 
 function groupDiagramRowsByGroup(diagramRows, memberships) {
@@ -581,131 +603,194 @@ function loadSiblingDiagramIds(diagramId, memberships) {
   return siblings;
 }
 
-async function saveDiagramToCloud(opts) {
-  opts = opts || {};
-  if (!cloudClient || !cloudSession || !cloudSession.user) {
-    if (opts.explicit) setStatus("Sign in to save to cloud", true);
-    return false;
-  }
-  if (cloudPlusDraftActive && !opts.explicit) {
-    setDiagramSyncUI("ok");
+function cloudSaveKey(diagramId, owner) {
+  var subject = owner == null ? cloudSession && cloudSession.user && cloudSession.user.id : owner;
+  return String(subject || '') + '/' + String(diagramId || 'create');
+}
+
+function cloudHasSaveConflict(diagramId) {
+  return cloudSaveConflicts.has(cloudSaveKey(diagramId || liveDiagramId));
+}
+
+function clearCloudDiagramConflict(diagramId) {
+  cloudSaveConflicts.delete(cloudSaveKey(diagramId));
+}
+
+function cloudSaveRefusal(code, message, request, status) {
+  return { ok: false, code: code, message: message, diagram_id: request && request.diagramId || '', revision: request && request.revision || '', save_status: status || 'error' };
+}
+
+function refuseCloudSaveConflict(request) {
+  if (currentCloudSavePage(request)) {
+    setDiagramSyncUI('conflict');
     syncCloudSaveChrome();
-    return false;
   }
+  return cloudSaveRefusal('CLOUD_CONFLICT', 'Pull the cloud diagram before saving again.', request, 'conflict');
+}
+
+function sameCloudSaveContext(request) {
+  return !!(cloudSession && cloudSession.user && cloudSession.user.id === request.owner)
+    && cloudLoadSeq === request.loadSeq
+    && String(liveDiagramId || '') === request.loadedId
+    && String(location.hash || '') === request.hash
+    && cloudPlusDraftActive === request.plusDraft;
+}
+
+function currentCloudSavePage(request) {
+  return sameCloudSaveContext(request) && (request.create || cloudDiagramId() === request.diagramId);
+}
+
+function captureCloudSave(opts) {
+  if (!cloudClient || !cloudSession || !cloudSession.user) return cloudSaveRefusal('NOT_AVAILABLE', 'Sign in to save to cloud.');
+  if (cloudPlusDraftActive && !opts.explicit) return cloudSaveRefusal('NOT_AVAILABLE', 'Create this draft before saving it.', null, 'saving');
   var source = stripDocumentMeta(diagramSourceEl && diagramSourceEl.value);
   if (diagramSourceEl && source !== diagramSourceEl.value) { diagramSourceEl.value = source; observeDiagramSource(); }
-  var diagramId = (typeof cloudDiagramId === "function" && cloudDiagramId())
-    || (typeof liveDiagramId !== "undefined" ? String(liveDiagramId || "") : "");
-  if (cloudPlusDraftActive) diagramId = "";
-  var title = cloudDiagramTitle(source) || "Untitled";
+  observeDiagramSource();
+  var loadedId = String(liveDiagramId || '');
+  // A changed URL cannot redirect an outgoing diagram's save to the next diagram.
+  var diagramId = cloudPlusDraftActive ? '' : loadedId;
+  if (!diagramId && cloudDiagramId() && !cloudPlusDraftActive) return cloudSaveRefusal('TARGET_NOT_READY', 'Wait for the cloud diagram to load.');
+  if (opts.diagram_id && opts.diagram_id !== diagramId) return cloudSaveRefusal('DIAGRAM_MISMATCH', 'The save target is no longer the loaded diagram.');
+  var revision = getPageRevision();
+  if (opts.expected_revision && opts.expected_revision !== revision) return cloudSaveRefusal('STALE_REVISION', 'The page draft changed before saving.', null, 'saving');
+  var request = {
+    source: source, revision: revision, owner: cloudSession.user.id, token: cloudSession.access_token,
+    loadedId: loadedId, hash: String(location.hash || ''), plusDraft: cloudPlusDraftActive,
+    loadSeq: cloudLoadSeq, create: !diagramId, diagramId: diagramId || newGraphId(),
+    title: cloudDiagramTitle(source) || 'Untitled', groupId: cloudPlusDraftActive && cloudGroupId ? cloudGroupId : null,
+  };
+  request.key = cloudSaveKey(request.create ? '' : request.diagramId, request.owner);
+  return request;
+}
+
+function rememberCloudSave(request, row, onPage, unchanged) {
+  if (!cloudSession || !cloudSession.user || cloudSession.user.id !== request.owner) return;
+  var cached = cloudCachedDiagramRow(request.diagramId) || {};
+  if (Number(cached.version) > Number(row.version)) return;
+  var keep = onPage && !unchanged ? {
+    bmd: diagramSourceEl.value, dirty: true, localRev: diagramLocalRev,
+  } : cached.dirty && cached.bmd !== request.source ? {
+    bmd: cached.bmd, dirty: true, localRev: Math.max(Number(cached.localRev) || 0, Number(row.version) + 1),
+  } : { bmd: request.source, dirty: false, localRev: row.version };
+  cloudRememberDiagramRow(Object.assign({}, cached, row, keep));
+}
+
+async function performCloudSave(request, opts) {
   var seq = bumpCloudSaveSeq();
-  var loadSeq = cloudLoadSeq;
-  setDiagramSyncUI("saving");
+  var onPage = currentCloudSavePage(request);
+  if (onPage) setDiagramSyncUI('saving');
   try {
-    if (!diagramId) {
-      diagramId = newGraphId();
-      if (!diagramId) throw new Error("Could not mint a board id");
-      var joinGroupId = cloudPlusDraftActive && cloudGroupId ? cloudGroupId : null;
-      var accessToken = cloudSession.access_token;
-      if (!accessToken) throw new Error("Sign in to save to cloud");
-      var payload = { bmd: source, diagram_id: diagramId };
-      if (joinGroupId) payload.group_id = joinGroupId;
-      var response = await fetch("https://api.luluboard.app/graphs", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + accessToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      var rawText = await response.text();
-      var createdBody = rawText ? JSON.parse(rawText) : null;
-      if (!response.ok) {
-        var fail = createdBody && (createdBody.message || createdBody.error) || ("HTTP " + response.status);
-        throw new Error(fail);
+    if (!request.token) throw new Error('Sign in to save to cloud');
+    var expected = Math.max(1, Number(diagramServerRev) || 1, Number((cloudCachedDiagramRow(request.diagramId) || {}).version) || 1);
+    var payload = request.create ? { diagram_id: request.diagramId, bmd: request.source }
+      : { diagram_id: request.diagramId, bmd: request.source, expected_version: expected };
+    if (request.create && request.groupId) payload.group_id = request.groupId;
+    var response = await fetch('https://api.luluboard.app/graphs', {
+      method: request.create ? 'POST' : 'PATCH',
+      headers: { Authorization: 'Bearer ' + request.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    var rawText = await response.text();
+    var body = rawText ? JSON.parse(rawText) : null;
+    onPage = seq === cloudSaveSeq && currentCloudSavePage(request);
+    if (response.status === 409 && !request.create) {
+      // Do not adopt a remote version or replace the local draft. A confirmed Pull resolves this conflict.
+      if (cloudSession && cloudSession.user && cloudSession.user.id === request.owner
+        && Number((cloudCachedDiagramRow(request.diagramId) || {}).version || 0) <= expected) cloudSaveConflicts.add(request.key);
+      if (onPage) {
+        setDiagramDirty(true);
+        setDiagramSyncUI('conflict');
+        syncCloudSaveChrome();
+        setStatus('Cloud version conflict — Pull to review the remote diagram', true);
       }
-      if (seq !== cloudSaveSeq) return false;
-      if (!createdBody || !createdBody.diagram_id) throw new Error("Could not create cloud diagram");
-      var created = {
-        graph_id: createdBody.diagram_id,
-        title: createdBody.title || title,
-        bmd: createdBody.bmd || source,
-        version: createdBody.version,
-        updated_at: createdBody.updated_at,
-        group_id: createdBody.group_id,
-      };
-      emit("cloudClearPlusDraftSlot");
-      setCloudPlusDraft(false);
-      setCloudPlusDraftActive(false);
-      setCloudPlusDraftSource("");
-      setCloudPlusDraftRev(1);
-      applyCloudDiagramRow(created, { loaded: loadSeq === cloudLoadSeq });
-      cloudSetDiagramHash(diagramId, true);
-      if (loadSeq === cloudLoadSeq) {
-        emit("renderDiagram", { fit: false, restoreView: true });
-        completeCloudDiagramView(loadSeq);
-      }
-      await call("refreshCloudGroupMembers", diagramId);
-    } else {
-      var expected = Number(diagramServerRev);
-      if (!(expected > 0)) expected = 1;
-      var updateToken = cloudSession.access_token;
-      if (!updateToken) throw new Error("Sign in to save to cloud");
-      var updateResponse = await fetch("https://api.luluboard.app/graphs", {
-        method: "PATCH",
-        headers: {
-          Authorization: "Bearer " + updateToken,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          diagram_id: diagramId,
-          bmd: source,
-          expected_version: expected,
-        }),
-      });
-      var updateText = await updateResponse.text();
-      var updateBody = updateText ? JSON.parse(updateText) : null;
-      if (updateResponse.status === 409) {
-        if (seq !== cloudSaveSeq) return false;
-        var latest = await fetchOwnedGraph(diagramId);
-        if (seq !== cloudSaveSeq) return false;
-        if (!latest) throw new Error("Cloud diagram not found");
-        applyCloudDiagramRow(latest);
-        emit("renderDiagram", { fit: false, restoreView: true });
-        setDiagramSyncUI("conflict");
-        setStatus("Cloud version conflict — reloaded", true);
-        return false;
-      }
-      if (!updateResponse.ok) {
-        var updateFail = updateBody && (updateBody.message || updateBody.error) || ("HTTP " + updateResponse.status);
-        throw new Error(updateFail);
-      }
-      if (seq !== cloudSaveSeq) return false;
-      if (!updateBody || !updateBody.diagram_id) throw new Error("Could not update cloud diagram");
-      applyCloudDiagramRow({
-        graph_id: updateBody.diagram_id,
-        title: updateBody.title || title,
-        bmd: updateBody.bmd || source,
-        version: updateBody.version,
-        updated_at: updateBody.updated_at,
-        group_id: updateBody.group_id,
-      });
+      return cloudSaveRefusal('CLOUD_CONFLICT', 'Source is still on this page. Pull the cloud diagram before saving again.', request, 'conflict');
     }
-    // Do not steal the hash back if the user already navigated to another cloud board.
-    var openId = cloudDiagramId();
-    if (!openId || openId === diagramId) cloudSetDiagramHash(diagramId, true);
-    syncCloudSaveChrome();
-    setDiagramSyncUI("ok");
-    setStatus("Saved to cloud");
-    if (opts.explicit) emit("showCopyTip", "Saved to cloud");
-    await cloudRefreshGroups();
-    return true;
+    if (!response.ok) throw new Error(body && (body.message || body.error) || 'HTTP ' + response.status);
+    if (!body || body.diagram_id !== request.diagramId || !(Number(body.version) > 0)) throw new Error('Invalid cloud save response');
+    var row = { graph_id: request.diagramId, title: body.title || request.title, bmd: request.source,
+      version: Number(body.version), updated_at: body.updated_at, group_id: body.group_id };
+    observeDiagramSource();
+    var unchanged = onPage && diagramSourceEl.value === request.source && getPageRevision() === request.revision;
+    if (onPage) {
+      if (request.create) {
+        emit('cloudClearPlusDraftSlot');
+        setCloudPlusDraft(false);
+        setCloudPlusDraftActive(false);
+        setCloudPlusDraftSource('');
+        setCloudPlusDraftRev(1);
+        if (unchanged) applyCloudDiagramRow(row, { loaded: true, fresh: true });
+        else {
+          applyDiagramLiveMeta({ id: request.diagramId });
+          beginCloudDiagramView(request.diagramId);
+        }
+        cloudSetDiagramHash(request.diagramId, true);
+      }
+      setDiagramServerRev(row.version);
+      setDiagramLocalRev(unchanged ? row.version : Math.max(Number(diagramLocalRev) || 0, row.version + 1));
+      setDiagramDirty(!unchanged);
+      setDiagramSyncUI(unchanged ? 'ok' : 'saving');
+      syncSourceDockLabel();
+      if (request.create) {
+        await renderDiagram({ fit: false, restoreView: true });
+      }
+      onPage = request.create ? !!(cloudSession && cloudSession.user && cloudSession.user.id === request.owner
+        && cloudLoadSeq === request.loadSeq && liveDiagramId === request.diagramId && cloudDiagramId() === request.diagramId)
+        : currentCloudSavePage(request);
+      if (onPage) {
+        syncCloudSaveChrome();
+        if (unchanged) setStatus('Saved to cloud');
+        if (opts.explicit && unchanged) emit('showCopyTip', 'Saved to cloud');
+        if (request.create) await call('refreshCloudGroupMembers', request.diagramId);
+      }
+    }
+    if (request.create) {
+      onPage = !!(cloudSession && cloudSession.user && cloudSession.user.id === request.owner
+        && cloudLoadSeq === request.loadSeq && liveDiagramId === request.diagramId && cloudDiagramId() === request.diagramId);
+      unchanged = onPage && diagramSourceEl.value === request.source && !diagramDirty;
+    }
+    rememberCloudSave(request, row, onPage, unchanged);
+    if (cloudSession && cloudSession.user && cloudSession.user.id === request.owner) void cloudRefreshGroups();
+    return { ok: true, diagram_id: request.diagramId, revision: request.revision,
+      save_status: onPage && !unchanged ? 'saving' : 'saved', persisted: true,
+      superseded: onPage && !unchanged, detached: !onPage, version: row.version };
   } catch (error) {
-    if (seq !== cloudSaveSeq) return false;
-    setDiagramSyncUI("error");
-    setStatus(error && error.message ? error.message : "Cloud save failed", true);
-    return false;
+    if (seq === cloudSaveSeq && currentCloudSavePage(request)) {
+      setDiagramSyncUI('error');
+      syncCloudSaveChrome();
+      setStatus(error && error.message ? error.message : 'Cloud save failed', true);
+    }
+    return cloudSaveRefusal('SAVE_FAILED', error && error.message ? error.message : 'Cloud save failed', request);
   }
+}
+
+async function saveDiagramToCloudResult(opts) {
+  opts = opts || {};
+  var request = captureCloudSave(opts);
+  if (request.ok === false) return request;
+  if (cloudSaveConflicts.has(request.key)) return refuseCloudSaveConflict(request);
+  for (;;) {
+    var previous = cloudSaveInFlight.get(request.key);
+    if (!previous) break;
+    if (previous.request.source === request.source && previous.request.revision === request.revision) return previous.promise;
+    await previous.promise;
+    if (request.create && cloudSession && cloudSession.user && cloudSession.user.id === request.owner
+      && cloudLoadSeq === request.loadSeq && liveDiagramId && !cloudPlusDraftActive) return saveDiagramToCloudResult(opts);
+    if (!sameCloudSaveContext(request) || diagramSourceEl.value !== request.source
+      || opts.expected_revision && getPageRevision() !== opts.expected_revision) {
+      return cloudSaveRefusal('STALE_REVISION', 'A later page change superseded this pending save.', request, 'saving');
+    }
+    if (cloudSaveConflicts.has(request.key)) return refuseCloudSaveConflict(request);
+  }
+  var entry = { request: request, promise: null };
+  entry.promise = performCloudSave(request, opts).finally(function () {
+    if (cloudSaveInFlight.get(request.key) === entry) cloudSaveInFlight.delete(request.key);
+  });
+  cloudSaveInFlight.set(request.key, entry);
+  return entry.promise;
+}
+
+async function saveDiagramToCloud(opts) {
+  return (await saveDiagramToCloudResult(opts)).ok;
 }
 
 async function loadCloudDiagramByHash(raw) {
@@ -736,16 +821,17 @@ async function loadCloudDiagramByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     setCloudPlusDraftActive(false);
     applyCloudDiagramRow(cached, { skipShare: known, loaded: true });
-    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
-    completeCloudDiagramView(seq);
+    var rendered = await renderDiagram({ fit: false, restoreView: true, swap: switching });
+    if (seq !== cloudLoadSeq) return true;
+    if (rendered && !rendered.ok && !rendered.superseded) { setDiagramSyncUI('error'); setStatus(rendered.message, true); return true; }
     if (known) {
       emit("renderCloudGroupTabs");
     } else {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    setDiagramSyncUI("ok");
-    setStatus("Cloud diagram loaded");
+    setDiagramSyncUI(cloudHasSaveConflict(diagramId) ? 'conflict' : diagramDirty ? 'saving' : 'ok');
+    if (rendered && rendered.ok) setStatus("Cloud diagram loaded");
     emit("shellRenderMine");
     return true;
   }
@@ -755,17 +841,18 @@ async function loadCloudDiagramByHash(raw) {
     if (seq !== cloudLoadSeq) return true;
     if (!result) throw new Error("Cloud diagram not found");
     setCloudPlusDraftActive(false);
-    applyCloudDiagramRow(result, { skipShare: known, loaded: true });
-    emit("renderDiagram", { fit: false, restoreView: true, swap: switching });
-    completeCloudDiagramView(seq);
+    applyCloudDiagramRow(result, { skipShare: known, loaded: true, fresh: true });
+    var rendered = await renderDiagram({ fit: false, restoreView: true, swap: switching });
+    if (seq !== cloudLoadSeq) return true;
+    if (rendered && !rendered.ok && !rendered.superseded) { setDiagramSyncUI('error'); setStatus(rendered.message, true); return true; }
     if (known) {
       emit("renderCloudGroupTabs");
     } else {
       await call("refreshCloudGroupMembers", diagramId, requestedGroupId);
       if (seq !== cloudLoadSeq) return true;
     }
-    setDiagramSyncUI("ok");
-    setStatus("Cloud diagram loaded");
+    setDiagramSyncUI(cloudHasSaveConflict(diagramId) ? 'conflict' : diagramDirty ? 'saving' : 'ok');
+    if (rendered && rendered.ok) setStatus("Cloud diagram loaded");
     emit("shellRenderMine");
     return true;
   } catch (error) {
@@ -785,14 +872,17 @@ async function cloudRefreshGroups() {
     emit("shellRenderShared", []);
     return;
   }
+  var owner = cloudSession.user.id;
   try {
     var page = await call("cloudFetchGroupSummaries");
+    if (!cloudSession || !cloudSession.user || cloudSession.user.id !== owner) return;
     setShellMineTotal(page.total);
     var last = page.groups && page.groups[page.groups.length - 1];
     setShellMineCursor(last && page.groups.length < page.total ? call("cloudMineCursor", last) : null);
     emit("shellRenderMine", page.groups);
     void call("cloudRefreshShares");
   } catch (error) {
+    if (!cloudSession || !cloudSession.user || cloudSession.user.id !== owner) return;
     setStatus(error && error.message ? error.message : "Could not load your diagrams", true);
   }
 }
@@ -958,6 +1048,7 @@ register("syncCloudSaveChrome", syncCloudSaveChrome);
 register("cloudOpenDiagramId", cloudOpenDiagramId);
 register("getDiagramTitle", getDiagramTitle);
 register("saveDiagramToCloud", saveDiagramToCloud);
+register("saveDiagramToCloudResult", saveDiagramToCloudResult);
 register("loadCloudDiagramByHash", loadCloudDiagramByHash);
 
 export {
@@ -976,6 +1067,9 @@ export {
   groupDiagramRowsByGroup,
   loadSiblingDiagramIds,
   saveDiagramToCloud,
+  saveDiagramToCloudResult,
+  cloudHasSaveConflict,
+  clearCloudDiagramConflict,
   loadCloudDiagramByHash,
   cloudRefreshGroups,
   deleteCloudGroup,

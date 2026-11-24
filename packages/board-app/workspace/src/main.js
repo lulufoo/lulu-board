@@ -17,6 +17,7 @@ import './chrome/native-selects.js';
 import { configureCurrentDiagramContext } from './state/current-diagram.js';
 import { cloudClient, cloudSession, cloudPlusDraftActive, cloudDiagramReady } from './cloud/cloud-state.js';
 import { isShareGuest } from './cloud/cloud-share.js';
+import { cloudHasSaveConflict } from './cloud/cloud-sync.js';
 import { invalidatePageRevision } from './core/page-revision.js';
 
 configureCurrentDiagramContext(function () {
@@ -24,6 +25,7 @@ configureCurrentDiagramContext(function () {
     signedIn: !!(cloudSession && cloudSession.user && cloudSession.user.id),
     canEdit: !!cloudClient && !cloudPlusDraftActive && !isShareGuest(),
     ready: cloudDiagramReady,
+    conflict: cloudHasSaveConflict(),
   };
 });
 window.addEventListener('hashchange', invalidatePageRevision);

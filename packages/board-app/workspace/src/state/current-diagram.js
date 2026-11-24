@@ -37,7 +37,7 @@ export function getCurrentDiagram(input) {
     kind: kind,
     source: source,
     revision: getPageRevision(),
-    save_status: getDiagramSaveStatus(),
+    save_status: context.conflict ? 'conflict' : getDiagramSaveStatus(),
   };
 }
 

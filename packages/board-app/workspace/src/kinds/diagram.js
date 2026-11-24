@@ -6,6 +6,7 @@ import DrawerStyleLine from '../core/style-line.js';
 import { applyGround } from '../core/workspace-ground.js';
 import { applyChrome } from '../core/appearance-chrome.js';
 import { getSessionAppearance } from '../core/session-appearance.js';
+import { getPageRevision } from '../core/page-revision.js';
 import FlowchartTypeScale from '../core/flowchart-type-scale.js';
 import DrawerPeleTheme from '../core/pele-theme.js';
 import DrawerEarlyHead from '../core/early-head.js';
@@ -57,6 +58,7 @@ function clearDrawerBoot() {
 
 var diagramSwapSeq = 0;
 var diagramRenderToken = 0;
+var pendingDiagramRender = null;
 
 // Hide the drawing before a whole-diagram replace. The dotted canvas stays.
 // No drawing yet (first paint): leave it to the boot hide.
@@ -200,10 +202,16 @@ function applyDocumentGround() {
   if (typeof applyChrome === "function") applyChrome(document.documentElement, appearance);
 }
 
-function finishCanvasView(opts) {
+function finishCanvasView(opts, result) {
   opts = opts || {};
-  applyDocumentGround();
+  result = result || { ok: true };
+  if (opts.isCurrentRender && !opts.isCurrentRender()) {
+    result = { ok: false, superseded: true, message: 'The diagram changed before rendering finished.' };
+    if (opts.completeRender) opts.completeRender(result);
+    return result;
+  }
   try {
+    applyDocumentGround();
     if (opts.cameraPlaced) {
       applyTransform();
     } else if (opts.fit) {
@@ -214,12 +222,17 @@ function finishCanvasView(opts) {
       applyTransform();
     }
     pinDiagramTitle();
+  } catch (error) {
+    result = { ok: false, code: 'RENDER_FAILED', message: error instanceof Error ? error.message : String(error) };
+    showDiagramError(result.message);
   } finally {
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { clearDrawerBoot(); });
     });
     releaseDiagramSwap(opts);
+    if (opts.completeRender) opts.completeRender(result);
   }
+  return result;
 }
 
 function syncMermaidStyleChrome(body) {
@@ -239,6 +252,7 @@ function paintPeleSvg(opts, paint) {
   opts = opts || {};
   paint = paint || {};
   var label = paint.label || "diagram";
+  var completion = { ok: true };
   emit("syncBoardEditControls");
   previewEl.classList.remove("board-preview");
   syncMermaidStyleChrome(diagramSourceEl ? diagramSourceEl.value : "");
@@ -249,7 +263,7 @@ function paintPeleSvg(opts, paint) {
     bindCanvasWorld(null, null);
     showDiagramError("");
     setStatus("No " + label + " source");
-    finishCanvasView(opts);
+    finishCanvasView(opts, { ok: false, code: 'RENDER_FAILED', message: 'No ' + label + ' source' });
     return;
   }
   if (!window.pele || typeof window.pele.render !== "function") {
@@ -257,7 +271,7 @@ function paintPeleSvg(opts, paint) {
     bindCanvasWorld(null, null);
     showDiagramError("Pele renderer missing");
     setStatus("Pele renderer missing", true);
-    finishCanvasView(opts);
+    finishCanvasView(opts, { ok: false, code: 'RENDER_FAILED', message: 'Pele renderer missing' });
     return;
   }
   try {
@@ -276,6 +290,7 @@ function paintPeleSvg(opts, paint) {
       autoDirection: false,
       responsive: false,
     });
+    if (!result || !result.svg) throw new Error('The diagram renderer returned no drawing.');
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg, PELE_VIEW_SCALE);
@@ -287,16 +302,17 @@ function paintPeleSvg(opts, paint) {
     showDiagramError("");
     setStatus((label.charAt(0).toUpperCase() + label.slice(1)) + " rendered · " + new Date().toLocaleTimeString());
   } catch (err) {
+    completion = { ok: false, code: 'RENDER_FAILED', message: err instanceof Error ? err.message : String(err) };
     previewEl.innerHTML = "";
     bindCanvasWorld(null, null);
     showDiagramError(err instanceof Error ? err.message : String(err));
     setStatus("Invalid " + label + " source", true);
   }
-  finishCanvasView(opts);
+  return finishCanvasView(opts, completion);
 }
 
 function renderFlowchart(opts) {
-  paintPeleSvg(opts, {
+  return paintPeleSvg(opts, {
     label: "flowchart",
     afterPaint: function (typeStep) {
       if (FlowchartShapes) FlowchartShapes.polishFlowchartNodeShapes(previewEl);
@@ -307,8 +323,8 @@ function renderFlowchart(opts) {
 }
 
 function renderDesignPele(opts) {
-  paintPeleSvg(opts, { label: "diagram" });
   fillDesignProps();
+  return paintPeleSvg(opts, { label: "diagram" });
 }
 
 function refuseUnsupportedMermaid(opts) {
@@ -319,11 +335,12 @@ function refuseUnsupportedMermaid(opts) {
   updateDiagramChars();
   showDiagramError("This diagram type cannot be rendered.");
   setStatus("This diagram type cannot be rendered.", true);
-  finishCanvasView(opts || {});
+  return finishCanvasView(opts || {}, { ok: false, code: 'RENDER_FAILED', message: 'This diagram type cannot be rendered.' });
 }
 
 function renderMindmap(opts) {
   opts = opts || {};
+  var completion = { ok: true };
   emit("syncBoardEditControls");
   previewEl.classList.remove("board-preview");
   syncMermaidStyleChrome(diagramSourceEl ? diagramSourceEl.value : "");
@@ -334,7 +351,7 @@ function renderMindmap(opts) {
     bindCanvasWorld(null, null);
     showDiagramError("");
     setStatus("No mindmap source");
-    finishCanvasView(opts);
+    finishCanvasView(opts, { ok: false, code: 'RENDER_FAILED', message: 'No mindmap source' });
     return;
   }
   if (typeof MindmapEdit === "undefined" || !MindmapEdit || typeof MindmapEdit.render !== "function") {
@@ -342,7 +359,7 @@ function renderMindmap(opts) {
     bindCanvasWorld(null, null);
     showDiagramError("Mindmap renderer missing");
     setStatus("Mindmap renderer missing", true);
-    finishCanvasView(opts);
+    finishCanvasView(opts, { ok: false, code: 'RENDER_FAILED', message: 'Mindmap renderer missing' });
     return;
   }
   try {
@@ -352,84 +369,111 @@ function renderMindmap(opts) {
     if (result && result.errors && result.errors.length && !result.svg) {
       throw new Error(result.errors.join("; "));
     }
+    if (!result || !result.svg) throw new Error('The mindmap renderer returned no drawing.');
     previewEl.innerHTML = result && result.svg ? result.svg : "";
     var svg = previewEl.querySelector("svg");
     fixSvgIntrinsic(svg);
     bindCanvasWorld(svg, function () { return canvasSvgBounds(svg); });
-    showDiagramError("");
-    setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
+    if (result.errors && result.errors.length) {
+      completion = { ok: false, code: 'RENDER_FAILED', message: result.errors.join('; ') };
+      showDiagramError(completion.message);
+      setStatus('Invalid mindmap source', true);
+    } else {
+      showDiagramError("");
+      setStatus("Mindmap rendered · " + new Date().toLocaleTimeString());
+    }
     restoreMindmapSelection();
     fillMindmapProps();
     applyMindmapSelectionVisual();
   } catch (err) {
+    completion = { ok: false, code: 'RENDER_FAILED', message: err instanceof Error ? err.message : String(err) };
     previewEl.innerHTML = "";
     bindCanvasWorld(null, null);
     showDiagramError(err instanceof Error ? err.message : String(err));
     setStatus("Invalid mindmap source", true);
   }
-  finishCanvasView(opts);
+  return finishCanvasView(opts, completion);
 }
 
 function renderDiagram(opts) {
   observeDiagramSource();
-  opts = opts || {};
-  holdDiagramSwap(opts);
+  opts = Object.assign({}, opts || {});
+  var source = diagramSourceEl ? diagramSourceEl.value : '';
+  var loadedId = liveDiagramId;
+  var revision = getPageRevision();
+  var viewContext = call('diagramViewContext');
   var renderToken = ++diagramRenderToken;
-  var body = sourceBodyForKind(diagramSourceEl ? diagramSourceEl.value : "");
-  var kind = DrawerStyleLine.bodyKind
-    ? DrawerStyleLine.bodyKind(body)
-    : (DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body) ? "boxes" : "unknown");
-  applyDrawerKind(kind);
-  if (kind === "flowchart") return renderFlowchart(opts);
-  if (kind === "mindmap") return renderMindmap(opts);
-  if (kind === "sketch") return renderSketch(opts);
-  if (isDesignKind(kind)) return renderDesignPele(opts);
-  if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid(opts);
-  emit("syncBoardEditControls");
-  previewEl.classList.add('board-preview');
-  const text = diagramSourceEl.value.trim(); updateDiagramChars();
-  if (!text) { previewEl.innerHTML = ''; bindCanvasWorld(null, null); pinDiagramTitle(); showDiagramError(''); setStatus('No Board source'); clearDrawerBoot(); releaseDiagramSwap(opts); return; }
-  BoxesRender.render(text, previewEl).then((rendered) => {
-    if (renderToken !== diagramRenderToken) return;
-    try {
-      var worldRoot = rendered && rendered.root && rendered.root.querySelector
-        ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
-          ? rendered.root
-          : rendered.root.querySelector(".board-canvas"))
-        : null;
-      bindCanvasWorld(worldRoot, function () {
-        return typeof BoxesRender !== "undefined" && typeof BoxesRender.worldBounds === "function"
-          ? BoxesRender.worldBounds(rendered.root)
-          : null;
-      });
-      emit("syncBoardLinkRouteButton"); emit("wireBoardCanvas", rendered.root, rendered.board); emit("wireBoardDrag", rendered.root, rendered.board); emit("applyBoardSelection", rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === call("boardDomSelectionKey", diagramSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection", "canvas-selected");
-      // Repaint the live root after any mode/bootstrap render race.
-      if (rendered && rendered.root && rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
-      showDiagramError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);
-      applyDocumentGround();
-      emit("syncBoardStyleChrome", rendered.board);
-      emit("applyBoardThemeToPreview");
-      if (opts.fit) {
-        fitDiagramView();
-      } else if (opts.restoreView) {
-        applyRestoredDiagramView();
-      } else {
-        applyTransform();
+  if (pendingDiagramRender) pendingDiagramRender({ ok: false, superseded: true, message: 'A newer render replaced this one.' });
+  return new Promise(function (resolve) {
+    var completed = false;
+    opts.isCurrentRender = function () {
+      return renderToken === diagramRenderToken && loadedId === liveDiagramId
+        && source === (diagramSourceEl ? diagramSourceEl.value : '') && revision === getPageRevision();
+    };
+    opts.completeRender = function (result) {
+      if (completed) return;
+      if (!opts.isCurrentRender()) result = { ok: false, superseded: true, message: 'The diagram changed before rendering finished.' };
+      completed = true;
+      if (pendingDiagramRender === opts.completeRender) pendingDiagramRender = null;
+      if (result && result.ok) emit('diagramViewReady', viewContext);
+      resolve(result || { ok: true });
+    };
+    pendingDiagramRender = opts.completeRender;
+    function failed(error) {
+      if (!opts.isCurrentRender()) return opts.completeRender({ ok: false, superseded: true });
+      var message = error instanceof Error ? error.message : String(error);
+      var failure = { ok: false, code: 'RENDER_FAILED', message: message };
+      try {
+        showDiagramError(message);
+        setStatus('Diagram rendering failed', true);
+        finishCanvasView(opts, failure);
+      } catch (_error) {
+        opts.completeRender(failure);
       }
-    } finally {
-      pinDiagramTitle();
-      // Two frames: let pin/title + item frame rects settle while stage still opacity:0.
-      requestAnimationFrame(function () {
-        requestAnimationFrame(function () { clearDrawerBoot(); });
-      });
-      releaseDiagramSwap(opts);
     }
-  }).catch((err) => {
-    if (renderToken !== diagramRenderToken) return;
-    pinDiagramTitle();
-    clearDrawerBoot();
-    releaseDiagramSwap(opts);
-    showDiagramError(err instanceof Error ? err.message : String(err)); setStatus('Invalid Board source', true);
+    try {
+      holdDiagramSwap(opts);
+      var body = sourceBodyForKind(source);
+      var kind = DrawerStyleLine.bodyKind
+        ? DrawerStyleLine.bodyKind(body)
+        : (DrawerStyleLine.bodyIsBoard && DrawerStyleLine.bodyIsBoard(body) ? "boxes" : "unknown");
+      applyDrawerKind(kind);
+      if (kind === "flowchart") return renderFlowchart(opts);
+      if (kind === "mindmap") return renderMindmap(opts);
+      if (kind === "sketch") return renderSketch(opts);
+      if (isDesignKind(kind)) return renderDesignPele(opts);
+      if (kind === "mermaid-unsupported") return refuseUnsupportedMermaid(opts);
+      emit("syncBoardEditControls");
+      previewEl.classList.add('board-preview');
+      const text = source.trim(); updateDiagramChars();
+      if (!text) {
+        previewEl.innerHTML = ''; bindCanvasWorld(null, null); showDiagramError(''); setStatus('No Board source');
+        return finishCanvasView(opts, { ok: false, code: 'RENDER_FAILED', message: 'No Board source' });
+      }
+      Promise.resolve(BoxesRender.render(text, previewEl)).then(function (rendered) {
+        if (!opts.isCurrentRender()) return opts.completeRender({ ok: false, superseded: true });
+        if (!rendered || !rendered.root) throw new Error('The Boxes renderer returned no drawing.');
+        var worldRoot = rendered.root.querySelector
+          ? (rendered.root.classList && rendered.root.classList.contains("board-canvas")
+            ? rendered.root
+            : rendered.root.querySelector(".board-canvas"))
+          : null;
+        bindCanvasWorld(worldRoot, function () {
+          return typeof BoxesRender !== "undefined" && typeof BoxesRender.worldBounds === "function"
+            ? BoxesRender.worldBounds(rendered.root)
+            : null;
+        });
+        emit("syncBoardLinkRouteButton"); emit("wireBoardCanvas", rendered.root, rendered.board); emit("wireBoardDrag", rendered.root, rendered.board); emit("applyBoardSelection", rendered.root, rendered.board, true); var retained = Array.from(rendered.root.querySelectorAll("[data-board-key]")).find(function(el) { return el.dataset.boardKey === call("boardDomSelectionKey", diagramSourceEl.dataset.boardSelectionKey); }); if (retained) retained.classList.add("board-selection", "canvas-selected");
+        // Repaint the live root after any mode/bootstrap render race.
+        if (rendered.root.isConnected && rendered.frames) rendered.frames.forEach((frame, id) => { const el = rendered.root.querySelector("[data-board-id=\"" + id + "\"]"); if (!el || el.dataset.boardNested === "1") return; el.style.left = frame.x + "px"; el.style.top = frame.y + "px"; el.style.width = frame.w + "px"; var grow = el.dataset.boardType === "note" || el.dataset.boardType === "layout" || el.dataset.boardType === "container"; if (grow) { el.style.minHeight = frame.h + "px"; el.style.height = "auto"; } else { el.style.minHeight = ""; el.style.height = frame.h + "px"; } });
+        showDiagramError(''); setStatus(`Board rendered · ${new Date().toLocaleTimeString()}`);
+        emit("syncBoardStyleChrome", rendered.board);
+        emit("applyBoardThemeToPreview");
+        return finishCanvasView(opts);
+      }).catch(failed);
+    } catch (error) {
+      failed(error);
+    }
   });
 }
 function scheduleDiagramRender() { clearTimeout(diagramRenderTimer); setDiagramRenderTimer(setTimeout(renderDiagram, 220)); }
@@ -466,7 +510,7 @@ function scheduleDiagramSave() {
   setDiagramSyncUI('saving');
   setDiagramSaveTimer(setTimeout(() => void saveDiagramToFile(), diagramSaveDelay()));
 }
-function flushDiagramSave() {
+function flushDiagramSave(opts) {
   if (call("isShareGuest")) {
     clearTimeout(diagramSaveTimer);
     setDiagramSaveTimer(null);
@@ -475,7 +519,7 @@ function flushDiagramSave() {
   if (!diagramDirty && !diagramSaveTimer) return Promise.resolve();
   clearTimeout(diagramSaveTimer);
   setDiagramSaveTimer(null);
-  return saveDiagramToFile();
+  return saveDiagramToFile(opts);
 }
 if (typeof window !== "undefined" && window.addEventListener) window.addEventListener("pagehide", function() { void flushDiagramSave(); });
 if (typeof document !== "undefined" && document.addEventListener) document.addEventListener("visibilitychange", function() {
@@ -506,7 +550,7 @@ async function saveDiagramToHash(opts) {
     setStatus(err instanceof Error ? err.message : String(err), true);
   }
 }
-async function saveDiagramToFile() {
+async function saveDiagramToFile(opts) {
   // Clear the timer on every path; a stale id here blocks hashchange/poll loads forever.
   setDiagramSaveTimer(null);
   if (diagramPersistMode() === "hash") {
@@ -514,6 +558,7 @@ async function saveDiagramToFile() {
       return Promise.resolve();
     }
     if (call("cloudDiagramId")) {
+      if (opts && opts.detailed) return call("saveDiagramToCloudResult", Object.assign({ explicit: false }, opts));
       return call("saveDiagramToCloud", { explicit: false });
     }
     return saveDiagramToHash();
