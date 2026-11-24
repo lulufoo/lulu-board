@@ -37,4 +37,3 @@
 证据产物位于 .cache/webmcp/：probe.html、bridge.mjs、evidence.jsonl、native-probe.jpg。
 
 [Chrome API 与在途调用语义](https://developer.chrome.com/docs/ai/webmcp/imperative-api) · [官方原生工具参考](https://github.com/ChromeDevTools/chrome-devtools-mcp/blob/main/docs/tool-reference.md#webmcp)
-
