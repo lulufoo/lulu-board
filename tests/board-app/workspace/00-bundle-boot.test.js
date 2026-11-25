@@ -19,7 +19,10 @@ const srcState = [
   'src/core/hooks.js',
   'src/core/sentry-count.js',
   'src/core/session-appearance.js',
+  'src/core/webmcp-preference.js',
+  'src/core/page-revision.js',
   'src/state/shell-state.js',
+  'src/state/current-diagram.js',
   'src/state/canvas-interaction.js',
   'src/kinds/sketch-mode.js',
   'src/core/sketch-source.js',
@@ -33,6 +36,8 @@ const srcState = [
   'src/kinds/flowchart-shapes.js',
   'src/kinds/flowchart.js',
   'src/kinds/diagram.js',
+  'src/kinds/source-validation.js',
+  'src/kinds/current-diagram-update.js',
   'src/kinds/board-logic.js',
   'src/kinds/board-style.js',
   'src/kinds/board.js',
@@ -62,6 +67,8 @@ const srcState = [
   'src/chrome/shell-tabs.js',
   'src/chrome/shortcuts.js',
   'src/chrome/source-style.js',
+  'src/chrome/webmcp.js',
+  'src/main.js',
 ].map((rel) => fs.readFileSync(path.join(root, 'packages/board-app/workspace', rel), 'utf8')).join('\n');
 const script = [
   'var DrawerStyleLine = { isMermaidKind: function () { return false; }, isDesignKind: function () { return false; }, bodyKindLabel: function () { return "Boxes"; }, splitRendererStyle: function (t) { return { token: "", body: t }; }, bodyKind: function () { return "boxes"; } };',
@@ -83,6 +90,7 @@ const script = [
   .replace(/^import \{[\s\S]*?\} from ['"][^'"]+['"];\n/gm, '')
   .replace(/^import .*$/gm, 'var snapdom = {};')
   .replace(/^export \{[\s\S]*?\};/gm, '')
+  .replace(/^export \* from .*$/gm, '')
   .replace(/^export (async )?function /gm, '$1function ')
   .replace(/^export const /gm, 'const ')
   .replace(/^export let /gm, 'let ')

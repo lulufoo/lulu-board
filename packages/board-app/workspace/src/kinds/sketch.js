@@ -92,7 +92,7 @@ export function syncMountedSketch() {
 export function renderSketch(opts) {
   opts = opts || {};
   if (!previewEl) {
-    emit("finishCanvasView", opts);
+    emit("finishCanvasView", opts, { ok: false, code: 'RENDER_FAILED', message: 'Sketch preview missing' });
     return;
   }
   previewEl.classList.remove("board-preview");
@@ -111,11 +111,11 @@ export function renderSketch(opts) {
     bindWorld(null, null);
     showDiagramError("Sketch content missing");
     setStatus("Sketch content missing", true);
-    emit("finishCanvasView", opts);
+    emit("finishCanvasView", opts, { ok: false, code: 'RENDER_FAILED', message: 'Sketch content missing' });
     return;
   }
   var html = sketchMountHtml(fragment);
-  if (mountedSketch && mountedSketch.sent && mountedSketch.html === html
+  if (mountedSketch && mountedSketch.sent && mountedSketch.ready && mountedSketch.html === html
     && mountedSketch.frame && mountedSketch.frame.isConnected && mountedSketch.frame.contentWindow) {
     mountedSketch.frame.contentWindow.postMessage(appearanceMessage(getSessionAppearance()), "*");
     emit("finishCanvasView", opts);
@@ -149,23 +149,37 @@ export function renderSketch(opts) {
   picture.appendChild(frame);
   var finished = false;
   var timer = 0;
-  function finish(failed) {
-    if (finished || !frame.isConnected) return;
+  function finish(failed, message) {
+    if (finished) return;
+    if (!frame.isConnected || (opts.isCurrentRender && !opts.isCurrentRender())) {
+      stop();
+      return;
+    }
     finished = true;
     clearTimeout(timer);
-    bindWorld(picture, function () { return sketchWorldBounds(picture); });
-    if (!failed && call("placeDocumentCamera") === true) {
-      opts.cameraPlaced = true;
-      picture.style.opacity = "1";
+    var result = failed
+      ? { ok: false, code: 'RENDER_FAILED', message: message || 'Sketch runner did not respond' }
+      : { ok: true };
+    try {
+      bindWorld(picture, function () { return sketchWorldBounds(picture); });
+      if (!failed && call("placeDocumentCamera") === true) {
+        opts.cameraPlaced = true;
+        picture.style.opacity = "1";
+      }
+      if (mountedSketch && mountedSketch.frame === frame) mountedSketch.ready = !failed;
+      if (failed) {
+        showDiagramError(result.message);
+        setStatus(result.message, true);
+      } else {
+        showDiagramError("");
+        setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
+      }
+      emit("finishCanvasView", opts, result);
+    } catch (error) {
+      result = { ok: false, code: 'RENDER_FAILED', message: error instanceof Error ? error.message : String(error) };
+    } finally {
+      if (opts.completeRender) opts.completeRender(result);
     }
-    if (failed) {
-      showDiagramError("Sketch runner did not respond");
-      setStatus("Sketch runner did not respond", true);
-    } else {
-      showDiagramError("");
-      setStatus("Sketch rendered · " + new Date().toLocaleTimeString());
-    }
-    emit("finishCanvasView", opts);
   }
   function applySize(size) {
     // The runner reports the whole frame. The picture is the frame less the bleed on each side, and the camera
@@ -200,7 +214,7 @@ export function renderSketch(opts) {
   function onMessage(event) {
     // The runner has an opaque origin, so event.origin is the string "null" and proves nothing about who sent it.
     // The sender is the frame we made; every field is untrusted and goes through the protocol parsers.
-    if (!frame.isConnected) {
+    if (!frame.isConnected || (!finished && opts.isCurrentRender && !opts.isCurrentRender())) {
       stop();
       return;
     }
@@ -208,7 +222,7 @@ export function renderSketch(opts) {
     if (parseReady(event.data)) {
       if (sent) return;
       sent = true;
-      mountedSketch = { frame: frame, html: html, sent: true };
+      mountedSketch = { frame: frame, html: html, sent: true, ready: false };
       // An opaque origin cannot be named as a target; the fragment and its appearance travel this way.
       frame.contentWindow.postMessage(renderMessage(html, getSessionAppearance()), "*");
       return;
@@ -240,6 +254,8 @@ export function renderSketch(opts) {
     if (failure && failure.id) {
       var failed = settle(failure.id);
       if (failed) failed.reject(new Error("Sketch capture failed: " + failure.message));
+    } else if (failure) {
+      finish(true, failure.message);
     }
   }
   function stop() {
@@ -247,6 +263,10 @@ export function renderSketch(opts) {
     clearTimeout(timer);
     failCaptures("Sketch was replaced before the capture finished");
     failSketchPicks(channel);
+    if (!finished) {
+      finished = true;
+      if (opts.completeRender) opts.completeRender({ ok: false, superseded: true, message: 'Sketch was replaced before rendering finished.' });
+    }
   }
   window.addEventListener("message", onMessage);
   stopListening = stop;

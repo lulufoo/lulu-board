@@ -555,16 +555,32 @@
   </div>
 </div>
 <div class="shell-dialog" id="settingsDialog" hidden>
-  <button type="button" class="shell-dialog-backdrop" id="settingsDialogBackdrop" aria-label="Close"></button>
+  <button type="button" class="shell-dialog-backdrop" id="settingsDialogBackdrop" aria-label="Close" tabindex="-1"></button>
   <div class="shell-dialog-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
     <header class="settings-head">
       <div>
         <h2 id="settingsDialogTitle">Settings</h2>
-        <p class="settings-sub" id="settingsDialogSub">Manage access to Board</p>
+        <p class="settings-sub" id="settingsDialogSub">Make Board work your way.</p>
       </div>
       <button type="button" class="settings-close" id="settingsDialogClose" aria-label="Close">×</button>
     </header>
-    <div class="settings-body">
+    <div class="settings-tabs" role="tablist" aria-label="Settings">
+      <button type="button" class="settings-tab" id="settingsTabGeneral" role="tab" aria-selected="true" aria-controls="settingsPanelGeneral" tabindex="0">General</button>
+      <button type="button" class="settings-tab" id="settingsTabTokens" role="tab" aria-selected="false" aria-controls="settingsPanelTokens" tabindex="-1">Access tokens</button>
+    </div>
+    <div class="settings-body" id="settingsPanelGeneral" role="tabpanel" aria-labelledby="settingsTabGeneral">
+      <h3 class="settings-group-title">AI collaboration</h3>
+      <div class="settings-preference-row">
+        <div>
+          <label class="settings-preference-label" id="settingsWebMcpLabel" for="settingsWebMcpSwitch">Enable WebMCP</label>
+          <p class="settings-preference-copy" id="settingsWebMcpDescription">Let AI read and edit the Board you have open.</p>
+        </div>
+        <button type="button" class="settings-switch" id="settingsWebMcpSwitch" role="switch" aria-checked="false" aria-labelledby="settingsWebMcpLabel" aria-describedby="settingsWebMcpDescription settingsWebMcpScope"><span aria-hidden="true"></span></button>
+      </div>
+      <p class="settings-scope" id="settingsWebMcpScope">Available for cloud diagrams you can edit.</p>
+      <p class="settings-preference-notice" id="settingsPreferenceNotice" role="status" hidden></p>
+    </div>
+    <div class="settings-body" id="settingsPanelTokens" role="tabpanel" aria-labelledby="settingsTabTokens" hidden>
       <p class="settings-error" id="settingsError" hidden></p>
       <div class="settings-pane" id="settingsPaneList">
         <div class="settings-toolbar">
@@ -575,6 +591,8 @@
         <p class="settings-hint">Read-only access to your diagrams. Revoke anytime.</p>
       </div>
       <div class="settings-pane" id="settingsPaneGenerate" hidden>
+        <h3 class="settings-token-heading">Generate personal access token</h3>
+        <p class="settings-hint">For reading your diagrams in Spark</p>
         <div class="settings-label">Name</div>
         <input class="settings-input" id="settingsTokenName" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-label="Token name">
         <div class="settings-label">Expiration</div>
@@ -591,6 +609,8 @@
         </div>
       </div>
       <div class="settings-pane" id="settingsPaneResult" hidden>
+        <h3 class="settings-token-heading">Token generated</h3>
+        <p class="settings-hint" id="settingsTokenResultSub"></p>
         <p class="settings-notice">Copy and save your token now. You won't be able to see it again.</p>
         <div class="settings-code">
           <span id="settingsTokenValue"></span>

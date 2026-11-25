@@ -4,6 +4,7 @@ import FlowchartEdit from '../../../../mermaid/flowchart/index.js';
 import { emit, call } from '../core/hooks.js';
 import { stripDocumentMeta } from '../core/document-meta.js';
 import DrawerStyleLine from '../core/style-line.js';
+import { observePageSource, invalidatePageRevision } from '../core/page-revision.js';
 
 /** HTTP header values must be ISO-8859-1; encode anything else (e.g. Chinese titles). */
 function headerByteString(value) {
@@ -162,6 +163,7 @@ if (previewEl && boardSelectionObserver) boardSelectionObserver.observe(previewE
 let diagramLocalRev = 0;
 let diagramServerRev = 0;
 let diagramDirty = false;
+let diagramSaveStatus = 'saved';
 let diagramSaveSeq = 0;
 let diagramRenderTimer = null;
 let selectedBoardNode = null;
@@ -305,8 +307,9 @@ function setStatus(msg, isError = false) {
 }
 
 function applyDiagramLiveMeta(meta = {}) {
-  if (meta && meta.id) liveDiagramId = String(meta.id);
-  else if (meta && meta.id === "") liveDiagramId = "";
+  if (meta && meta.id) setLiveDiagramId(meta.id);
+  else if (meta && meta.id === "") setLiveDiagramId("");
+  observeDiagramSource();
   // Protocol: meta.current points at the editable history record (SSOT).
   // Legacy clients may still send archive — treat it as current.
   if (meta && Object.prototype.hasOwnProperty.call(meta, "current")) {
@@ -418,7 +421,9 @@ function setCameraPan(x, y) {
 }
 function setDiagramLocalRev(n) { diagramLocalRev = n; }
 function setDiagramServerRev(n) { diagramServerRev = n; }
-function setDiagramDirty(v) { diagramDirty = !!v; }
+function setDiagramDirty(v) { if (v) observeDiagramSource(); diagramDirty = !!v; }
+function setDiagramSaveStatus(v) { diagramSaveStatus = v; }
+function getDiagramSaveStatus() { return diagramDirty && diagramSaveStatus === 'saved' ? 'saving' : diagramSaveStatus; }
 function setDiagramSaveTimer(t) { diagramSaveTimer = t; }
 function setDiagramSaveSeq(n) { diagramSaveSeq = n; }
 function bumpDiagramSaveSeq() { diagramSaveSeq += 1; return diagramSaveSeq; }
@@ -434,7 +439,11 @@ function setShellGroups(v) { shellGroups = v; }
 function setShellShares(v) { shellShares = v; }
 function setShellMineTotal(v) { shellMineTotal = v; }
 function setShellMineCursor(v) { shellMineCursor = v; }
-function setLiveDiagramId(v) { liveDiagramId = v == null ? "" : String(v); }
+function setLiveDiagramId(v) {
+  var next = v == null ? "" : String(v);
+  if (next !== liveDiagramId) invalidatePageRevision();
+  liveDiagramId = next;
+}
 function setDrawerUiRestoreLock(v) { _drawerUiRestoreLock = !!v; }
 function setLiveCamera(nextScale, x, y) {
   scale = nextScale;
@@ -476,7 +485,9 @@ function fitDiagramView() {
     if (retained) retained.classList.add("board-selection", "canvas-selected");
   });
 }
+function observeDiagramSource() { return observePageSource(diagramSourceEl ? diagramSourceEl.value : ''); }
 function updateDiagramChars() {
+  observeDiagramSource();
   setCharsLabel($('#diagramCharsPill'), [...diagramSourceEl.value].length);
 }
 function showDiagramError(message) { diagramError.textContent = message || ''; diagramError.classList.toggle('show', !!message); }
@@ -604,6 +615,9 @@ export {
   setDiagramLocalRev,
   setDiagramServerRev,
   setDiagramDirty,
+  setDiagramSaveStatus,
+  getDiagramSaveStatus,
+  observeDiagramSource,
   setDiagramSaveTimer,
   setDiagramSaveSeq,
   bumpDiagramSaveSeq,

@@ -114,7 +114,7 @@ assert.match(cloud, /https:\/\/api\.luluboard\.app\/graphs/, 'first insert calls
 assert.match(cloud, /Authorization: "Bearer " \+ accessToken/, 'first insert sends the user JWT');
 assert.doesNotMatch(cloud, /create_owned_graph_with_group/, 'web create no longer calls the old SQL function');
 assert.match(cloud, /expected_version:\s*expected/, 'updates send the server version');
-assert.match(cloud, /method:\s*"PATCH"/, 'updates call the board API');
+assert.match(cloud, /method:\s*request\.create \? 'POST' : 'PATCH'/, 'updates call the board API');
 assert.doesNotMatch(cloud, /\.from\("graphs"\)\.update/, 'web update no longer patches the table');
 assert.match(cloud, /https:\/\/api\.luluboard\.app\/graphs\?diagram_id=/, 'owner load reads through the board API');
 assert.doesNotMatch(cloud, /onConflict/, 'cloud saves do not upsert');
@@ -194,6 +194,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
   const mkEl = () => {
     const attrs = {}, cls = new Set();
     return { hidden: true, disabled: false, attrs,
+      querySelector() { return null; },
       setAttribute(k, v) { attrs[k] = String(v); }, getAttribute(k) { return k in attrs ? attrs[k] : null; },
       removeAttribute(k) { delete attrs[k]; },
       classList: { add: (c) => cls.add(c), remove: (c) => cls.delete(c), contains: (c) => cls.has(c) } };
@@ -206,6 +207,7 @@ assert.doesNotMatch(shareJs, /cloudShowSignInDialog/, 'share links do not force 
       var document = { getElementById: (id) => id === 'btnShellSaveCloud' ? save : status };
       function isLocalDrawerPreview() { return !!env.local; }
       function cloudDiagramId() { return env.id || ''; }
+      function cloudHasSaveConflict() { return false; }
       function emit() {}
       function call() {}
       ${cloud.slice(start, end)}
@@ -375,7 +377,7 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
   assert.ok(switching >= 0 && switching < load.indexOf('await cloudSessionReady'), 'a switch is judged against the shown board before any await or apply');
   assert.doesNotMatch(load, /swap: true/, 'opening the shown board again does not fade');
   assert.equal((load.match(/swap: switching/g) || []).length, 2, 'both open paths fade only on a switch');
-  assert.match(load, /emit\("renderDiagram", \{ fit: false, restoreView: true, swap: switching \}\)/, 'a switched board hides the drawing before paint');
+  assert.match(load, /await renderDiagram\(\{ fit: false, restoreView: true, swap: switching \}\)/, 'a switched board hides the drawing before paint');
   assert.match(boardJs, /function holdDiagramSwap/, 'switch can hide the drawing');
   assert.match(boardJs, /!preview \|\| !preview\.childElementCount/, 'first paint does not hide an empty drawing');
   assert.match(boardJs, /diagramSwapSeq \+= 1/, 'a later paint invalidates an in-flight hide');
@@ -422,33 +424,21 @@ sqlAssert.match(schema, /with check \(\(select auth\.uid\(\)\) = owner_id\)/, 'i
 }
 
 {
-  const save = cloud.slice(
-    cloud.indexOf('async function saveDiagramToCloud'),
-    cloud.indexOf('async function loadCloudDiagramByHash')
-  );
-  const minted = save.indexOf('if (!diagramId)');
-  const updated = save.indexOf('} else {');
-  assert.ok(minted >= 0 && updated > minted);
-  const insertBranch = save.slice(minted, updated);
-  const updateBranch = save.slice(updated);
-  assert.match(insertBranch, /https:\/\/api\.luluboard\.app\/graphs/);
-  assert.match(insertBranch, /diagram_id:\s*diagramId/);
-  assert.match(insertBranch, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
-  assert.match(insertBranch, /if \(joinGroupId\) payload\.group_id = joinGroupId/);
-  assert.doesNotMatch(insertBranch, /search_text/);
+  // Request and endpoint structure lives in the shared saver; deferred behavior is
+  // exercised by tests/board-app/workspace/00-current-diagram.test.mjs.
+  const save = cloud.slice(cloud.indexOf('function captureCloudSave'), cloud.indexOf('async function loadCloudDiagramByHash'));
+  assert.match(save, /https:\/\/api\.luluboard\.app\/graphs/);
+  assert.match(save, /method:\s*request\.create \? 'POST' : 'PATCH'/);
+  assert.match(save, /diagram_id:\s*request\.diagramId/);
+  assert.match(save, /expected_version:\s*expected/);
+  assert.match(save, /groupId: cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
+  assert.match(save, /if \(request\.create && request\.groupId\) payload\.group_id = request\.groupId/);
   assert.match(save, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
-  assert.doesNotMatch(insertBranch, /from\("graphs"\)\.insert|from\("group_members"\)/);
-  assert.match(insertBranch, /cloudSetDiagramHash\(diagramId/);
-  assert.match(updateBranch, /https:\/\/api\.luluboard\.app\/graphs/);
-  assert.match(updateBranch, /method:\s*"PATCH"/);
-  assert.match(updateBranch, /diagram_id:\s*diagramId/);
-  assert.match(updateBranch, /expected_version:\s*expected/);
-  assert.doesNotMatch(updateBranch, /search_text/);
-  assert.doesNotMatch(updateBranch, /\.update\(\{/);
-  assert.match(updateBranch, /status === 409/);
-  assert.doesNotMatch(updateBranch, /create_owned_graph_with_group|from\("group_members"\)/);
-  assert.doesNotMatch(updateBranch, /share_id\s*:/);
-  assert.doesNotMatch(save, /from\("graphs"\)\.(insert|update)\([\s\S]*group_id/);
+  assert.match(save, /cloudSetDiagramHash\(request\.diagramId/);
+  assert.match(save, /status === 409/);
+  assert.doesNotMatch(save, /\.update\(\{/);
+  assert.doesNotMatch(save, /search_text|create_owned_graph_with_group|from\("group_members"\)/);
+  assert.doesNotMatch(save, /from\("graphs"\)\.(insert|update)|share_id\s*:/);
 }
 
 {

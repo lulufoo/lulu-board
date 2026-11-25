@@ -1,17 +1,43 @@
-/* Settings dialog: token list, generate form, one-time copy. */
-.settings-sheet { padding: 0; }
+/* Settings: local collaboration preferences and separate access-token management. */
+.shell-dialog-sheet.settings-sheet {
+  width: min(528px, 100%); padding: 0; max-height: calc(100dvh - 48px); overflow-y: auto;
+  background: var(--dock, var(--panel-solid)); color: var(--ink, var(--text));
+  border-color: var(--paper-line, var(--stroke));
+}
 .settings-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
   padding: 18px 18px 12px;
 }
-.settings-head h2 { margin: 0; }
-.settings-sub { margin: 4px 0 0; color: var(--muted); font: 12.5px/1.4 var(--font); }
+.settings-head h2 { margin: 0; color: var(--ink, var(--text)); }
+.settings-sheet .settings-sub { margin: 4px 0 0; color: var(--ink-soft, var(--muted)); font: 12.5px/1.4 var(--font); }
 .settings-close {
   width: 32px; height: 32px; border: 0; border-radius: 9px; padding: 0;
   background: transparent; color: var(--muted); font: 400 22px/1 var(--font); cursor: pointer;
 }
 .settings-close:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
-.settings-body { padding: 0 18px 18px; }
+.settings-tabs { display: flex; gap: 24px; padding: 0 18px; border-bottom: 1px solid var(--paper-line, var(--stroke)); }
+.settings-tab {
+  position: relative; min-height: 40px; padding: 0 0 11px; border: 0; background: transparent;
+  color: var(--ink-soft, var(--muted)); font: 600 13px var(--font); cursor: pointer;
+}
+.settings-tab[aria-selected="true"] { color: var(--brand, var(--accent)); }
+.settings-tab[aria-selected="true"]::after { content: ""; position: absolute; height: 2px; left: 0; right: 0; bottom: -1px; border-radius: 2px; background: currentColor; }
+.settings-body { padding: 20px 18px; }
+.settings-body[hidden] { display: none; }
+.settings-group-title { margin: 0 0 16px; color: var(--ink-soft, var(--muted)); font: 650 11px/1.3 var(--font); letter-spacing: .05em; text-transform: uppercase; }
+.settings-preference-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.settings-preference-label { display: block; color: var(--ink, var(--text)); font: 600 14px/1.4 var(--font); cursor: pointer; }
+.settings-sheet .settings-preference-copy { margin: 5px 0 0; color: var(--ink-soft, var(--muted)); font: 12.5px/1.45 var(--font); }
+.settings-switch { flex: none; position: relative; width: 40px; height: 24px; padding: 0; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--ink-soft, var(--muted)) 35%, var(--dock, var(--panel-solid))); cursor: pointer; }
+.settings-switch span { display: block; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.16); transition: transform 140ms ease; }
+.settings-switch[aria-checked="true"] { background: var(--brand, var(--accent)); }
+.settings-switch[aria-checked="true"] span { transform: translateX(16px); }
+.settings-sheet .settings-scope { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--paper-line, var(--stroke)); color: var(--ink-soft, var(--muted)); font: 12px/1.4 var(--font); }
+.settings-sheet .settings-preference-notice { margin: 12px 0 0; color: var(--warn); font: 12px/1.4 var(--font); }
+.settings-preference-notice[hidden] { display: none; }
+.settings-tab:focus-visible, .settings-switch:focus-visible, .settings-close:focus-visible { outline: 2px solid var(--brand, var(--accent)); outline-offset: 3px; }
+.settings-token-heading { margin: 0 0 6px; color: var(--ink, var(--text)); font: 650 14px/1.4 var(--font); }
+.settings-token-heading + .settings-hint { margin: 0 0 14px; }
 .settings-pane[hidden] { display: none; }
 .settings-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 12px; }
 .settings-section { color: var(--text); font: 650 13px/1.3 var(--font); }

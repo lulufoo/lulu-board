@@ -34,6 +34,7 @@ import DrawerDocumentMeta, {
 } from './core/document-meta.js';
 import { cameraToPan, panToCamera, normalizeDocumentView } from './core/canvas-math.js';
 export * from './state/shell-state.js';
+export * from './state/current-diagram.js';
 export * from './state/props-panes.js';
 export * from './state/canvas-interaction.js';
 export * from './kinds/sketch.js';
@@ -46,6 +47,7 @@ export * from './kinds/mermaid-halo.js';
 export * from './kinds/flowchart-shapes.js';
 export * from './kinds/flowchart.js';
 export * from './kinds/diagram.js';
+export * from './kinds/current-diagram-update.js';
 export * from './kinds/board-logic.js';
 export * from './kinds/board-style.js';
 export * from './kinds/board.js';

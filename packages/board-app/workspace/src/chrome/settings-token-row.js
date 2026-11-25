@@ -15,6 +15,7 @@ export function paintTokenRow(row, hooks) {
   var reveal = document.createElement('button');
   reveal.type = 'button';
   reveal.className = 'settings-text-btn';
+  reveal.tabIndex = hooks.armedId === row.id ? -1 : 0;
   reveal.textContent = 'Revoke';
   reveal.addEventListener('click', function (event) {
     event.stopPropagation();
@@ -29,6 +30,7 @@ export function paintTokenRow(row, hooks) {
   var action = document.createElement('button');
   action.type = 'button';
   action.className = 'settings-token-action';
+  action.tabIndex = hooks.armedId === row.id ? 0 : -1;
   action.textContent = 'Revoke';
   action.addEventListener('click', function (event) {
     event.stopPropagation();

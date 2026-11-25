@@ -354,6 +354,8 @@ function cloudCachedGroupShells(diagramId, groupId) {
 
 async function refreshCloudGroupMembers(diagramId, groupId) {
   var id = String(diagramId || "");
+  var owner = cloudSession && cloudSession.user && cloudSession.user.id;
+  var viewHash = location.hash;
   setCloudSiblingDiagramIds([]);
   if (!cloudClient || !id) {
     if (!cloudPlusDraft) {
@@ -389,6 +391,7 @@ async function refreshCloudGroupMembers(diagramId, groupId) {
         : { data: null, error: { message: (body && (body.message || body.error)) || ("HTTP " + response.status) } };
     }
   }
+  if ((cloudSession && cloudSession.user && cloudSession.user.id) !== owner || location.hash !== viewHash) return;
   if (members.error) {
     renderCloudGroupTabs();
     return;

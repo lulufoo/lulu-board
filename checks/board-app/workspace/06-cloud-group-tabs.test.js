@@ -57,8 +57,8 @@ assert.match(tabs, /cloudPlusDraftActive\) return true/, 'parking a draft does n
 assert.match(cloud, /askConfirm/, 'history delete uses the in-app confirm');
 assert.match(cloud, /function cloudParkDirtyDiagram/, 'dirty boards can be parked in memory');
 assert.match(tabs, /isShareGuest/, 'share guests do not see group tabs');
-assert.match(cloud, /joinGroupId = cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
-assert.match(cloud, /if \(joinGroupId\) payload\.group_id = joinGroupId/);
+assert.match(cloud, /groupId: cloudPlusDraftActive && cloudGroupId \? cloudGroupId : null/);
+assert.match(cloud, /if \(request\.create && request\.groupId\) payload\.group_id = request\.groupId/);
 assert.match(cloud, /cloudPlusDraftActive && !opts\.explicit/, 'plus draft does not autosave');
 assert.match(tabs, /function cloudOpenDiagramById/, 'tab switch loads one board id');
 assert.match(tabs, /cloudSetDiagramHash\(id, true\)/, 'tab switch replaces the hash without hashchange');

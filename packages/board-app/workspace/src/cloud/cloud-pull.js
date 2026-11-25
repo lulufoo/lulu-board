@@ -4,6 +4,8 @@ import { emit, call } from '../core/hooks.js';
 import {
   cloudClient,
   cloudSession,
+  cloudDiagramReady,
+  setCloudDiagramReady,
   cloudLoadSeq,
   cloudPlusDraftActive,
   bumpCloudLoadSeq,
@@ -20,12 +22,13 @@ import {
   cloudCloseAccountMenus,
   fetchOwnedGraph,
 } from './cloud-sync.js';
-import { setDiagramSyncUI } from '../kinds/diagram.js';
+import { setDiagramSyncUI, renderDiagram } from '../kinds/diagram.js';
 import { cloudClearDirtyLeave, bindChromeTip } from './cloud-group-tabs.js';
 
 /* drawer-app/06-cloud-pull.js — green Saved pulls the open board from the cloud */
 async function pullDiagramFromCloud() {
   if (!cloudClient || !cloudSession || !cloudSession.user) return false;
+  if (!cloudDiagramReady) return false;
   if (call("isShareGuest")) return false;
   var diagramId = cloudDiagramId();
   if (!diagramId || cloudPlusDraftActive) return false;
@@ -38,6 +41,8 @@ async function pullDiagramFromCloud() {
     });
     if (!ok) return false;
   }
+  if (!cloudDiagramReady) return false;
+  var wasReady = cloudDiagramReady;
   var seq = bumpCloudLoadSeq();
   setDiagramSyncUI("saving");
   try {
@@ -46,14 +51,19 @@ async function pullDiagramFromCloud() {
     if (!result) throw new Error("Cloud diagram not found");
     cloudClearDirtyLeave();
     cloudForgetDiagramCache([diagramId]);
-    applyCloudDiagramRow(result);
-    emit("renderDiagram", { fit: false, restoreView: true });
-    setDiagramSyncUI("ok");
-    setStatus("Pulled from cloud");
-    emit("showCopyTip", "Pulled from cloud");
+    applyCloudDiagramRow(result, { loaded: true, fresh: true });
+    var rendered = await renderDiagram({ fit: false, restoreView: true });
+    if (seq !== cloudLoadSeq) return false;
+    if (rendered && !rendered.ok && !rendered.superseded) { setDiagramSyncUI('error'); setStatus(rendered.message, true); return false; }
+    if (rendered && rendered.ok) {
+      setDiagramSyncUI("ok");
+      setStatus("Pulled from cloud");
+      emit("showCopyTip", "Pulled from cloud");
+    }
     return true;
   } catch (error) {
     if (seq !== cloudLoadSeq) return false;
+    setCloudDiagramReady(wasReady);
     setDiagramSyncUI("error");
     setStatus(error && error.message ? error.message : "Cloud pull failed", true);
     return false;
