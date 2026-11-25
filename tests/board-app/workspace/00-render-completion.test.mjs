@@ -84,6 +84,8 @@ function page(source = 'boxes "Example"\n') {
     applyDocumentGround() {}, pinDiagramTitle() {},
     applyTransform() { cameras.push('transform'); }, fitDiagramView() { cameras.push('fit'); },
     applyRestoredDiagramView() { cameras.push('restore'); },
+    // Present scrolling is a separate state port, covered by canvas-interaction tests.
+    presentScrollBy() {}, presentReclamp() {},
     getSessionAppearance() { return 'light'; }, currentMindmapLayout() { return 'radial'; },
     restoreMindmapSelection() {}, fillMindmapProps() {}, applyMindmapSelectionVisual() {},
     restoreFlowchartSelection() {}, fillDesignProps() {},
